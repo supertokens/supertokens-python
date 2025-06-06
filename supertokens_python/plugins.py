@@ -1,3 +1,10 @@
+# TODOs:
+# - [ ] Define base classes for:
+#   - Config
+#   - RecipeInterface
+#   - APIInterface
+#   - OverrideConfig
+
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -128,9 +135,9 @@ class OverrideGlobalClaimValidatorsFunction(Protocol):
 
 
 class VerifySessionOptions(CamelCaseBaseModel):
-    session_required: Optional[bool] = None
+    session_required: bool
     anti_csrf_check: Optional[bool] = None
-    check_database: Optional[bool] = None
+    check_database: bool
     override_global_claim_validators: Optional[
         OverrideGlobalClaimValidatorsFunction
     ] = None
@@ -139,8 +146,8 @@ class VerifySessionOptions(CamelCaseBaseModel):
 class PluginRouteHandler:
     method: str
     path: str
-    verify_session_options: Optional[VerifySessionOptions]
     handler: PluginRouteHandlerHandlerFunction
+    verify_session_options: Optional[VerifySessionOptions]
 
 
 @runtime_checkable
@@ -175,7 +182,7 @@ class SuperTokensPluginDependencies(Protocol):
 
 class PluginRouteHandlerFunctionOkResponse(CamelCaseBaseModel):
     status: Literal["OK"] = "OK"
-    plugins_to_add: List["SuperTokensPlugin"]
+    route_handlers: List[PluginRouteHandler]
 
 
 class PluginRouteHandlerFunctionErrorResponse(CamelCaseBaseModel):
@@ -247,12 +254,13 @@ class ConfigOverrideBase:
     apis: Optional[Callable[[Any], Any]] = None
 
 
+# TODO: Pass in the OverrideConfig class as an arg, use it to define a default if None
 def apply_plugins(recipe_id: str, config: T, plugins: List[OverrideMap]) -> T:
-    # print("Startnig apply_plugins")
-
+    # TODO: Change to recipe_implementation type
     def default_fn_override(original_implementation: T) -> T:
         return original_implementation
 
+    # TODO: Change to api_implementation type
     def default_api_override(original_implementation: T) -> T:
         return original_implementation
 
@@ -264,8 +272,6 @@ def apply_plugins(recipe_id: str, config: T, plugins: List[OverrideMap]) -> T:
     function_overrides = getattr(config.override, "functions", default_fn_override)
     api_overrides = getattr(config.override, "apis", default_api_override)
 
-    # print("config overrides", function_overrides, api_overrides)
-
     function_layers: list[Any] = []
     api_layers: list[Any] = []
     if function_overrides is not None:
@@ -273,11 +279,8 @@ def apply_plugins(recipe_id: str, config: T, plugins: List[OverrideMap]) -> T:
     if api_overrides is not None:
         api_layers.append(api_overrides)
 
-    # print("Starting plugin iteration")
     for plugin in plugins:
-        # print(f"{plugin=}")
         overrides = plugin[recipe_id]
-        # print(f"{overrides=}")
         if overrides is not None:
             if overrides.config is not None:
                 config = overrides.config(config)
@@ -287,37 +290,24 @@ def apply_plugins(recipe_id: str, config: T, plugins: List[OverrideMap]) -> T:
             if overrides.apis is not None:
                 api_layers.append(overrides.apis)
 
-    # function_layers.reverse()
-    # api_layers.reverse()
-
-    # Apply the user override first, followed by the plugin overrides
-    # Example: [user_override, plugin_dep_1, plugin_1]
-    # final_override(oI) -> plugin_1_oI
-    # plugin_1(plugin_dep_1_oI) -> plugin_1_oI
-    # plugin_dep_1(user_override_oI) -> plugin_dep_1_oI
-    # user_override(oI) -> user_override_oI
-
+    # Apply overrides in order of definition
+    # Plugins: [plugin1, plugin2] would be applied as [override, plugin1, plugin2, original]
     if len(function_layers) > 0:
-
-        def fn_override(original_implementation: Any) -> Any:
+        # TODO: Change to recipe_implementation type
+        def fn_override(original_implementation: T) -> T:
+            # The layers will get called in reversed order
+            # Iteration is reversed to ensure that the required order is maintained
             for function_layer in reversed(function_layers):
-                # for function_layer in function_layers:
                 original_implementation = function_layer(original_implementation)
             return original_implementation
 
         config.override.functions = fn_override
 
-        # config.override.functions = function_layers[0]
-        # for function_layer in function_layers[1:]:
-        #     config.override.functions = function_layer(config.override.functions)
-
+    # AccountLinking recipe does not have an API implementation
     if len(api_layers) > 0 and recipe_id != "accountlinking":
-        # config.override.apis = api_layers[0]
-        # for api_layer in api_layers[1:]:
-        #     config.override.apis = api_layer(config.override.apis)
-        def api_override(original_implementation: Any) -> Any:
+        # TODO: Change to api_implementation type
+        def api_override(original_implementation: T) -> T:
             for api_layer in reversed(api_layers):
-                # for api_layer in api_layers:
                 original_implementation = api_layer(original_implementation)
             return original_implementation
 

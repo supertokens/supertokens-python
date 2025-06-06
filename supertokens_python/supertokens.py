@@ -23,6 +23,7 @@ from typing import (
     Dict,
     List,
     Optional,
+    Protocol,
     Set,
     Tuple,
     Union,
@@ -38,6 +39,7 @@ from supertokens_python.logger import (
 )
 from supertokens_python.plugins import (
     OverrideMap,
+    PluginDependenciesErrorResponse,
     PluginRouteHandler,
     SuperTokensPlugin,
     SuperTokensPluginInit,
@@ -132,7 +134,7 @@ class SupertokensPublicConfig:
 
 @dataclass
 class SupertokensInputConfig(SupertokensPublicConfig):
-    recipe_list: List[Callable[[AppInfo], RecipeModule]]
+    recipe_list: List[Callable[[AppInfo, List[OverrideMap]], RecipeModule]]
     experimental: Optional[SupertokensExperimentalConfig] = None
 
     def get_public_config(self) -> SupertokensPublicConfig:
@@ -252,6 +254,12 @@ def manage_session_post_response(
         mutator(response, user_context)
 
 
+class RecipeInit(Protocol):
+    def __call__(
+        self, app_info: AppInfo, plugins: List[OverrideMap]
+    ) -> RecipeModule: ...
+
+
 class Supertokens:
     __instance: Optional[Supertokens] = None
 
@@ -274,12 +282,14 @@ class Supertokens:
         app_info: InputAppInfo,
         framework: Literal["fastapi", "flask", "django"],
         supertokens_config: SupertokensConfig,
-        recipe_list: List[Callable[[AppInfo], RecipeModule]],
+        recipe_list: List[RecipeInit],
         mode: Optional[Literal["asgi", "wsgi"]],
         telemetry: Optional[bool],
         debug: Optional[bool],
         experimental: Optional[SupertokensExperimentalConfig] = None,
     ):
+        from supertokens_python.plugins import PluginRouteHandlerFunctionErrorResponse
+
         if not isinstance(app_info, InputAppInfo):  # type: ignore
             raise ValueError("app_info must be an instance of InputAppInfo")
 
@@ -305,8 +315,6 @@ class Supertokens:
         if experimental is not None and experimental.plugins is not None:
             input_plugin_list = experimental.plugins
 
-        print(f"{input_plugin_list=}")
-
         for plugin in input_plugin_list:
             if isinstance(plugin.compatible_sdk_versions, list):
                 version_constraints = plugin.compatible_sdk_versions
@@ -317,34 +325,39 @@ class Supertokens:
                 # TODO: Better checks
                 raise Exception("Plugin version mismatch")
 
-            if plugin.dependencies is not None:
-                dep_result = plugin.dependencies(
-                    config=public_config,
-                    plugins_above=[
-                        SuperTokensPublicPlugin.from_plugin(plugin)
-                        for plugin in final_plugin_list
-                    ],
-                    sdk_version=VERSION,
-                )
+            def recurse_deps(plugin: SuperTokensPlugin, deps: List[SuperTokensPlugin]):
+                if plugin.dependencies is not None:
+                    # Get all dependencies of the plugin
+                    dep_result = plugin.dependencies(
+                        config=public_config,
+                        plugins_above=[
+                            SuperTokensPublicPlugin.from_plugin(plugin)
+                            for plugin in final_plugin_list
+                        ],
+                        sdk_version=VERSION,
+                    )
 
-                if dep_result.status == "ERROR":
-                    raise Exception(dep_result.message)
+                    # Errors fall through
+                    if isinstance(dep_result, PluginDependenciesErrorResponse):
+                        raise Exception(dep_result.message)
 
-                if dep_result.plugins_to_add:
-                    final_plugin_list.extend(dep_result.plugins_to_add)
+                    # Recurse through all dependencies and add the resultant plugins to the list
+                    # Pre-order DFS traversal
+                    for dep_plugin in dep_result.plugins_to_add:
+                        recurse_deps(dep_plugin, deps)
 
-            final_plugin_list.append(plugin)
+                # Add the current plugin
+                deps.append(plugin)
+                return deps
+
+            final_plugin_list.extend(recurse_deps(plugin, []))
 
         self.plugin_list = [
             SuperTokensPublicPlugin.from_plugin(plugin) for plugin in final_plugin_list
         ]
-        print(f"{self.plugin_list=}")
-        print()
 
         for plugin_idx, plugin in enumerate(final_plugin_list):
-            print()
-            print(f"{plugin_idx=} {plugin=}")
-
+            # Override the public supertokens config using the config override defined in the plugin
             if plugin.config is not None:
                 public_config = plugin.config(public_config)
 
@@ -357,15 +370,18 @@ class Supertokens:
                         all_plugins=self.plugin_list,
                         sdk_version=VERSION,
                     )
-                    if handler_result.status == "ERROR":
+                    if isinstance(
+                        handler_result, PluginRouteHandlerFunctionErrorResponse
+                    ):
                         raise Exception(handler_result.message)
+
+                    handlers = handler_result.route_handlers
                 else:
                     handlers = plugin.route_handlers
 
                 self.plugin_route_handlers.extend(handlers)
 
             if plugin.init is not None:
-                print(f"{plugin.init=}")
                 plugin.init(
                     config=public_config,
                     all_plugins=self.plugin_list,
@@ -515,7 +531,7 @@ class Supertokens:
         app_info: InputAppInfo,
         framework: Literal["fastapi", "flask", "django"],
         supertokens_config: SupertokensConfig,
-        recipe_list: List[Callable[[AppInfo], RecipeModule]],
+        recipe_list: List[RecipeInit],
         mode: Optional[Literal["asgi", "wsgi"]],
         telemetry: Optional[bool],
         debug: Optional[bool],
@@ -753,11 +769,14 @@ class Supertokens:
         if handler_from_apis is not None:
             session: Optional[SessionContainer] = None
             if handler_from_apis.verify_session_options is not None:
-                # TODO: Fix verify_session_options type
+                verify_session_options = handler_from_apis.verify_session_options
                 session = await SessionRecipe.get_instance().verify_session(
                     request=request,
                     user_context=user_context,
-                    **handler_from_apis.verify_session_options,
+                    anti_csrf_check=verify_session_options.anti_csrf_check,
+                    session_required=verify_session_options.session_required,
+                    check_database=verify_session_options.check_database,
+                    override_global_claim_validators=verify_session_options.override_global_claim_validators,
                 )
                 handler_from_apis.handler(
                     request=request,

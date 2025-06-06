@@ -1,0 +1,249 @@
+from functools import partial
+from typing import Any, List
+
+from pytest import fixture, mark, param
+from supertokens_python import (
+    InputAppInfo,
+    SupertokensConfig,
+    SupertokensExperimentalConfig,
+    init,
+)
+from supertokens_python.plugins import SuperTokensPlugin
+
+from tests.utils import outputs, reset
+
+from .config import OverrideConfig, PluginTestConfig
+from .plugins import (
+    Plugin1,
+    Plugin2,
+    Plugin3Dep1,
+    Plugin3Dep2_1,
+    Plugin4Dep2,
+    Plugin4Dep3__2_1,
+    api_override_factory,
+    function_override_factory,
+    plugin_factory,
+)
+from .recipe import PluginTestRecipe, plugin_test_init
+from .types import RecipeReturnType
+
+
+@fixture(autouse=True)
+def setup_and_teardown():
+    reset()
+    PluginTestRecipe.reset()
+    yield
+    reset()
+    PluginTestRecipe.reset()
+
+
+def recipe_factory(override_functions: bool = False, override_apis: bool = False):
+    override = OverrideConfig()
+
+    if override_functions:
+        override.functions = function_override_factory("override")
+    if override_apis:
+        override.apis = api_override_factory("override")
+
+    return plugin_test_init(config=PluginTestConfig(override=override))
+
+
+partial_init = partial(
+    init,
+    app_info=InputAppInfo(
+        app_name="plugin_test",
+        api_domain="api.supertokens.io",
+        origin="http://localhost:3001",
+    ),
+    framework="django",
+    supertokens_config=SupertokensConfig(
+        connection_uri="http://localhost:3567",
+    ),
+)
+
+
+@mark.parametrize(
+    (
+        "recipe_fn_override",
+        "recipe_api_override",
+        "plugins",
+        "recipe_expectation",
+        "api_expectation",
+    ),
+    [
+        param(
+            False,
+            False,
+            [],
+            outputs(["original"]),
+            outputs(["original"]),
+            id="fn_ovr=False, api_ovr=False, plugins=[]",
+        ),
+        param(
+            True,
+            False,
+            [],
+            outputs(["override", "original"]),
+            outputs(["original"]),
+            id="fn_ovr=True, api_ovr=False, plugins=[]",
+        ),
+        param(
+            False,
+            True,
+            [],
+            outputs(["original"]),
+            outputs(["override", "original"]),
+            id="fn_ovr=False, api_ovr=True, plugins=[]",
+        ),
+        param(
+            True,
+            False,
+            [plugin_factory("plugin1", override_functions=True)],
+            outputs(["override", "plugin1", "original"]),
+            outputs(["original"]),
+            id="fn_ovr=True, api_ovr=False, plugins=[Plugin1], plugin1=[fn]",
+        ),
+        param(
+            True,
+            False,
+            [plugin_factory("plugin1", override_apis=True)],
+            outputs(["override", "original"]),
+            outputs(["plugin1", "original"]),
+            id="fn_ovr=True, api_ovr=False, plugins=[Plugin1], plugin1=[api]",
+        ),
+        param(
+            False,
+            True,
+            [plugin_factory("plugin1", override_functions=True)],
+            outputs(["plugin1", "original"]),
+            outputs(["override", "original"]),
+            id="fn_ovr=False, api_ovr=True, plugins=[Plugin1], plugin1=[fn]",
+        ),
+        param(
+            False,
+            True,
+            [plugin_factory("plugin1", override_apis=True)],
+            outputs(["original"]),
+            outputs(["override", "plugin1", "original"]),
+            id="fn_ovr=False, api_ovr=True, plugins=[Plugin1], plugin1=[api]",
+        ),
+        param(
+            True,
+            False,
+            [Plugin1, Plugin2],
+            outputs(["override", "plugin1", "plugin2", "original"]),
+            outputs(["original"]),
+            id="fn_ovr=True, api_ovr=False, plugins=[Plugin1, Plugin2], plugin1=[fn], plugin2=[fn]",
+        ),
+    ],
+)
+def test_overrides(
+    recipe_fn_override: bool,
+    recipe_api_override: bool,
+    plugins: List[SuperTokensPlugin],
+    recipe_expectation: Any,
+    api_expectation: Any,
+):
+    partial_init(
+        recipe_list=[
+            recipe_factory(
+                override_functions=recipe_fn_override, override_apis=recipe_api_override
+            ),
+        ],
+        experimental=SupertokensExperimentalConfig(
+            plugins=plugins,
+        ),
+    )
+
+    with recipe_expectation as expected_stack:
+        output = PluginTestRecipe.get_instance().recipe_implementation.sign_in(
+            "msg", []
+        )
+        assert output == RecipeReturnType(
+            type="Recipe",
+            function="sign_in",
+            stack=expected_stack,
+            message="msg",
+        )
+
+    with api_expectation as expected_stack:
+        output = PluginTestRecipe.get_instance().api_implementation.sign_in_post(
+            "msg", []
+        )
+        assert output == RecipeReturnType(
+            type="API",
+            function="sign_in_post",
+            stack=expected_stack,
+            message="msg",
+        )
+
+
+@mark.parametrize(
+    ("plugins", "recipe_expectation", "api_expectation"),
+    [
+        param(
+            [Plugin3Dep1],
+            outputs(["plugin1", "plugin3dep1", "original"]),
+            outputs(["original"]),
+            id="3->1",
+        ),
+        param(
+            [Plugin3Dep2_1],
+            outputs(["plugin2", "plugin1", "plugin3dep2_1", "original"]),
+            outputs(["original"]),
+            id="3->(2,1)",
+        ),
+        param(
+            [Plugin3Dep1, Plugin4Dep2],
+            outputs(["plugin1", "plugin3dep1", "plugin2", "plugin4dep2", "original"]),
+            outputs(["original"]),
+            id="3->1,4->2",
+        ),
+        param(
+            [Plugin4Dep3__2_1],
+            outputs(
+                ["plugin2", "plugin1", "plugin3dep2_1", "plugin4dep3__2_1", "original"]
+            ),
+            outputs(["original"]),
+            id="4->3->(2,1)",
+        ),
+    ],
+)
+def test_depdendencies(
+    plugins: List[SuperTokensPlugin],
+    recipe_expectation: Any,
+    api_expectation: Any,
+):
+    partial_init(
+        recipe_list=[
+            recipe_factory(),
+        ],
+        experimental=SupertokensExperimentalConfig(
+            plugins=plugins,
+        ),
+    )
+
+    with recipe_expectation as expected_stack:
+        output = PluginTestRecipe.get_instance().recipe_implementation.sign_in(
+            "msg", []
+        )
+        assert output == RecipeReturnType(
+            type="Recipe",
+            function="sign_in",
+            stack=expected_stack,
+            message="msg",
+        )
+
+    with api_expectation as expected_stack:
+        output = PluginTestRecipe.get_instance().api_implementation.sign_in_post(
+            "msg", []
+        )
+        assert output == RecipeReturnType(
+            type="API",
+            function="sign_in_post",
+            stack=expected_stack,
+            message="msg",
+        )
+
+
+# TODO: Add tests for init, route handlers, config overrides
