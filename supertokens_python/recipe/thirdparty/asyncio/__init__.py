@@ -14,7 +14,6 @@
 
 from typing import Any, Dict, Optional, Union
 
-from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.thirdparty.interfaces import (
     EmailChangeNotAllowedError,
@@ -22,6 +21,7 @@ from supertokens_python.recipe.thirdparty.interfaces import (
     SignInUpNotAllowed,
 )
 from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 
 
 async def manually_create_or_update_user(

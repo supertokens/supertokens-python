@@ -449,3 +449,20 @@ def get_normalised_should_try_linking_with_session_user_flag(
     if has_greater_than_equal_to_fdi(req, "3.1"):
         return body.get("shouldTryLinkingWithSessionUser", False)
     return None
+
+
+def get_error_response_reason_from_map(
+    response_status: str,
+    error_code_map: Union[
+        Dict[str, Dict[str, str]],
+        Dict[str, str],
+        Dict[str, Union[str, Dict[str, str]]],
+    ],
+) -> str:
+    reason_map_like = error_code_map[response_status]
+    if isinstance(reason_map_like, dict):
+        reason = reason_map_like[response_status]
+    else:
+        reason = reason_map_like
+
+    return reason

@@ -22,7 +22,7 @@ if TYPE_CHECKING:
         APIInterface,
         APIOptions,
     )
-    from supertokens_python.types import APIResponse
+    from supertokens_python.types.response import APIResponse
 
 from supertokens_python.utils import (
     send_200_response,

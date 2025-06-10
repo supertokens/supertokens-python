@@ -13,8 +13,20 @@
 # under the License.
 
 import asyncio
+from functools import update_wrapper
 from os import getenv
-from typing import Any, Coroutine, TypeVar
+from typing import (
+    Any,
+    Callable,
+    Coroutine,
+    Generic,
+    TypeVar,
+)
+
+from typing_extensions import ParamSpec
+
+Param = ParamSpec("Param")
+RetType = TypeVar("RetType", covariant=True)
 
 _T = TypeVar("_T")
 
@@ -43,3 +55,25 @@ def create_or_get_event_loop() -> asyncio.AbstractEventLoop:
 def sync(co: Coroutine[Any, Any, _T]) -> _T:
     loop = create_or_get_event_loop()
     return loop.run_until_complete(co)
+
+
+class syncify(Generic[Param, RetType]):
+    """
+    Decorator to allow async functions to be executed synchronously
+    using a `sync` attribute.
+    """
+
+    def __init__(self, func: Callable[Param, Coroutine[Any, Any, RetType]]):
+        update_wrapper(self, func)
+        self.func = func
+
+    def __call__(
+        self, *args: Param.args, **kwargs: Param.kwargs
+    ) -> Coroutine[Any, Any, RetType]:
+        return self.func(*args, **kwargs)
+
+    def sync(self, *args: Param.args, **kwargs: Param.kwargs) -> RetType:
+        """
+        Synchronous version of the decorated function.
+        """
+        return sync(self.func(*args, **kwargs))

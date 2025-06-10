@@ -1,4 +1,4 @@
-from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from typing_extensions import Literal
 
@@ -31,37 +31,18 @@ from supertokens_python.recipe.session.exceptions import UnauthorisedError
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
 from supertokens_python.types import (
-    AccountInfo,
     LoginMethod,
     RecipeUserId,
     User,
 )
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
+from supertokens_python.types.base import AccountInfoInput
 from supertokens_python.utils import log_debug_message
 
 from .asyncio import get_user
 
-
-class LinkingToSessionUserFailedError:
-    status: Literal["LINKING_TO_SESSION_USER_FAILED"] = "LINKING_TO_SESSION_USER_FAILED"
-    reason: Literal[
-        "EMAIL_VERIFICATION_REQUIRED",
-        "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-        "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-        "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-        "INPUT_USER_IS_NOT_A_PRIMARY_USER",
-    ]
-
-    def __init__(
-        self,
-        reason: Literal[
-            "EMAIL_VERIFICATION_REQUIRED",
-            "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-            "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-            "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-            "INPUT_USER_IS_NOT_A_PRIMARY_USER",
-        ],
-    ):
-        self.reason = reason
+if TYPE_CHECKING:
+    from supertokens_python.recipe.webauthn.types.base import WebauthnInfoInput
 
 
 class OkResponse:
@@ -290,6 +271,7 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
     session: Optional[SessionContainer],
     check_credentials_on_tenant: Callable[[str], Awaitable[bool]],
     user_context: Dict[str, Any],
+    webauthn: Optional["WebauthnInfoInput"] = None,
 ) -> Optional[AuthenticatingUserInfo]:
     i = 0
     while i < 300:
@@ -303,8 +285,11 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
         )
         existing_users = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=AccountInfo(
-                email=email, phone_number=phone_number, third_party=third_party
+            account_info=AccountInfoInput(
+                email=email,
+                phone_number=phone_number,
+                third_party=third_party,
+                webauthn=webauthn,
             ),
             do_union_of_account_info=True,
             user_context=user_context,
@@ -324,6 +309,7 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
                             (email is not None and lm.has_same_email_as(email))
                             or lm.has_same_phone_number_as(phone_number)
                             or lm.has_same_third_party_info_as(third_party)
+                            or lm.has_same_webauthn_info_as(webauthn)
                         )
                     ),
                     None,

@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Unio
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework import BaseResponse
-from supertokens_python.types import GeneralErrorResponse
+from supertokens_python.types.response import GeneralErrorResponse
 from supertokens_python.utils import send_200_response, send_non_200_response
 
 from .utils import get_session

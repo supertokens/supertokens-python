@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions
     from supertokens_python.recipe.thirdparty.provider import Provider
 
-from supertokens_python.types import GeneralErrorResponse
+from supertokens_python.types.response import GeneralErrorResponse
 
 
 class APIImplementation(APIInterface):

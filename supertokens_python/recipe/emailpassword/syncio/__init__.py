@@ -20,7 +20,6 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     ConsumePasswordResetTokenOkResult,
     CreateResetPasswordOkResult,
     EmailAlreadyExistsError,
-    LinkingToSessionUserFailedError,
     PasswordPolicyViolationError,
     PasswordResetTokenInvalidError,
     SignInOkResult,
@@ -35,6 +34,7 @@ from supertokens_python.recipe.emailpassword.types import (
 )
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.types import RecipeUserId
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 
 
 def sign_up(
