@@ -18,3 +18,5 @@ include = ["supertokens_python/", "tests/", "examples/"]
 addopts = " -v -p no:warnings"
 python_paths = "."
 xfail_strict = true
+# Removes requirement to use `@mark.asyncio` on async tests
+asyncio_mode = "auto"

@@ -1,7 +1,7 @@
 from functools import partial
-from typing import Any, List
+from typing import Any, Dict, List, Optional
 
-from pytest import fixture, mark, param
+from pytest import fixture, mark, param, raises
 from supertokens_python import (
     InputAppInfo,
     Supertokens,
@@ -9,7 +9,16 @@ from supertokens_python import (
     SupertokensExperimentalConfig,
     init,
 )
-from supertokens_python.plugins import SuperTokensPlugin
+from supertokens_python.framework.request import BaseRequest
+from supertokens_python.framework.response import BaseResponse
+from supertokens_python.plugins import (
+    PluginRouteHandler,
+    PluginRouteHandlerFunctionErrorResponse,
+    PluginRouteHandlerFunctionOkResponse,
+    SuperTokensPlugin,
+)
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.supertokens import SupertokensPublicConfig
 
 from tests.utils import outputs, reset
 
@@ -62,6 +71,87 @@ partial_init = partial(
         connection_uri="http://localhost:3567",
     ),
 )
+
+
+class DummyRequest(BaseRequest):
+    def get_path(self) -> str:
+        return "/auth/plugin1/hello"
+
+    def get_method(self) -> str:
+        return "get"
+
+    def get_original_url(self) -> Any:
+        raise NotImplementedError
+
+    def get_query_param(self, key: str, default: Optional[str] = None) -> Any:
+        raise NotImplementedError
+
+    def get_query_params(self) -> Any:
+        raise NotImplementedError
+
+    async def json(self) -> Any:
+        raise NotImplementedError
+
+    async def form_data(self) -> Any:
+        raise NotImplementedError
+
+    def method(self) -> Any:
+        return "get"
+
+    def get_cookie(self, key: str) -> Any:
+        raise NotImplementedError
+
+    def get_header(self, key: str) -> Any:
+        return None
+
+    def get_session(self) -> Any:
+        raise NotImplementedError
+
+    def set_session(self, session: SessionContainer) -> Any:
+        raise NotImplementedError
+
+    def set_session_as_none(self) -> Any:
+        raise NotImplementedError
+
+
+class DummyResponse(BaseResponse):
+    def __init__(self, content: Dict[str, Any], status_code: int = 200):
+        self.content = content
+        self.status_code = status_code
+
+    def set_cookie(
+        self,
+        key: str,
+        value: str,
+        expires: int,
+        path: str = "/",
+        domain: Optional[str] = None,
+        secure: bool = False,
+        httponly: bool = False,
+        samesite: str = "lax",
+    ) -> Any:
+        raise NotImplementedError
+
+    def set_header(self, key: str, value: str) -> None:
+        raise NotImplementedError
+
+    def get_header(self, key: str) -> Optional[str]:
+        raise NotImplementedError
+
+    def remove_header(self, key: str) -> None:
+        raise NotImplementedError
+
+    def set_status_code(self, status_code: int) -> None:
+        raise NotImplementedError
+
+    def set_json_content(self, content: Dict[str, Any]) -> Any:
+        raise NotImplementedError
+
+    def set_html_content(self, content: str) -> Any:
+        raise NotImplementedError
+
+    def redirect(self, url: str) -> Any:
+        raise NotImplementedError
 
 
 @mark.parametrize(
@@ -261,13 +351,13 @@ def test_depdendencies(
         )
 
 
-# TODO: Add tests for init, route handlers, config overrides
-def test_config_override():
+# TODO: Add tests for init, recipe config override
+def test_st_config_override():
     plugin = plugin_factory("plugin1", override_functions=False, override_apis=False)
 
-    def config_override(cfg):
-        cfg.mode = "override"
-        return cfg
+    def config_override(config: SupertokensPublicConfig) -> SupertokensPublicConfig:
+        config.mode = "override"  # type: ignore
+        return config
 
     plugin.config = config_override
 
@@ -281,3 +371,100 @@ def test_config_override():
     )
 
     assert Supertokens.get_instance().app_info.mode == "override"
+
+
+def test_st_config_override_non_public_property():
+    plugin = plugin_factory("plugin1", override_functions=False, override_apis=False)
+
+    def config_override(config: SupertokensPublicConfig) -> SupertokensPublicConfig:
+        config.recipe_list = []  # type: ignore
+        return config
+
+    plugin.config = config_override
+
+    partial_init(
+        recipe_list=[
+            recipe_factory(override_functions=False, override_apis=False),
+        ],
+        experimental=SupertokensExperimentalConfig(
+            plugins=[plugin],
+        ),
+    )
+
+    assert Supertokens.get_instance().recipe_modules != []
+
+
+plugin_route_handler = PluginRouteHandler(
+    method="get",
+    path="/auth/plugin1/hello",
+    handler=lambda *_, **__: "plugin1",  # type: ignore
+    verify_session_options=None,
+)
+
+
+async def test_route_handlers_list():
+    plugin = plugin_factory("plugin1", override_functions=False, override_apis=False)
+
+    plugin.route_handlers = [plugin_route_handler]
+
+    partial_init(
+        recipe_list=[
+            recipe_factory(override_functions=False, override_apis=False),
+        ],
+        experimental=SupertokensExperimentalConfig(
+            plugins=[plugin],
+        ),
+    )
+
+    st_instance = Supertokens.get_instance()
+
+    res = await st_instance.middleware(
+        request=DummyRequest(),
+        response=DummyResponse(content={}),
+        user_context={},
+    )
+
+    assert res == "plugin1"
+
+
+@mark.parametrize(
+    ("handler_response", "expectation"),
+    [
+        param(
+            PluginRouteHandlerFunctionOkResponse(route_handlers=[plugin_route_handler]),
+            outputs("plugin1"),
+            id="OK response with route handler",
+        ),
+        param(
+            PluginRouteHandlerFunctionErrorResponse(
+                message="error",
+            ),
+            raises(Exception, match="error"),
+            id="Error response",
+        ),
+    ],
+)
+async def test_route_handlers_callable(handler_response: Any, expectation: Any):
+    plugin = plugin_factory("plugin1", override_functions=False, override_apis=False)
+
+    plugin.route_handlers = lambda *_, **__: handler_response  # type: ignore
+
+    with expectation as expected_output:
+        partial_init(
+            recipe_list=[
+                recipe_factory(override_functions=False, override_apis=False),
+            ],
+            experimental=SupertokensExperimentalConfig(
+                plugins=[plugin],
+            ),
+        )
+
+        st_instance = Supertokens.get_instance()
+
+        res = await st_instance.middleware(
+            request=DummyRequest(),
+            response=DummyResponse(content={}),
+            user_context={},
+        )
+
+        assert res == expected_output
