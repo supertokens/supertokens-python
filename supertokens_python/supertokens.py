@@ -334,15 +334,15 @@ class Supertokens:
         override_maps: List[OverrideMap] = []
 
         if experimental is not None and experimental.plugins is not None:
-            (
-                processed_public_config,
-                self.plugin_list,
-                self.plugin_route_handlers,
-                override_maps,
-            ) = load_plugins(
+            load_plugins_result = load_plugins(
                 plugins=experimental.plugins,
                 public_config=input_public_config,
             )
+
+            override_maps = load_plugins_result.override_maps
+            processed_public_config = load_plugins_result.public_config
+            self.plugin_list = load_plugins_result.processed_plugins
+            self.plugin_route_handlers = load_plugins_result.plugin_route_handlers
 
         config = SupertokensInputConfig.from_public_config(
             config=processed_public_config,
@@ -716,15 +716,13 @@ class Supertokens:
                     check_database=verify_session_options.check_database,
                     override_global_claim_validators=verify_session_options.override_global_claim_validators,
                 )
-                handler_from_apis.handler(
-                    request=request,
-                    response=response,
-                    session=session,
-                    user_context=user_context,
-                )
 
-                # TODO: Why do we do this?
-                return None
+            return handler_from_apis.handler(
+                request=request,
+                response=response,
+                session=session,
+                user_context=user_context,
+            )
 
         if not path.startswith(Supertokens.get_instance().app_info.api_base_path):
             log_debug_message(
