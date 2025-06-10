@@ -135,7 +135,7 @@ jobs:
                 \"version\":\"${{ needs.setup.outputs.setupVersion }}\",
                 \"name\": \"python\",
                 \"testPassed\": true
-              }"`
+              }"
 
   release:
     runs-on: ubuntu-latest
