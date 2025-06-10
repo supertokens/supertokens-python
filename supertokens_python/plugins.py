@@ -6,6 +6,7 @@
 #   - OverrideConfig
 
 from collections import deque
+from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -15,7 +16,6 @@ from typing import (
     Literal,
     Optional,
     Set,
-    Tuple,
     TypeVar,
     Union,
     cast,
@@ -150,7 +150,7 @@ class VerifySessionOptions(CamelCaseBaseModel):
     ] = None
 
 
-class PluginRouteHandler:
+class PluginRouteHandler(CamelCaseBaseModel):
     method: str
     path: str
     handler: PluginRouteHandlerHandlerFunction
@@ -379,14 +379,18 @@ def apply_plugins(recipe_id: str, config: T, plugins: List[OverrideMap]) -> T:
     return config
 
 
+# TODO: Figure out import cycles and convert to a Pydantic BaseModel
+@dataclass
+class LoadPluginsResponse:
+    public_config: "SupertokensPublicConfig"
+    processed_plugins: List[SuperTokensPublicPlugin]
+    plugin_route_handlers: List[PluginRouteHandler]
+    override_maps: List[OverrideMap]
+
+
 def load_plugins(
     plugins: List[SuperTokensPlugin], public_config: "SupertokensPublicConfig"
-) -> Tuple[
-    "SupertokensPublicConfig",
-    List[SuperTokensPublicPlugin],
-    List[PluginRouteHandler],
-    List[OverrideMap],
-]:
+) -> LoadPluginsResponse:
     input_plugin_seen_list: Set[str] = set()
     final_plugin_list: List[SuperTokensPlugin] = []
     plugin_route_handlers: List[PluginRouteHandler] = []
@@ -442,11 +446,6 @@ def load_plugins(
             plugin_route_handlers.extend(handlers)
 
         if plugin.init is not None:
-            plugin.init(
-                config=public_config,
-                all_plugins=processed_plugin_list,
-                sdk_version=VERSION,
-            )
 
             def callback_factory():
                 # This has to be part of the factory to ensure we pick up the correct plugin
@@ -471,4 +470,9 @@ def load_plugins(
         if plugin.override_map is not None
     ]
 
-    return public_config, processed_plugin_list, plugin_route_handlers, override_maps
+    return LoadPluginsResponse(
+        public_config=public_config,
+        processed_plugins=processed_plugin_list,
+        plugin_route_handlers=plugin_route_handlers,
+        override_maps=override_maps,
+    )
