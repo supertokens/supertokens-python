@@ -4,6 +4,7 @@ from typing import Any, List
 from pytest import fixture, mark, param
 from supertokens_python import (
     InputAppInfo,
+    Supertokens,
     SupertokensConfig,
     SupertokensExperimentalConfig,
     init,
@@ -261,3 +262,22 @@ def test_depdendencies(
 
 
 # TODO: Add tests for init, route handlers, config overrides
+def test_config_override():
+    plugin = plugin_factory("plugin1", override_functions=False, override_apis=False)
+
+    def config_override(cfg):
+        cfg.mode = "override"
+        return cfg
+
+    plugin.config = config_override
+
+    partial_init(
+        recipe_list=[
+            recipe_factory(override_functions=False, override_apis=False),
+        ],
+        experimental=SupertokensExperimentalConfig(
+            plugins=[plugin],
+        ),
+    )
+
+    assert Supertokens.get_instance().app_info.mode == "override"

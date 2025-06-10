@@ -15,15 +15,19 @@ from typing import (
     Literal,
     Optional,
     Set,
+    Tuple,
     TypeVar,
     Union,
+    cast,
     runtime_checkable,
 )
 
 from typing_extensions import Protocol
 
+from supertokens_python.constants import VERSION
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
+from supertokens_python.logger import log_debug_message
 
 # from supertokens_python.recipe.accountlinking.types import AccountLinkingConfig
 # from supertokens_python.recipe.dashboard.utils import DashboardConfig
@@ -47,6 +51,7 @@ if TYPE_CHECKING:
 # from supertokens_python.recipe.totp.types import TOTPConfig
 # from supertokens_python.recipe.usermetadata.utils import UserMetadataConfig
 # from supertokens_python.recipe.userroles.utils import UserRolesConfig
+from supertokens_python.post_init_callbacks import PostSTInitCallbacks
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.types.base import UserContext
 from supertokens_python.types.response import CamelCaseBaseModel
@@ -372,3 +377,98 @@ def apply_plugins(recipe_id: str, config: T, plugins: List[OverrideMap]) -> T:
         config.override.apis = api_override
 
     return config
+
+
+def load_plugins(
+    plugins: List[SuperTokensPlugin], public_config: "SupertokensPublicConfig"
+) -> Tuple[
+    "SupertokensPublicConfig",
+    List[SuperTokensPublicPlugin],
+    List[PluginRouteHandler],
+    List[OverrideMap],
+]:
+    input_plugin_seen_list: Set[str] = set()
+    final_plugin_list: List[SuperTokensPlugin] = []
+    plugin_route_handlers: List[PluginRouteHandler] = []
+
+    for plugin in plugins:
+        if plugin.id in input_plugin_seen_list:
+            log_debug_message(f"Skipping {plugin.id=} as it has already been added")
+            continue
+
+        if isinstance(plugin.compatible_sdk_versions, list):
+            version_constraints = plugin.compatible_sdk_versions
+        else:
+            version_constraints = [plugin.compatible_sdk_versions]
+
+        if VERSION not in version_constraints:
+            # TODO: Better checks
+            raise Exception("Plugin version mismatch")
+
+        # TODO: Overkill, but could topologically sort the plugins based on dependencies
+        dependencies = plugin.get_dependencies(
+            public_config=public_config,
+            plugins_above=final_plugin_list,
+            sdk_version=VERSION,
+        )
+        final_plugin_list.extend(dependencies)
+        input_plugin_seen_list.update({dep.id for dep in dependencies})
+
+    processed_plugin_list = [
+        SuperTokensPublicPlugin.from_plugin(plugin) for plugin in final_plugin_list
+    ]
+
+    for plugin_idx, plugin in enumerate(final_plugin_list):
+        # Override the public supertokens config using the config override defined in the plugin
+        if plugin.config is not None:
+            public_config = plugin.config(public_config)
+
+        if plugin.route_handlers is not None:
+            handlers: List[PluginRouteHandler] = []
+
+            if callable(plugin.route_handlers):
+                handler_result = plugin.route_handlers(
+                    config=public_config,
+                    all_plugins=processed_plugin_list,
+                    sdk_version=VERSION,
+                )
+                if isinstance(handler_result, PluginRouteHandlerFunctionErrorResponse):
+                    raise Exception(handler_result.message)
+
+                handlers = handler_result.route_handlers
+            else:
+                handlers = plugin.route_handlers
+
+            plugin_route_handlers.extend(handlers)
+
+        if plugin.init is not None:
+            plugin.init(
+                config=public_config,
+                all_plugins=processed_plugin_list,
+                sdk_version=VERSION,
+            )
+
+            def callback_factory():
+                # This has to be part of the factory to ensure we pick up the correct plugin
+                init_fn = cast(SuperTokensPluginInit, plugin.init)
+                idx = plugin_idx
+
+                def callback():
+                    init_fn(
+                        config=public_config,
+                        all_plugins=processed_plugin_list,
+                        sdk_version=VERSION,
+                    )
+                    processed_plugin_list[idx].initialized = True
+
+                return callback
+
+            PostSTInitCallbacks.add_post_init_callback(callback_factory())
+
+    override_maps = [
+        plugin.override_map
+        for plugin in final_plugin_list
+        if plugin.override_map is not None
+    ]
+
+    return public_config, processed_plugin_list, plugin_route_handlers, override_maps

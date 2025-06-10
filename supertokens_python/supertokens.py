@@ -27,7 +27,6 @@ from typing import (
     Set,
     Tuple,
     Union,
-    cast,
 )
 
 from typing_extensions import Literal
@@ -41,11 +40,11 @@ from supertokens_python.plugins import (
     OverrideMap,
     PluginRouteHandler,
     SuperTokensPlugin,
-    SuperTokensPluginInit,
     SuperTokensPublicPlugin,
+    load_plugins,
 )
 
-from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT, VERSION
+from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT
 from .exceptions import SuperTokensError
 from .interfaces import (
     CreateUserIdMappingOkResult,
@@ -123,6 +122,10 @@ class SupertokensExperimentalConfig:
 
 @dataclass
 class SupertokensPublicConfig:
+    """
+    Public properties received as input to the `Supertokens.init` function.
+    """
+
     app_info: InputAppInfo
     framework: Literal["fastapi", "flask", "django"]
     supertokens_config: SupertokensConfig
@@ -133,6 +136,10 @@ class SupertokensPublicConfig:
 
 @dataclass
 class SupertokensInputConfig(SupertokensPublicConfig):
+    """
+    Various properties received as input to the `Supertokens.init` function.
+    """
+
     recipe_list: List[Callable[[AppInfo, List[OverrideMap]], RecipeModule]]
     experimental: Optional[SupertokensExperimentalConfig] = None
 
@@ -144,6 +151,24 @@ class SupertokensInputConfig(SupertokensPublicConfig):
             mode=self.mode,
             telemetry=self.telemetry,
             debug=self.debug,
+        )
+
+    @classmethod
+    def from_public_config(
+        cls,
+        config: SupertokensPublicConfig,
+        recipe_list: List[Callable[[AppInfo, List[OverrideMap]], RecipeModule]],
+        experimental: Optional[SupertokensExperimentalConfig],
+    ) -> "SupertokensInputConfig":
+        return cls(
+            app_info=config.app_info,
+            framework=config.framework,
+            supertokens_config=config.supertokens_config,
+            mode=config.mode,
+            telemetry=config.telemetry,
+            debug=config.debug,
+            recipe_list=recipe_list,
+            experimental=experimental,
         )
 
 
@@ -287,12 +312,10 @@ class Supertokens:
         debug: Optional[bool],
         experimental: Optional[SupertokensExperimentalConfig] = None,
     ):
-        from supertokens_python.plugins import PluginRouteHandlerFunctionErrorResponse
-
         if not isinstance(app_info, InputAppInfo):  # type: ignore
             raise ValueError("app_info must be an instance of InputAppInfo")
 
-        config = SupertokensInputConfig(
+        input_config = SupertokensInputConfig(
             app_info=app_info,
             framework=framework,
             supertokens_config=supertokens_config,
@@ -304,106 +327,41 @@ class Supertokens:
         )
         # TODO: Probably just want to define this directly and use it
         # Can build a input config from the final public config and the additional props
-        public_config = config.get_public_config()
+        input_public_config = input_config.get_public_config()
+        processed_public_config = input_public_config
 
         self.plugin_route_handlers = []
-
-        input_plugin_list: List[SuperTokensPlugin] = []
-        input_plugin_seen_list: Set[str] = set()
-        final_plugin_list: List[SuperTokensPlugin] = []
+        override_maps: List[OverrideMap] = []
 
         if experimental is not None and experimental.plugins is not None:
-            input_plugin_list = experimental.plugins
-
-        for plugin in input_plugin_list:
-            if plugin.id in input_plugin_seen_list:
-                log_debug_message(f"Skipping {plugin.id=} as it has already been added")
-                continue
-
-            if isinstance(plugin.compatible_sdk_versions, list):
-                version_constraints = plugin.compatible_sdk_versions
-            else:
-                version_constraints = [plugin.compatible_sdk_versions]
-
-            if VERSION not in version_constraints:
-                # TODO: Better checks
-                raise Exception("Plugin version mismatch")
-
-            # TODO: Overkill, but could topologically sort the plugins based on dependencies
-            dependencies = plugin.get_dependencies(
-                public_config=public_config,
-                plugins_above=final_plugin_list,
-                sdk_version=VERSION,
+            (
+                processed_public_config,
+                self.plugin_list,
+                self.plugin_route_handlers,
+                override_maps,
+            ) = load_plugins(
+                plugins=experimental.plugins,
+                public_config=input_public_config,
             )
-            final_plugin_list.extend(dependencies)
-            input_plugin_seen_list.update({dep.id for dep in dependencies})
 
-        self.plugin_list = [
-            SuperTokensPublicPlugin.from_plugin(plugin) for plugin in final_plugin_list
-        ]
-
-        for plugin_idx, plugin in enumerate(final_plugin_list):
-            # Override the public supertokens config using the config override defined in the plugin
-            if plugin.config is not None:
-                public_config = plugin.config(public_config)
-
-            if plugin.route_handlers is not None:
-                handlers: List[PluginRouteHandler] = []
-
-                if callable(plugin.route_handlers):
-                    handler_result = plugin.route_handlers(
-                        config=public_config,
-                        all_plugins=self.plugin_list,
-                        sdk_version=VERSION,
-                    )
-                    if isinstance(
-                        handler_result, PluginRouteHandlerFunctionErrorResponse
-                    ):
-                        raise Exception(handler_result.message)
-
-                    handlers = handler_result.route_handlers
-                else:
-                    handlers = plugin.route_handlers
-
-                self.plugin_route_handlers.extend(handlers)
-
-            if plugin.init is not None:
-                plugin.init(
-                    config=public_config,
-                    all_plugins=self.plugin_list,
-                    sdk_version=VERSION,
-                )
-
-                # TODO: Make this a factory function to avoid weird side-effects?
-                def callback_factory():
-                    # This has to be part of the factory to ensure we pick up the correct plugin
-                    init_fn = cast(SuperTokensPluginInit, plugin.init)
-                    idx = plugin_idx
-
-                    def callback():
-                        init_fn(
-                            config=public_config,
-                            all_plugins=self.plugin_list,
-                            sdk_version=VERSION,
-                        )
-                        self.plugin_list[idx].initialized = True
-
-                    return callback
-
-                PostSTInitCallbacks.add_post_init_callback(callback_factory())
+        config = SupertokensInputConfig.from_public_config(
+            config=processed_public_config,
+            recipe_list=recipe_list,
+            experimental=experimental,
+        )
 
         self.app_info = AppInfo(
-            app_info.app_name,
-            app_info.api_domain,
-            app_info.website_domain,
-            framework,
-            app_info.api_gateway_path,
-            app_info.api_base_path,
-            app_info.website_base_path,
-            mode,
-            app_info.origin,
+            config.app_info.app_name,
+            config.app_info.api_domain,
+            config.app_info.website_domain,
+            config.framework,
+            config.app_info.api_gateway_path,
+            config.app_info.api_base_path,
+            config.app_info.website_base_path,
+            config.mode,
+            config.app_info.origin,
         )
-        self.supertokens_config = supertokens_config
+        self.supertokens_config = config.supertokens_config
         if debug is True:
             enable_debug_logging()
         self._telemetry_status: str = "NONE"
@@ -411,7 +369,7 @@ class Supertokens:
             "Started SuperTokens with debug logging (supertokens.init called)"
         )
         log_debug_message("app_info: %s", self.app_info.toJSON())
-        log_debug_message("framework: %s", framework)
+        log_debug_message("framework: %s", config.framework)
         hosts = list(
             map(
                 lambda h: Host(
@@ -431,12 +389,6 @@ class Supertokens:
             raise_general_exception(
                 "Please provide at least one recipe to the supertokens.init function call"
             )
-
-        override_maps = [
-            plugin.override_map
-            for plugin in final_plugin_list
-            if plugin.override_map is not None
-        ]
 
         multitenancy_found = False
         totp_found = False
@@ -507,8 +459,8 @@ class Supertokens:
             self.recipe_modules.append(OAuth2ProviderRecipe.init()(self.app_info))
 
         self.telemetry = (
-            telemetry
-            if telemetry is not None
+            config.telemetry
+            if config.telemetry is not None
             else (environ.get("TEST_MODE") != "testing")
         )
 
