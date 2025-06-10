@@ -39,13 +39,6 @@ from supertokens_python.logger import log_debug_message
 # from supertokens_python.recipe.oauth2provider.utils import OAuth2ProviderConfig
 # from supertokens_python.recipe.openid.utils import OpenIdConfig
 # from supertokens_python.recipe.passwordless.utils import PasswordlessConfig
-if TYPE_CHECKING:
-    from supertokens_python.recipe.session.interfaces import (
-        SessionClaimValidator,
-        SessionContainer,
-    )
-    from supertokens_python.supertokens import SupertokensPublicConfig
-
 # from supertokens_python.recipe.session.utils import SessionConfig
 # from supertokens_python.recipe.thirdparty.utils import ThirdPartyConfig
 # from supertokens_python.recipe.totp.types import TOTPConfig
@@ -55,6 +48,13 @@ from supertokens_python.post_init_callbacks import PostSTInitCallbacks
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.types.base import UserContext
 from supertokens_python.types.response import CamelCaseBaseModel
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session.interfaces import (
+        SessionClaimValidator,
+        SessionContainer,
+    )
+    from supertokens_python.supertokens import SupertokensPublicConfig
 
 T = TypeVar("T")
 # T = TypeVar("T", bound=Union[AccountLinkingConfig, DashboardConfig, EmailPasswordConfig,
