@@ -133,8 +133,8 @@ jobs:
               -H 'api-version: 0' \
               -d "{
                 \"password\": \"${{ secrets.SUPERTOKENS_API_KEY }}\",
-                \"version\":\"$${{ needs.setup.outputs.setupVersion }}\",
+                \"version\":\"${{ needs.setup.outputs.setupVersion }}\",
                 \"name\": \"python\",
                 \"frontendDriverInterfaces\": ${{ steps.versions.outputs.fdiVersions }},
                 \"coreDriverInterfaces\": ${{ steps.versions.outputs.cdiVersions }}
-              }"`
+              }"
