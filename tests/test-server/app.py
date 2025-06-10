@@ -2,7 +2,7 @@ import inspect
 import json
 import os
 import traceback
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar
+from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, TypeVar, Union
 
 import override_logging
 from accountlinking import add_accountlinking_routes  # pylint: disable=import-error
@@ -55,6 +55,7 @@ from supertokens_python.recipe.passwordless.recipe import PasswordlessRecipe
 from supertokens_python.recipe.session import InputErrorHandlers, SessionContainer
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.recipe import SessionRecipe
+from supertokens_python.recipe.session.utils import TokenTransferMethod
 from supertokens_python.recipe.thirdparty.provider import UserFields, UserInfoMap
 from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
 from supertokens_python.recipe.totp.recipe import TOTPRecipe
@@ -298,6 +299,13 @@ def init_st(config: Dict[str, Any]):
                 )
                 return response
 
+            def get_token_transfer_method(
+                _: BaseRequest,
+                __: bool,
+                ___: Dict[str, Any],
+            ) -> Union[TokenTransferMethod, Literal["any"]]:
+                return recipe_config_json.get("getTokenTransferMethod", "any")
+
             recipe_config_json = json.loads(recipe_config.get("config", "{}"))
             recipe_list.append(
                 session.init(
@@ -318,6 +326,7 @@ def init_st(config: Dict[str, Any]):
                     use_dynamic_access_token_signing_key=recipe_config_json.get(
                         "useDynamicAccessTokenSigningKey"
                     ),
+                    get_token_transfer_method=get_token_transfer_method,
                     override=session.InputOverrideConfig(
                         apis=override_builder_with_logging(
                             "Session.override.apis",

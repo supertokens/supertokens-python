@@ -59,6 +59,40 @@ def add_session_routes(app: Flask):
 
         return jsonify(convert_session_to_json(session_container))
 
+    @app.route("/test/session/createnewsession", methods=["POST"])  # type: ignore
+    def create_new_session():  # type: ignore
+        data = request.json
+        if data is None:
+            return jsonify({"status": "MISSING_DATA_ERROR"})
+
+        tenant_id = data.get("tenantId", "public")
+        from supertokens_python import convert_to_recipe_user_id
+
+        fdi_version = request.headers.get("fdi-version")
+        assert fdi_version is not None
+        if get_max_version("1.17", fdi_version) == "1.17" or (
+            get_max_version("2.0", fdi_version) == fdi_version
+            and get_max_version("3.0", fdi_version) != fdi_version
+        ):
+            # fdi_version <= "1.17" or (fdi_version >= "2.0" and fdi_version < "3.0")
+            recipe_user_id = convert_to_recipe_user_id(data["userId"])
+        else:
+            recipe_user_id = convert_to_recipe_user_id(data["recipeUserId"])
+        access_token_payload = data.get("accessTokenPayload", {})
+        session_data_in_database = data.get("sessionDataInDatabase", {})
+        user_context = data.get("userContext", {})
+
+        session_container = session.create_new_session(
+            request,
+            tenant_id,
+            recipe_user_id,
+            access_token_payload,
+            session_data_in_database,
+            user_context,
+        )
+
+        return jsonify(convert_session_to_json(session_container))
+
     @app.route("/test/session/getallsessionhandlesforuser", methods=["POST"])  # type: ignore
     def get_all_session_handles_for_user_api():  # type: ignore
         data = request.json
