@@ -23,6 +23,7 @@ on:
 permissions:
   contents: write
 
+
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -44,7 +45,7 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
           fetch-tags: true
-          token: ${{ secrets.repo_PAT }}
+          token: ${{ secrets.ALL_REPO_PAT }}
 
       - name: Populate variables
         id: versions
@@ -140,6 +141,11 @@ jobs:
   release:
     runs-on: ubuntu-latest
 
+    # This job marks the version as a release version and creates tags.
+    # Binding this to the publish env to require approvals before run.
+    # Further jobs are follow-ups to the release and are not required to be approved once release is approved.
+    environment: publish
+
     needs:
       - setup
       - mark-as-success
@@ -149,7 +155,7 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
           fetch-tags: true
-          token: ${{ secrets.repo_PAT }}
+          token: ${{ secrets.ALL_REPO_PAT }}
 
       - name: Setup git
         run: |
@@ -230,7 +236,7 @@ jobs:
           # Need a complete fetch to make the master merge work
           fetch-depth: 0
           fetch-tags: true
-          token: ${{ secrets.repo_PAT }}
+          token: ${{ secrets.ALL_REPO_PAT }}
 
       - name: Setup git
         run: |
@@ -282,7 +288,8 @@ jobs:
       - name: Trigger the backend website CI
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.BACKEND_WEBSITE_TOKEN }}
+          # NOTE: We should use a better scoped PAT here.
+          github-token: ${{ secrets.ALL_REPO_PAT }}
           script: |
             github.rest.actions.createWorkflowDispatch({
                 owner: 'supertokens',
@@ -315,4 +322,4 @@ jobs:
           # make dev-install
           # pip install setuptools wheels twine
           # python setup.py sdist bdist_wheel
-          # twine upload -u ${{ secrets.RELEASE_USERNAME }} -p ${{ secrets.RELEASE_PASSWORD }} dist/*
+          # twine upload -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASSWORD }} dist/*

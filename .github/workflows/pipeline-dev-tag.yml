@@ -33,7 +33,7 @@ jobs:
           # Need a complete fetch to make the master merge check work
           fetch-depth: 0
           fetch-tags: true
-          token: ${{ secrets.repo_PAT }}
+          token: ${{ secrets.ALL_REPO_PAT }}
 
 
       - name: Setup git
