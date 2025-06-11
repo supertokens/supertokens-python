@@ -15,6 +15,7 @@ Types in `supertokens_python.types` as of 0.29
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Awaitable, Dict, List, Optional, TypeVar, Union
