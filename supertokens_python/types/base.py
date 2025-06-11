@@ -2,7 +2,7 @@
 Types in `supertokens_python.types` as of 0.29
 """
 
-# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+# Copyright (c) 2025, VRAI Labs and/or its affiliates. All rights reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
 # "License") as published by the Apache Software Foundation.
