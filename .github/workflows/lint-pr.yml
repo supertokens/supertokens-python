@@ -8,7 +8,7 @@ on:
       - edited
       - synchronize
 
-# Only one instance of this workflow will run on the same ref (PR/Branch/Tag).defaults:
+# Only one instance of this workflow will run on the same ref (PR/Branch/Tag)
 # Previous runs will be cancelled.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
