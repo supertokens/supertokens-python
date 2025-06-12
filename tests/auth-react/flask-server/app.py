@@ -1228,7 +1228,7 @@ def ping():
 
 
 @app.route("/changeEmail", methods=["POST"])  # type: ignore
-def change_email():
+async def change_email():
     body: Union[Any, None] = request.get_json()
     if body is None:
         raise Exception("Should never come here")
