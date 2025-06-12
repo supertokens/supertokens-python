@@ -67,6 +67,7 @@ from supertokens_python.recipe.thirdparty.interfaces import (
     SignInUpNotAllowed,
 )
 from supertokens_python.recipe.userroles import PermissionClaim, UserRoleClaim
+from supertokens_python.recipe.webauthn.functions import update_user_email
 from supertokens_python.types import RecipeUserId
 from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.types.base import AccountInfoInput
@@ -248,7 +249,8 @@ async def change_email(request: HttpRequest):
                 {"status": "EMAIL_CHANGE_NOT_ALLOWED_ERROR", "reason": resp.reason}
             )
         return JsonResponse(resp.to_json())
-    elif body["rid"] == "thirdparty":
+
+    if body["rid"] == "thirdparty":
         user = await get_user(user_id=body["recipeUserId"])
         assert user is not None
         login_method = next(
@@ -278,7 +280,8 @@ async def change_email(request: HttpRequest):
         return JsonResponse(
             {"status": "EMAIL_CHANGE_NOT_ALLOWED_ERROR", "reason": resp.reason}
         )
-    elif body["rid"] == "passwordless":
+
+    if body["rid"] == "passwordless":
         resp = await update_user(
             recipe_user_id=convert_to_recipe_user_id(body["recipeUserId"]),
             email=body.get("email"),
@@ -303,6 +306,14 @@ async def change_email(request: HttpRequest):
                 "reason": resp.reason,
             }
         )
+
+    if body["rid"] == "webauthn":
+        resp = await update_user_email(
+            recipe_user_id=body["recipeUserId"],
+            email=body["email"],
+        )
+
+        return JsonResponse(resp.to_json())
 
     raise Exception("Should not come here")
 

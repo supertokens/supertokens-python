@@ -538,11 +538,13 @@ class RecipeImplementation(RecipeInterface):
 
             raise Exception(f"Unknown Error: {response}")
 
+        recipe_user_id: Optional[RecipeUserId] = None
+        if response.get("recipeUserId") is not None:
+            recipe_user_id = RecipeUserId(response["recipeUserId"])
+
         return GetUserFromRecoverAccountTokenResponse(
             user=User.from_json(response["user"]),
-            recipe_user_id=RecipeUserId(response["recipeUserId"])
-            if "recipeUserId" in response
-            else None,
+            recipe_user_id=recipe_user_id,
         )
 
     async def remove_credential(

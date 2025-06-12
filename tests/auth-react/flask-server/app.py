@@ -174,6 +174,7 @@ from supertokens_python.recipe.userroles.syncio import (
     add_role_to_user,
     create_new_role_or_add_permissions,
 )
+from supertokens_python.recipe.webauthn.functions import update_user_email
 from supertokens_python.recipe.webauthn.interfaces.api import (
     TypeWebauthnEmailDeliveryInput,
 )
@@ -1252,7 +1253,8 @@ def change_email():
             )
         # password policy violation error
         return jsonify(resp.to_json())
-    elif body["rid"] == "thirdparty":
+
+    if body["rid"] == "thirdparty":
         user = get_user(user_id=body["recipeUserId"])
         assert user is not None
         login_method = next(
@@ -1281,7 +1283,8 @@ def change_email():
         return jsonify(
             {"status": "EMAIL_CHANGE_NOT_ALLOWED_ERROR", "reason": resp.reason}
         )
-    elif body["rid"] == "passwordless":
+
+    if body["rid"] == "passwordless":
         resp = update_user(
             recipe_user_id=convert_to_recipe_user_id(body["recipeUserId"]),
             email=body.get("email"),
@@ -1303,6 +1306,14 @@ def change_email():
         return jsonify(
             {"status": "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR", "reason": resp.reason}
         )
+
+    if body["rid"] == "webauthn":
+        resp = await update_user_email(
+            recipe_user_id=body["recipeUserId"],
+            email=body["email"],
+        )
+
+        return jsonify(resp.to_json())
 
     raise Exception("Should not come here")
 
