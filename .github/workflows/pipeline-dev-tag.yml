@@ -68,7 +68,7 @@ jobs:
 
       - name: Check tag and branch correctness
         run: |
-          if [[ "${{ steps.versions.outputs.setupVersion }}" != "${{ inputs.branch }}*" ]]
+          if [[ "${{ steps.versions.outputs.setupVersion }}" != ${{ inputs.branch }}* ]]
           then
             echo "Adding tag to wrong branch"
             exit 1
