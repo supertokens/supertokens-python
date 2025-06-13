@@ -301,7 +301,7 @@ jobs:
                   "artifact-name": `${{ needs.setup.outputs.artifactName }}`,
                   "version-folder": `${{ needs.setup.outputs.versionFolder }}`,
                   "run-id": `${{ github.run_id }}`,
-                  "stage":  "preview",
+                  "stage":  "production",
                 }
               })
 
