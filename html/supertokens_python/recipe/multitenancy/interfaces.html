@@ -44,7 +44,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
-from supertokens_python.types import APIResponse, GeneralErrorResponse, RecipeUserId
+from supertokens_python.types import RecipeUserId
+from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -457,7 +458,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.APIInterface.login_methods_get"><code class="name flex">
-<span>async def <span class="ident">login_methods_get</span></span>(<span>self, tenant_id: str, client_type: Optional[str], api_options: <a title="supertokens_python.recipe.multitenancy.interfaces.APIOptions" href="#supertokens_python.recipe.multitenancy.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult">LoginMethodsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">login_methods_get</span></span>(<span>self, tenant_id: str, client_type: Optional[str], api_options: <a title="supertokens_python.recipe.multitenancy.interfaces.APIOptions" href="#supertokens_python.recipe.multitenancy.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult">LoginMethodsGetOkResult</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -894,7 +895,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Methods</h3>

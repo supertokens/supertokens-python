@@ -476,7 +476,24 @@ def get_normalised_should_try_linking_with_session_user_flag(
 ) -&gt; Optional[bool]:
     if has_greater_than_equal_to_fdi(req, &#34;3.1&#34;):
         return body.get(&#34;shouldTryLinkingWithSessionUser&#34;, False)
-    return None</code></pre>
+    return None
+
+
+def get_error_response_reason_from_map(
+    response_status: str,
+    error_code_map: Union[
+        Dict[str, Dict[str, str]],
+        Dict[str, str],
+        Dict[str, Union[str, Dict[str, str]]],
+    ],
+) -&gt; str:
+    reason_map_like = error_code_map[response_status]
+    if isinstance(reason_map_like, dict):
+        reason = reason_map_like[response_status]
+    else:
+        reason = reason_map_like
+
+    return reason</code></pre>
 </details>
 </section>
 <section>
@@ -524,6 +541,12 @@ def get_normalised_should_try_linking_with_session_user_flag(
 </dd>
 <dt id="supertokens_python.utils.get_backwards_compatible_user_info"><code class="name flex">
 <span>def <span class="ident">get_backwards_compatible_user_info</span></span>(<span>req: BaseRequest, user_info: User, session_container: SessionContainer, created_new_recipe_user: Union[bool, None], user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.utils.get_error_response_reason_from_map"><code class="name flex">
+<span>def <span class="ident">get_error_response_reason_from_map</span></span>(<span>response_status: str, error_code_map: Union[Dict[str, Dict[str, str]], Dict[str, str], Dict[str, Union[str, Dict[str, str]]]]) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -800,6 +823,7 @@ def get_normalised_should_try_linking_with_session_user_flag(
 <li><code><a title="supertokens_python.utils.find_max_version" href="#supertokens_python.utils.find_max_version">find_max_version</a></code></li>
 <li><code><a title="supertokens_python.utils.frontend_has_interceptor" href="#supertokens_python.utils.frontend_has_interceptor">frontend_has_interceptor</a></code></li>
 <li><code><a title="supertokens_python.utils.get_backwards_compatible_user_info" href="#supertokens_python.utils.get_backwards_compatible_user_info">get_backwards_compatible_user_info</a></code></li>
+<li><code><a title="supertokens_python.utils.get_error_response_reason_from_map" href="#supertokens_python.utils.get_error_response_reason_from_map">get_error_response_reason_from_map</a></code></li>
 <li><code><a title="supertokens_python.utils.get_filtered_list" href="#supertokens_python.utils.get_filtered_list">get_filtered_list</a></code></li>
 <li><code><a title="supertokens_python.utils.get_header" href="#supertokens_python.utils.get_header">get_header</a></code></li>
 <li><code><a title="supertokens_python.utils.get_latest_fdi_version_from_fdi_list" href="#supertokens_python.utils.get_latest_fdi_version_from_fdi_list">get_latest_fdi_version_from_fdi_list</a></code></li>

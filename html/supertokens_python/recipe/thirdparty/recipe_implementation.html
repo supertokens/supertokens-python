@@ -54,13 +54,14 @@ from supertokens_python.recipe.thirdparty.providers.config_utils import (
     find_and_create_provider_instance,
     merge_providers_from_core_and_static,
 )
-from supertokens_python.types import AccountInfo, RecipeUserId, User
+from supertokens_python.types import RecipeUserId, User
+from supertokens_python.types.base import AccountInfoInput
 
 if TYPE_CHECKING:
-    from supertokens_python.auth_utils import (
+    from supertokens_python.querier import Querier
+    from supertokens_python.types.auth_utils import (
         LinkingToSessionUserFailedError,
     )
-    from supertokens_python.querier import Querier
 
 from .interfaces import (
     EmailChangeNotAllowedError,
@@ -144,7 +145,7 @@ class RecipeImplementation(RecipeInterface):
         account_linking = AccountLinkingRecipe.get_instance()
         users = await list_users_by_account_info(
             tenant_id,
-            AccountInfo(
+            AccountInfoInput(
                 third_party=ThirdPartyInfo(
                     third_party_id=third_party_id,
                     third_party_user_id=third_party_user_id,
@@ -341,7 +342,7 @@ inheritance.</p></div>
         account_linking = AccountLinkingRecipe.get_instance()
         users = await list_users_by_account_info(
             tenant_id,
-            AccountInfo(
+            AccountInfoInput(
                 third_party=ThirdPartyInfo(
                     third_party_id=third_party_id,
                     third_party_user_id=third_party_user_id,

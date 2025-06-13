@@ -45,7 +45,6 @@ from typing import TYPE_CHECKING, Any, Dict, Union
 
 from supertokens_python.asyncio import get_user
 from supertokens_python.auth_utils import (
-    LinkingToSessionUserFailedError,
     link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info,
 )
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -53,6 +52,7 @@ from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.types import RecipeUserId
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 
 from ...types import User
 from .constants import FORM_FIELD_PASSWORD_ID
@@ -659,13 +659,13 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.recipe_implementation.RecipeImplementation.sign_in"><code class="name flex">
-<span>async def <span class="ident">sign_in</span></span>(<span>self, email: str, password: str, tenant_id: str, session: Union[SessionContainer, None], should_try_linking_with_session_user: Union[bool, None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignInOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInOkResult">SignInOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.WrongCredentialsError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.WrongCredentialsError">WrongCredentialsError</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="../../auth_utils.html#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
+<span>async def <span class="ident">sign_in</span></span>(<span>self, email: str, password: str, tenant_id: str, session: Union[SessionContainer, None], should_try_linking_with_session_user: Union[bool, None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignInOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInOkResult">SignInOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.WrongCredentialsError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.WrongCredentialsError">WrongCredentialsError</a>, <a title="supertokens_python.types.auth_utils.LinkingToSessionUserFailedError" href="../../types/auth_utils.html#supertokens_python.types.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.recipe_implementation.RecipeImplementation.sign_up"><code class="name flex">
-<span>async def <span class="ident">sign_up</span></span>(<span>self, email: str, password: str, tenant_id: str, session: Union[SessionContainer, None], should_try_linking_with_session_user: Union[bool, None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignUpOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpOkResult">SignUpOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.EmailAlreadyExistsError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.EmailAlreadyExistsError">EmailAlreadyExistsError</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="../../auth_utils.html#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
+<span>async def <span class="ident">sign_up</span></span>(<span>self, email: str, password: str, tenant_id: str, session: Union[SessionContainer, None], should_try_linking_with_session_user: Union[bool, None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignUpOkResult" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpOkResult">SignUpOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.EmailAlreadyExistsError" href="interfaces.html#supertokens_python.recipe.emailpassword.interfaces.EmailAlreadyExistsError">EmailAlreadyExistsError</a>, <a title="supertokens_python.types.auth_utils.LinkingToSessionUserFailedError" href="../../types/auth_utils.html#supertokens_python.types.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

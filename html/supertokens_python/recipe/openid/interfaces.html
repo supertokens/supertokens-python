@@ -48,7 +48,7 @@ from supertokens_python.recipe.jwt.interfaces import (
     CreateJwtResultUnsupportedAlgorithm,
     GetJWKSResult,
 )
-from supertokens_python.types import APIResponse, GeneralErrorResponse
+from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from .utils import OpenIdConfig
 
@@ -233,7 +233,7 @@ class APIInterface:
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.openid.interfaces.APIInterface.open_id_discovery_configuration_get"><code class="name flex">
-<span>async def <span class="ident">open_id_discovery_configuration_get</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.openid.interfaces.APIOptions" href="#supertokens_python.recipe.openid.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse" href="#supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse">OpenIdDiscoveryConfigurationGetResponse</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">open_id_discovery_configuration_get</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.openid.interfaces.APIOptions" href="#supertokens_python.recipe.openid.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse" href="#supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse">OpenIdDiscoveryConfigurationGetResponse</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -390,7 +390,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Class variables</h3>

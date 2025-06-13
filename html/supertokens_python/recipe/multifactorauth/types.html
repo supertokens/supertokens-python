@@ -94,6 +94,7 @@ class FactorIds:
     LINK_PHONE: Literal[&#34;link-phone&#34;] = &#34;link-phone&#34;
     THIRDPARTY: Literal[&#34;thirdparty&#34;] = &#34;thirdparty&#34;
     TOTP: Literal[&#34;totp&#34;] = &#34;totp&#34;
+    WEBAUTHN: Literal[&#34;webauthn&#34;] = &#34;webauthn&#34;
 
 
 class FactorIdsAndType:
@@ -201,35 +202,40 @@ class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
     LINK_EMAIL: Literal[&#34;link-email&#34;] = &#34;link-email&#34;
     LINK_PHONE: Literal[&#34;link-phone&#34;] = &#34;link-phone&#34;
     THIRDPARTY: Literal[&#34;thirdparty&#34;] = &#34;thirdparty&#34;
-    TOTP: Literal[&#34;totp&#34;] = &#34;totp&#34;</code></pre>
+    TOTP: Literal[&#34;totp&#34;] = &#34;totp&#34;
+    WEBAUTHN: Literal[&#34;webauthn&#34;] = &#34;webauthn&#34;</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.EMAILPASSWORD"><code class="name">var <span class="ident">EMAILPASSWORD</span> : typing_extensions.Literal['emailpassword']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.EMAILPASSWORD"><code class="name">var <span class="ident">EMAILPASSWORD</span> : Literal['emailpassword']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.LINK_EMAIL"><code class="name">var <span class="ident">LINK_EMAIL</span> : typing_extensions.Literal['link-email']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.LINK_EMAIL"><code class="name">var <span class="ident">LINK_EMAIL</span> : Literal['link-email']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.LINK_PHONE"><code class="name">var <span class="ident">LINK_PHONE</span> : typing_extensions.Literal['link-phone']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.LINK_PHONE"><code class="name">var <span class="ident">LINK_PHONE</span> : Literal['link-phone']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.OTP_EMAIL"><code class="name">var <span class="ident">OTP_EMAIL</span> : typing_extensions.Literal['otp-email']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.OTP_EMAIL"><code class="name">var <span class="ident">OTP_EMAIL</span> : Literal['otp-email']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.OTP_PHONE"><code class="name">var <span class="ident">OTP_PHONE</span> : typing_extensions.Literal['otp-phone']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.OTP_PHONE"><code class="name">var <span class="ident">OTP_PHONE</span> : Literal['otp-phone']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.THIRDPARTY"><code class="name">var <span class="ident">THIRDPARTY</span> : typing_extensions.Literal['thirdparty']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.THIRDPARTY"><code class="name">var <span class="ident">THIRDPARTY</span> : Literal['thirdparty']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.TOTP"><code class="name">var <span class="ident">TOTP</span> : typing_extensions.Literal['totp']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.TOTP"><code class="name">var <span class="ident">TOTP</span> : Literal['totp']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.WEBAUTHN"><code class="name">var <span class="ident">WEBAUTHN</span> : Literal['webauthn']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -317,7 +323,7 @@ class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorOkResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorOkResult.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -337,7 +343,7 @@ class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorUnknownSessionRecipeUserIdResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['UNKNOWN_SESSION_RECIPE_USER_ID']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorUnknownSessionRecipeUserIdResult.status"><code class="name">var <span class="ident">status</span> : Literal['UNKNOWN_SESSION_RECIPE_USER_ID']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -405,7 +411,7 @@ class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsOkResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsOkResult.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -425,7 +431,7 @@ class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['UNKNOWN_SESSION_RECIPE_USER_ID']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult.status"><code class="name">var <span class="ident">status</span> : Literal['UNKNOWN_SESSION_RECIPE_USER_ID']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -527,6 +533,7 @@ class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
 <li><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds.OTP_PHONE" href="#supertokens_python.recipe.multifactorauth.types.FactorIds.OTP_PHONE">OTP_PHONE</a></code></li>
 <li><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds.THIRDPARTY" href="#supertokens_python.recipe.multifactorauth.types.FactorIds.THIRDPARTY">THIRDPARTY</a></code></li>
 <li><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds.TOTP" href="#supertokens_python.recipe.multifactorauth.types.FactorIds.TOTP">TOTP</a></code></li>
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds.WEBAUTHN" href="#supertokens_python.recipe.multifactorauth.types.FactorIds.WEBAUTHN">WEBAUTHN</a></code></li>
 </ul>
 </li>
 <li>

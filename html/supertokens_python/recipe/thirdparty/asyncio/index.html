@@ -42,7 +42,6 @@
 
 from typing import Any, Dict, Optional, Union
 
-from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.thirdparty.interfaces import (
     EmailChangeNotAllowedError,
@@ -50,6 +49,7 @@ from supertokens_python.recipe.thirdparty.interfaces import (
     SignInUpNotAllowed,
 )
 from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 
 
 async def manually_create_or_update_user(
@@ -107,7 +107,7 @@ async def get_provider(
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.asyncio.manually_create_or_update_user"><code class="name flex">
-<span>async def <span class="ident">manually_create_or_update_user</span></span>(<span>tenant_id: str, third_party_id: str, third_party_user_id: str, email: str, is_verified: bool, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.ManuallyCreateOrUpdateUserOkResult" href="../interfaces.html#supertokens_python.recipe.thirdparty.interfaces.ManuallyCreateOrUpdateUserOkResult">ManuallyCreateOrUpdateUserOkResult</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="../../../auth_utils.html#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed" href="../interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed">SignInUpNotAllowed</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.EmailChangeNotAllowedError" href="../interfaces.html#supertokens_python.recipe.thirdparty.interfaces.EmailChangeNotAllowedError">EmailChangeNotAllowedError</a>]</span>
+<span>async def <span class="ident">manually_create_or_update_user</span></span>(<span>tenant_id: str, third_party_id: str, third_party_user_id: str, email: str, is_verified: bool, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.ManuallyCreateOrUpdateUserOkResult" href="../interfaces.html#supertokens_python.recipe.thirdparty.interfaces.ManuallyCreateOrUpdateUserOkResult">ManuallyCreateOrUpdateUserOkResult</a>, <a title="supertokens_python.types.auth_utils.LinkingToSessionUserFailedError" href="../../../types/auth_utils.html#supertokens_python.types.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed" href="../interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed">SignInUpNotAllowed</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.EmailChangeNotAllowedError" href="../interfaces.html#supertokens_python.recipe.thirdparty.interfaces.EmailChangeNotAllowedError">EmailChangeNotAllowedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

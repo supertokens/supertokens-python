@@ -95,11 +95,12 @@ from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.exceptions import UnauthorisedError
 from supertokens_python.types import (
     AccountInfo,
-    GeneralErrorResponse,
     LoginMethod,
     RecipeUserId,
     User,
 )
+from supertokens_python.types.base import AccountInfoInput
+from supertokens_python.types.response import GeneralErrorResponse
 
 from ...emailverification import EmailVerificationRecipe
 from ...emailverification.interfaces import CreateEmailVerificationTokenOkResult
@@ -117,7 +118,7 @@ class PasswordlessUserResult:
 async def get_passwordless_user_by_account_info(
     tenant_id: str,
     user_context: Dict[str, Any],
-    account_info: AccountInfo,
+    account_info: AccountInfoInput,
 ) -&gt; Optional[PasswordlessUserResult]:
     existing_users = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
         tenant_id=tenant_id,
@@ -188,7 +189,7 @@ class APIImplementation(APIInterface):
             },
         }
 
-        account_info = AccountInfo(
+        account_info = AccountInfoInput(
             email=email,
             phone_number=phone_number,
         )
@@ -385,7 +386,7 @@ class APIImplementation(APIInterface):
         user_with_matching_login_method = await get_passwordless_user_by_account_info(
             tenant_id=tenant_id,
             user_context=user_context,
-            account_info=AccountInfo(
+            account_info=AccountInfoInput(
                 email=device_info.email,
                 phone_number=device_info.phone_number,
             ),
@@ -790,7 +791,7 @@ class APIImplementation(APIInterface):
     ) -&gt; Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         users = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=AccountInfo(email=email),
+            account_info=AccountInfoInput(email=email),
             do_union_of_account_info=False,
             user_context=user_context,
         )
@@ -813,7 +814,7 @@ class APIImplementation(APIInterface):
     ) -&gt; Union[PhoneNumberExistsGetOkResult, GeneralErrorResponse]:
         users = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=AccountInfo(phone_number=phone_number),
+            account_info=AccountInfoInput(phone_number=phone_number),
             do_union_of_account_info=False,
             user_context=user_context,
         )
@@ -828,7 +829,7 @@ class APIImplementation(APIInterface):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.api.implementation.get_passwordless_user_by_account_info"><code class="name flex">
-<span>async def <span class="ident">get_passwordless_user_by_account_info</span></span>(<span>tenant_id: str, user_context: Dict[str, Any], account_info: <a title="supertokens_python.types.AccountInfo" href="../../../types.html#supertokens_python.types.AccountInfo">AccountInfo</a>) ‑> Optional[<a title="supertokens_python.recipe.passwordless.api.implementation.PasswordlessUserResult" href="#supertokens_python.recipe.passwordless.api.implementation.PasswordlessUserResult">PasswordlessUserResult</a>]</span>
+<span>async def <span class="ident">get_passwordless_user_by_account_info</span></span>(<span>tenant_id: str, user_context: Dict[str, Any], account_info: <a title="supertokens_python.types.base.AccountInfoInput" href="../../../types/base.html#supertokens_python.types.base.AccountInfoInput">AccountInfoInput</a>) ‑> Optional[<a title="supertokens_python.recipe.passwordless.api.implementation.PasswordlessUserResult" href="#supertokens_python.recipe.passwordless.api.implementation.PasswordlessUserResult">PasswordlessUserResult</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -867,7 +868,7 @@ class APIImplementation(APIInterface):
             },
         }
 
-        account_info = AccountInfo(
+        account_info = AccountInfoInput(
             email=email,
             phone_number=phone_number,
         )
@@ -1064,7 +1065,7 @@ class APIImplementation(APIInterface):
         user_with_matching_login_method = await get_passwordless_user_by_account_info(
             tenant_id=tenant_id,
             user_context=user_context,
-            account_info=AccountInfo(
+            account_info=AccountInfoInput(
                 email=device_info.email,
                 phone_number=device_info.phone_number,
             ),
@@ -1469,7 +1470,7 @@ class APIImplementation(APIInterface):
     ) -&gt; Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         users = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=AccountInfo(email=email),
+            account_info=AccountInfoInput(email=email),
             do_union_of_account_info=False,
             user_context=user_context,
         )
@@ -1492,7 +1493,7 @@ class APIImplementation(APIInterface):
     ) -&gt; Union[PhoneNumberExistsGetOkResult, GeneralErrorResponse]:
         users = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=AccountInfo(phone_number=phone_number),
+            account_info=AccountInfoInput(phone_number=phone_number),
             do_union_of_account_info=False,
             user_context=user_context,
         )
@@ -1505,31 +1506,31 @@ class APIImplementation(APIInterface):
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.api.implementation.APIImplementation.consume_code_post"><code class="name flex">
-<span>async def <span class="ident">consume_code_post</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Optional[str], device_id: Optional[str], link_code: Optional[str], session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], should_try_linking_with_session_user: Optional[bool], tenant_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult">ConsumeCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError">ConsumeCodePostRestartFlowError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError">ConsumeCodePostIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError">ConsumeCodePostExpiredUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.SignInUpPostNotAllowedResponse" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.SignInUpPostNotAllowedResponse">SignInUpPostNotAllowedResponse</a>]</span>
+<span>async def <span class="ident">consume_code_post</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Optional[str], device_id: Optional[str], link_code: Optional[str], session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], should_try_linking_with_session_user: Optional[bool], tenant_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult">ConsumeCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError">ConsumeCodePostRestartFlowError</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError">ConsumeCodePostIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError">ConsumeCodePostExpiredUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.SignInUpPostNotAllowedResponse" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.SignInUpPostNotAllowedResponse">SignInUpPostNotAllowedResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.api.implementation.APIImplementation.create_code_post"><code class="name flex">
-<span>async def <span class="ident">create_code_post</span></span>(<span>self, email: Optional[str], phone_number: Optional[str], session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], should_try_linking_with_session_user: Optional[bool], tenant_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult">CreateCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.SignInUpPostNotAllowedResponse" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.SignInUpPostNotAllowedResponse">SignInUpPostNotAllowedResponse</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">create_code_post</span></span>(<span>self, email: Optional[str], phone_number: Optional[str], session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], should_try_linking_with_session_user: Optional[bool], tenant_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult">CreateCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.SignInUpPostNotAllowedResponse" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.SignInUpPostNotAllowedResponse">SignInUpPostNotAllowedResponse</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.api.implementation.APIImplementation.email_exists_get"><code class="name flex">
-<span>async def <span class="ident">email_exists_get</span></span>(<span>self, email: str, tenant_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">email_exists_get</span></span>(<span>self, email: str, tenant_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.api.implementation.APIImplementation.phone_number_exists_get"><code class="name flex">
-<span>async def <span class="ident">phone_number_exists_get</span></span>(<span>self, phone_number: str, tenant_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult">PhoneNumberExistsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">phone_number_exists_get</span></span>(<span>self, phone_number: str, tenant_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult">PhoneNumberExistsGetOkResult</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.api.implementation.APIImplementation.resend_code_post"><code class="name flex">
-<span>async def <span class="ident">resend_code_post</span></span>(<span>self, device_id: str, pre_auth_session_id: str, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], should_try_linking_with_session_user: Optional[bool], tenant_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult">ResendCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError">ResendCodePostRestartFlowError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">resend_code_post</span></span>(<span>self, device_id: str, pre_auth_session_id: str, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], should_try_linking_with_session_user: Optional[bool], tenant_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult">ResendCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError">ResendCodePostRestartFlowError</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1538,7 +1539,7 @@ class APIImplementation(APIInterface):
 </dd>
 <dt id="supertokens_python.recipe.passwordless.api.implementation.PasswordlessUserResult"><code class="flex name class">
 <span>class <span class="ident">PasswordlessUserResult</span></span>
-<span>(</span><span>user: <a title="supertokens_python.types.User" href="../../../types.html#supertokens_python.types.User">User</a>, login_method: Optional[<a title="supertokens_python.types.LoginMethod" href="../../../types.html#supertokens_python.types.LoginMethod">LoginMethod</a>])</span>
+<span>(</span><span>user: <a title="supertokens_python.types.base.User" href="../../../types/base.html#supertokens_python.types.base.User">User</a>, login_method: Optional[<a title="supertokens_python.types.base.LoginMethod" href="../../../types/base.html#supertokens_python.types.base.LoginMethod">LoginMethod</a>])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1556,11 +1557,11 @@ class APIImplementation(APIInterface):
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.passwordless.api.implementation.PasswordlessUserResult.login_method"><code class="name">var <span class="ident">login_method</span> : Optional[<a title="supertokens_python.types.LoginMethod" href="../../../types.html#supertokens_python.types.LoginMethod">LoginMethod</a>]</code></dt>
+<dt id="supertokens_python.recipe.passwordless.api.implementation.PasswordlessUserResult.login_method"><code class="name">var <span class="ident">login_method</span> : Optional[<a title="supertokens_python.types.base.LoginMethod" href="../../../types/base.html#supertokens_python.types.base.LoginMethod">LoginMethod</a>]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.api.implementation.PasswordlessUserResult.user"><code class="name">var <span class="ident">user</span> : <a title="supertokens_python.types.User" href="../../../types.html#supertokens_python.types.User">User</a></code></dt>
+<dt id="supertokens_python.recipe.passwordless.api.implementation.PasswordlessUserResult.user"><code class="name">var <span class="ident">user</span> : <a title="supertokens_python.types.base.User" href="../../../types/base.html#supertokens_python.types.base.User">User</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>

@@ -50,7 +50,7 @@ from supertokens_python.recipe.multitenancy.interfaces import (
     LoginMethodsGetOkResult,
     LoginMethodThirdParty,
 )
-from supertokens_python.types import GeneralErrorResponse
+from supertokens_python.types.response import GeneralErrorResponse
 
 from ..constants import DEFAULT_TENANT_ID
 from ..interfaces import APIInterface, ThirdPartyProvider
@@ -264,7 +264,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.multitenancy.api.implementation.APIImplementation.login_methods_get"><code class="name flex">
-<span>async def <span class="ident">login_methods_get</span></span>(<span>self, tenant_id: str, client_type: Optional[str], api_options: <a title="supertokens_python.recipe.multitenancy.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.multitenancy.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult" href="../interfaces.html#supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult">LoginMethodsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">login_methods_get</span></span>(<span>self, tenant_id: str, client_type: Optional[str], api_options: <a title="supertokens_python.recipe.multitenancy.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.multitenancy.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult" href="../interfaces.html#supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult">LoginMethodsGetOkResult</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

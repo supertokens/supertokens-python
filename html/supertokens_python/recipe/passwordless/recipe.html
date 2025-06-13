@@ -666,7 +666,7 @@ class PasswordlessRecipe(RecipeModule):
 <dl>
 <dt id="supertokens_python.recipe.passwordless.recipe.PasswordlessRecipe"><code class="flex name class">
 <span>class <span class="ident">PasswordlessRecipe</span></span>
-<span>(</span><span>recipe_id: str, app_info: AppInfo, contact_config: ContactConfig, flow_type: "Literal[('USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK')]", ingredients: PasswordlessIngredients, override: Union[OverrideConfig, None] = None, get_custom_user_input_code: Union[Callable[[str, Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None)</span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, contact_config: ContactConfig, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", ingredients: PasswordlessIngredients, override: Union[OverrideConfig, None] = None, get_custom_user_input_code: Union[Callable[[str, Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -1242,7 +1242,7 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe.PasswordlessRecipe.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>contact_config: ContactConfig, flow_type: "Literal[('USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK')]", override: Union[OverrideConfig, None] = None, get_custom_user_input_code: Union[Callable[[str, Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>contact_config: ContactConfig, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", override: Union[OverrideConfig, None] = None, get_custom_user_input_code: Union[Callable[[str, Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

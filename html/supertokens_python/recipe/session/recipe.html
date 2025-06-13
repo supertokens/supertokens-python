@@ -431,7 +431,7 @@ class SessionRecipe(RecipeModule):
 <dl>
 <dt id="supertokens_python.recipe.session.recipe.SessionRecipe"><code class="flex name class">
 <span>class <span class="ident">SessionRecipe</span></span>
-<span>(</span><span>recipe_id: str, app_info: AppInfo, cookie_domain: Union[str, None] = None, older_cookie_domain: Union[str, None] = None, cookie_secure: Union[bool, None] = None, cookie_same_site: "Union[Literal[('lax', 'none', 'strict')], None]" = None, session_expired_status_code: Union[int, None] = None, anti_csrf: "Union[Literal[('VIA_TOKEN', 'VIA_CUSTOM_HEADER', 'NONE')], None]" = None, get_token_transfer_method: "Union[Callable[[BaseRequest, bool, Dict[str, Any]], Union[TokenTransferMethod, Literal['any']]], None]" = None, error_handlers: Union[InputErrorHandlers, None] = None, override: Union[InputOverrideConfig, None] = None, invalid_claim_status_code: Union[int, None] = None, use_dynamic_access_token_signing_key: Union[bool, None] = None, expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None, jwks_refresh_interval_sec: Union[int, None] = None)</span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, cookie_domain: Union[str, None] = None, older_cookie_domain: Union[str, None] = None, cookie_secure: Union[bool, None] = None, cookie_same_site: "Union[Literal['lax', 'none', 'strict'], None]" = None, session_expired_status_code: Union[int, None] = None, anti_csrf: "Union[Literal['VIA_TOKEN', 'VIA_CUSTOM_HEADER', 'NONE'], None]" = None, get_token_transfer_method: "Union[Callable[[BaseRequest, bool, Dict[str, Any]], Union[TokenTransferMethod, Literal['any']]], None]" = None, error_handlers: Union[InputErrorHandlers, None] = None, override: Union[InputOverrideConfig, None] = None, invalid_claim_status_code: Union[int, None] = None, use_dynamic_access_token_signing_key: Union[bool, None] = None, expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None, jwks_refresh_interval_sec: Union[int, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -774,10 +774,6 @@ inheritance.</p></div>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.session.recipe.SessionRecipe.get_tenant_id"><code class="name">var <span class="ident">get_tenant_id</span> : Optional[Callable[[str, Dict[str, Any]], Awaitable[str]]]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt id="supertokens_python.recipe.session.recipe.SessionRecipe.recipe_id"><code class="name">var <span class="ident">recipe_id</span></code></dt>
 <dd>
 <div class="desc"></div>
@@ -792,7 +788,7 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe.SessionRecipe.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>cookie_domain: Union[str, None] = None, older_cookie_domain: Union[str, None] = None, cookie_secure: Union[bool, None] = None, cookie_same_site: "Union[Literal[('lax', 'none', 'strict')], None]" = None, session_expired_status_code: Union[int, None] = None, anti_csrf: "Union[Literal[('VIA_TOKEN', 'VIA_CUSTOM_HEADER', 'NONE')], None]" = None, get_token_transfer_method: "Union[Callable[[BaseRequest, bool, Dict[str, Any]], Union[TokenTransferMethod, Literal['any']]], None]" = None, error_handlers: Union[InputErrorHandlers, None] = None, override: Union[InputOverrideConfig, None] = None, invalid_claim_status_code: Union[int, None] = None, use_dynamic_access_token_signing_key: Union[bool, None] = None, expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None, jwks_refresh_interval_sec: Union[int, None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>cookie_domain: Union[str, None] = None, older_cookie_domain: Union[str, None] = None, cookie_secure: Union[bool, None] = None, cookie_same_site: "Union[Literal['lax', 'none', 'strict'], None]" = None, session_expired_status_code: Union[int, None] = None, anti_csrf: "Union[Literal['VIA_TOKEN', 'VIA_CUSTOM_HEADER', 'NONE'], None]" = None, get_token_transfer_method: "Union[Callable[[BaseRequest, bool, Dict[str, Any]], Union[TokenTransferMethod, Literal['any']]], None]" = None, error_handlers: Union[InputErrorHandlers, None] = None, override: Union[InputOverrideConfig, None] = None, invalid_claim_status_code: Union[int, None] = None, use_dynamic_access_token_signing_key: Union[bool, None] = None, expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None, jwks_refresh_interval_sec: Union[int, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -894,7 +890,6 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.recipe.session.recipe.SessionRecipe.get_claim_validators_added_by_other_recipes" href="#supertokens_python.recipe.session.recipe.SessionRecipe.get_claim_validators_added_by_other_recipes">get_claim_validators_added_by_other_recipes</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe.SessionRecipe.get_claims_added_by_other_recipes" href="#supertokens_python.recipe.session.recipe.SessionRecipe.get_claims_added_by_other_recipes">get_claims_added_by_other_recipes</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe.SessionRecipe.get_instance" href="#supertokens_python.recipe.session.recipe.SessionRecipe.get_instance">get_instance</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.recipe.SessionRecipe.get_tenant_id" href="#supertokens_python.recipe.session.recipe.SessionRecipe.get_tenant_id">get_tenant_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe.SessionRecipe.handle_api_request" href="#supertokens_python.recipe.session.recipe.SessionRecipe.handle_api_request">handle_api_request</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe.SessionRecipe.handle_error" href="#supertokens_python.recipe.session.recipe.SessionRecipe.handle_error">handle_error</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe.SessionRecipe.init" href="#supertokens_python.recipe.session.recipe.SessionRecipe.init">init</a></code></li>

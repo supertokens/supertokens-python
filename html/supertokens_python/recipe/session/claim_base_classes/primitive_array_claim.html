@@ -536,7 +536,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim"><code class="flex name class">
 <span>class <span class="ident">PrimitiveArrayClaim</span></span>
-<span>(</span><span>key: str, fetch_value: Callable[[str, <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, str, Dict[str, Any], Dict[str, Any]], Union[Awaitable[Optional[~PrimitiveList]], ~PrimitiveList, None]], default_max_age_in_sec: Optional[int] = None)</span>
+<span>(</span><span>key: str, fetch_value: Callable[[str, <a title="supertokens_python.types.base.RecipeUserId" href="../../../types/base.html#supertokens_python.types.base.RecipeUserId">RecipeUserId</a>, str, Dict[str, Any], Dict[str, Any]], Union[Awaitable[Optional[~PrimitiveList]], ~PrimitiveList, ForwardRef(None)]], default_max_age_in_sec: Optional[int] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -646,19 +646,23 @@ don't want to add the claim to the session automatically</dd>
 </code></dt>
 <dd>
 <div class="desc"><p>Abstract base class for generic types.</p>
-<p>A generic type is typically declared by inheriting from
-this class parameterized with one or more type variables.
-For example, a generic mapping type might be defined as::</p>
-<p>class Mapping(Generic[KT, VT]):
-def <strong>getitem</strong>(self, key: KT) -&gt; VT:
-&hellip;
-# Etc.</p>
-<p>This class can then be used as follows::</p>
-<p>def lookup_name(mapping: Mapping[KT, VT], key: KT, default: VT) -&gt; VT:
-try:
-return mapping[key]
-except KeyError:
-return default</p></div>
+<p>On Python 3.12 and newer, generic classes implicitly inherit from
+Generic when they declare a parameter list after the class's name::</p>
+<pre><code>class Mapping[KT, VT]:
+    def __getitem__(self, key: KT) -&gt; VT:
+        ...
+    # Etc.
+</code></pre>
+<p>On older versions of Python, however, generic classes have to
+explicitly inherit from Generic.</p>
+<p>After a class has been declared to be generic, it can then be used as
+follows::</p>
+<pre><code>def lookup_name[KT, VT](mapping: Mapping[KT, VT], key: KT, default: VT) -&gt; VT:
+    try:
+        return mapping[key]
+    except KeyError:
+        return default
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>

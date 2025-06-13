@@ -55,11 +55,11 @@ from supertokens_python.process_state import PROCESS_STATE, ProcessState
 from supertokens_python.querier import Querier
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.supertokens import Supertokens
+from supertokens_python.types.base import AccountInfoInput
 
 from .interfaces import RecipeInterface
 from .recipe_implementation import RecipeImplementation
 from .types import (
-    AccountInfo,
     AccountInfoWithRecipeId,
     AccountInfoWithRecipeIdAndUserId,
     InputOverrideConfig,
@@ -238,7 +238,15 @@ class AccountLinkingRecipe(RecipeModule):
         # Then, we try and find a primary user based on the email / phone number / third party ID.
         users = await self.recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=user.login_methods[0],
+            account_info=AccountInfoInput(
+                email=user.login_methods[0].email,
+                phone_number=user.login_methods[0].phone_number,
+                third_party=user.login_methods[0].third_party,
+                # We don&#39;t need to list by (webauthn) credentialId because we are looking for
+                # a user to link to the current recipe user, but any search using the credentialId
+                # of the current user &#34;will identify the same user&#34; which is the current one.
+                webauthn=None,
+            ),
             do_union_of_account_info=True,
             user_context=user_context,
         )
@@ -294,7 +302,15 @@ class AccountLinkingRecipe(RecipeModule):
         # Then, we try and find matching users based on the email / phone number / third party ID.
         users = await self.recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=user.login_methods[0],
+            account_info=AccountInfoInput(
+                email=user.login_methods[0].email,
+                phone_number=user.login_methods[0].phone_number,
+                third_party=user.login_methods[0].third_party,
+                # We don&#39;t need to list by (webauthn) credentialId because we are looking for
+                # a user to link to the current recipe user, but any search using the credentialId
+                # of the current user &#34;will identify the same user&#34; which is the current one.
+                webauthn=None,
+            ),
             do_union_of_account_info=True,
             user_context=user_context,
         )
@@ -374,7 +390,15 @@ class AccountLinkingRecipe(RecipeModule):
 
         users = await self.recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=account_info,
+            account_info=AccountInfoInput(
+                email=account_info.email,
+                phone_number=account_info.phone_number,
+                third_party=account_info.third_party,
+                # We don&#39;t need to list by (webauthn) credentialId because we are looking for
+                # a user to link to the current recipe user, but any search using the credentialId
+                # of the current user &#34;will identify the same user&#34; which is the current one.
+                webauthn=None,
+            ),
             do_union_of_account_info=True,
             user_context=user_context,
         )
@@ -576,7 +600,7 @@ class AccountLinkingRecipe(RecipeModule):
             existing_users_with_new_email = (
                 await self.recipe_implementation.list_users_by_account_info(
                     tenant_id=tenant_id,
-                    account_info=AccountInfo(email=new_email),
+                    account_info=AccountInfoInput(email=new_email),
                     do_union_of_account_info=False,
                     user_context=user_context,
                 )
@@ -1216,7 +1240,15 @@ inheritance.</p></div>
         # Then, we try and find a primary user based on the email / phone number / third party ID.
         users = await self.recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=user.login_methods[0],
+            account_info=AccountInfoInput(
+                email=user.login_methods[0].email,
+                phone_number=user.login_methods[0].phone_number,
+                third_party=user.login_methods[0].third_party,
+                # We don&#39;t need to list by (webauthn) credentialId because we are looking for
+                # a user to link to the current recipe user, but any search using the credentialId
+                # of the current user &#34;will identify the same user&#34; which is the current one.
+                webauthn=None,
+            ),
             do_union_of_account_info=True,
             user_context=user_context,
         )
@@ -1272,7 +1304,15 @@ inheritance.</p></div>
         # Then, we try and find matching users based on the email / phone number / third party ID.
         users = await self.recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=user.login_methods[0],
+            account_info=AccountInfoInput(
+                email=user.login_methods[0].email,
+                phone_number=user.login_methods[0].phone_number,
+                third_party=user.login_methods[0].third_party,
+                # We don&#39;t need to list by (webauthn) credentialId because we are looking for
+                # a user to link to the current recipe user, but any search using the credentialId
+                # of the current user &#34;will identify the same user&#34; which is the current one.
+                webauthn=None,
+            ),
             do_union_of_account_info=True,
             user_context=user_context,
         )
@@ -1352,7 +1392,15 @@ inheritance.</p></div>
 
         users = await self.recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=account_info,
+            account_info=AccountInfoInput(
+                email=account_info.email,
+                phone_number=account_info.phone_number,
+                third_party=account_info.third_party,
+                # We don&#39;t need to list by (webauthn) credentialId because we are looking for
+                # a user to link to the current recipe user, but any search using the credentialId
+                # of the current user &#34;will identify the same user&#34; which is the current one.
+                webauthn=None,
+            ),
             do_union_of_account_info=True,
             user_context=user_context,
         )
@@ -1554,7 +1602,7 @@ inheritance.</p></div>
             existing_users_with_new_email = (
                 await self.recipe_implementation.list_users_by_account_info(
                     tenant_id=tenant_id,
-                    account_info=AccountInfo(email=new_email),
+                    account_info=AccountInfoInput(email=new_email),
                     do_union_of_account_info=False,
                     user_context=user_context,
                 )
@@ -2039,10 +2087,6 @@ inheritance.</p></div>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.get_tenant_id"><code class="name">var <span class="ident">get_tenant_id</span> : Optional[Callable[[str, Dict[str, Any]], Awaitable[str]]]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt id="supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.recipe_id"><code class="name">var <span class="ident">recipe_id</span></code></dt>
 <dd>
 <div class="desc"></div>
@@ -2177,7 +2221,7 @@ in account take over if this recipe user is malicious.</li>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.recipe.EmailChangeAllowedResult"><code class="flex name class">
 <span>class <span class="ident">EmailChangeAllowedResult</span></span>
-<span>(</span><span>allowed: bool, reason: "Literal[('OK', 'PRIMARY_USER_CONFLICT', 'ACCOUNT_TAKEOVER_RISK')]")</span>
+<span>(</span><span>allowed: bool, reason: "Literal['OK', 'PRIMARY_USER_CONFLICT', 'ACCOUNT_TAKEOVER_RISK']")</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2199,7 +2243,7 @@ in account take over if this recipe user is malicious.</li>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.recipe.TryLinkingByAccountInfoOrCreatePrimaryUserResult"><code class="flex name class">
 <span>class <span class="ident">TryLinkingByAccountInfoOrCreatePrimaryUserResult</span></span>
-<span>(</span><span>status: "Literal[('OK', 'NO_LINK')]", user: Optional[User])</span>
+<span>(</span><span>status: "Literal['OK', 'NO_LINK']", user: Optional[User])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2237,7 +2281,6 @@ in account take over if this recipe user is malicious.</li>
 <li><code><a title="supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.get_instance" href="#supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.get_instance">get_instance</a></code></li>
 <li><code><a title="supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.get_oldest_user_that_can_be_linked_to_recipe_user" href="#supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.get_oldest_user_that_can_be_linked_to_recipe_user">get_oldest_user_that_can_be_linked_to_recipe_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.get_primary_user_that_can_be_linked_to_recipe_user_id" href="#supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.get_primary_user_that_can_be_linked_to_recipe_user_id">get_primary_user_that_can_be_linked_to_recipe_user_id</a></code></li>
-<li><code><a title="supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.get_tenant_id" href="#supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.get_tenant_id">get_tenant_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.handle_api_request" href="#supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.handle_api_request">handle_api_request</a></code></li>
 <li><code><a title="supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.handle_error" href="#supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.handle_error">handle_error</a></code></li>
 <li><code><a title="supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.init" href="#supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.init">init</a></code></li>

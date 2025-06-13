@@ -178,43 +178,43 @@ def is_email_change_allowed(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.accountlinking.syncio.can_create_primary_user"><code class="name flex">
-<span>def <span class="ident">can_create_primary_user</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">can_create_primary_user</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.base.RecipeUserId" href="../../../types/base.html#supertokens_python.types.base.RecipeUserId">RecipeUserId</a>, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.syncio.can_link_accounts"><code class="name flex">
-<span>def <span class="ident">can_link_accounts</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, primary_user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">can_link_accounts</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.base.RecipeUserId" href="../../../types/base.html#supertokens_python.types.base.RecipeUserId">RecipeUserId</a>, primary_user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.syncio.create_primary_user"><code class="name flex">
-<span>def <span class="ident">create_primary_user</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">create_primary_user</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.base.RecipeUserId" href="../../../types/base.html#supertokens_python.types.base.RecipeUserId">RecipeUserId</a>, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.syncio.create_primary_user_id_or_link_accounts"><code class="name flex">
-<span>def <span class="ident">create_primary_user_id_or_link_accounts</span></span>(<span>tenant_id: str, recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">create_primary_user_id_or_link_accounts</span></span>(<span>tenant_id: str, recipe_user_id: <a title="supertokens_python.types.base.RecipeUserId" href="../../../types/base.html#supertokens_python.types.base.RecipeUserId">RecipeUserId</a>, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.syncio.get_primary_user_that_can_be_linked_to_recipe_user_id"><code class="name flex">
-<span>def <span class="ident">get_primary_user_that_can_be_linked_to_recipe_user_id</span></span>(<span>tenant_id: str, recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">get_primary_user_that_can_be_linked_to_recipe_user_id</span></span>(<span>tenant_id: str, recipe_user_id: <a title="supertokens_python.types.base.RecipeUserId" href="../../../types/base.html#supertokens_python.types.base.RecipeUserId">RecipeUserId</a>, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.syncio.is_email_change_allowed"><code class="name flex">
-<span>def <span class="ident">is_email_change_allowed</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, new_email: str, is_verified: bool, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">is_email_change_allowed</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.base.RecipeUserId" href="../../../types/base.html#supertokens_python.types.base.RecipeUserId">RecipeUserId</a>, new_email: str, is_verified: bool, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.syncio.is_sign_in_allowed"><code class="name flex">
-<span>def <span class="ident">is_sign_in_allowed</span></span>(<span>tenant_id: str, recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">is_sign_in_allowed</span></span>(<span>tenant_id: str, recipe_user_id: <a title="supertokens_python.types.base.RecipeUserId" href="../../../types/base.html#supertokens_python.types.base.RecipeUserId">RecipeUserId</a>, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -226,13 +226,13 @@ def is_email_change_allowed(
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.syncio.link_accounts"><code class="name flex">
-<span>def <span class="ident">link_accounts</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, primary_user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">link_accounts</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.base.RecipeUserId" href="../../../types/base.html#supertokens_python.types.base.RecipeUserId">RecipeUserId</a>, primary_user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.syncio.unlink_account"><code class="name flex">
-<span>def <span class="ident">unlink_account</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">unlink_account</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.base.RecipeUserId" href="../../../types/base.html#supertokens_python.types.base.RecipeUserId">RecipeUserId</a>, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

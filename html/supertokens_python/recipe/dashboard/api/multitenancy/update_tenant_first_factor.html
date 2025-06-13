@@ -47,7 +47,7 @@ from typing_extensions import Literal
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfigCreateOrUpdate
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
-from supertokens_python.types import APIResponse
+from supertokens_python.types.response import APIResponse
 
 from ...interfaces import APIInterface, APIOptions
 from .utils import (
@@ -186,12 +186,12 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_first_factor.UpdateTenantFirstFactorOkResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
+<dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_first_factor.UpdateTenantFirstFactorOkResult.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -199,7 +199,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_first_factor.UpdateTenantFirstFactorOkResult.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, typing_extensions.Literal['OK']]</span>
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Literal['OK']]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -233,12 +233,12 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_first_factor.UpdateTenantFirstFactorRecipeNotConfiguredOnBackendSdkErrorResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR']</code></dt>
+<dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_first_factor.UpdateTenantFirstFactorRecipeNotConfiguredOnBackendSdkErrorResult.status"><code class="name">var <span class="ident">status</span> : Literal['RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -246,7 +246,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_first_factor.UpdateTenantFirstFactorRecipeNotConfiguredOnBackendSdkErrorResult.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Union[typing_extensions.Literal['RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR'], str]]</span>
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Union[Literal['RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR'], str]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -274,12 +274,12 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_first_factor.UpdateTenantFirstFactorUnknownTenantErrorResult.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['UNKNOWN_TENANT_ERROR']</code></dt>
+<dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_first_factor.UpdateTenantFirstFactorUnknownTenantErrorResult.status"><code class="name">var <span class="ident">status</span> : Literal['UNKNOWN_TENANT_ERROR']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -287,7 +287,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.multitenancy.update_tenant_first_factor.UpdateTenantFirstFactorUnknownTenantErrorResult.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, typing_extensions.Literal['UNKNOWN_TENANT_ERROR']]</span>
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Literal['UNKNOWN_TENANT_ERROR']]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

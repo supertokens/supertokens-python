@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.11.0" />
+<title>supertokens_python.recipe.webauthn.functions API documentation</title>
+<meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>supertokens_python.recipe.webauthn.functions</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># Copyright (c) 2025, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# &#34;License&#34;) as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an &#34;AS IS&#34; BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+from typing import List, Optional, Union, cast
+
+from typing_extensions import Unpack
+
+from supertokens_python import get_request_from_user_context
+from supertokens_python.async_to_sync_wrapper import syncify
+from supertokens_python.asyncio import get_user
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
+from supertokens_python.recipe.session.interfaces import SessionContainer
+from supertokens_python.recipe.webauthn.interfaces.api import (
+    TypeWebauthnRecoverAccountEmailDeliveryInput,
+    WebauthnRecoverAccountEmailDeliveryUser,
+)
+from supertokens_python.recipe.webauthn.interfaces.recipe import (
+    Attestation,
+    AuthenticationPayload,
+    ConsumeRecoverAccountTokenErrorResponse,
+    CreateRecoverAccountLinkResponse,
+    RegisterCredentialErrorResponse,
+    RegisterOptionsKwargsInput,
+    RegistrationPayload,
+    ResidentKey,
+    UnknownUserIdErrorResponse,
+    UserVerification,
+)
+from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
+from supertokens_python.recipe.webauthn.utils import get_recover_account_link
+from supertokens_python.types.base import LoginMethod, UserContext
+from supertokens_python.types.response import (
+    OkResponseBaseModel,
+    StatusResponseBaseModel,
+)
+
+
+@syncify
+async def register_options(
+    *,
+    relying_party_id: str,
+    relying_party_name: str,
+    origin: str,
+    resident_key: Optional[ResidentKey] = None,
+    user_verification: Optional[UserVerification] = None,
+    user_presence: Optional[bool] = None,
+    attestation: Optional[Attestation] = None,
+    supported_algorithm_ids: Optional[List[int]] = None,
+    timeout: Optional[int] = None,
+    tenant_id: str = DEFAULT_TENANT_ID,
+    user_context: Optional[UserContext] = None,
+    **kwargs: Unpack[RegisterOptionsKwargsInput],
+):
+    if user_context is None:
+        user_context = {}
+
+    return await WebauthnRecipe.get_instance().recipe_implementation.register_options(
+        relying_party_id=relying_party_id,
+        relying_party_name=relying_party_name,
+        origin=origin,
+        resident_key=resident_key,
+        user_verification=user_verification,
+        user_presence=user_presence,
+        attestation=attestation,
+        supported_algorithm_ids=supported_algorithm_ids,
+        timeout=timeout,
+        tenant_id=tenant_id,
+        user_context=user_context,
+        **kwargs,
+    )
+
+
+@syncify
+async def sign_in_options(
+    *,
+    relying_party_id: str,
+    relying_party_name: str,
+    origin: str,
+    timeout: Optional[int] = None,
+    user_verification: Optional[UserVerification] = None,
+    user_presence: Optional[bool] = None,
+    tenant_id: str = DEFAULT_TENANT_ID,
+    user_context: Optional[UserContext] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    return await WebauthnRecipe.get_instance().recipe_implementation.sign_in_options(
+        relying_party_id=relying_party_id,
+        relying_party_name=relying_party_name,
+        origin=origin,
+        timeout=timeout,
+        user_verification=user_verification,
+        user_presence=user_presence,
+        tenant_id=tenant_id,
+        user_context=user_context,
+    )
+
+
+@syncify
+async def sign_up(
+    *,
+    webauthn_generated_options_id: str,
+    credential: RegistrationPayload,
+    tenant_id: str = DEFAULT_TENANT_ID,
+    session: Optional[SessionContainer] = None,
+    user_context: Optional[UserContext] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    return await WebauthnRecipe.get_instance().recipe_implementation.sign_up(
+        webauthn_generated_options_id=webauthn_generated_options_id,
+        credential=credential,
+        tenant_id=tenant_id,
+        session=session,
+        should_try_linking_with_session_user=session is not None,
+        user_context=user_context,
+    )
+
+
+@syncify
+async def sign_in(
+    *,
+    credential: AuthenticationPayload,
+    webauthn_generated_options_id: str,
+    tenant_id: str = DEFAULT_TENANT_ID,
+    session: Optional[SessionContainer] = None,
+    user_context: Optional[UserContext] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    return await WebauthnRecipe.get_instance().recipe_implementation.sign_in(
+        credential=credential,
+        webauthn_generated_options_id=webauthn_generated_options_id,
+        tenant_id=tenant_id,
+        session=session,
+        should_try_linking_with_session_user=session is not None,
+        user_context=user_context,
+    )
+
+
+@syncify
+async def verify_credentials(
+    *,
+    credential: AuthenticationPayload,
+    webauthn_generated_options_id: str,
+    tenant_id: str = DEFAULT_TENANT_ID,
+    user_context: Optional[UserContext] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    response = (
+        await WebauthnRecipe.get_instance().recipe_implementation.verify_credentials(
+            credential=credential,
+            webauthn_generated_options_id=webauthn_generated_options_id,
+            tenant_id=tenant_id,
+            user_context=user_context,
+        )
+    )
+
+    # Here we intentionally skip the user and recipeUserId props, because we
+    # do not want apps to accidentally use this to sign in
+    return StatusResponseBaseModel(status=response.status)
+
+
+@syncify
+async def create_new_recipe_user(
+    *,
+    credential: RegistrationPayload,
+    webauthn_generated_options_id: str,
+    tenant_id: str = DEFAULT_TENANT_ID,
+    user_context: Optional[UserContext] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    return await WebauthnRecipe.get_instance().recipe_implementation.create_new_recipe_user(
+        credential=credential,
+        webauthn_generated_options_id=webauthn_generated_options_id,
+        tenant_id=tenant_id,
+        user_context=user_context,
+    )
+
+
+# We do not make email optional here because we want to
+# allow passing in primaryUserId. If we make email optional,
+# and if the user provides a primaryUserId, then it may result in two problems:
+#  - there is no recipeUserId = input primaryUserId, in this case,
+#    this function will throw an error
+#  - There is a recipe userId = input primaryUserId, but that recipe has no email,
+#    or has wrong email compared to what the user wanted to generate a reset token for.
+#
+# And we want to allow primaryUserId being passed in.
+@syncify
+async def generate_recover_account_token(
+    *,
+    user_id: str,
+    email: str,
+    tenant_id: str = DEFAULT_TENANT_ID,
+    user_context: Optional[UserContext] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    return await WebauthnRecipe.get_instance().recipe_implementation.generate_recover_account_token(
+        user_id=user_id,
+        email=email,
+        tenant_id=tenant_id,
+        user_context=user_context,
+    )
+
+
+@syncify
+async def consume_recover_account_token(
+    *,
+    token: str,
+    tenant_id: str = DEFAULT_TENANT_ID,
+    user_context: Optional[UserContext] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    return await WebauthnRecipe.get_instance().recipe_implementation.consume_recover_account_token(
+        token=token,
+        tenant_id=tenant_id,
+        user_context=user_context,
+    )
+
+
+@syncify
+async def register_credential(
+    *,
+    webauthn_generated_options_id: str,
+    credential: RegistrationPayload,
+    recipe_user_id: str,
+    user_context: Optional[UserContext] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    return (
+        await WebauthnRecipe.get_instance().recipe_implementation.register_credential(
+            webauthn_generated_options_id=webauthn_generated_options_id,
+            credential=credential,
+            recipe_user_id=recipe_user_id,
+            user_context=user_context,
+        )
+    )
+
+
+@syncify
+async def get_user_from_recover_account_token(
+    *,
+    token: str,
+    tenant_id: str = DEFAULT_TENANT_ID,
+    user_context: Optional[UserContext] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    return await WebauthnRecipe.get_instance().recipe_implementation.get_user_from_recover_account_token(
+        token=token,
+        tenant_id=tenant_id,
+        user_context=user_context,
+    )
+
+
+@syncify
+async def remove_credential(
+    *,
+    webauthn_credential_id: str,
+    recipe_user_id: str,
+    user_context: Optional[UserContext] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    return await WebauthnRecipe.get_instance().recipe_implementation.remove_credential(
+        webauthn_credential_id=webauthn_credential_id,
+        recipe_user_id=recipe_user_id,
+        user_context=user_context,
+    )
+
+
+@syncify
+async def get_credential(
+    *,
+    webauthn_credential_id: str,
+    recipe_user_id: str,
+    user_context: Optional[UserContext] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    return await WebauthnRecipe.get_instance().recipe_implementation.get_credential(
+        webauthn_credential_id=webauthn_credential_id,
+        recipe_user_id=recipe_user_id,
+        user_context=user_context,
+    )
+
+
+@syncify
+async def list_credentials(
+    *,
+    recipe_user_id: str,
+    user_context: Optional[UserContext] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    return await WebauthnRecipe.get_instance().recipe_implementation.list_credentials(
+        recipe_user_id=recipe_user_id,
+        user_context=user_context,
+    )
+
+
+@syncify
+async def remove_generated_options(
+    *,
+    webauthn_generated_options_id: str,
+    tenant_id: str = DEFAULT_TENANT_ID,
+    user_context: Optional[UserContext] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    return await WebauthnRecipe.get_instance().recipe_implementation.remove_generated_options(
+        webauthn_generated_options_id=webauthn_generated_options_id,
+        tenant_id=tenant_id,
+        user_context=user_context,
+    )
+
+
+@syncify
+async def get_generated_options(
+    *,
+    webauthn_generated_options_id: str,
+    tenant_id: str = DEFAULT_TENANT_ID,
+    user_context: Optional[UserContext] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    return (
+        await WebauthnRecipe.get_instance().recipe_implementation.get_generated_options(
+            webauthn_generated_options_id=webauthn_generated_options_id,
+            tenant_id=tenant_id,
+            user_context=user_context,
+        )
+    )
+
+
+@syncify
+async def update_user_email(
+    *,
+    email: str,
+    recipe_user_id: str,
+    tenant_id: str = DEFAULT_TENANT_ID,
+    user_context: Optional[UserContext] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    return await WebauthnRecipe.get_instance().recipe_implementation.update_user_email(
+        email=email,
+        recipe_user_id=recipe_user_id,
+        tenant_id=tenant_id,
+        user_context=user_context,
+    )
+
+
+@syncify
+async def recover_account(
+    *,
+    tenant_id: str = DEFAULT_TENANT_ID,
+    webauthn_generated_options_id: str,
+    token: str,
+    credential: RegistrationPayload,
+    user_context: Optional[UserContext] = None,
+) -&gt; Union[
+    OkResponseBaseModel,
+    ConsumeRecoverAccountTokenErrorResponse,
+    RegisterCredentialErrorResponse,
+]:
+    consume_response = await consume_recover_account_token(
+        tenant_id=tenant_id,
+        token=token,
+        user_context=user_context,
+    )
+
+    if consume_response.status != &#34;OK&#34;:
+        return consume_response
+
+    result = await register_credential(
+        recipe_user_id=consume_response.user_id,
+        webauthn_generated_options_id=webauthn_generated_options_id,
+        credential=credential,
+        user_context=user_context,
+    )
+
+    return result
+
+
+@syncify
+async def create_recover_account_link(
+    *,
+    tenant_id: str = DEFAULT_TENANT_ID,
+    user_id: str,
+    email: str,
+    user_context: Optional[UserContext] = None,
+) -&gt; Union[CreateRecoverAccountLinkResponse, UnknownUserIdErrorResponse]:
+    if user_context is None:
+        user_context = {}
+
+    token_response = await generate_recover_account_token(
+        user_id=user_id,
+        email=email,
+        tenant_id=tenant_id,
+        user_context=user_context,
+    )
+    if isinstance(token_response, UnknownUserIdErrorResponse):
+        return token_response
+
+    recipe_instance = WebauthnRecipe.get_instance()
+    link = get_recover_account_link(
+        app_info=recipe_instance.get_app_info(),
+        token=token_response.token,
+        tenant_id=tenant_id,
+        request=get_request_from_user_context(user_context),
+        user_context=user_context,
+    )
+
+    return CreateRecoverAccountLinkResponse(link=link)
+
+
+@syncify
+async def send_email(
+    *,
+    template_vars: TypeWebauthnRecoverAccountEmailDeliveryInput,
+    user_context: Optional[UserContext] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    recipe_instance = WebauthnRecipe.get_instance()
+    return await recipe_instance.email_delivery.ingredient_interface_impl.send_email(
+        template_vars=template_vars,
+        user_context=user_context,
+    )
+
+
+@syncify
+async def send_recover_account_email(
+    *,
+    tenant_id: str = DEFAULT_TENANT_ID,
+    user_id: str,
+    email: str,
+    user_context: Optional[UserContext] = None,
+) -&gt; Union[OkResponseBaseModel, UnknownUserIdErrorResponse]:
+    user = await get_user(user_id=user_id, user_context=user_context)
+    if user is None:
+        return UnknownUserIdErrorResponse()
+
+    login_method: Optional[LoginMethod] = None
+    for lm in user.login_methods:
+        if lm.recipe_id == &#34;webauthn&#34; and lm.has_same_email_as(email):
+            login_method = lm
+            break
+
+    if login_method is None:
+        return UnknownUserIdErrorResponse()
+
+    link_response = await create_recover_account_link(
+        tenant_id=tenant_id,
+        user_id=user_id,
+        email=email,
+        user_context=user_context,
+    )
+    if link_response.status != &#34;OK&#34;:
+        return link_response
+
+    await send_email(
+        template_vars=TypeWebauthnRecoverAccountEmailDeliveryInput(
+            user=WebauthnRecoverAccountEmailDeliveryUser(
+                id=user.id,
+                recipe_user_id=login_method.recipe_user_id,
+                email=cast(str, login_method.email),
+            ),
+            recover_account_link=link_response.link,
+            tenant_id=tenant_id,
+        ),
+    )
+
+    return OkResponseBaseModel()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="supertokens_python.recipe.webauthn.functions.consume_recover_account_token"><code class="name flex">
+<span>async def <span class="ident">consume_recover_account_token</span></span>(<span>*, token: str, tenant_id: str = 'public', user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.create_new_recipe_user"><code class="name flex">
+<span>async def <span class="ident">create_new_recipe_user</span></span>(<span>*, credential: <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload">RegistrationPayload</a>, webauthn_generated_options_id: str, tenant_id: str = 'public', user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.create_recover_account_link"><code class="name flex">
+<span>async def <span class="ident">create_recover_account_link</span></span>(<span>*, tenant_id: str = 'public', user_id: str, email: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.CreateRecoverAccountLinkResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.CreateRecoverAccountLinkResponse">CreateRecoverAccountLinkResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.UnknownUserIdErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.UnknownUserIdErrorResponse">UnknownUserIdErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.generate_recover_account_token"><code class="name flex">
+<span>async def <span class="ident">generate_recover_account_token</span></span>(<span>*, user_id: str, email: str, tenant_id: str = 'public', user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.get_credential"><code class="name flex">
+<span>async def <span class="ident">get_credential</span></span>(<span>*, webauthn_credential_id: str, recipe_user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.get_generated_options"><code class="name flex">
+<span>async def <span class="ident">get_generated_options</span></span>(<span>*, webauthn_generated_options_id: str, tenant_id: str = 'public', user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.get_user_from_recover_account_token"><code class="name flex">
+<span>async def <span class="ident">get_user_from_recover_account_token</span></span>(<span>*, token: str, tenant_id: str = 'public', user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.list_credentials"><code class="name flex">
+<span>async def <span class="ident">list_credentials</span></span>(<span>*, recipe_user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.recover_account"><code class="name flex">
+<span>async def <span class="ident">recover_account</span></span>(<span>*, tenant_id: str = 'public', webauthn_generated_options_id: str, token: str, credential: <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload">RegistrationPayload</a>, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.types.response.OkResponseBaseModel" href="../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse">RecoverAccountTokenInvalidErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse">InvalidCredentialsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse">OptionsNotFoundErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse">InvalidOptionsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse">InvalidAuthenticatorErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.register_credential"><code class="name flex">
+<span>async def <span class="ident">register_credential</span></span>(<span>*, webauthn_generated_options_id: str, credential: <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload">RegistrationPayload</a>, recipe_user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.register_options"><code class="name flex">
+<span>async def <span class="ident">register_options</span></span>(<span>*, relying_party_id: str, relying_party_name: str, origin: str, resident_key: Optional[Literal['required', 'preferred', 'discouraged']] = None, user_verification: Optional[Literal['required', 'preferred', 'discouraged']] = None, user_presence: Optional[bool] = None, attestation: Optional[Literal['none', 'indirect', 'direct', 'enterprise']] = None, supported_algorithm_ids: Optional[List[int]] = None, timeout: Optional[int] = None, tenant_id: str = 'public', user_context: Optional[Dict[str, Any]] = None, **kwargs: Unpack[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.RegisterOptionsKwargsInput" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RegisterOptionsKwargsInput">RegisterOptionsKwargsInput</a>])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.remove_credential"><code class="name flex">
+<span>async def <span class="ident">remove_credential</span></span>(<span>*, webauthn_credential_id: str, recipe_user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.remove_generated_options"><code class="name flex">
+<span>async def <span class="ident">remove_generated_options</span></span>(<span>*, webauthn_generated_options_id: str, tenant_id: str = 'public', user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.send_email"><code class="name flex">
+<span>async def <span class="ident">send_email</span></span>(<span>*, template_vars: <a title="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput">TypeWebauthnRecoverAccountEmailDeliveryInput</a>, user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.send_recover_account_email"><code class="name flex">
+<span>async def <span class="ident">send_recover_account_email</span></span>(<span>*, tenant_id: str = 'public', user_id: str, email: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.types.response.OkResponseBaseModel" href="../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.UnknownUserIdErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.UnknownUserIdErrorResponse">UnknownUserIdErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.sign_in"><code class="name flex">
+<span>async def <span class="ident">sign_in</span></span>(<span>*, credential: <a title="supertokens_python.recipe.webauthn.interfaces.recipe.AuthenticationPayload" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.AuthenticationPayload">AuthenticationPayload</a>, webauthn_generated_options_id: str, tenant_id: str = 'public', session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.sign_in_options"><code class="name flex">
+<span>async def <span class="ident">sign_in_options</span></span>(<span>*, relying_party_id: str, relying_party_name: str, origin: str, timeout: Optional[int] = None, user_verification: Optional[Literal['required', 'preferred', 'discouraged']] = None, user_presence: Optional[bool] = None, tenant_id: str = 'public', user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.sign_up"><code class="name flex">
+<span>async def <span class="ident">sign_up</span></span>(<span>*, webauthn_generated_options_id: str, credential: <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload">RegistrationPayload</a>, tenant_id: str = 'public', session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.update_user_email"><code class="name flex">
+<span>async def <span class="ident">update_user_email</span></span>(<span>*, email: str, recipe_user_id: str, tenant_id: str = 'public', user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.functions.verify_credentials"><code class="name flex">
+<span>async def <span class="ident">verify_credentials</span></span>(<span>*, credential: <a title="supertokens_python.recipe.webauthn.interfaces.recipe.AuthenticationPayload" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.AuthenticationPayload">AuthenticationPayload</a>, webauthn_generated_options_id: str, tenant_id: str = 'public', user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h2>Index</h2>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="supertokens_python.recipe.webauthn" href="index.html">supertokens_python.recipe.webauthn</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.webauthn.functions.consume_recover_account_token" href="#supertokens_python.recipe.webauthn.functions.consume_recover_account_token">consume_recover_account_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.create_new_recipe_user" href="#supertokens_python.recipe.webauthn.functions.create_new_recipe_user">create_new_recipe_user</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.create_recover_account_link" href="#supertokens_python.recipe.webauthn.functions.create_recover_account_link">create_recover_account_link</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.generate_recover_account_token" href="#supertokens_python.recipe.webauthn.functions.generate_recover_account_token">generate_recover_account_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.get_credential" href="#supertokens_python.recipe.webauthn.functions.get_credential">get_credential</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.get_generated_options" href="#supertokens_python.recipe.webauthn.functions.get_generated_options">get_generated_options</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.get_user_from_recover_account_token" href="#supertokens_python.recipe.webauthn.functions.get_user_from_recover_account_token">get_user_from_recover_account_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.list_credentials" href="#supertokens_python.recipe.webauthn.functions.list_credentials">list_credentials</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.recover_account" href="#supertokens_python.recipe.webauthn.functions.recover_account">recover_account</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.register_credential" href="#supertokens_python.recipe.webauthn.functions.register_credential">register_credential</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.register_options" href="#supertokens_python.recipe.webauthn.functions.register_options">register_options</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.remove_credential" href="#supertokens_python.recipe.webauthn.functions.remove_credential">remove_credential</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.remove_generated_options" href="#supertokens_python.recipe.webauthn.functions.remove_generated_options">remove_generated_options</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.send_email" href="#supertokens_python.recipe.webauthn.functions.send_email">send_email</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.send_recover_account_email" href="#supertokens_python.recipe.webauthn.functions.send_recover_account_email">send_recover_account_email</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.sign_in" href="#supertokens_python.recipe.webauthn.functions.sign_in">sign_in</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.sign_in_options" href="#supertokens_python.recipe.webauthn.functions.sign_in_options">sign_in_options</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.sign_up" href="#supertokens_python.recipe.webauthn.functions.sign_up">sign_up</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.update_user_email" href="#supertokens_python.recipe.webauthn.functions.update_user_email">update_user_email</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.functions.verify_credentials" href="#supertokens_python.recipe.webauthn.functions.verify_credentials">verify_credentials</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
+</footer>
+</body>
+</html>

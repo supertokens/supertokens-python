@@ -26,7 +26,7 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
+<pre><code class="python">from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from typing_extensions import Literal
 
@@ -59,37 +59,18 @@ from supertokens_python.recipe.session.exceptions import UnauthorisedError
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
 from supertokens_python.types import (
-    AccountInfo,
     LoginMethod,
     RecipeUserId,
     User,
 )
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
+from supertokens_python.types.base import AccountInfoInput
 from supertokens_python.utils import log_debug_message
 
 from .asyncio import get_user
 
-
-class LinkingToSessionUserFailedError:
-    status: Literal[&#34;LINKING_TO_SESSION_USER_FAILED&#34;] = &#34;LINKING_TO_SESSION_USER_FAILED&#34;
-    reason: Literal[
-        &#34;EMAIL_VERIFICATION_REQUIRED&#34;,
-        &#34;RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;,
-        &#34;ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;,
-        &#34;SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;,
-        &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;,
-    ]
-
-    def __init__(
-        self,
-        reason: Literal[
-            &#34;EMAIL_VERIFICATION_REQUIRED&#34;,
-            &#34;RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;,
-            &#34;ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;,
-            &#34;SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;,
-            &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;,
-        ],
-    ):
-        self.reason = reason
+if TYPE_CHECKING:
+    from supertokens_python.recipe.webauthn.types.base import WebauthnInfoInput
 
 
 class OkResponse:
@@ -318,6 +299,7 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
     session: Optional[SessionContainer],
     check_credentials_on_tenant: Callable[[str], Awaitable[bool]],
     user_context: Dict[str, Any],
+    webauthn: Optional[&#34;WebauthnInfoInput&#34;] = None,
 ) -&gt; Optional[AuthenticatingUserInfo]:
     i = 0
     while i &lt; 300:
@@ -331,8 +313,11 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
         )
         existing_users = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=AccountInfo(
-                email=email, phone_number=phone_number, third_party=third_party
+            account_info=AccountInfoInput(
+                email=email,
+                phone_number=phone_number,
+                third_party=third_party,
+                webauthn=webauthn,
             ),
             do_union_of_account_info=True,
             user_context=user_context,
@@ -352,6 +337,7 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
                             (email is not None and lm.has_same_email_as(email))
                             or lm.has_same_phone_number_as(phone_number)
                             or lm.has_same_third_party_info_as(third_party)
+                            or lm.has_same_webauthn_info_as(webauthn)
                         )
                     ),
                     None,
@@ -1039,7 +1025,7 @@ async def load_session_in_auth_api_if_needed(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.auth_utils.check_auth_type_and_linking_status"><code class="name flex">
-<span>async def <span class="ident">check_auth_type_and_linking_status</span></span>(<span>session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], should_try_linking_with_session_user: Optional[bool], account_info: <a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId" href="recipe/accountlinking/types.html#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId">AccountInfoWithRecipeId</a>, input_user: Optional[<a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>], skip_session_user_update_in_core: bool, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.auth_utils.OkFirstFactorResponse" href="#supertokens_python.auth_utils.OkFirstFactorResponse">OkFirstFactorResponse</a>, <a title="supertokens_python.auth_utils.OkSecondFactorLinkedResponse" href="#supertokens_python.auth_utils.OkSecondFactorLinkedResponse">OkSecondFactorLinkedResponse</a>, <a title="supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse" href="#supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse">OkSecondFactorNotLinkedResponse</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
+<span>async def <span class="ident">check_auth_type_and_linking_status</span></span>(<span>session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], should_try_linking_with_session_user: Optional[bool], account_info: <a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId" href="recipe/accountlinking/types.html#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId">AccountInfoWithRecipeId</a>, input_user: Optional[<a title="supertokens_python.types.base.User" href="types/base.html#supertokens_python.types.base.User">User</a>], skip_session_user_update_in_core: bool, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.auth_utils.OkFirstFactorResponse" href="#supertokens_python.auth_utils.OkFirstFactorResponse">OkFirstFactorResponse</a>, <a title="supertokens_python.auth_utils.OkSecondFactorLinkedResponse" href="#supertokens_python.auth_utils.OkSecondFactorLinkedResponse">OkSecondFactorLinkedResponse</a>, <a title="supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse" href="#supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse">OkSecondFactorNotLinkedResponse</a>, <a title="supertokens_python.types.auth_utils.LinkingToSessionUserFailedError" href="types/auth_utils.html#supertokens_python.types.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1051,13 +1037,13 @@ async def load_session_in_auth_api_if_needed(
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.auth_utils.filter_out_invalid_second_factors_or_throw_if_all_are_invalid"><code class="name flex">
-<span>async def <span class="ident">filter_out_invalid_second_factors_or_throw_if_all_are_invalid</span></span>(<span>factor_ids: List[str], input_user_already_linked_to_session_user: bool, session_user: <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>, session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, user_context: Dict[str, Any]) ‑> List[str]</span>
+<span>async def <span class="ident">filter_out_invalid_second_factors_or_throw_if_all_are_invalid</span></span>(<span>factor_ids: List[str], input_user_already_linked_to_session_user: bool, session_user: <a title="supertokens_python.types.base.User" href="types/base.html#supertokens_python.types.base.User">User</a>, session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, user_context: Dict[str, Any]) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.auth_utils.get_authenticating_user_and_add_to_current_tenant_if_required"><code class="name flex">
-<span>async def <span class="ident">get_authenticating_user_and_add_to_current_tenant_if_required</span></span>(<span>recipe_id: str, email: Optional[str], phone_number: Optional[str], third_party: Optional[<a title="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo" href="recipe/thirdparty/types.html#supertokens_python.recipe.thirdparty.types.ThirdPartyInfo">ThirdPartyInfo</a>], tenant_id: str, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], check_credentials_on_tenant: Callable[[str], Awaitable[bool]], user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.auth_utils.AuthenticatingUserInfo" href="#supertokens_python.auth_utils.AuthenticatingUserInfo">AuthenticatingUserInfo</a>]</span>
+<span>async def <span class="ident">get_authenticating_user_and_add_to_current_tenant_if_required</span></span>(<span>recipe_id: str, email: Optional[str], phone_number: Optional[str], third_party: Optional[<a title="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo" href="recipe/thirdparty/types.html#supertokens_python.recipe.thirdparty.types.ThirdPartyInfo">ThirdPartyInfo</a>], tenant_id: str, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], check_credentials_on_tenant: Callable[[str], Awaitable[bool]], user_context: Dict[str, Any], webauthn: Optional[ForwardRef('WebauthnInfoInput')] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1069,7 +1055,7 @@ async def load_session_in_auth_api_if_needed(
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.auth_utils.link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info"><code class="name flex">
-<span>async def <span class="ident">link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info</span></span>(<span>tenant_id: str, input_user: <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>, recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], should_try_linking_with_session_user: Optional[bool], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.auth_utils.OkResponse2" href="#supertokens_python.auth_utils.OkResponse2">OkResponse2</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
+<span>async def <span class="ident">link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info</span></span>(<span>tenant_id: str, input_user: <a title="supertokens_python.types.base.User" href="types/base.html#supertokens_python.types.base.User">User</a>, recipe_user_id: <a title="supertokens_python.types.base.RecipeUserId" href="types/base.html#supertokens_python.types.base.RecipeUserId">RecipeUserId</a>, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], should_try_linking_with_session_user: Optional[bool], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.auth_utils.OkResponse2" href="#supertokens_python.auth_utils.OkResponse2">OkResponse2</a>, <a title="supertokens_python.types.auth_utils.LinkingToSessionUserFailedError" href="types/auth_utils.html#supertokens_python.types.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1081,13 +1067,13 @@ async def load_session_in_auth_api_if_needed(
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.auth_utils.post_auth_checks"><code class="name flex">
-<span>async def <span class="ident">post_auth_checks</span></span>(<span>authenticated_user: <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>, recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, is_sign_up: bool, factor_id: str, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], tenant_id: str, user_context: Dict[str, Any], request: <a title="supertokens_python.framework.request.BaseRequest" href="framework/request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>) ‑> Union[<a title="supertokens_python.auth_utils.PostAuthChecksOkResponse" href="#supertokens_python.auth_utils.PostAuthChecksOkResponse">PostAuthChecksOkResponse</a>, <a title="supertokens_python.auth_utils.PostAuthChecksSignInNotAllowedResponse" href="#supertokens_python.auth_utils.PostAuthChecksSignInNotAllowedResponse">PostAuthChecksSignInNotAllowedResponse</a>]</span>
+<span>async def <span class="ident">post_auth_checks</span></span>(<span>authenticated_user: <a title="supertokens_python.types.base.User" href="types/base.html#supertokens_python.types.base.User">User</a>, recipe_user_id: <a title="supertokens_python.types.base.RecipeUserId" href="types/base.html#supertokens_python.types.base.RecipeUserId">RecipeUserId</a>, is_sign_up: bool, factor_id: str, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], tenant_id: str, user_context: Dict[str, Any], request: <a title="supertokens_python.framework.request.BaseRequest" href="framework/request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>) ‑> Union[<a title="supertokens_python.auth_utils.PostAuthChecksOkResponse" href="#supertokens_python.auth_utils.PostAuthChecksOkResponse">PostAuthChecksOkResponse</a>, <a title="supertokens_python.auth_utils.PostAuthChecksSignInNotAllowedResponse" href="#supertokens_python.auth_utils.PostAuthChecksSignInNotAllowedResponse">PostAuthChecksSignInNotAllowedResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.auth_utils.pre_auth_checks"><code class="name flex">
-<span>async def <span class="ident">pre_auth_checks</span></span>(<span>authenticating_account_info: <a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId" href="recipe/accountlinking/types.html#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId">AccountInfoWithRecipeId</a>, authenticating_user: Optional[<a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>], tenant_id: str, factor_ids: List[str], is_sign_up: bool, is_verified: bool, sign_in_verifies_login_method: bool, skip_session_user_update_in_core: bool, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], should_try_linking_with_session_user: Optional[bool], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.auth_utils.OkResponse" href="#supertokens_python.auth_utils.OkResponse">OkResponse</a>, <a title="supertokens_python.auth_utils.SignUpNotAllowedResponse" href="#supertokens_python.auth_utils.SignUpNotAllowedResponse">SignUpNotAllowedResponse</a>, <a title="supertokens_python.auth_utils.SignInNotAllowedResponse" href="#supertokens_python.auth_utils.SignInNotAllowedResponse">SignInNotAllowedResponse</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
+<span>async def <span class="ident">pre_auth_checks</span></span>(<span>authenticating_account_info: <a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId" href="recipe/accountlinking/types.html#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId">AccountInfoWithRecipeId</a>, authenticating_user: Optional[<a title="supertokens_python.types.base.User" href="types/base.html#supertokens_python.types.base.User">User</a>], tenant_id: str, factor_ids: List[str], is_sign_up: bool, is_verified: bool, sign_in_verifies_login_method: bool, skip_session_user_update_in_core: bool, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], should_try_linking_with_session_user: Optional[bool], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.auth_utils.OkResponse" href="#supertokens_python.auth_utils.OkResponse">OkResponse</a>, <a title="supertokens_python.auth_utils.SignUpNotAllowedResponse" href="#supertokens_python.auth_utils.SignUpNotAllowedResponse">SignUpNotAllowedResponse</a>, <a title="supertokens_python.auth_utils.SignInNotAllowedResponse" href="#supertokens_python.auth_utils.SignInNotAllowedResponse">SignInNotAllowedResponse</a>, <a title="supertokens_python.types.auth_utils.LinkingToSessionUserFailedError" href="types/auth_utils.html#supertokens_python.types.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1099,7 +1085,7 @@ async def load_session_in_auth_api_if_needed(
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.auth_utils.try_linking_by_session"><code class="name flex">
-<span>async def <span class="ident">try_linking_by_session</span></span>(<span>linking_to_session_user_requires_verification: bool, auth_login_method: <a title="supertokens_python.types.LoginMethod" href="types.html#supertokens_python.types.LoginMethod">LoginMethod</a>, authenticated_user: <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>, session_user: <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.auth_utils.OkResponse2" href="#supertokens_python.auth_utils.OkResponse2">OkResponse2</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
+<span>async def <span class="ident">try_linking_by_session</span></span>(<span>linking_to_session_user_requires_verification: bool, auth_login_method: <a title="supertokens_python.types.base.LoginMethod" href="types/base.html#supertokens_python.types.base.LoginMethod">LoginMethod</a>, authenticated_user: <a title="supertokens_python.types.base.User" href="types/base.html#supertokens_python.types.base.User">User</a>, session_user: <a title="supertokens_python.types.base.User" href="types/base.html#supertokens_python.types.base.User">User</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.auth_utils.OkResponse2" href="#supertokens_python.auth_utils.OkResponse2">OkResponse2</a>, <a title="supertokens_python.types.auth_utils.LinkingToSessionUserFailedError" href="types/auth_utils.html#supertokens_python.types.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1130,7 +1116,7 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.AccountInfoAlreadyAssociatedResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR']</code></dt>
+<dt id="supertokens_python.auth_utils.AccountInfoAlreadyAssociatedResponse.status"><code class="name">var <span class="ident">status</span> : Literal['ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1138,7 +1124,7 @@ async def load_session_in_auth_api_if_needed(
 </dd>
 <dt id="supertokens_python.auth_utils.AuthenticatingUserInfo"><code class="flex name class">
 <span>class <span class="ident">AuthenticatingUserInfo</span></span>
-<span>(</span><span>user: <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>, login_method: Optional[<a title="supertokens_python.types.LoginMethod" href="types.html#supertokens_python.types.LoginMethod">LoginMethod</a>])</span>
+<span>(</span><span>user: <a title="supertokens_python.types.base.User" href="types/base.html#supertokens_python.types.base.User">User</a>, login_method: Optional[<a title="supertokens_python.types.base.LoginMethod" href="types/base.html#supertokens_python.types.base.LoginMethod">LoginMethod</a>])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1151,50 +1137,6 @@ async def load_session_in_auth_api_if_needed(
         self.user = user
         self.login_method = login_method</code></pre>
 </details>
-</dd>
-<dt id="supertokens_python.auth_utils.LinkingToSessionUserFailedError"><code class="flex name class">
-<span>class <span class="ident">LinkingToSessionUserFailedError</span></span>
-<span>(</span><span>reason: typing_extensions.Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER'])</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class LinkingToSessionUserFailedError:
-    status: Literal[&#34;LINKING_TO_SESSION_USER_FAILED&#34;] = &#34;LINKING_TO_SESSION_USER_FAILED&#34;
-    reason: Literal[
-        &#34;EMAIL_VERIFICATION_REQUIRED&#34;,
-        &#34;RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;,
-        &#34;ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;,
-        &#34;SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;,
-        &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;,
-    ]
-
-    def __init__(
-        self,
-        reason: Literal[
-            &#34;EMAIL_VERIFICATION_REQUIRED&#34;,
-            &#34;RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;,
-            &#34;ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;,
-            &#34;SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;,
-            &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;,
-        ],
-    ):
-        self.reason = reason</code></pre>
-</details>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.auth_utils.LinkingToSessionUserFailedError.reason"><code class="name">var <span class="ident">reason</span> : typing_extensions.Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER']</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.auth_utils.LinkingToSessionUserFailedError.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['LINKING_TO_SESSION_USER_FAILED']</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 </dd>
 <dt id="supertokens_python.auth_utils.OkFirstFactorResponse"><code class="flex name class">
 <span>class <span class="ident">OkFirstFactorResponse</span></span>
@@ -1211,11 +1153,11 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.OkFirstFactorResponse.is_first_factor"><code class="name">var <span class="ident">is_first_factor</span> : typing_extensions.Literal[True]</code></dt>
+<dt id="supertokens_python.auth_utils.OkFirstFactorResponse.is_first_factor"><code class="name">var <span class="ident">is_first_factor</span> : Literal[True]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.OkFirstFactorResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
+<dt id="supertokens_python.auth_utils.OkFirstFactorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1247,7 +1189,7 @@ async def load_session_in_auth_api_if_needed(
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.OkResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
+<dt id="supertokens_python.auth_utils.OkResponse.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1259,7 +1201,7 @@ async def load_session_in_auth_api_if_needed(
 </dd>
 <dt id="supertokens_python.auth_utils.OkResponse2"><code class="flex name class">
 <span>class <span class="ident">OkResponse2</span></span>
-<span>(</span><span>user: <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>)</span>
+<span>(</span><span>user: <a title="supertokens_python.types.base.User" href="types/base.html#supertokens_python.types.base.User">User</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1277,11 +1219,11 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.OkResponse2.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
+<dt id="supertokens_python.auth_utils.OkResponse2.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.OkResponse2.user"><code class="name">var <span class="ident">user</span> : <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a></code></dt>
+<dt id="supertokens_python.auth_utils.OkResponse2.user"><code class="name">var <span class="ident">user</span> : <a title="supertokens_python.types.base.User" href="types/base.html#supertokens_python.types.base.User">User</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1289,7 +1231,7 @@ async def load_session_in_auth_api_if_needed(
 </dd>
 <dt id="supertokens_python.auth_utils.OkSecondFactorLinkedResponse"><code class="flex name class">
 <span>class <span class="ident">OkSecondFactorLinkedResponse</span></span>
-<span>(</span><span>session_user: <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>)</span>
+<span>(</span><span>session_user: <a title="supertokens_python.types.base.User" href="types/base.html#supertokens_python.types.base.User">User</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1308,19 +1250,19 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.OkSecondFactorLinkedResponse.input_user_already_linked_to_session_user"><code class="name">var <span class="ident">input_user_already_linked_to_session_user</span> : typing_extensions.Literal[True]</code></dt>
+<dt id="supertokens_python.auth_utils.OkSecondFactorLinkedResponse.input_user_already_linked_to_session_user"><code class="name">var <span class="ident">input_user_already_linked_to_session_user</span> : Literal[True]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.OkSecondFactorLinkedResponse.is_first_factor"><code class="name">var <span class="ident">is_first_factor</span> : typing_extensions.Literal[False]</code></dt>
+<dt id="supertokens_python.auth_utils.OkSecondFactorLinkedResponse.is_first_factor"><code class="name">var <span class="ident">is_first_factor</span> : Literal[False]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.OkSecondFactorLinkedResponse.session_user"><code class="name">var <span class="ident">session_user</span> : <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a></code></dt>
+<dt id="supertokens_python.auth_utils.OkSecondFactorLinkedResponse.session_user"><code class="name">var <span class="ident">session_user</span> : <a title="supertokens_python.types.base.User" href="types/base.html#supertokens_python.types.base.User">User</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.OkSecondFactorLinkedResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
+<dt id="supertokens_python.auth_utils.OkSecondFactorLinkedResponse.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1328,7 +1270,7 @@ async def load_session_in_auth_api_if_needed(
 </dd>
 <dt id="supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse"><code class="flex name class">
 <span>class <span class="ident">OkSecondFactorNotLinkedResponse</span></span>
-<span>(</span><span>session_user: <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>, linking_to_session_user_requires_verification: bool)</span>
+<span>(</span><span>session_user: <a title="supertokens_python.types.base.User" href="types/base.html#supertokens_python.types.base.User">User</a>, linking_to_session_user_requires_verification: bool)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1355,11 +1297,11 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse.input_user_already_linked_to_session_user"><code class="name">var <span class="ident">input_user_already_linked_to_session_user</span> : typing_extensions.Literal[False]</code></dt>
+<dt id="supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse.input_user_already_linked_to_session_user"><code class="name">var <span class="ident">input_user_already_linked_to_session_user</span> : Literal[False]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse.is_first_factor"><code class="name">var <span class="ident">is_first_factor</span> : typing_extensions.Literal[False]</code></dt>
+<dt id="supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse.is_first_factor"><code class="name">var <span class="ident">is_first_factor</span> : Literal[False]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1367,11 +1309,11 @@ async def load_session_in_auth_api_if_needed(
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse.session_user"><code class="name">var <span class="ident">session_user</span> : <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a></code></dt>
+<dt id="supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse.session_user"><code class="name">var <span class="ident">session_user</span> : <a title="supertokens_python.types.base.User" href="types/base.html#supertokens_python.types.base.User">User</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
+<dt id="supertokens_python.auth_utils.OkSecondFactorNotLinkedResponse.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1379,7 +1321,7 @@ async def load_session_in_auth_api_if_needed(
 </dd>
 <dt id="supertokens_python.auth_utils.PostAuthChecksOkResponse"><code class="flex name class">
 <span>class <span class="ident">PostAuthChecksOkResponse</span></span>
-<span>(</span><span>status: typing_extensions.Literal['OK'], session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, user: <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a>)</span>
+<span>(</span><span>status: Literal['OK'], session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, user: <a title="supertokens_python.types.base.User" href="types/base.html#supertokens_python.types.base.User">User</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1403,11 +1345,11 @@ async def load_session_in_auth_api_if_needed(
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.PostAuthChecksOkResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
+<dt id="supertokens_python.auth_utils.PostAuthChecksOkResponse.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.auth_utils.PostAuthChecksOkResponse.user"><code class="name">var <span class="ident">user</span> : <a title="supertokens_python.types.User" href="types.html#supertokens_python.types.User">User</a></code></dt>
+<dt id="supertokens_python.auth_utils.PostAuthChecksOkResponse.user"><code class="name">var <span class="ident">user</span> : <a title="supertokens_python.types.base.User" href="types/base.html#supertokens_python.types.base.User">User</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1427,7 +1369,7 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.PostAuthChecksSignInNotAllowedResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['SIGN_IN_NOT_ALLOWED']</code></dt>
+<dt id="supertokens_python.auth_utils.PostAuthChecksSignInNotAllowedResponse.status"><code class="name">var <span class="ident">status</span> : Literal['SIGN_IN_NOT_ALLOWED']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1450,7 +1392,7 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.ShouldAutomaticallyLinkFalseResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['SHOULD_AUTOMATICALLY_LINK_FALSE']</code></dt>
+<dt id="supertokens_python.auth_utils.ShouldAutomaticallyLinkFalseResponse.status"><code class="name">var <span class="ident">status</span> : Literal['SHOULD_AUTOMATICALLY_LINK_FALSE']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1470,7 +1412,7 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.SignInNotAllowedResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['SIGN_IN_NOT_ALLOWED']</code></dt>
+<dt id="supertokens_python.auth_utils.SignInNotAllowedResponse.status"><code class="name">var <span class="ident">status</span> : Literal['SIGN_IN_NOT_ALLOWED']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1490,7 +1432,7 @@ async def load_session_in_auth_api_if_needed(
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.auth_utils.SignUpNotAllowedResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['SIGN_UP_NOT_ALLOWED']</code></dt>
+<dt id="supertokens_python.auth_utils.SignUpNotAllowedResponse.status"><code class="name">var <span class="ident">status</span> : Literal['SIGN_UP_NOT_ALLOWED']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1535,13 +1477,6 @@ async def load_session_in_auth_api_if_needed(
 </li>
 <li>
 <h4><code><a title="supertokens_python.auth_utils.AuthenticatingUserInfo" href="#supertokens_python.auth_utils.AuthenticatingUserInfo">AuthenticatingUserInfo</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError.reason" href="#supertokens_python.auth_utils.LinkingToSessionUserFailedError.reason">reason</a></code></li>
-<li><code><a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError.status" href="#supertokens_python.auth_utils.LinkingToSessionUserFailedError.status">status</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.auth_utils.OkFirstFactorResponse" href="#supertokens_python.auth_utils.OkFirstFactorResponse">OkFirstFactorResponse</a></code></h4>

@@ -67,10 +67,10 @@ from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.usermetadata.asyncio import update_user_metadata
 from supertokens_python.types import RecipeUserId
 
+from .....types.response import APIResponse
 from ...interfaces import (
     APIInterface,
     APIOptions,
-    APIResponse,
 )
 
 
@@ -405,13 +405,13 @@ async def handle_user_put(
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.update_email_for_recipe_id"><code class="name flex">
-<span>async def <span class="ident">update_email_for_recipe_id</span></span>(<span>recipe_id: str, recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse">OkResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse">InvalidEmailErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse">EmailAlreadyExistsErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse">EmailChangeNotAllowedErrorResponse</a>]</span>
+<span>async def <span class="ident">update_email_for_recipe_id</span></span>(<span>recipe_id: str, recipe_user_id: <a title="supertokens_python.types.base.RecipeUserId" href="../../../../types/base.html#supertokens_python.types.base.RecipeUserId">RecipeUserId</a>, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse">OkResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse">InvalidEmailErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse">EmailAlreadyExistsErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse">EmailChangeNotAllowedErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.update_phone_for_recipe_id"><code class="name flex">
-<span>async def <span class="ident">update_phone_for_recipe_id</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.RecipeUserId" href="../../../../types.html#supertokens_python.types.RecipeUserId">RecipeUserId</a>, phone: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse">OkResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse">InvalidPhoneErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse">PhoneAlreadyExistsErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse">PhoneNumberChangeNotAllowedErrorResponse</a>]</span>
+<span>async def <span class="ident">update_phone_for_recipe_id</span></span>(<span>recipe_user_id: <a title="supertokens_python.types.base.RecipeUserId" href="../../../../types/base.html#supertokens_python.types.base.RecipeUserId">RecipeUserId</a>, phone: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse">OkResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse">InvalidPhoneErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse">PhoneAlreadyExistsErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse" href="#supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse">PhoneNumberChangeNotAllowedErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -442,12 +442,12 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['EMAIL_ALREADY_EXISTS_ERROR']</code></dt>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailAlreadyExistsErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['EMAIL_ALREADY_EXISTS_ERROR']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -486,7 +486,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Class variables</h3>
@@ -495,7 +495,7 @@ inheritance.</p></div>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['EMAIL_CHANGE_NOT_ALLOWED_ERROR']</code></dt>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.EmailChangeNotAllowedErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['EMAIL_CHANGE_NOT_ALLOWED_ERROR']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -534,7 +534,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Class variables</h3>
@@ -543,7 +543,7 @@ inheritance.</p></div>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['INVALID_EMAIL_ERROR']</code></dt>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidEmailErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['INVALID_EMAIL_ERROR']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -582,7 +582,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Class variables</h3>
@@ -591,7 +591,7 @@ inheritance.</p></div>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['INVALID_PHONE_ERROR']</code></dt>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.InvalidPhoneErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['INVALID_PHONE_ERROR']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -627,12 +627,12 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['OK']</code></dt>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.OkResponse.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -668,12 +668,12 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['PHONE_ALREADY_EXISTS_ERROR']</code></dt>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneAlreadyExistsErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['PHONE_ALREADY_EXISTS_ERROR']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -712,7 +712,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Class variables</h3>
@@ -721,7 +721,7 @@ inheritance.</p></div>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse.status"><code class="name">var <span class="ident">status</span> : typing_extensions.Literal['PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR']</code></dt>
+<dt id="supertokens_python.recipe.dashboard.api.userdetails.user_put.PhoneNumberChangeNotAllowedErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR']</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>

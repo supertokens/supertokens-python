@@ -53,10 +53,11 @@ from supertokens_python.types import AccountInfo
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session import SessionContainer
+    from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
+    from supertokens_python.recipe.webauthn.types.base import WebauthnInfo
     from supertokens_python.types import (
         LoginMethod,
         RecipeUserId,
-        ThirdPartyInfo,
         User,
     )
 
@@ -64,15 +65,16 @@ if TYPE_CHECKING:
 class AccountInfoWithRecipeId(AccountInfo):
     def __init__(
         self,
-        recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;],
+        recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;, &#34;webauthn&#34;],
         email: Optional[str] = None,
         phone_number: Optional[str] = None,
         third_party: Optional[ThirdPartyInfo] = None,
+        webauthn: Optional[WebauthnInfo] = None,
     ):
-        super().__init__(email, phone_number, third_party)
-        self.recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;] = (
-            recipe_id
-        )
+        super().__init__(email, phone_number, third_party, webauthn=webauthn)
+        self.recipe_id: Literal[
+            &#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;, &#34;webauthn&#34;
+        ] = recipe_id
 
     def to_json(self) -&gt; Dict[str, Any]:
         return {
@@ -86,17 +88,18 @@ class RecipeLevelUser(AccountInfoWithRecipeId):
         self,
         tenant_ids: List[str],
         time_joined: int,
-        recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;],
+        recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;, &#34;webauthn&#34;],
         email: Optional[str] = None,
         phone_number: Optional[str] = None,
         third_party: Optional[ThirdPartyInfo] = None,
+        webauthn: Optional[WebauthnInfo] = None,
     ):
-        super().__init__(recipe_id, email, phone_number, third_party)
+        super().__init__(recipe_id, email, phone_number, third_party, webauthn=webauthn)
         self.tenant_ids = tenant_ids
         self.time_joined = time_joined
-        self.recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;] = (
-            recipe_id
-        )
+        self.recipe_id: Literal[
+            &#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;, &#34;webauthn&#34;
+        ] = recipe_id
 
     @staticmethod
     def from_login_method(
@@ -109,6 +112,7 @@ class RecipeLevelUser(AccountInfoWithRecipeId):
             email=login_method.email,
             phone_number=login_method.phone_number,
             third_party=login_method.third_party,
+            webauthn=login_method.webauthn,
         )
 
 
@@ -116,12 +120,13 @@ class AccountInfoWithRecipeIdAndUserId(AccountInfoWithRecipeId):
     def __init__(
         self,
         recipe_user_id: Optional[RecipeUserId],
-        recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;],
+        recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;, &#34;webauthn&#34;],
         email: Optional[str] = None,
         phone_number: Optional[str] = None,
         third_party: Optional[ThirdPartyInfo] = None,
+        webauthn: Optional[WebauthnInfo] = None,
     ):
-        super().__init__(recipe_id, email, phone_number, third_party)
+        super().__init__(recipe_id, email, phone_number, third_party, webauthn=webauthn)
         self.recipe_user_id = recipe_user_id
 
     @staticmethod
@@ -137,6 +142,7 @@ class AccountInfoWithRecipeIdAndUserId(AccountInfoWithRecipeId):
             email=account_info.email,
             phone_number=account_info.phone_number,
             third_party=account_info.third_party,
+            webauthn=account_info.webauthn,
             recipe_user_id=(
                 account_info.recipe_user_id if isinstance(account_info, LM) else None
             ),
@@ -203,7 +209,7 @@ class AccountLinkingConfig:
 <dl>
 <dt id="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId"><code class="flex name class">
 <span>class <span class="ident">AccountInfoWithRecipeId</span></span>
-<span>(</span><span>recipe_id: "Literal[('emailpassword', 'thirdparty', 'passwordless')]", email: Optional[str] = None, phone_number: Optional[str] = None, third_party: Optional[ThirdPartyInfo] = None)</span>
+<span>(</span><span>recipe_id: "Literal['emailpassword', 'thirdparty', 'passwordless', 'webauthn']", email: Optional[str] = None, phone_number: Optional[str] = None, third_party: Optional[ThirdPartyInfo] = None, webauthn: Optional[WebauthnInfo] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -214,15 +220,16 @@ class AccountLinkingConfig:
 <pre><code class="python">class AccountInfoWithRecipeId(AccountInfo):
     def __init__(
         self,
-        recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;],
+        recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;, &#34;webauthn&#34;],
         email: Optional[str] = None,
         phone_number: Optional[str] = None,
         third_party: Optional[ThirdPartyInfo] = None,
+        webauthn: Optional[WebauthnInfo] = None,
     ):
-        super().__init__(email, phone_number, third_party)
-        self.recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;] = (
-            recipe_id
-        )
+        super().__init__(email, phone_number, third_party, webauthn=webauthn)
+        self.recipe_id: Literal[
+            &#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;, &#34;webauthn&#34;
+        ] = recipe_id
 
     def to_json(self) -&gt; Dict[str, Any]:
         return {
@@ -232,7 +239,7 @@ class AccountLinkingConfig:
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.AccountInfo" href="../../types.html#supertokens_python.types.AccountInfo">AccountInfo</a></li>
+<li><a title="supertokens_python.types.base.AccountInfo" href="../../types/base.html#supertokens_python.types.base.AccountInfo">AccountInfo</a></li>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -251,7 +258,7 @@ class AccountLinkingConfig:
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeIdAndUserId"><code class="flex name class">
 <span>class <span class="ident">AccountInfoWithRecipeIdAndUserId</span></span>
-<span>(</span><span>recipe_user_id: Optional[RecipeUserId], recipe_id: "Literal[('emailpassword', 'thirdparty', 'passwordless')]", email: Optional[str] = None, phone_number: Optional[str] = None, third_party: Optional[ThirdPartyInfo] = None)</span>
+<span>(</span><span>recipe_user_id: Optional[RecipeUserId], recipe_id: "Literal['emailpassword', 'thirdparty', 'passwordless', 'webauthn']", email: Optional[str] = None, phone_number: Optional[str] = None, third_party: Optional[ThirdPartyInfo] = None, webauthn: Optional[WebauthnInfo] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -263,12 +270,13 @@ class AccountLinkingConfig:
     def __init__(
         self,
         recipe_user_id: Optional[RecipeUserId],
-        recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;],
+        recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;, &#34;webauthn&#34;],
         email: Optional[str] = None,
         phone_number: Optional[str] = None,
         third_party: Optional[ThirdPartyInfo] = None,
+        webauthn: Optional[WebauthnInfo] = None,
     ):
-        super().__init__(recipe_id, email, phone_number, third_party)
+        super().__init__(recipe_id, email, phone_number, third_party, webauthn=webauthn)
         self.recipe_user_id = recipe_user_id
 
     @staticmethod
@@ -284,6 +292,7 @@ class AccountLinkingConfig:
             email=account_info.email,
             phone_number=account_info.phone_number,
             third_party=account_info.third_party,
+            webauthn=account_info.webauthn,
             recipe_user_id=(
                 account_info.recipe_user_id if isinstance(account_info, LM) else None
             ),
@@ -292,7 +301,7 @@ class AccountLinkingConfig:
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId" href="#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId">AccountInfoWithRecipeId</a></li>
-<li><a title="supertokens_python.types.AccountInfo" href="../../types.html#supertokens_python.types.AccountInfo">AccountInfo</a></li>
+<li><a title="supertokens_python.types.base.AccountInfo" href="../../types/base.html#supertokens_python.types.base.AccountInfo">AccountInfo</a></li>
 </ul>
 <h3>Static methods</h3>
 <dl>
@@ -375,7 +384,7 @@ class AccountLinkingConfig:
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.types.RecipeLevelUser"><code class="flex name class">
 <span>class <span class="ident">RecipeLevelUser</span></span>
-<span>(</span><span>tenant_ids: List[str], time_joined: int, recipe_id: "Literal[('emailpassword', 'thirdparty', 'passwordless')]", email: Optional[str] = None, phone_number: Optional[str] = None, third_party: Optional[ThirdPartyInfo] = None)</span>
+<span>(</span><span>tenant_ids: List[str], time_joined: int, recipe_id: "Literal['emailpassword', 'thirdparty', 'passwordless', 'webauthn']", email: Optional[str] = None, phone_number: Optional[str] = None, third_party: Optional[ThirdPartyInfo] = None, webauthn: Optional[WebauthnInfo] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -388,17 +397,18 @@ class AccountLinkingConfig:
         self,
         tenant_ids: List[str],
         time_joined: int,
-        recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;],
+        recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;, &#34;webauthn&#34;],
         email: Optional[str] = None,
         phone_number: Optional[str] = None,
         third_party: Optional[ThirdPartyInfo] = None,
+        webauthn: Optional[WebauthnInfo] = None,
     ):
-        super().__init__(recipe_id, email, phone_number, third_party)
+        super().__init__(recipe_id, email, phone_number, third_party, webauthn=webauthn)
         self.tenant_ids = tenant_ids
         self.time_joined = time_joined
-        self.recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;] = (
-            recipe_id
-        )
+        self.recipe_id: Literal[
+            &#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;, &#34;webauthn&#34;
+        ] = recipe_id
 
     @staticmethod
     def from_login_method(
@@ -411,12 +421,13 @@ class AccountLinkingConfig:
             email=login_method.email,
             phone_number=login_method.phone_number,
             third_party=login_method.third_party,
+            webauthn=login_method.webauthn,
         )</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId" href="#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId">AccountInfoWithRecipeId</a></li>
-<li><a title="supertokens_python.types.AccountInfo" href="../../types.html#supertokens_python.types.AccountInfo">AccountInfo</a></li>
+<li><a title="supertokens_python.types.base.AccountInfo" href="../../types/base.html#supertokens_python.types.base.AccountInfo">AccountInfo</a></li>
 </ul>
 <h3>Static methods</h3>
 <dl>

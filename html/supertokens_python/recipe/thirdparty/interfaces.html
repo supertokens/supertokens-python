@@ -44,14 +44,15 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from ...types import APIResponse, GeneralErrorResponse, RecipeUserId, User
+from ...types import RecipeUserId, User
+from ...types.response import APIResponse, GeneralErrorResponse
 from .provider import Provider, ProviderInput, RedirectUriInfo
 
 if TYPE_CHECKING:
-    from supertokens_python.auth_utils import LinkingToSessionUserFailedError
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.supertokens import AppInfo
+    from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 
     from .types import RawUserInfoFromProvider
     from .utils import ThirdPartyConfig
@@ -345,7 +346,7 @@ class APIInterface:
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.APIInterface.authorisation_url_get"><code class="name flex">
-<span>async def <span class="ident">authorisation_url_get</span></span>(<span>self, provider: Provider, redirect_uri_on_provider_dashboard: str, api_options: <a title="supertokens_python.recipe.thirdparty.interfaces.APIOptions" href="#supertokens_python.recipe.thirdparty.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult">AuthorisationUrlGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">authorisation_url_get</span></span>(<span>self, provider: Provider, redirect_uri_on_provider_dashboard: str, api_options: <a title="supertokens_python.recipe.thirdparty.interfaces.APIOptions" href="#supertokens_python.recipe.thirdparty.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult">AuthorisationUrlGetOkResult</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -417,7 +418,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Class variables</h3>
@@ -601,7 +602,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Class variables</h3>
@@ -669,7 +670,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Class variables</h3>
@@ -726,7 +727,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Class variables</h3>

@@ -45,7 +45,6 @@ from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.asyncio import get_user
 from supertokens_python.auth_utils import (
-    LinkingToSessionUserFailedError,
     link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info,
 )
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -79,6 +78,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
 from supertokens_python.recipe.passwordless.types import DeviceCode, DeviceType
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.types import RecipeUserId, User
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.utils import log_debug_message
 
 
@@ -1121,7 +1121,7 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.consume_code"><code class="name flex">
-<span>async def <span class="ident">consume_code</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Union[str, None], device_id: Union[str, None], link_code: Union[str, None], session: Optional[SessionContainer], should_try_linking_with_session_user: Union[bool, None], tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError">ConsumeCodeIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError">ConsumeCodeExpiredUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError">ConsumeCodeRestartFlowError</a>, <a title="supertokens_python.auth_utils.LinkingToSessionUserFailedError" href="../../auth_utils.html#supertokens_python.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
+<span>async def <span class="ident">consume_code</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Union[str, None], device_id: Union[str, None], link_code: Union[str, None], session: Optional[SessionContainer], should_try_linking_with_session_user: Union[bool, None], tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError">ConsumeCodeIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError">ConsumeCodeExpiredUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError">ConsumeCodeRestartFlowError</a>, <a title="supertokens_python.types.auth_utils.LinkingToSessionUserFailedError" href="../../types/auth_utils.html#supertokens_python.types.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

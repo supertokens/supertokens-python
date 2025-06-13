@@ -43,7 +43,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.framework import BaseRequest, BaseResponse
-from supertokens_python.types import APIResponse, GeneralErrorResponse
+from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from .utils import JWTConfig
 
@@ -175,7 +175,7 @@ class APIInterface:
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.jwt.interfaces.APIInterface.jwks_get"><code class="name flex">
-<span>async def <span class="ident">jwks_get</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.jwt.interfaces.APIOptions" href="#supertokens_python.recipe.jwt.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse" href="#supertokens_python.recipe.jwt.interfaces.JWKSGetResponse">JWKSGetResponse</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">jwks_get</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.jwt.interfaces.APIOptions" href="#supertokens_python.recipe.jwt.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse" href="#supertokens_python.recipe.jwt.interfaces.JWKSGetResponse">JWKSGetResponse</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -285,7 +285,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Methods</h3>

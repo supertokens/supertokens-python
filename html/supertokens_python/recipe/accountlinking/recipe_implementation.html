@@ -47,6 +47,7 @@ from typing_extensions import Literal
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.types import RecipeUserId, User
+from supertokens_python.types.base import AccountInfoInput
 
 from .interfaces import (
     CanCreatePrimaryUserAccountInfoAlreadyAssociatedError,
@@ -67,7 +68,7 @@ from .interfaces import (
     RecipeInterface,
     UnlinkAccountOkResult,
 )
-from .types import AccountInfo, AccountLinkingConfig, RecipeLevelUser
+from .types import AccountLinkingConfig, RecipeLevelUser
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
@@ -355,7 +356,7 @@ class RecipeImplementation(RecipeInterface):
     async def list_users_by_account_info(
         self,
         tenant_id: str,
-        account_info: AccountInfo,
+        account_info: AccountInfoInput,
         do_union_of_account_info: bool,
         user_context: Dict[str, Any],
     ) -&gt; List[User]:
@@ -370,6 +371,9 @@ class RecipeImplementation(RecipeInterface):
         if account_info.third_party:
             params[&#34;thirdPartyId&#34;] = account_info.third_party.id
             params[&#34;thirdPartyUserId&#34;] = account_info.third_party.user_id
+
+        if account_info.webauthn:
+            params[&#34;webauthnCredentialId&#34;] = account_info.webauthn.credential_id
 
         response = await self.querier.send_get_request(
             NormalisedURLPath(f&#34;/{tenant_id or &#39;public&#39;}/users/by-accountinfo&#34;),
@@ -695,7 +699,7 @@ inheritance.</p></div>
     async def list_users_by_account_info(
         self,
         tenant_id: str,
-        account_info: AccountInfo,
+        account_info: AccountInfoInput,
         do_union_of_account_info: bool,
         user_context: Dict[str, Any],
     ) -&gt; List[User]:
@@ -710,6 +714,9 @@ inheritance.</p></div>
         if account_info.third_party:
             params[&#34;thirdPartyId&#34;] = account_info.third_party.id
             params[&#34;thirdPartyUserId&#34;] = account_info.third_party.user_id
+
+        if account_info.webauthn:
+            params[&#34;webauthnCredentialId&#34;] = account_info.webauthn.credential_id
 
         response = await self.querier.send_get_request(
             NormalisedURLPath(f&#34;/{tenant_id or &#39;public&#39;}/users/by-accountinfo&#34;),
@@ -766,13 +773,13 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.recipe_implementation.RecipeImplementation.get_user"><code class="name flex">
-<span>async def <span class="ident">get_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.types.User" href="../../types.html#supertokens_python.types.User">User</a>]</span>
+<span>async def <span class="ident">get_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.types.base.User" href="../../types/base.html#supertokens_python.types.base.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.recipe_implementation.RecipeImplementation.get_users"><code class="name flex">
-<span>async def <span class="ident">get_users</span></span>(<span>self, tenant_id: str, time_joined_order: "Literal[('ASC', 'DESC')]", limit: Optional[int], pagination_token: Optional[str], include_recipe_ids: Optional[List[str]], query: Optional[Dict[str, str]], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.accountlinking.interfaces.GetUsersResult" href="interfaces.html#supertokens_python.recipe.accountlinking.interfaces.GetUsersResult">GetUsersResult</a></span>
+<span>async def <span class="ident">get_users</span></span>(<span>self, tenant_id: str, time_joined_order: "Literal['ASC', 'DESC']", limit: Optional[int], pagination_token: Optional[str], include_recipe_ids: Optional[List[str]], query: Optional[Dict[str, str]], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.accountlinking.interfaces.GetUsersResult" href="interfaces.html#supertokens_python.recipe.accountlinking.interfaces.GetUsersResult">GetUsersResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -784,7 +791,7 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.recipe_implementation.RecipeImplementation.list_users_by_account_info"><code class="name flex">
-<span>async def <span class="ident">list_users_by_account_info</span></span>(<span>self, tenant_id: str, account_info: AccountInfo, do_union_of_account_info: bool, user_context: Dict[str, Any]) ‑> List[<a title="supertokens_python.types.User" href="../../types.html#supertokens_python.types.User">User</a>]</span>
+<span>async def <span class="ident">list_users_by_account_info</span></span>(<span>self, tenant_id: str, account_info: AccountInfoInput, do_union_of_account_info: bool, user_context: Dict[str, Any]) ‑> List[<a title="supertokens_python.types.base.User" href="../../types/base.html#supertokens_python.types.base.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

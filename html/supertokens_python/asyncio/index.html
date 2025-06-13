@@ -54,7 +54,8 @@ from supertokens_python.interfaces import (
 )
 from supertokens_python.recipe.accountlinking.interfaces import GetUsersResult
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
-from supertokens_python.types import AccountInfo, User
+from supertokens_python.types import User
+from supertokens_python.types.base import AccountInfoInput
 
 
 async def get_users_oldest_first(
@@ -187,7 +188,7 @@ async def update_or_delete_user_id_mapping_info(
 
 async def list_users_by_account_info(
     tenant_id: str,
-    account_info: AccountInfo,
+    account_info: AccountInfoInput,
     do_union_of_account_info: bool = False,
     user_context: Optional[Dict[str, Any]] = None,
 ) -&gt; List[User]:
@@ -221,13 +222,13 @@ async def list_users_by_account_info(
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.asyncio.delete_user_id_mapping"><code class="name flex">
-<span>async def <span class="ident">delete_user_id_mapping</span></span>(<span>user_id: str, user_id_type: Optional[typing_extensions.Literal['SUPERTOKENS', 'EXTERNAL', 'ANY']] = None, force: Optional[bool] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.interfaces.DeleteUserIdMappingOkResult" href="../interfaces.html#supertokens_python.interfaces.DeleteUserIdMappingOkResult">DeleteUserIdMappingOkResult</a></span>
+<span>async def <span class="ident">delete_user_id_mapping</span></span>(<span>user_id: str, user_id_type: Optional[Literal['SUPERTOKENS', 'EXTERNAL', 'ANY']] = None, force: Optional[bool] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.interfaces.DeleteUserIdMappingOkResult" href="../interfaces.html#supertokens_python.interfaces.DeleteUserIdMappingOkResult">DeleteUserIdMappingOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.asyncio.get_user"><code class="name flex">
-<span>async def <span class="ident">get_user</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.types.User" href="../types.html#supertokens_python.types.User">User</a>]</span>
+<span>async def <span class="ident">get_user</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.types.base.User" href="../types/base.html#supertokens_python.types.base.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -239,7 +240,7 @@ async def list_users_by_account_info(
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.asyncio.get_user_id_mapping"><code class="name flex">
-<span>async def <span class="ident">get_user_id_mapping</span></span>(<span>user_id: str, user_id_type: Optional[typing_extensions.Literal['SUPERTOKENS', 'EXTERNAL', 'ANY']] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.interfaces.GetUserIdMappingOkResult" href="../interfaces.html#supertokens_python.interfaces.GetUserIdMappingOkResult">GetUserIdMappingOkResult</a>, <a title="supertokens_python.interfaces.UnknownMappingError" href="../interfaces.html#supertokens_python.interfaces.UnknownMappingError">UnknownMappingError</a>]</span>
+<span>async def <span class="ident">get_user_id_mapping</span></span>(<span>user_id: str, user_id_type: Optional[Literal['SUPERTOKENS', 'EXTERNAL', 'ANY']] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.interfaces.GetUserIdMappingOkResult" href="../interfaces.html#supertokens_python.interfaces.GetUserIdMappingOkResult">GetUserIdMappingOkResult</a>, <a title="supertokens_python.interfaces.UnknownMappingError" href="../interfaces.html#supertokens_python.interfaces.UnknownMappingError">UnknownMappingError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -257,13 +258,13 @@ async def list_users_by_account_info(
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.asyncio.list_users_by_account_info"><code class="name flex">
-<span>async def <span class="ident">list_users_by_account_info</span></span>(<span>tenant_id: str, account_info: <a title="supertokens_python.types.AccountInfo" href="../types.html#supertokens_python.types.AccountInfo">AccountInfo</a>, do_union_of_account_info: bool = False, user_context: Optional[Dict[str, Any]] = None) ‑> List[<a title="supertokens_python.types.User" href="../types.html#supertokens_python.types.User">User</a>]</span>
+<span>async def <span class="ident">list_users_by_account_info</span></span>(<span>tenant_id: str, account_info: <a title="supertokens_python.types.base.AccountInfoInput" href="../types/base.html#supertokens_python.types.base.AccountInfoInput">AccountInfoInput</a>, do_union_of_account_info: bool = False, user_context: Optional[Dict[str, Any]] = None) ‑> List[<a title="supertokens_python.types.base.User" href="../types/base.html#supertokens_python.types.base.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.asyncio.update_or_delete_user_id_mapping_info"><code class="name flex">
-<span>async def <span class="ident">update_or_delete_user_id_mapping_info</span></span>(<span>user_id: str, user_id_type: Optional[typing_extensions.Literal['SUPERTOKENS', 'EXTERNAL', 'ANY']] = None, external_user_id_info: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.interfaces.UpdateOrDeleteUserIdMappingInfoOkResult" href="../interfaces.html#supertokens_python.interfaces.UpdateOrDeleteUserIdMappingInfoOkResult">UpdateOrDeleteUserIdMappingInfoOkResult</a>, <a title="supertokens_python.interfaces.UnknownMappingError" href="../interfaces.html#supertokens_python.interfaces.UnknownMappingError">UnknownMappingError</a>]</span>
+<span>async def <span class="ident">update_or_delete_user_id_mapping_info</span></span>(<span>user_id: str, user_id_type: Optional[Literal['SUPERTOKENS', 'EXTERNAL', 'ANY']] = None, external_user_id_info: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.interfaces.UpdateOrDeleteUserIdMappingInfoOkResult" href="../interfaces.html#supertokens_python.interfaces.UpdateOrDeleteUserIdMappingInfoOkResult">UpdateOrDeleteUserIdMappingInfoOkResult</a>, <a title="supertokens_python.interfaces.UnknownMappingError" href="../interfaces.html#supertokens_python.interfaces.UnknownMappingError">UnknownMappingError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
