@@ -124,6 +124,11 @@ jobs:
           has-cdi: true
           has-fdi: true
 
+      - id: escape-versions
+        run: |
+          echo "fdiVersions=$(sed 's/"/\\"/g' <<< '${{ steps.versions.outputs.fdiVersions }}')" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+          echo "cdiVersions=$(sed 's/"/\\"/g' <<< '${{ steps.versions.outputs.cdiVersions }}')" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+
       - run: |
           ./hooks/populate-hook-constants.sh
 
@@ -135,6 +140,6 @@ jobs:
                 \"password\": \"${{ secrets.SUPERTOKENS_API_KEY }}\",
                 \"version\":\"${{ needs.setup.outputs.setupVersion }}\",
                 \"name\": \"python\",
-                \"frontendDriverInterfaces\": ${{ steps.versions.outputs.fdiVersions }},
-                \"coreDriverInterfaces\": ${{ steps.versions.outputs.cdiVersions }}
+                \"frontendDriverInterfaces\": ${{ steps.escape-versions.outputs.fdiVersions }},
+                \"coreDriverInterfaces\": ${{ steps.escape-versions.outputs.cdiVersions }}
               }"
