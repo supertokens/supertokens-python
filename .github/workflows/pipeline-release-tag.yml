@@ -194,8 +194,8 @@ jobs:
           if [[ $currentTag != $expectedTag ]]
           then
             echo "Commit does not have the correct dev tag for this release"
-            echo "Current: `$currentTag`"
-            echo "Expected: `$expectedTag`"
+            echo "Current: $currentTag"
+            echo "Expected: $expectedTag"
             exit 1
           fi
 
@@ -318,7 +318,7 @@ jobs:
           fetch-tags: true
 
       - run: |
-          # python3 -m pip install ip install pip setuptools packaging poetry clikit --upgrade
+          # python3 -m pip install pip setuptools packaging poetry clikit --upgrade
           # make dev-install
           # pip install setuptools wheels twine
           # python setup.py sdist bdist_wheel

@@ -28,9 +28,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-        with:
-          ref: ${{ inputs.ref }}
-
       - uses: supertokens/get-supported-versions-action@main
         id: versions
         with:
