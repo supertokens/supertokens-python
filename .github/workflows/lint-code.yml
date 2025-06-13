@@ -7,17 +7,25 @@ on:
       - reopened
       - synchronize
   push:
-    branches:
-      - master
-      - "v[0-9]+.[0-9]+"
     tags:
-      - "(dev-)?v[0-9]+.[0-9]+.[0-9]+"
+      - dev-v[0-9]+.[0-9]+.[0-9]+
+
+# Only one instance of this workflow will run on the same ref (PR/Branch/Tag)
+# Previous runs will be cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   define-versions:
     runs-on: ubuntu-latest
     outputs:
       pyVersions: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
+
+    steps:
+      # Required to avoid errors in runs due to no steps
+      - name: Placeholder
+        run: echo "Placeholder"
 
   lint-format:
     name: Check linting and formatting
@@ -28,15 +36,18 @@ jobs:
         py-version: ${{ fromJSON(needs.define-versions.outputs.pyVersions) }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.py-version }}
+
       - name: Create virtual environment and install dependencies
         run: |
           python3 -m venv venv
           source venv/bin/activate
           python3 -m pip install pip setuptools --upgrade
           make dev-install && rm -rf src
+
       - name: Run checks
         # New steps require sourcing the venv again
         run: |

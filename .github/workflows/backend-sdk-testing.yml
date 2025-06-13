@@ -7,11 +7,14 @@ on:
       - reopened
       - synchronize
   push:
-    branches:
-      - master
-      - "v[0-9]+.[0-9]+"
     tags:
-      - "(dev-)?v[0-9]+.[0-9]+.[0-9]+"
+      - dev-v[0-9]+.[0-9]+.[0-9]+
+
+# Only one instance of this workflow will run on the same ref (PR/Branch/Tag)
+# Previous runs will be cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   define-versions:
@@ -23,6 +26,7 @@ jobs:
       nodeVersions: '["20"]'
     steps:
       - uses: actions/checkout@v4
+
       - uses: supertokens/get-supported-versions-action@main
         id: versions
         with:
@@ -82,10 +86,11 @@ jobs:
         run: |
           source venv/bin/activate
           docker compose up --build --wait
-          python3 tests/test-server/app.py &
+          python3 tests/test-server/app.py &> python.log &
 
       - uses: supertokens/backend-sdk-testing-action@main
         with:
           version: ${{ matrix.fdi-version }}
           check-name-suffix: '[CDI=${{ matrix.cdi-version }}][Core=${{ steps.versions.outputs.coreVersionXy }}][FDI=${{ matrix.fdi-version }}][Py=${{ matrix.py-version }}][Node=${{ matrix.node-version }}]'
           path: backend-sdk-testing
+          app-server-logs: ${{ github.workspace }}/supertokens-python/python.log

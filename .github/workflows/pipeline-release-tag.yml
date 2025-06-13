@@ -1,0 +1,325 @@
+name: "Release Pipeline"
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: The branch to create the release tag on
+        type: string
+        required: true
+
+      skip-test-checks:
+        description: Skip tests passed checks
+        type: boolean
+        default: false
+        required: false
+
+      skip-other-version-checks:
+        description: Skip server checks for core and frontend versions
+        type: boolean
+        default: false
+        required: false
+
+permissions:
+  contents: write
+
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+
+    outputs:
+      constantsVersion: ${{ steps.versions.outputs.constantsVersion }}
+      constantsVersionXy: ${{ steps.versions.outputs.constantsVersionXy }}
+      setupVersion: ${{ steps.versions.outputs.setupVersion }}
+      setupVersionXy: ${{ steps.versions.outputs.setupVersionXy }}
+      newestVersion: ${{ steps.versions.outputs.newestVersion }}
+      targetBranch: ${{ steps.versions.outputs.targetBranch }}
+      devTag: ${{ steps.versions.outputs.devTag }}
+      releaseTag: ${{ steps.versions.outputs.releaseTag }}
+      versionFolder: ${{ steps.versions.outputs.versionFolder }}
+      artifactName: ${{ steps.versions.outputs.artifactName }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-tags: true
+          token: ${{ secrets.ALL_REPO_PAT }}
+
+      - name: Populate variables
+        id: versions
+        run: |
+          . ./hooks/populate-hook-constants.sh
+
+          echo "constantsVersion=$constantsVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+          echo "constantsVersionXy=$constantsVersionXy" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+          echo "setupVersion=$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+          echo "setupVersionXy=$setupVersionXy" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+          echo "newestVersion=$newestVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+          echo "targetBranch=$targetBranch" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+
+          echo "devTag=dev-v$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+          echo "releaseTag=v$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+
+          echo "versionFolder=$setupVersionXy.X" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+          echo "artifactName=python-docs-$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
+
+  mark-as-success:
+    runs-on: ubuntu-latest
+
+    needs:
+      - setup
+
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          pip install httpx
+
+      - if: ${{ inputs.skip-test-checks == 'false' }}
+        name: Get commit status
+        run: |
+          python3 -c "$(cat << EOF
+
+          from collections import defaultdict
+          import httpx
+          import sys
+
+          url = "https://api.github.com/repos/${{ github.repository }}/commits/tags/${{ needs.setup.outputs.devTag }}/check-runs?per_page=100&page={page}"
+          page = 1
+          total = 0
+
+          status_map = defaultdict(int)
+          conclusion_map = defaultdict(int)
+
+          while True:
+            response = httpx.get(url.format(page=page)).json()
+
+            if len(response["check_runs"]) == 0:
+                break
+
+            for run_info in response["check_runs"]:
+                status_map[run_info["status"]] += 1
+                conclusion_map[run_info["conclusion"]] += 1
+                total += 1
+
+            page += 1
+
+          print(f"{total=}")
+          print(dict(status_map))
+          print(dict(conclusion_map))
+
+          if status_map["completed"] < total:
+              print("Some checks not completed.")
+              print(dict(status_map))
+              sys.exit(1)
+
+          if conclusion_map["success"] < total:
+              print("Some checks not successful.")
+              print(dict(conclusion_map))
+              sys.exit(1)
+
+          EOF
+          )"
+
+      - run: |
+          curl --fail-with-body -X PATCH \
+              https://api.supertokens.io/0/driver \
+              -H 'Content-Type: application/json' \
+              -H 'api-version: 0' \
+              -d "{
+                \"password\": \"${{ secrets.SUPERTOKENS_API_KEY }}\",
+                \"version\":\"${{ needs.setup.outputs.setupVersion }}\",
+                \"name\": \"python\",
+                \"testPassed\": true
+              }"
+
+  release:
+    runs-on: ubuntu-latest
+
+    # This job marks the version as a release version and creates tags.
+    # Binding this to the publish env to require approvals before run.
+    # Further jobs are follow-ups to the release and are not required to be approved once release is approved.
+    environment: publish
+
+    needs:
+      - setup
+      - mark-as-success
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-tags: true
+          token: ${{ secrets.ALL_REPO_PAT }}
+
+      - name: Setup git
+        run: |
+          # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
+          # See users API: https://api.github.com/users/github-actions%5Bbot%5D
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Check tests passed
+        run: |
+          testsPassed=`curl -s -X GET "https://api.supertokens.io/0/driver?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
+
+          if [[ $(echo $testsPassed | jq .testPassed) != "true" ]]
+          then
+            echo "All tests have not passed. Exiting."
+            exit 1
+          fi
+
+      - if: ${{ inputs.skip-other-version-checks == 'false' }}
+        name: Check if core and frontend released
+        run: |
+          canReleaseSafelyResponse=`curl -s -X GET "https://api.supertokens.io/0/driver/release/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
+
+          if [[ $(echo $canReleaseSafelyResponse | jq .canRelease) != "true" ]]
+          then
+            echo "Cannot release. Have you released corresponding core and frontend?"
+            exit 1
+          fi
+
+      - name: Check if current commit is dev-tagged
+        run: |
+          currentCommit=$(git log --format="%H" -n 1)
+          currentTag=`git tag -l --points-at $currentCommit`
+          expectedTag="${{ needs.setup.outputs.devTag }}"
+
+          if [[ $currentTag != $expectedTag ]]
+          then
+            echo "Commit does not have the correct dev tag for this release"
+            echo "Current: $currentTag"
+            echo "Expected: $expectedTag"
+            exit 1
+          fi
+
+      - name: Mark for release
+        run: |
+          curl --fail-with-body -X PUT \
+              https://api.supertokens.io/0/driver \
+              -H 'Content-Type: application/json' \
+              -H 'api-version: 0' \
+              -d "{
+                  \"password\": \"${{ secrets.SUPERTOKENS_RELEASE_API_KEY }}\",
+                  \"name\":\"python\",
+                  \"version\":\"${{ needs.setup.outputs.setupVersion }}\",
+                  \"release\": true
+              }"
+
+      - name: Create release tag, delete dev tag
+        run: |
+          # Add new release tag
+          git tag ${{ needs.setup.outputs.releaseTag }}
+          git push --tags
+
+          # Delete current dev tag
+          git tag --delete ${{ needs.setup.outputs.devTag }}
+          git push --delete origin ${{ needs.setup.outputs.devTag }}
+
+
+  merge:
+    runs-on: ubuntu-latest
+    needs:
+      - setup
+      - release
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          # Need a complete fetch to make the master merge work
+          fetch-depth: 0
+          fetch-tags: true
+          token: ${{ secrets.ALL_REPO_PAT }}
+
+      - name: Setup git
+        run: |
+          # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
+          # See users API: https://api.github.com/users/github-actions%5Bbot%5D
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Check API and merge to master
+        run: |
+          response=$(curl -s\
+            -X GET\
+            "https://api.supertokens.io/0/driver/latest/check?\
+              password=${{ secrets.SUPERTOKENS_API_KEY }}&\
+              version=${{ needs.setup.outputs.setupVersion }}&\
+              name=python" \
+            -H 'api-version: 0'
+          )
+
+          if [[ $response == "true" ]]
+          then
+            git checkout master
+            git checkout ${{ inputs.branch }}
+
+            git merge master
+            git checkout master
+            git merge ${{ inputs.branch }}
+            git push
+            git checkout ${{ inputs.branch }}
+          fi
+
+  publish-docs:
+    runs-on: ubuntu-latest
+    needs:
+      - setup
+      - release
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.setup.outputs.releaseTag }}
+          fetch-tags: true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ needs.setup.outputs.artifactName }}
+          path: html/supertokens_python
+
+      - name: Trigger the backend website CI
+        uses: actions/github-script@v7
+        with:
+          # NOTE: We should use a better scoped PAT here.
+          github-token: ${{ secrets.ALL_REPO_PAT }}
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+                owner: 'supertokens',
+                repo: 'supertokens-backend-website',
+                workflow_id: 'release-python-documentation-changes.yml',
+                ref: 'master',
+                inputs: {
+                  "version": `${{ needs.setup.outputs.setupVersion }}`,
+                  "artifact-name": `${{ needs.setup.outputs.artifactName }}`,
+                  "version-folder": `${{ needs.setup.outputs.versionFolder }}`,
+                  "run-id": `${{ github.run_id }}`,
+                  "stage":  "production",
+                }
+              })
+
+  publish:
+    runs-on: ubuntu-latest
+    needs:
+      - setup
+      - release
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.setup.outputs.releaseTag }}
+          fetch-tags: true
+
+      - run: |
+          # python3 -m pip install pip setuptools packaging poetry clikit --upgrade
+          # make dev-install
+          # pip install setuptools wheels twine
+          # python setup.py sdist bdist_wheel
+          # twine upload -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASSWORD }} dist/*
