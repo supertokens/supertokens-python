@@ -66,6 +66,7 @@ class FactorIds:
     LINK_PHONE: Literal["link-phone"] = "link-phone"
     THIRDPARTY: Literal["thirdparty"] = "thirdparty"
     TOTP: Literal["totp"] = "totp"
+    WEBAUTHN: Literal["webauthn"] = "webauthn"
 
 
 class FactorIdsAndType:

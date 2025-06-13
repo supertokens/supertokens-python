@@ -26,7 +26,8 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     SignUpOkResult,
     UpdateEmailOrPasswordOkResult,
 )
-from supertokens_python.types import AccountInfo, RecipeUserId
+from supertokens_python.types import RecipeUserId
+from supertokens_python.types.base import AccountInfoInput
 from supertokens_python.utils import is_version_gte
 from typing_extensions import Literal
 
@@ -57,7 +58,7 @@ async def ep_get_existing_user_id(user_id: str) -> str:
 async def ep_get_existing_user_by_email(email: str) -> str:
     from supertokens_python.asyncio import list_users_by_account_info
 
-    res = await list_users_by_account_info("public", AccountInfo(email=email))
+    res = await list_users_by_account_info("public", AccountInfoInput(email=email))
     assert len(res) == 1
     return res[0].id
 

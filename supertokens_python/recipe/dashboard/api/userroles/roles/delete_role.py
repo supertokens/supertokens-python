@@ -6,7 +6,7 @@ from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.dashboard.interfaces import APIInterface, APIOptions
 from supertokens_python.recipe.userroles.asyncio import delete_role
 from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
-from supertokens_python.types import APIResponse
+from supertokens_python.types.response import APIResponse
 
 
 class OkResponse(APIResponse):

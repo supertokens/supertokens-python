@@ -8,7 +8,8 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     SignUpOkResult,
 )
 from supertokens_python.recipe.emailpassword.recipe import EmailPasswordRecipe
-from supertokens_python.types import APIResponse, RecipeUserId, User
+from supertokens_python.types import RecipeUserId, User
+from supertokens_python.types.response import APIResponse
 
 
 class CreateEmailPasswordUserOkResponse(APIResponse):

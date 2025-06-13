@@ -52,6 +52,7 @@ from supertokens_python.recipe.thirdparty.asyncio import manually_create_or_upda
 from supertokens_python.recipe.totp.recipe import TOTPRecipe
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.userroles import UserRolesRecipe
+from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
 from supertokens_python.utils import is_version_gte
 
 API_VERSION_TEST_NON_SUPPORTED_SV = ["0.0", "1.0", "1.1", "2.1"]
@@ -137,6 +138,7 @@ def reset():
     TOTPRecipe.reset()
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
+    WebauthnRecipe.reset()
 
 
 def get_cookie_from_response(

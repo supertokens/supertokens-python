@@ -7,7 +7,7 @@ from supertokens_python.syncio import (
     get_users_oldest_first,
     list_users_by_account_info,
 )
-from supertokens_python.types import AccountInfo
+from supertokens_python.types.base import AccountInfoInput
 
 
 def add_supertokens_routes(app: Flask):
@@ -32,7 +32,7 @@ def add_supertokens_routes(app: Flask):
         assert request.json is not None
         response = list_users_by_account_info(
             request.json["tenantId"],
-            AccountInfo(
+            AccountInfoInput(
                 email=request.json["accountInfo"].get("email", None),
                 phone_number=request.json["accountInfo"].get("phoneNumber", None),
                 third_party=(

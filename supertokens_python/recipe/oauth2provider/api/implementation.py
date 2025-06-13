@@ -15,7 +15,8 @@
 from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.types import GeneralErrorResponse, User
+from supertokens_python.types import User
+from supertokens_python.types.response import GeneralErrorResponse
 
 from ..interfaces import (
     ActiveTokenResponse,

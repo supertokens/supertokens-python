@@ -14,8 +14,10 @@
 import os
 import time
 import traceback
-from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import Any, Awaitable, Callable, Dict, List, Optional, TypedDict, Union
+from urllib.parse import parse_qs, urlparse
 
+import httpx
 import requests
 from dotenv import load_dotenv
 from flask import Flask, g, jsonify, make_response, request
@@ -27,9 +29,12 @@ from supertokens_python import (
     get_all_cors_headers,
     init,
 )
-from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.framework.request import BaseRequest
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryConfigWithService,
+    EmailDeliveryInterface,
+)
 from supertokens_python.recipe import (
     accountlinking,
     emailpassword,
@@ -42,6 +47,7 @@ from supertokens_python.recipe import (
     thirdparty,
     totp,
     userroles,
+    webauthn,
 )
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.accountlinking.types import (
@@ -168,13 +174,17 @@ from supertokens_python.recipe.userroles.syncio import (
     add_role_to_user,
     create_new_role_or_add_permissions,
 )
-from supertokens_python.syncio import delete_user, get_user, list_users_by_account_info
-from supertokens_python.types import (
-    AccountInfo,
-    GeneralErrorResponse,
-    RecipeUserId,
-    User,
+from supertokens_python.recipe.webauthn.functions import update_user_email
+from supertokens_python.recipe.webauthn.interfaces.api import (
+    TypeWebauthnEmailDeliveryInput,
 )
+from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
+from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
+from supertokens_python.syncio import delete_user, get_user, list_users_by_account_info
+from supertokens_python.types import RecipeUserId, User
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
+from supertokens_python.types.base import AccountInfoInput
+from supertokens_python.types.response import GeneralErrorResponse
 from typing_extensions import Literal
 
 load_dotenv("../auth-react.env")
@@ -196,6 +206,14 @@ os.environ.setdefault("SUPERTOKENS_ENV", "testing")
 
 latest_url_with_token = ""
 
+
+class SaveWebauthnTokenUser(TypedDict):
+    email: str
+    recover_account_link: str
+    token: str
+
+
+webauthn_store: Dict[str, SaveWebauthnTokenUser] = {}
 code_store: Dict[str, List[Dict[str, Any]]] = {}
 accountlinking_config: Dict[str, Any] = {}
 enabled_providers: Optional[List[Any]] = None
@@ -273,6 +291,41 @@ class CustomEPEmailService(
     ) -> None:
         global latest_url_with_token
         latest_url_with_token = template_vars.password_reset_link
+
+
+def save_webauthn_token(user: SaveWebauthnTokenUser, recover_account_link: str):
+    global webauthn_store
+    webauthn = webauthn_store.get(
+        user["email"],
+        {"email": user["email"], "recover_account_link": "", "token": ""},
+    )
+    webauthn["recover_account_link"] = recover_account_link
+
+    # Parse the token from the recoverAccountLink using URL and URLSearchParams
+    url = urlparse(recover_account_link)
+    token = parse_qs(url.query).get("token")
+    if token is not None and len(token) > 0:
+        webauthn["token"] = token[0]
+
+    webauthn_store[user["email"]] = webauthn
+
+
+class CustomWebwuthnEmailService(
+    EmailDeliveryInterface[TypeWebauthnEmailDeliveryInput]
+):
+    async def send_email(
+        self,
+        template_vars: TypeWebauthnEmailDeliveryInput,
+        user_context: Dict[str, Any],
+    ):
+        save_webauthn_token(
+            user={
+                "email": template_vars.user.email,
+                "recover_account_link": "",
+                "token": "",
+            },
+            recover_account_link=template_vars.recover_account_link,
+        )
 
 
 async def create_and_send_custom_email(
@@ -430,6 +483,7 @@ def custom_init(
     MultiFactorAuthRecipe.reset()
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
+    WebauthnRecipe.reset()
 
     def override_email_verification_apis(
         original_implementation_email_verification: EmailVerificationAPIInterface,
@@ -1022,6 +1076,16 @@ def custom_init(
             ),
         },
         {
+            "id": "webauthn",
+            "init": webauthn.init(
+                config=WebauthnConfig(
+                    email_delivery=EmailDeliveryConfigWithService[
+                        TypeWebauthnEmailDeliveryInput
+                    ](service=CustomWebwuthnEmailService())  # type: ignore
+                )
+            ),
+        },
+        {
             "id": "thirdparty",
             "init": thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers_list),
@@ -1164,7 +1228,7 @@ def ping():
 
 
 @app.route("/changeEmail", methods=["POST"])  # type: ignore
-def change_email():
+async def change_email():
     body: Union[Any, None] = request.get_json()
     if body is None:
         raise Exception("Should never come here")
@@ -1189,7 +1253,8 @@ def change_email():
             )
         # password policy violation error
         return jsonify(resp.to_json())
-    elif body["rid"] == "thirdparty":
+
+    if body["rid"] == "thirdparty":
         user = get_user(user_id=body["recipeUserId"])
         assert user is not None
         login_method = next(
@@ -1218,7 +1283,8 @@ def change_email():
         return jsonify(
             {"status": "EMAIL_CHANGE_NOT_ALLOWED_ERROR", "reason": resp.reason}
         )
-    elif body["rid"] == "passwordless":
+
+    if body["rid"] == "passwordless":
         resp = update_user(
             recipe_user_id=convert_to_recipe_user_id(body["recipeUserId"]),
             email=body.get("email"),
@@ -1240,6 +1306,14 @@ def change_email():
         return jsonify(
             {"status": "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR", "reason": resp.reason}
         )
+
+    if body["rid"] == "webauthn":
+        resp = await update_user_email(
+            recipe_user_id=body["recipeUserId"],
+            email=body["email"],
+        )
+
+        return jsonify(resp.to_json())
 
     raise Exception("Should not come here")
 
@@ -1462,6 +1536,7 @@ def test_feature_flags():
         "recipeConfig",
         "accountlinking-fixes",
         "oauth2",
+        "webauthn",
     ]
     return jsonify({"available": available})
 
@@ -1490,11 +1565,44 @@ def verify_email_api():
 @app.route("/deleteUser", methods=["POST"])  # type: ignore
 def delete_user_api():
     body: Dict[str, Any] = request.get_json()  # type: ignore
-    user = list_users_by_account_info("public", AccountInfo(email=body["email"]))
+    user = list_users_by_account_info("public", AccountInfoInput(email=body["email"]))
     if len(user) == 0:
         raise Exception("Should not come here")
     delete_user(user[0].id)
     return jsonify({"status": "OK"})
+
+
+@app.route("/test/webauthn/get-token", methods=["GET"])
+async def webauth_get_token():
+    webauthn = webauthn_store.get(request.args.get("email", ""))
+    if webauthn is None:
+        return jsonify({"error": "Webauthn not found"}, status_code=404)
+
+    return jsonify({"token": webauthn["token"]})
+
+
+@app.route("/test/webauthn/create-and-assert-credential", methods=["POST"])
+async def webauthn_create_and_assert_credential():
+    body: Dict[str, Any] = request.get_json()  # type: ignore
+    test_server_port = os.environ.get("NODE_PORT", 8082)
+    response = httpx.post(
+        url=f"http://localhost:{test_server_port}/test/webauthn/create-and-assert-credential",
+        json=body,
+    )
+
+    return jsonify(response.json())
+
+
+@app.route("/test/webauthn/create-credential", methods=["POST"])
+async def webauthn_create_credential():
+    body: Dict[str, Any] = request.get_json()  # type: ignore
+    test_server_port = os.environ.get("NODE_PORT", 8082)
+    response = httpx.post(
+        url=f"http://localhost:{test_server_port}/test/webauthn/create-credential",
+        json=body,
+    )
+
+    return jsonify(response.json())
 
 
 async def override_global_claim_validators(

@@ -20,7 +20,7 @@ from typing_extensions import Literal
 
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 
-from ...types import APIResponse
+from ...types.response import APIResponse
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse

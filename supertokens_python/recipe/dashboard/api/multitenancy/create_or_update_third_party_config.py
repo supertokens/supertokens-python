@@ -27,7 +27,7 @@ from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.thirdparty import ProviderConfig
 from supertokens_python.recipe.thirdparty.providers.utils import do_post_request
-from supertokens_python.types import APIResponse
+from supertokens_python.types.response import APIResponse
 from supertokens_python.utils import encode_base64
 
 from ...interfaces import APIInterface, APIOptions

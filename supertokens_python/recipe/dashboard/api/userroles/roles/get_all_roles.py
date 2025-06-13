@@ -5,7 +5,7 @@ from typing_extensions import Literal
 from supertokens_python.recipe.dashboard.interfaces import APIInterface, APIOptions
 from supertokens_python.recipe.userroles.asyncio import get_all_roles
 from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
-from supertokens_python.types import APIResponse
+from supertokens_python.types.response import APIResponse
 
 
 class OkResponse(APIResponse):

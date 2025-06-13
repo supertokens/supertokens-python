@@ -19,7 +19,8 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Unio
 from typing_extensions import Literal
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
-from supertokens_python.types import APIResponse, GeneralErrorResponse, RecipeUserId
+from supertokens_python.types import RecipeUserId
+from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from ...supertokens import AppInfo
 from ..session.interfaces import SessionContainer

@@ -7,7 +7,7 @@ from supertokens_python.recipe.userroles.interfaces import (
     GetPermissionsForRoleOkResult,
 )
 from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
-from supertokens_python.types import APIResponse
+from supertokens_python.types.response import APIResponse
 
 
 class OkPermissionsForRoleResponse(APIResponse):

@@ -30,7 +30,7 @@ from supertokens_python.recipe.thirdparty.interfaces import (
     ManuallyCreateOrUpdateUserOkResult,
 )
 from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
-from supertokens_python.types import AccountInfo
+from supertokens_python.types.base import AccountInfoInput
 
 from tests.utils import (
     get_new_core_app_url,
@@ -108,13 +108,13 @@ async def test_thirtyparty_multitenancy_functions():
 
     # get user by email:
     by_email_user1 = await list_users_by_account_info(
-        "t1", AccountInfo(email="test@example.com")
+        "t1", AccountInfoInput(email="test@example.com")
     )
     by_email_user2 = await list_users_by_account_info(
-        "t2", AccountInfo(email="test@example.com")
+        "t2", AccountInfoInput(email="test@example.com")
     )
     by_email_user3 = await list_users_by_account_info(
-        "t3", AccountInfo(email="test@example.com")
+        "t3", AccountInfoInput(email="test@example.com")
     )
 
     assert by_email_user1 == [user1a.user, user1b.user]
@@ -124,7 +124,7 @@ async def test_thirtyparty_multitenancy_functions():
     # get user by thirdparty id:
     g_user_by_tpid1a = await list_users_by_account_info(
         "t1",
-        AccountInfo(
+        AccountInfoInput(
             third_party=ThirdPartyInfo(
                 third_party_id="google", third_party_user_id="googleid1"
             )
@@ -132,7 +132,7 @@ async def test_thirtyparty_multitenancy_functions():
     )
     g_user_by_tpid1b = await list_users_by_account_info(
         "t1",
-        AccountInfo(
+        AccountInfoInput(
             third_party=ThirdPartyInfo(
                 third_party_id="facebook", third_party_user_id="fbid1"
             )
@@ -140,7 +140,7 @@ async def test_thirtyparty_multitenancy_functions():
     )
     g_user_by_tpid2a = await list_users_by_account_info(
         "t2",
-        AccountInfo(
+        AccountInfoInput(
             third_party=ThirdPartyInfo(
                 third_party_id="google", third_party_user_id="googleid1"
             )
@@ -148,7 +148,7 @@ async def test_thirtyparty_multitenancy_functions():
     )
     g_user_by_tpid2b = await list_users_by_account_info(
         "t2",
-        AccountInfo(
+        AccountInfoInput(
             third_party=ThirdPartyInfo(
                 third_party_id="facebook", third_party_user_id="fbid1"
             )
@@ -156,7 +156,7 @@ async def test_thirtyparty_multitenancy_functions():
     )
     g_user_by_tpid3a = await list_users_by_account_info(
         "t3",
-        AccountInfo(
+        AccountInfoInput(
             third_party=ThirdPartyInfo(
                 third_party_id="google", third_party_user_id="googleid1"
             )
@@ -164,7 +164,7 @@ async def test_thirtyparty_multitenancy_functions():
     )
     g_user_by_tpid3b = await list_users_by_account_info(
         "t3",
-        AccountInfo(
+        AccountInfoInput(
             third_party=ThirdPartyInfo(
                 third_party_id="facebook", third_party_user_id="fbid1"
             )

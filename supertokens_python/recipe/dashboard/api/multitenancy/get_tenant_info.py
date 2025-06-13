@@ -26,7 +26,7 @@ from supertokens_python.recipe.thirdparty.providers.config_utils import (
     find_and_create_provider_instance,
     merge_providers_from_core_and_static,
 )
-from supertokens_python.types import APIResponse
+from supertokens_python.types.response import APIResponse
 
 from ...interfaces import APIInterface, APIOptions, CoreConfigFieldInfo
 from .utils import (

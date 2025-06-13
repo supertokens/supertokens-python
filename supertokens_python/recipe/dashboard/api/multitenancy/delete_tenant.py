@@ -17,7 +17,7 @@ from typing import Any, Dict, Union
 from typing_extensions import Literal
 
 from supertokens_python.recipe.multitenancy.asyncio import delete_tenant
-from supertokens_python.types import APIResponse
+from supertokens_python.types.response import APIResponse
 
 from ...interfaces import APIInterface, APIOptions
 

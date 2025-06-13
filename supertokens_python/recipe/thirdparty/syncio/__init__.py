@@ -14,13 +14,13 @@
 from typing import Any, Dict, Optional, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
-from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.thirdparty.interfaces import (
     EmailChangeNotAllowedError,
     ManuallyCreateOrUpdateUserOkResult,
     SignInUpNotAllowed,
 )
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 
 
 def manually_create_or_update_user(
