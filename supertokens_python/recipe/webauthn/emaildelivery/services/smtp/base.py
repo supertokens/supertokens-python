@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Union
 
 from supertokens_python.ingredients.emaildelivery.services.smtp import Transporter
 from supertokens_python.ingredients.emaildelivery.types import (
@@ -33,11 +33,12 @@ class SMTPService(EmailDeliveryInterface[TypeWebauthnEmailDeliveryInput]):
     def __init__(
         self,
         smtp_settings: SMTPSettings,
-        override: Optional[
+        override: Union[
             Callable[
                 [SMTPServiceInterface[TypeWebauthnEmailDeliveryInput]],
                 SMTPServiceInterface[TypeWebauthnEmailDeliveryInput],
             ],
+            None,
         ] = None,
     ) -> None:
         transporter = Transporter(smtp_settings)
