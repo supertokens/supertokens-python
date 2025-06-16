@@ -139,10 +139,35 @@ partial_init = partial(
         param(
             True,
             False,
-            [Plugin1, Plugin2],
+            [
+                plugin_factory("plugin1", override_functions=True),
+                plugin_factory("plugin2", override_functions=True),
+            ],
             outputs(["override", "plugin2", "plugin1", "original"]),
             outputs(["original"]),
             id="fn_ovr=True, api_ovr=False, plugins=[Plugin1, Plugin2], plugin1=[fn], plugin2=[fn]",
+        ),
+        param(
+            False,
+            True,
+            [
+                plugin_factory("plugin1", override_apis=True),
+                plugin_factory("plugin2", override_apis=True),
+            ],
+            outputs(["original"]),
+            outputs(["override", "plugin2", "plugin1", "original"]),
+            id="fn_ovr=True, api_ovr=False, plugins=[Plugin1, Plugin2], plugin1=[api], plugin2=[api]",
+        ),
+        param(
+            True,
+            True,
+            [
+                plugin_factory("plugin1", override_functions=True, override_apis=True),
+                plugin_factory("plugin2", override_functions=True, override_apis=True),
+            ],
+            outputs(["override", "plugin2", "plugin1", "original"]),
+            outputs(["override", "plugin2", "plugin1", "original"]),
+            id="fn_ovr=True, api_ovr=True, plugins=[Plugin1, Plugin2], plugin1=[fn,api], plugin2=[fn,api]",
         ),
     ],
 )
@@ -196,6 +221,12 @@ def test_overrides(
             outputs(["plugin1", "original"]),
             outputs(["original"]),
             id="1,1 => 1",
+        ),
+        param(
+            [Plugin1, Plugin2],
+            outputs(["plugin2", "plugin1", "original"]),
+            outputs(["original"]),
+            id="1,2 => 2,1",
         ),
         param(
             [Plugin3Dep1],
