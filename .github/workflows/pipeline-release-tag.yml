@@ -80,7 +80,7 @@ jobs:
         run: |
           pip install httpx
 
-      - if: ${{ inputs.skip-test-checks == 'false' }}
+      - if: ${{ inputs.skip-test-checks == 'false' || inputs.skip-test-checks == false }}
         name: Get commit status
         run: |
           python3 -c "$(cat << EOF
@@ -174,7 +174,7 @@ jobs:
             exit 1
           fi
 
-      - if: ${{ inputs.skip-other-version-checks == 'false' }}
+      - if: ${{ inputs.skip-other-version-checks == 'false' || inputs.skip-other-version-checks == false }}
         name: Check if core and frontend released
         run: |
           canReleaseSafelyResponse=`curl -s -X GET "https://api.supertokens.io/0/driver/release/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
@@ -201,7 +201,7 @@ jobs:
 
       - name: Mark for release
         run: |
-          curl --fail-with-body -X PUT \
+          curl --fail-with-body -X PATCH \
               https://api.supertokens.io/0/driver \
               -H 'Content-Type: application/json' \
               -H 'api-version: 0' \
@@ -247,16 +247,10 @@ jobs:
 
       - name: Check API and merge to master
         run: |
-          response=$(curl -s\
-            -X GET\
-            "https://api.supertokens.io/0/driver/latest/check?\
-              password=${{ secrets.SUPERTOKENS_API_KEY }}&\
-              version=${{ needs.setup.outputs.setupVersion }}&\
-              name=python" \
-            -H 'api-version: 0'
-          )
+          response=`curl -s -X GET "https://api.supertokens.io/0/driver/latest/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
+          isLatest=$(echo $response | jq .isLatest)
 
-          if [[ $response == "true" ]]
+          if [[ $isLatest == "true" ]]
           then
             git checkout master
             git checkout ${{ inputs.branch }}
@@ -318,8 +312,8 @@ jobs:
           fetch-tags: true
 
       - run: |
-          # python3 -m pip install pip setuptools packaging poetry clikit --upgrade
-          # make dev-install
-          # pip install setuptools wheels twine
-          # python setup.py sdist bdist_wheel
-          # twine upload -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASSWORD }} dist/*
+          python3 -m pip install pip setuptools packaging poetry clikit --upgrade
+          make dev-install
+          pip install setuptools wheels twine
+          python setup.py sdist bdist_wheel
+          twine upload -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASSWORD }} dist/*
