@@ -89,38 +89,59 @@ jobs:
           import httpx
           import sys
 
-          url = "https://api.github.com/repos/${{ github.repository }}/commits/tags/${{ needs.setup.outputs.devTag }}/check-runs?per_page=100&page={page}"
+          check_runs_url = "https://api.github.com/repos/${{ github.repository }}/commits/tags/${{ needs.setup.outputs.devTag }}/check-runs?per_page=100&page={page}"
+          jobs_url="https://api.github.com/repos/supertokens/supertokens-python/actions/runs/${{ github.run_id }}/jobs"
+
+          current_jobs_response = httpx.get(jobs_url).json()
+          current_job_ids = [job["id"] for job in current_jobs_response["jobs"]]
+
           page = 1
           total = 0
 
           status_map = defaultdict(int)
           conclusion_map = defaultdict(int)
+          failures = []
 
           while True:
-            response = httpx.get(url.format(page=page)).json()
+              response = httpx.get(check_runs_url.format(page=page)).json()
 
-            if len(response["check_runs"]) == 0:
-                break
+              if len(response["check_runs"]) == 0:
+                  break
 
-            for run_info in response["check_runs"]:
-                status_map[run_info["status"]] += 1
-                conclusion_map[run_info["conclusion"]] += 1
-                total += 1
+              for run_info in response["check_runs"]:
+                  # Release pipeline jobs also show up in check-runs
+                  # We skip them from the checks to avoid pipeline failures
+                  if run_info["id"] in current_job_ids:
+                      continue
 
-            page += 1
+                  if run_info["conclusion"] == "failure":
+                      failures.append(run_info["html_url"])
 
+                  status_map[run_info["status"]] += 1
+                  conclusion_map[run_info["conclusion"]] += 1
+                  total += 1
+
+              page += 1
+
+          print(f"{page=}")
           print(f"{total=}")
-          print(dict(status_map))
-          print(dict(conclusion_map))
+          print("Status Map =", dict(status_map))
+          print("Conclusion Map =", dict(conclusion_map))
+          print()
 
+          # Possible values (from docs):
+          # [completed, action_required, cancelled, failure, neutral, skipped, stale, success,
+          # timed_out, in_progress, queued, requested, waiting, pending]
           if status_map["completed"] < total:
               print("Some checks not completed.")
-              print(dict(status_map))
+              print(failures)
               sys.exit(1)
 
-          if conclusion_map["success"] < total:
+          # Possible values (from testing):
+          # None, success, skipped, failure
+          if conclusion_map.get("failure") > 0:
               print("Some checks not successful.")
-              print(dict(conclusion_map))
+              print(failures)
               sys.exit(1)
 
           EOF
