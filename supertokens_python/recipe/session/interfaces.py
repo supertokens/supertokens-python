@@ -30,11 +30,10 @@ from typing_extensions import TypedDict
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.types import (
-    APIResponse,
-    GeneralErrorResponse,
     MaybeAwaitable,
     RecipeUserId,
 )
+from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from ...utils import resolve
 from .exceptions import ClaimValidationError

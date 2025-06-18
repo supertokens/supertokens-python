@@ -82,7 +82,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.29.2",
+    version="0.30.0",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",
@@ -127,6 +127,7 @@ setup(
         "pkce<1.1.0",
         "pyotp<3",
         "python-dateutil<3",
+        "pydantic>=2.10.6,<3.0.0",
     ],
     python_requires=">=3.8",
     include_package_data=True,

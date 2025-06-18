@@ -14,9 +14,10 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.multifactorauth.types import (
     GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc,
@@ -205,12 +206,17 @@ class TOTPRecipe(RecipeModule):
     def init(
         config: Union[TOTPConfig, None] = None,
     ):
-        def func(app_info: AppInfo):
+        def func(app_info: AppInfo, plugins: Optional[List[OverrideMap]] = None):
+            if plugins is None:
+                plugins = []
+
             if TOTPRecipe.__instance is None:
                 TOTPRecipe.__instance = TOTPRecipe(
                     TOTPRecipe.recipe_id,
                     app_info,
-                    config,
+                    apply_plugins(
+                        recipe_id=TOTPRecipe.recipe_id, config=config, plugins=plugins
+                    ),
                 )
                 return TOTPRecipe.__instance
             raise Exception(

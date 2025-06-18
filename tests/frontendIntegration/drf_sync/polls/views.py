@@ -147,7 +147,7 @@ def custom_decorator_for_update_jwt():  # type: ignore
 
                     body = request.data  # type: ignore
                     session_.sync_merge_into_access_token_payload(  # type: ignore
-                        {**clearing, **body},
+                        {**clearing, **body},  # type: ignore
                         {},  # type: ignore
                     )
 
@@ -184,7 +184,7 @@ def custom_decorator_for_update_jwt_with_handle():  # type: ignore
                 body = request.data  # type: ignore
                 merge_into_access_token_payload(
                     session_.get_handle(),  # type: ignore
-                    {**clearing, **body},
+                    {**clearing, **body},  # type: ignore
                 )
 
                 resp = Response(session_.get_access_token_payload())  # type: ignore

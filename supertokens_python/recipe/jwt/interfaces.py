@@ -15,7 +15,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.framework import BaseRequest, BaseResponse
-from supertokens_python.types import APIResponse, GeneralErrorResponse
+from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from .utils import JWTConfig
 

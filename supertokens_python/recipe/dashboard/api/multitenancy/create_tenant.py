@@ -19,7 +19,7 @@ from supertokens_python.recipe.multitenancy.asyncio import create_or_update_tena
 from supertokens_python.recipe.multitenancy.interfaces import (
     TenantConfigCreateOrUpdate,
 )
-from supertokens_python.types import APIResponse
+from supertokens_python.types.response import APIResponse
 
 from ...interfaces import APIInterface, APIOptions
 

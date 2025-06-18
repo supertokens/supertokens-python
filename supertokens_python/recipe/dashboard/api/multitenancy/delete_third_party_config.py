@@ -28,7 +28,7 @@ from supertokens_python.recipe.multitenancy.asyncio import (
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfigCreateOrUpdate
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.thirdparty import ProviderConfig
-from supertokens_python.types import APIResponse
+from supertokens_python.types.response import APIResponse
 
 from ...interfaces import APIInterface, APIOptions
 

@@ -14,7 +14,6 @@
 from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
-from supertokens_python.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.recipe.passwordless import asyncio
 from supertokens_python.recipe.passwordless.interfaces import (
     CheckCodeExpiredUserInputCodeError,
@@ -45,6 +44,7 @@ from supertokens_python.recipe.passwordless.types import (
 )
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.types import RecipeUserId
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 
 
 def create_code(

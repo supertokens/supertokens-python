@@ -42,7 +42,6 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     EmailExistsGetOkResult,
     GeneratePasswordResetTokenPostNotAllowedResponse,
     GeneratePasswordResetTokenPostOkResult,
-    LinkingToSessionUserFailedError,
     PasswordPolicyViolationError,
     PasswordResetPostOkResult,
     PasswordResetTokenInvalidError,
@@ -63,13 +62,16 @@ from supertokens_python.recipe.emailpassword.types import (
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.totp.types import UnknownUserIdError
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
+from supertokens_python.types.base import AccountInfoInput
+from supertokens_python.types.response import GeneralErrorResponse
 
 from ..utils import get_password_reset_link
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.interfaces import APIOptions
 
-from supertokens_python.types import AccountInfo, GeneralErrorResponse, RecipeUserId
+from supertokens_python.types import RecipeUserId
 
 
 class APIImplementation(APIInterface):
@@ -83,7 +85,7 @@ class APIImplementation(APIInterface):
         # Check if there exists an email password user with the same email
         users = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=AccountInfo(email=email),
+            account_info=AccountInfoInput(email=email),
             do_union_of_account_info=False,
             user_context=user_context,
         )
@@ -162,7 +164,7 @@ class APIImplementation(APIInterface):
 
         users = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
             tenant_id=tenant_id,
-            account_info=AccountInfo(email=email),
+            account_info=AccountInfoInput(email=email),
             do_union_of_account_info=False,
             user_context=user_context,
         )
@@ -565,6 +567,7 @@ class APIImplementation(APIInterface):
                 email=email,
                 phone_number=None,
                 third_party=None,
+                webauthn=None,
                 user_context=user_context,
                 recipe_id=recipe_id,
                 session=session,
@@ -700,7 +703,7 @@ class APIImplementation(APIInterface):
         if pre_auth_check_res.status == "SIGN_UP_NOT_ALLOWED":
             conflicting_users = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
                 tenant_id=tenant_id,
-                account_info=AccountInfo(
+                account_info=AccountInfoInput(
                     email=email,
                 ),
                 do_union_of_account_info=False,

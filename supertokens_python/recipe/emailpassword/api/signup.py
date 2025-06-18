@@ -20,7 +20,7 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     EmailAlreadyExistsError,
     SignUpPostOkResult,
 )
-from supertokens_python.types import GeneralErrorResponse
+from supertokens_python.types.response import GeneralErrorResponse
 
 from ..exceptions import raise_form_field_exception
 from ..types import ErrorFormField

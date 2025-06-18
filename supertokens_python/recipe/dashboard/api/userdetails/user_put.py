@@ -39,10 +39,10 @@ from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.usermetadata.asyncio import update_user_metadata
 from supertokens_python.types import RecipeUserId
 
+from .....types.response import APIResponse
 from ...interfaces import (
     APIInterface,
     APIOptions,
-    APIResponse,
 )
 
 
