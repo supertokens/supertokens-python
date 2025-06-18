@@ -15,6 +15,7 @@ from supertokens_python.plugins import (
     PluginRouteHandlerFunctionOkResponse,
     SuperTokensPlugin,
 )
+from supertokens_python.post_init_callbacks import PostSTInitCallbacks
 from supertokens_python.supertokens import SupertokensPublicConfig
 
 from tests.utils import outputs, reset
@@ -41,9 +42,11 @@ from .types import RecipeReturnType
 def setup_and_teardown():
     reset()
     PluginTestRecipe.reset()
+    PostSTInitCallbacks.reset()
     yield
     reset()
     PluginTestRecipe.reset()
+    PostSTInitCallbacks.reset()
 
 
 def recipe_factory(override_functions: bool = False, override_apis: bool = False):
@@ -214,36 +217,41 @@ def test_overrides(
 
 # TODO: Figure out a way to add circular dependencies and test them
 @mark.parametrize(
-    ("plugins", "recipe_expectation", "api_expectation"),
+    ("plugins", "recipe_expectation", "api_expectation", "init_expectation"),
     [
         param(
             [Plugin1, Plugin1],
             outputs(["plugin1", "original"]),
             outputs(["original"]),
+            outputs(["plugin1"]),
             id="1,1 => 1",
         ),
         param(
             [Plugin1, Plugin2],
             outputs(["plugin2", "plugin1", "original"]),
             outputs(["original"]),
+            outputs(["plugin1", "plugin2"]),
             id="1,2 => 2,1",
         ),
         param(
             [Plugin3Dep1],
             outputs(["plugin3dep1", "plugin1", "original"]),
             outputs(["original"]),
+            outputs(["plugin1", "plugin3dep1"]),
             id="3->1 => 3,1",
         ),
         param(
             [Plugin3Dep2_1],
             outputs(["plugin3dep2_1", "plugin1", "plugin2", "original"]),
             outputs(["original"]),
+            outputs(["plugin2", "plugin1", "plugin3dep2_1"]),
             id="3->(2,1) => 3,2,1",
         ),
         param(
             [Plugin3Dep1, Plugin4Dep2],
             outputs(["plugin4dep2", "plugin2", "plugin3dep1", "plugin1", "original"]),
             outputs(["original"]),
+            outputs(["plugin1", "plugin3dep1", "plugin2", "plugin4dep2"]),
             id="3->1,4->2 => 4,2,3,1",
         ),
         param(
@@ -252,20 +260,23 @@ def test_overrides(
                 ["plugin4dep3__2_1", "plugin3dep2_1", "plugin1", "plugin2", "original"]
             ),
             outputs(["original"]),
+            outputs(["plugin2", "plugin1", "plugin3dep2_1", "plugin4dep3__2_1"]),
             id="4->3->(2,1) => 4,3,1,2",
         ),
         param(
             [Plugin3Dep1, Plugin4Dep1],
             outputs(["plugin4dep1", "plugin3dep1", "plugin1", "original"]),
             outputs(["original"]),
+            outputs(["plugin1", "plugin3dep1", "plugin4dep1"]),
             id="3->1,4->1 => 4,3,1",
         ),
     ],
 )
-def test_depdendencies(
+def test_depdendencies_and_init(
     plugins: List[SuperTokensPlugin],
     recipe_expectation: Any,
     api_expectation: Any,
+    init_expectation: Any,
 ):
     partial_init(
         recipe_list=[
@@ -298,8 +309,10 @@ def test_depdendencies(
             message="msg",
         )
 
+    with init_expectation as expected_stack:
+        assert PluginTestRecipe.init_calls == expected_stack
 
-# TODO: Add tests for init, recipe config override
+
 def test_st_config_override():
     plugin = plugin_factory("plugin1", override_functions=False, override_apis=False)
 

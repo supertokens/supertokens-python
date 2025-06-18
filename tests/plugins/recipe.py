@@ -26,6 +26,7 @@ from .recipe_implementation import RecipeImplementation
 
 class PluginTestRecipe(RecipeModule):
     __instance: Optional["PluginTestRecipe"] = None
+    init_calls: List[str] = []
     recipe_id = "plugin_test"
 
     config: NormalizedPluginTestConfig
@@ -94,6 +95,7 @@ class PluginTestRecipe(RecipeModule):
     @staticmethod
     def reset():
         PluginTestRecipe.__instance = None
+        PluginTestRecipe.init_calls = []
 
     def get_all_cors_headers(self) -> List[str]:
         return []
