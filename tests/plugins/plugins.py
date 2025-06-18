@@ -49,8 +49,7 @@ def init_factory(identifier: str):
         all_plugins: List[SuperTokensPublicPlugin],
         sdk_version: str,
     ):
-        # TODO: Test this
-        print(f"{identifier} init")
+        PluginTestRecipe.init_calls.append(identifier)
 
     return init
 
@@ -78,6 +77,7 @@ def plugin_factory(
     override_functions: bool = False,
     override_apis: bool = False,
     deps: Optional[List[SuperTokensPlugin]] = None,
+    add_init: bool = False,
 ):
     override_map_obj: OverrideMap = {PluginTestRecipe.recipe_id: OverrideConfig()}
 
@@ -90,24 +90,57 @@ def plugin_factory(
             identifier
         )
 
+    init_fn = None
+    if add_init:
+        init_fn = init_factory(identifier)
+
     class Plugin(SuperTokensPlugin):
         id: str = identifier
         compatible_sdk_versions: Union[str, List[str]] = ["0.30.0"]
         override_map: Optional[OverrideMap] = override_map_obj
-        init: Any = init_factory(identifier)
+        init: Any = init_fn
         dependencies: Optional[SuperTokensPluginDependencies] = dependency_factory(deps)
 
     return Plugin()
 
 
-Plugin1 = plugin_factory("plugin1", override_functions=True)
-Plugin2 = plugin_factory("plugin2", override_functions=True)
-Plugin3Dep1 = plugin_factory("plugin3dep1", override_functions=True, deps=[Plugin1])
-Plugin3Dep2_1 = plugin_factory(
-    "plugin3dep2_1", override_functions=True, deps=[Plugin2, Plugin1]
+Plugin1 = plugin_factory(
+    "plugin1",
+    override_functions=True,
+    add_init=True,
 )
-Plugin4Dep1 = plugin_factory("plugin4dep1", override_functions=True, deps=[Plugin1])
-Plugin4Dep2 = plugin_factory("plugin4dep2", override_functions=True, deps=[Plugin2])
+Plugin2 = plugin_factory(
+    "plugin2",
+    override_functions=True,
+    add_init=True,
+)
+Plugin3Dep1 = plugin_factory(
+    "plugin3dep1",
+    override_functions=True,
+    deps=[Plugin1],
+    add_init=True,
+)
+Plugin3Dep2_1 = plugin_factory(
+    "plugin3dep2_1",
+    override_functions=True,
+    deps=[Plugin2, Plugin1],
+    add_init=True,
+)
+Plugin4Dep1 = plugin_factory(
+    "plugin4dep1",
+    override_functions=True,
+    deps=[Plugin1],
+    add_init=True,
+)
+Plugin4Dep2 = plugin_factory(
+    "plugin4dep2",
+    override_functions=True,
+    deps=[Plugin2],
+    add_init=True,
+)
 Plugin4Dep3__2_1 = plugin_factory(
-    "plugin4dep3__2_1", override_functions=True, deps=[Plugin3Dep2_1]
+    "plugin4dep3__2_1",
+    override_functions=True,
+    deps=[Plugin3Dep2_1],
+    add_init=True,
 )
