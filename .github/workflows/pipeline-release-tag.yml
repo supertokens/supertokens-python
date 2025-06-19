@@ -139,7 +139,7 @@ jobs:
 
           # Possible values (from testing):
           # None, success, skipped, failure
-          if conclusion_map.get("failure") > 0:
+          if conclusion_map.get("failure", 0) > 0:
               print("Some checks not successful.")
               print(failures)
               sys.exit(1)
@@ -335,6 +335,6 @@ jobs:
       - run: |
           python3 -m pip install pip setuptools packaging poetry clikit --upgrade
           make dev-install
-          pip install setuptools wheels twine
+          pip install setuptools wheel twine
           python setup.py sdist bdist_wheel
           twine upload -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASSWORD }} dist/*
