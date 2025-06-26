@@ -108,7 +108,7 @@ jobs:
                 owner: 'supertokens',
                 repo: 'supertokens-backend-website',
                 workflow_id: 'release-python-documentation-changes.yml',
-                ref: 'feat/python-node-docs',
+                ref: 'python-node-docs',
                 inputs: {
                   "version": `${{ needs.setup.outputs.setupVersion }}`,
                   "artifact-name": `${{ needs.setup.outputs.artifactName }}`,
