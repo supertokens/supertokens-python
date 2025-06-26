@@ -1,13 +1,9 @@
 name: "Update Docs - Test"
 
 on:
-  workflow_dispatch:
-    inputs:
-      is-latest:
-        description: "Is this the latest version?"
-        type: boolean
-        default: false
-        required: true
+  pull_request:
+    types:
+      - synchronize
 
 permissions:
   contents: write
@@ -62,45 +58,45 @@ jobs:
       with:
         ref: ${{ needs.setup.outputs.releaseTag }}
         fetch-tags: true
-        # path: supertokens-python
+        path: supertokens-python
 
-    # - uses: actions/checkout@v4
-    #   with:
-    #     repository: supertokens/supertokens-backend-website
-    #     token: ${{ secrets.ALL_REPO_PAT }}
-    #     path: supertokens-backend-website
+    - uses: actions/checkout@v4
+      with:
+        repository: supertokens/supertokens-backend-website
+        token: ${{ secrets.ALL_REPO_PAT }}
+        path: supertokens-backend-website
 
-    # - run: |
-    #     shopt -s extglob # Enable extended globbing
+    - run: |
+        shopt -s extglob # Enable extended globbing
 
-    #     pythonDocDir=supertokens-backend-website/app/docs/sdk/docs/python/
+        pythonDocDir=supertokens-backend-website/app/docs/sdk/docs/python/
 
-    #     # Delete the current version folder if it exists
-    #     rm -rf $pythonDocDir/${{ needs.setup.outputs.versionFolder }}
-    #     # Copy the current docs
-    #     mkdir -p $pythonDocDir/${{ needs.setup.outputs.versionFolder }}
-    #     cp -r supertokens-python/html/* $pythonDocDir/${{ needs.setup.outputs.versionFolder }}
+        # Delete the current version folder if it exists
+        rm -rf $pythonDocDir/${{ needs.setup.outputs.versionFolder }}
+        # Copy the current docs
+        mkdir -p $pythonDocDir/${{ needs.setup.outputs.versionFolder }}
+        cp -r supertokens-python/html/* $pythonDocDir/${{ needs.setup.outputs.versionFolder }}
 
-    #     if [[ "true" == "true" ]]
-    #     then
-    #         # Delete everything except the version folders
-    #         rm -rf $pythonDocDir/!(*.*.X)
+        if [[ "true" == "true" ]]
+        then
+            # Delete everything except the version folders
+            rm -rf $pythonDocDir/!(*.*.X)
 
-    #         # Copy files to the root dir
-    #         # cp -r supertokens-python/html/* $pythonDocDir/
+            # Copy files to the root dir
+            # cp -r supertokens-python/html/* $pythonDocDir/
 
-    #         ln -s $pythonDocDir/${{ needs.setup.outputs.versionFolder }}/index.html $pythonDocDir/index.html
-    #     fi
-
-    # - uses: actions/upload-artifact@v4
-    #   with:
-    #     name: ${{ needs.setup.outputs.artifactName }}
-    #     path: supertokens-backend-website/app/docs/sdk/docs/python
+            ln -s $pythonDocDir/${{ needs.setup.outputs.versionFolder }}/index.html $pythonDocDir/index.html
+        fi
 
     - uses: actions/upload-artifact@v4
       with:
         name: ${{ needs.setup.outputs.artifactName }}
-        path: html/supertokens_python
+        path: supertokens-backend-website/app/docs/sdk/docs/python
+
+    # - uses: actions/upload-artifact@v4
+    #   with:
+    #     name: ${{ needs.setup.outputs.artifactName }}
+    #     path: html/supertokens_python
 
     - name: Trigger the backend website CI
       uses: actions/github-script@v7
