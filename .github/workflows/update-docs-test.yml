@@ -113,7 +113,6 @@ jobs:
                   "version": `${{ needs.setup.outputs.setupVersion }}`,
                   "artifact-name": `${{ needs.setup.outputs.artifactName }}`,
                   "version-folder": `app/docs/sdk/docs/python`,
-                  "is-latest": `true`,
                   "run-id": `${{ github.run_id }}`,
                   "stage":  "preview",
                 }
