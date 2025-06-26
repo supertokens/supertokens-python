@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.branch }}
+          # ref: ${{ inputs.branch }}
           fetch-tags: true
           token: ${{ secrets.ALL_REPO_PAT }}
 
@@ -113,7 +113,7 @@ jobs:
                   "version": `${{ needs.setup.outputs.setupVersion }}`,
                   "artifact-name": `${{ needs.setup.outputs.artifactName }}`,
                   "version-folder": `app/docs/sdk/docs/python`,
-                  "is-latest": `${{ inputs.is-latest }}`,
+                  "is-latest": `true`,
                   "run-id": `${{ github.run_id }}`,
                   "stage":  "preview",
                 }
