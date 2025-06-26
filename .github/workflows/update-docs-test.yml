@@ -75,7 +75,7 @@ jobs:
         rm -rf $pythonDocDir/${{ needs.setup.outputs.versionFolder }}
         # Copy the current docs
         mkdir -p $pythonDocDir/${{ needs.setup.outputs.versionFolder }}
-        cp -r supertokens-python/html/* $pythonDocDir/${{ needs.setup.outputs.versionFolder }}
+        cp -r supertokens-python/html/supertokens_python* $pythonDocDir/${{ needs.setup.outputs.versionFolder }}
 
         if [[ "true" == "true" ]]
         then
@@ -83,9 +83,7 @@ jobs:
             rm -rf $pythonDocDir/!(*.*.X)
 
             # Copy files to the root dir
-            # cp -r supertokens-python/html/* $pythonDocDir/
-
-            ln -s $pythonDocDir/${{ needs.setup.outputs.versionFolder }}/index.html $pythonDocDir/index.html
+            cp -r supertokens-python/html/supertokens_python/* $pythonDocDir/
         fi
 
     - uses: actions/upload-artifact@v4
