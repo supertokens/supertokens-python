@@ -250,6 +250,9 @@ jobs:
       - setup
       - release
 
+    outputs:
+      isLatest: ${{ steps.merge-check.outputs.isLatest }}
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -267,9 +270,12 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Check API and merge to master
+        id: merge-check
         run: |
           response=`curl -s -X GET "https://api.supertokens.io/0/driver/latest/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
           isLatest=$(echo $response | jq .isLatest)
+
+          echo "isLatest=$isLatest" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
 
           if [[ $isLatest == "true" ]]
           then
@@ -288,17 +294,42 @@ jobs:
     needs:
       - setup
       - release
+      - merge
 
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ needs.setup.outputs.releaseTag }}
           fetch-tags: true
+          path: supertokens-python
+
+      - uses: actions/checkout@v4
+        with:
+          repository: supertokens/supertokens-backend-website
+          token: ${{ secrets.ALL_REPO_PAT }}
+          path: supertokens-backend-website
+
+      - run: |
+          shopt -s extglob # Enable extended globbing
+
+          if [[ "${{ needs.merge.outputs.isLatest }}" == "true" ]]
+          then
+            # Delete everything except the version folders
+            rm -rf supertokens-backend-website/app/docs/sdk/docs/python/!(*.*.X)
+            # Copy files to the root dir
+            cp -r supertokens-python/html/supertokens_python/* supertokens-backend-website/app/docs/sdk/docs/python/
+          fi
+
+          # Delete the current version folder if it exists
+          rm -rf supertokens-backend-website/app/docs/sdk/docs/python/${{ needs.setup.outputs.versionFolder }}
+          # Copy the current docs
+          mkdir -p supertokens-backend-website/app/docs/sdk/docs/python/${{ needs.setup.outputs.versionFolder }}
+          cp -r supertokens-python/html/supertokens_python/* supertokens-backend-website/app/docs/sdk/docs/python/${{ needs.setup.outputs.versionFolder }}
 
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ needs.setup.outputs.artifactName }}
-          path: html/supertokens_python
+          path: supertokens-backend-website/app/docs/sdk/docs/python
 
       - name: Trigger the backend website CI
         uses: actions/github-script@v7
@@ -314,7 +345,7 @@ jobs:
                 inputs: {
                   "version": `${{ needs.setup.outputs.setupVersion }}`,
                   "artifact-name": `${{ needs.setup.outputs.artifactName }}`,
-                  "version-folder": `${{ needs.setup.outputs.versionFolder }}`,
+                  "version-folder": `app/docs/sdk/docs/python`,
                   "run-id": `${{ github.run_id }}`,
                   "stage":  "production",
                 }
