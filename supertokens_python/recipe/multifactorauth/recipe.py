@@ -19,6 +19,7 @@ from typing import Any, Dict, List, Optional, Union
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.post_init_callbacks import PostSTInitCallbacks
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.multifactorauth.api import (

@@ -20,6 +20,7 @@ from supertokens_python.auth_utils import is_fake_email
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.recipe.emailpassword.types import (
     EmailPasswordIngredients,
     EmailTemplateVars,

@@ -21,6 +21,7 @@ from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.post_init_callbacks import PostSTInitCallbacks
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe

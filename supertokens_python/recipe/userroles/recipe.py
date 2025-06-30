@@ -20,6 +20,7 @@ from typing import Any, Dict, List, Optional, Set, Union
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.session.asyncio import get_session_information
 from supertokens_python.recipe.userroles.recipe_implementation import (

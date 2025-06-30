@@ -39,6 +39,7 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import RecipeInterface
 from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
 from supertokens_python.recipe.webauthn.types.config import (
     NormalisedWebauthnConfig,
+    OverrideConfig,
     WebauthnConfig,
     WebauthnOverrideConfig,
 )
