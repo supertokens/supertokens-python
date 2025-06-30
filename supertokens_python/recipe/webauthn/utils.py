@@ -33,9 +33,9 @@ from supertokens_python.recipe.webauthn.types.config import (
     NormalisedGetOrigin,
     NormalisedGetRelyingPartyId,
     NormalisedGetRelyingPartyName,
+    NormalisedOverrideConfig,
     NormalisedValidateEmailAddress,
     NormalisedWebauthnConfig,
-    OverrideConfig,
     ValidateEmailAddress,
     WebauthnConfig,
 )
@@ -60,13 +60,13 @@ def validate_and_normalise_user_input(
         config.validate_email_address
     )
 
-    if config.override is None:
-        override = OverrideConfig()
-    else:
-        override = OverrideConfig(
-            functions=config.override.functions,
-            apis=config.override.apis,
-        )
+    override_config = NormalisedOverrideConfig()
+    if config.override is not None:
+        if config.override.functions is not None:
+            override_config.functions = config.override.functions
+
+        if config.override.apis is not None:
+            override_config.apis = config.override.apis
 
     def get_email_delivery_config() -> EmailDeliveryConfigWithService[
         TypeWebauthnEmailDeliveryInput
@@ -93,7 +93,7 @@ def validate_and_normalise_user_input(
         get_origin=get_origin,
         get_email_delivery_config=get_email_delivery_config,
         validate_email_address=validate_email_address,
-        override=override,
+        override=override_config,
     )
 
 

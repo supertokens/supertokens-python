@@ -14,10 +14,10 @@
 
 from __future__ import annotations
 
-from typing import Callable, List, Optional
+from typing import List, Optional
 
-from supertokens_python import AppInfo, RecipeModule
 from supertokens_python.recipe.dashboard import utils
+from supertokens_python.supertokens import RecipeInit
 
 from .recipe import DashboardRecipe
 
@@ -28,7 +28,7 @@ def init(
     api_key: Optional[str] = None,
     admins: Optional[List[str]] = None,
     override: Optional[InputOverrideConfig] = None,
-) -> Callable[[AppInfo], RecipeModule]:
+) -> RecipeInit:
     return DashboardRecipe.init(
         api_key,
         admins,

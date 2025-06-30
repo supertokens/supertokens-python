@@ -14,11 +14,17 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING
 
 from supertokens_python.recipe.usermetadata.interfaces import (
     APIInterface,
     RecipeInterface,
+)
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseInputConfig,
+    BaseInputOverrideConfig,
+    BaseOverrideConfig,
 )
 
 if TYPE_CHECKING:
@@ -26,30 +32,29 @@ if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
 
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
 
 
-class UserMetadataConfig:
-    def __init__(self, override: InputOverrideConfig) -> None:
-        self.override = override
+class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
+
+
+class UserMetadataInputConfig(BaseInputConfig[RecipeInterface, APIInterface]): ...
+
+
+class UserMetadataConfig(BaseConfig[RecipeInterface, APIInterface]): ...
 
 
 def validate_and_normalise_user_input(
     _recipe: UserMetadataRecipe,
     _app_info: AppInfo,
-    override: Union[InputOverrideConfig, None] = None,
+    input_config: UserMetadataInputConfig,
 ) -> UserMetadataConfig:
-    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
-        raise ValueError("override must be an instance of InputOverrideConfig or None")
+    override_config = OverrideConfig()
+    if input_config.override is not None:
+        if input_config.override.functions is not None:
+            override_config.functions = input_config.override.functions
 
-    if override is None:
-        override = InputOverrideConfig()
+        if input_config.override.apis is not None:
+            override_config.apis = input_config.override.apis
 
-    return UserMetadataConfig(override=override)
+    return UserMetadataConfig(override=override_config)

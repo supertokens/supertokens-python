@@ -505,15 +505,15 @@ async def test_revoking_session_during_refresh_with_revoke_session_sending_401(
 async def test_revoking_session_during_refresh_and_throw_unauthorized(
     driver_config_client: TestClient,
 ):
-    def session_api_override(oi: APIInterface) -> APIInterface:
-        oi_refresh_post = oi.refresh_post
+    def session_api_override(original_implementation: APIInterface) -> APIInterface:
+        oi_refresh_post = original_implementation.refresh_post
 
         async def refresh_post(api_options: APIOptions, user_context: Dict[str, Any]):
             await oi_refresh_post(api_options, user_context)
             return raise_unauthorised_exception("unauthorized", clear_tokens=True)
 
-        oi.refresh_post = refresh_post
-        return oi
+        original_implementation.refresh_post = refresh_post
+        return original_implementation
 
     init_args = get_st_init_args(
         url=get_new_core_app_url(),

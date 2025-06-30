@@ -14,7 +14,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional, Protocol, TypeVar, Union, runtime_checkable
 
 from supertokens_python.framework import BaseRequest
@@ -24,6 +23,13 @@ from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfigWithService,
 )
 from supertokens_python.types.base import UserContext
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseInputConfig,
+    BaseInputOverrideConfig,
+    BaseOverrideConfig,
+)
+from supertokens_python.types.response import CamelCaseBaseModel
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.webauthn.interfaces.api import (
@@ -179,39 +185,29 @@ class InterfaceOverride(Protocol[InterfaceType]):
     ) -> InterfaceType: ...
 
 
-# NOTE: Using dataclasses for these classes since validation is not required
-@dataclass
-class OverrideConfig:
-    """
-    `WebauthnConfig.override`
-    """
-
-    functions: Optional[InterfaceOverride[RecipeInterface]] = None
-    apis: Optional[InterfaceOverride[APIInterface]] = None
+class OverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
 
 
-@dataclass
-class WebauthnConfig:
+class NormalisedOverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
+
+
+class WebauthnConfig(BaseInputConfig[RecipeInterface, APIInterface]):
     get_relying_party_id: Optional[Union[str, GetRelyingPartyId]] = None
     get_relying_party_name: Optional[Union[str, GetRelyingPartyName]] = None
     get_origin: Optional[GetOrigin] = None
     email_delivery: Optional[EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]] = None
     validate_email_address: Optional[ValidateEmailAddress] = None
-    override: Optional[OverrideConfig] = None
 
 
-@dataclass
-class NormalisedWebauthnConfig:
+class NormalisedWebauthnConfig(BaseConfig[RecipeInterface, APIInterface]):
     get_relying_party_id: NormalisedGetRelyingPartyId
     get_relying_party_name: NormalisedGetRelyingPartyName
     get_origin: NormalisedGetOrigin
     get_email_delivery_config: NormalisedGetEmailDeliveryConfig
     validate_email_address: NormalisedValidateEmailAddress
-    override: OverrideConfig
 
 
-@dataclass
-class WebauthnIngredients:
+class WebauthnIngredients(CamelCaseBaseModel):
     email_delivery: Optional[
         EmailDeliveryIngredient[TypeWebauthnEmailDeliveryInput]
     ] = None

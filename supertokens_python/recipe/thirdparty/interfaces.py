@@ -13,8 +13,10 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 
 from ...types import RecipeUserId, User
 from ...types.response import APIResponse, GeneralErrorResponse
@@ -79,7 +81,7 @@ class EmailChangeNotAllowedError:
         self.reason = reason
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -198,7 +200,7 @@ class AuthorisationUrlGetOkResult(APIResponse):
         }
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_sign_in_up_post = False
         self.disable_authorisation_url_get = False

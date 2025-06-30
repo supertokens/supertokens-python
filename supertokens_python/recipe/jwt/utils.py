@@ -13,41 +13,49 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import Optional
 
-if TYPE_CHECKING:
-    from .interfaces import APIInterface, RecipeInterface
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseInputConfig,
+    BaseInputOverrideConfig,
+    BaseOverrideConfig,
+)
 
-
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+from .interfaces import APIInterface, RecipeInterface
 
 
-class JWTConfig:
-    def __init__(self, override: OverrideConfig, jwt_validity_seconds: int):
-        self.override = override
-        self.jwt_validity_seconds = jwt_validity_seconds
+class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
 
 
-def validate_and_normalise_user_input(
-    jwt_validity_seconds: Union[int, None] = None,
-    override: Union[OverrideConfig, None] = None,
-):
-    if jwt_validity_seconds is not None and not isinstance(jwt_validity_seconds, int):  # type: ignore
-        raise ValueError("jwt_validity_seconds must be an integer or None")
+class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
 
-    if override is not None and not isinstance(override, OverrideConfig):  # type: ignore
-        raise ValueError("override must be an instance of OverrideConfig or None")
 
-    if override is None:
-        override = OverrideConfig()
-    if jwt_validity_seconds is None:
+class JWTInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
+    jwt_validity_seconds: Optional[int] = None
+
+
+class JWTConfig(BaseConfig[RecipeInterface, APIInterface]):
+    jwt_validity_seconds: int
+
+
+def validate_and_normalise_user_input(input_config: JWTInputConfig):
+    override_config = OverrideConfig()
+    if input_config.override is not None:
+        if input_config.override.functions is not None:
+            override_config.functions = input_config.override.functions
+
+        if input_config.override.apis is not None:
+            override_config.apis = input_config.override.apis
+
+    jwt_validity_seconds = input_config.jwt_validity_seconds
+
+    if input_config.jwt_validity_seconds is None:
         jwt_validity_seconds = 3153600000
 
-    return JWTConfig(override, jwt_validity_seconds)
+    if not isinstance(jwt_validity_seconds, int):  # type: ignore
+        raise ValueError("jwt_validity_seconds must be an integer or None")
+
+    return JWTConfig(
+        jwt_validity_seconds=jwt_validity_seconds, override=override_config
+    )

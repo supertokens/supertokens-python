@@ -13,12 +13,13 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from typing_extensions import Literal
 
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 
 from ...types.response import APIResponse
 
@@ -41,7 +42,7 @@ class SessionInfo:
         self.tenant_id = info.tenant_id
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -77,7 +78,7 @@ class APIOptions:
         self.app_info = app_info
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         # undefined should be allowed
         self.dashboard_get: Optional[

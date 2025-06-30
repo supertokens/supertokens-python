@@ -335,7 +335,8 @@ def apply_plugins(recipe_id: str, config: T, plugins: List[OverrideMap]) -> T:
     api_layers: deque[Any] = deque()
 
     # If we have plugins like 4->3->(2, 1) along with a recipe override,
-    # we want to apply them as: override, 4, 3, 1, 2, original
+    # we want to load/init them as: override, 2, 1, 3, 4
+    # and call them as: override, 4, 3, 2, 1, original
     # Order of 1/2 does not matter since they are independent from each other.
 
     for plugin in plugins:
@@ -354,8 +355,8 @@ def apply_plugins(recipe_id: str, config: T, plugins: List[OverrideMap]) -> T:
     if api_overrides is not None:
         api_layers.append(api_overrides)
 
-    # Apply overrides in order of definition
-    # Plugins: [plugin1, plugin2] would be applied as [override, plugin1, plugin2, original]
+    # Apply overrides in reverse order of definition
+    # Plugins: [plugin1, plugin2] would be applied as [override, plugin2, plugin1, original]
     if len(function_layers) > 0:
         # TODO: Change to recipe_interface type
         def fn_override(original_implementation: T) -> T:

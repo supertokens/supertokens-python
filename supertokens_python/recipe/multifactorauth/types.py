@@ -13,16 +13,20 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from typing_extensions import Literal
 
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 from supertokens_python.types import RecipeUserId, User
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseInputConfig,
+    BaseInputOverrideConfig,
+    BaseOverrideConfig,
+)
 
-if TYPE_CHECKING:
-    from .interfaces import APIInterface, RecipeInterface
-
+from .interfaces import APIInterface, RecipeInterface
 
 MFARequirementList = List[
     Union[str, Dict[Union[Literal["oneOf"], Literal["allOfInAnyOrder"]], List[str]]]
@@ -38,24 +42,18 @@ class MFAClaimValue:
         self.v = v
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
 
 
-class MultiFactorAuthConfig:
-    def __init__(
-        self,
-        first_factors: Optional[List[str]],
-        override: OverrideConfig,
-    ):
-        self.first_factors = first_factors
-        self.override = override
+class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
+
+
+class MultiFactorAuthInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
+    first_factors: Optional[List[str]] = None
+
+
+class MultiFactorAuthConfig(BaseConfig[RecipeInterface, APIInterface]):
+    first_factors: Optional[List[str]]
 
 
 class FactorIds:

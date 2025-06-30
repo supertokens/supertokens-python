@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from . import exceptions as ex
 from . import provider, utils
@@ -28,15 +28,13 @@ ProviderClientConfig = provider.ProviderClientConfig
 exceptions = ex
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo
-
-    from ...recipe_module import RecipeModule
+    from supertokens_python.supertokens import RecipeInit
 
 
 def init(
     sign_in_and_up_feature: Optional[SignInAndUpFeature] = None,
     override: Union[InputOverrideConfig, None] = None,
-) -> Callable[[AppInfo], RecipeModule]:
+) -> RecipeInit:
     if sign_in_and_up_feature is None:
         sign_in_and_up_feature = SignInAndUpFeature()
     return ThirdPartyRecipe.init(sign_in_and_up_feature, override)

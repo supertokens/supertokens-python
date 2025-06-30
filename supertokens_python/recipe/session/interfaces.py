@@ -33,6 +33,7 @@ from supertokens_python.types import (
     MaybeAwaitable,
     RecipeUserId,
 )
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from ...utils import resolve
@@ -187,7 +188,7 @@ class GetSessionTokensDangerouslyDict(TypedDict):
     antiCsrfToken: Optional[str]
 
 
-class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
+class RecipeInterface(BaseRecipeInterface):  # pylint: disable=too-many-public-methods
     def __init__(self):
         pass
 
@@ -383,7 +384,7 @@ class APIOptions:
         self.recipe_implementation = recipe_implementation
 
 
-class APIInterface(ABC):
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_refresh_post = False
         self.disable_signout_post = False

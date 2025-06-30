@@ -18,9 +18,8 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Union
 from typing_extensions import Literal
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo, BaseRequest
+    from supertokens_python.supertokens import BaseRequest, RecipeInit
 
-    from ...recipe_module import RecipeModule
     from .utils import TokenTransferMethod
 
 from . import exceptions as ex
@@ -53,7 +52,7 @@ def init(
     use_dynamic_access_token_signing_key: Union[bool, None] = None,
     expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
     jwks_refresh_interval_sec: Union[int, None] = None,
-) -> Callable[[AppInfo], RecipeModule]:
+) -> RecipeInit:
     return SessionRecipe.init(
         cookie_domain,
         older_cookie_domain,

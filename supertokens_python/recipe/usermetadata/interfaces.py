@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
+
 
 class MetadataResult(ABC):
     def __init__(self, metadata: Dict[str, Any]):
@@ -11,7 +13,7 @@ class ClearUserMetadataResult:
     pass
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     @abstractmethod
     async def get_user_metadata(
         self, user_id: str, user_context: Dict[str, Any]
@@ -34,5 +36,5 @@ class RecipeInterface(ABC):
         pass
 
 
-class APIInterface(ABC):
+class APIInterface(BaseAPIInterface):
     pass

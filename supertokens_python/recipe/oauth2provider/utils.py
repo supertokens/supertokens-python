@@ -13,42 +13,35 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseInputConfig,
+    BaseInputOverrideConfig,
+    BaseOverrideConfig,
+)
 
-if TYPE_CHECKING:
-    from typing import Union
-
-    from .interfaces import APIInterface, RecipeInterface
-
-
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+from .interfaces import APIInterface, RecipeInterface
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
 
 
-class OAuth2ProviderConfig:
-    def __init__(self, override: Union[OverrideConfig, None] = None):
-        self.override = override
+class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
 
 
-def validate_and_normalise_user_input(
-    override: Union[InputOverrideConfig, None] = None,
-):
-    if override is None:
-        return OAuth2ProviderConfig(OverrideConfig())
-    return OAuth2ProviderConfig(OverrideConfig(override.functions, override.apis))
+class OAuth2ProviderInputConfig(BaseInputConfig[RecipeInterface, APIInterface]): ...
+
+
+class OAuth2ProviderConfig(BaseConfig[RecipeInterface, APIInterface]): ...
+
+
+def validate_and_normalise_user_input(input_config: OAuth2ProviderInputConfig):
+    override_config = OverrideConfig()
+    if input_config.override is not None:
+        if input_config.override.functions is not None:
+            override_config.functions = input_config.override.functions
+
+        if input_config.override.apis is not None:
+            override_config.apis = input_config.override.apis
+
+    return OAuth2ProviderConfig(override=override_config)

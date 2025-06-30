@@ -17,6 +17,7 @@ from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.querier import Querier
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
@@ -43,7 +44,7 @@ from .api import (
 from .constants import APPLE_REDIRECT_HANDLER, AUTHORISATIONURL, SIGNINUP
 from .exceptions import SuperTokensThirdPartyError
 from .types import ThirdPartyIngredients
-from .utils import validate_and_normalise_user_input
+from .utils import ThirdPartyInputConfig, validate_and_normalise_user_input
 
 
 class ThirdPartyRecipe(RecipeModule):
@@ -54,29 +55,21 @@ class ThirdPartyRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        sign_in_and_up_feature: SignInAndUpFeature,
+        input_config: ThirdPartyInputConfig,
         _ingredients: ThirdPartyIngredients,
-        override: Union[InputOverrideConfig, None] = None,
     ):
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(
-            sign_in_and_up_feature,
-            override,
-        )
+        self.config = validate_and_normalise_user_input(input_config=input_config)
         self.providers = self.config.sign_in_and_up_feature.providers
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.providers
         )
-        self.recipe_implementation: RecipeInterface = (
+        self.recipe_implementation: RecipeInterface = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
         api_implementation = APIImplementation()
-        self.api_implementation: APIInterface = (
+        self.api_implementation: APIInterface = self.config.override.apis(
             api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
         )
 
         def callback():
@@ -167,15 +160,23 @@ class ThirdPartyRecipe(RecipeModule):
         sign_in_and_up_feature: SignInAndUpFeature,
         override: Union[InputOverrideConfig, None] = None,
     ):
-        def func(app_info: AppInfo):
+        input_config = ThirdPartyInputConfig(
+            sign_in_and_up_feature=sign_in_and_up_feature,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if ThirdPartyRecipe.__instance is None:
                 ingredients = ThirdPartyIngredients()
                 ThirdPartyRecipe.__instance = ThirdPartyRecipe(
-                    ThirdPartyRecipe.recipe_id,
-                    app_info,
-                    sign_in_and_up_feature,
-                    ingredients,
-                    override,
+                    recipe_id=ThirdPartyRecipe.recipe_id,
+                    app_info=app_info,
+                    _ingredients=ingredients,
+                    input_config=apply_plugins(
+                        recipe_id=ThirdPartyRecipe.recipe_id,
+                        config=input_config,
+                        plugins=plugins,
+                    ),
                 )
                 return ThirdPartyRecipe.__instance
             raise_general_exception(

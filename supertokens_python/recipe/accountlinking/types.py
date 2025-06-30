@@ -22,6 +22,12 @@ from supertokens_python.recipe.accountlinking.interfaces import (
     RecipeInterface,
 )
 from supertokens_python.types import AccountInfo
+from supertokens_python.types.config import (
+    BaseConfigWithoutAPIOverride,
+    BaseInputConfigWithoutAPIOverride,
+    BaseInputOverrideConfigWithoutAPI,
+    BaseOverrideConfigWithoutAPI,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session import SessionContainer
@@ -131,29 +137,18 @@ class ShouldAutomaticallyLink:
         self.should_require_verification = should_require_verification
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-    ):
-        self.functions = functions
+class InputOverrideConfig(BaseInputOverrideConfigWithoutAPI[RecipeInterface]): ...
 
 
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-    ):
-        self.functions = functions
+class OverrideConfig(BaseOverrideConfigWithoutAPI[RecipeInterface]): ...
 
 
-class AccountLinkingConfig:
-    def __init__(
-        self,
-        on_account_linked: Callable[
-            [User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]
-        ],
-        should_do_automatic_account_linking: Callable[
+class AccountLinkingInputConfig(BaseInputConfigWithoutAPIOverride[RecipeInterface]):
+    on_account_linked: Optional[
+        Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]
+    ] = None
+    should_do_automatic_account_linking: Optional[
+        Callable[
             [
                 AccountInfoWithRecipeIdAndUserId,
                 Optional[User],
@@ -162,9 +157,21 @@ class AccountLinkingConfig:
                 Dict[str, Any],
             ],
             Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
+        ]
+    ] = None
+
+
+class AccountLinkingConfig(BaseConfigWithoutAPIOverride[RecipeInterface]):
+    on_account_linked: Callable[
+        [User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]
+    ]
+    should_do_automatic_account_linking: Callable[
+        [
+            AccountInfoWithRecipeIdAndUserId,
+            Optional[User],
+            Optional[SessionContainer],
+            str,
+            Dict[str, Any],
         ],
-        override: OverrideConfig,
-    ):
-        self.on_account_linked = on_account_linked
-        self.should_do_automatic_account_linking = should_do_automatic_account_linking
-        self.override = override
+        Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
+    ]

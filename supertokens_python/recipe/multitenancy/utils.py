@@ -14,22 +14,25 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Awaitable, Callable, Optional
+from typing import Awaitable, Callable, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.framework import BaseRequest, BaseResponse
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseInputConfig,
+    BaseInputOverrideConfig,
+    BaseOverrideConfig,
+)
 from supertokens_python.utils import (
     resolve,
 )
 
-if TYPE_CHECKING:
-    from typing import Union
-
-    from .interfaces import (
-        APIInterface,
-        RecipeInterface,
-        TypeGetAllowedDomainsForTenantId,
-    )
+from .interfaces import (
+    APIInterface,
+    RecipeInterface,
+    TypeGetAllowedDomainsForTenantId,
+)
 
 
 class ErrorHandlers:
@@ -63,47 +66,37 @@ class ErrorHandlers:
         )
 
 
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
 
 
-class MultitenancyConfig:
-    def __init__(
-        self,
-        get_allowed_domains_for_tenant_id: Optional[TypeGetAllowedDomainsForTenantId],
-        override: OverrideConfig,
-    ):
-        self.get_allowed_domains_for_tenant_id = get_allowed_domains_for_tenant_id
-        self.override = override
+class MultitenancyInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
+    get_allowed_domains_for_tenant_id: Optional[TypeGetAllowedDomainsForTenantId] = None
+
+
+class MultitenancyConfig(BaseConfig[RecipeInterface, APIInterface]):
+    get_allowed_domains_for_tenant_id: Optional[TypeGetAllowedDomainsForTenantId]
 
 
 def validate_and_normalise_user_input(
-    get_allowed_domains_for_tenant_id: Optional[TypeGetAllowedDomainsForTenantId],
-    override: Union[InputOverrideConfig, None] = None,
+    input_config: MultitenancyInputConfig,
 ) -> MultitenancyConfig:
-    if override is not None and not isinstance(override, OverrideConfig):  # type: ignore
-        raise ValueError("override must be of type OverrideConfig or None")
+    if input_config.override is not None and not isinstance(
+        input_config.override, InputOverrideConfig
+    ):  # type: ignore
+        raise ValueError("override must be of type InputOverrideConfig or None")
 
-    if override is None:
-        override = InputOverrideConfig()
+    override_config = OverrideConfig()
+    if input_config.override is not None:
+        if input_config.override.functions is not None:
+            override_config.functions = input_config.override.functions
+
+        if input_config.override.apis is not None:
+            override_config.apis = input_config.override.apis
 
     return MultitenancyConfig(
-        get_allowed_domains_for_tenant_id,
-        OverrideConfig(override.functions, override.apis),
+        get_allowed_domains_for_tenant_id=input_config.get_allowed_domains_for_tenant_id,
+        override=override_config,
     )

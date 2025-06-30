@@ -17,6 +17,7 @@ from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
+from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.recipe.session.claim_base_classes.primitive_array_claim import (
     PrimitiveArrayClaim,
 )
@@ -45,6 +46,7 @@ from .constants import LOGIN_METHODS
 from .exceptions import MultitenancyError
 from .utils import (
     InputOverrideConfig,
+    MultitenancyInputConfig,
     validate_and_normalise_user_input,
 )
 
@@ -54,35 +56,20 @@ class MultitenancyRecipe(RecipeModule):
     __instance = None
 
     def __init__(
-        self,
-        recipe_id: str,
-        app_info: AppInfo,
-        get_allowed_domains_for_tenant_id: Optional[
-            TypeGetAllowedDomainsForTenantId
-        ] = None,
-        override: Union[InputOverrideConfig, None] = None,
+        self, recipe_id: str, app_info: AppInfo, input_config: MultitenancyInputConfig
     ) -> None:
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(
-            get_allowed_domains_for_tenant_id,
-            override,
-        )
+        self.config = validate_and_normalise_user_input(input_config=input_config)
 
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.config
         )
-        self.recipe_implementation = (
+        self.recipe_implementation = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
         api_implementation = APIImplementation()
-        self.api_implementation = (
-            api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
-        )
+        self.api_implementation = self.config.override.apis(api_implementation)
 
         self.static_third_party_providers: List[ProviderInput] = []
         self.get_allowed_domains_for_tenant_id = (
@@ -152,13 +139,21 @@ class MultitenancyRecipe(RecipeModule):
         ] = None,
         override: Union[InputOverrideConfig, None] = None,
     ):
-        def func(app_info: AppInfo):
+        input_config = MultitenancyInputConfig(
+            get_allowed_domains_for_tenant_id=get_allowed_domains_for_tenant_id,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if MultitenancyRecipe.__instance is None:
                 MultitenancyRecipe.__instance = MultitenancyRecipe(
-                    MultitenancyRecipe.recipe_id,
-                    app_info,
-                    get_allowed_domains_for_tenant_id,
-                    override,
+                    recipe_id=MultitenancyRecipe.recipe_id,
+                    app_info=app_info,
+                    input_config=apply_plugins(
+                        recipe_id=MultitenancyRecipe.recipe_id,
+                        config=input_config,
+                        plugins=plugins,
+                    ),
                 )
 
                 def callback():

@@ -486,13 +486,11 @@ def custom_init(
     WebauthnRecipe.reset()
 
     def override_email_verification_apis(
-        original_implementation_email_verification: EmailVerificationAPIInterface,
+        original_implementation: EmailVerificationAPIInterface,
     ):
-        original_email_verify_post = (
-            original_implementation_email_verification.email_verify_post
-        )
+        original_email_verify_post = original_implementation.email_verify_post
         original_generate_email_verify_token_post = (
-            original_implementation_email_verification.generate_email_verify_token_post
+            original_implementation.generate_email_verify_token_post
         )
 
         async def email_verify_post(
@@ -531,11 +529,11 @@ def custom_init(
                 session, api_options, user_context
             )
 
-        original_implementation_email_verification.email_verify_post = email_verify_post
-        original_implementation_email_verification.generate_email_verify_token_post = (
+        original_implementation.email_verify_post = email_verify_post
+        original_implementation.generate_email_verify_token_post = (
             generate_email_verify_token_post
         )
-        return original_implementation_email_verification
+        return original_implementation
 
     def override_email_password_apis(
         original_implementation: EmailPasswordAPIInterface,

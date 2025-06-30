@@ -431,17 +431,21 @@ class Supertokens:
         if not jwt_found:
             from supertokens_python.recipe.jwt.recipe import JWTRecipe
 
-            self.recipe_modules.append(JWTRecipe.init()(self.app_info))
+            self.recipe_modules.append(JWTRecipe.init()(self.app_info, override_maps))
 
         if not openid_found:
             from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 
-            self.recipe_modules.append(OpenIdRecipe.init()(self.app_info))
+            self.recipe_modules.append(
+                OpenIdRecipe.init()(self.app_info, override_maps)
+            )
 
         if not multitenancy_found:
             from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 
-            self.recipe_modules.append(MultitenancyRecipe.init()(self.app_info))
+            self.recipe_modules.append(
+                MultitenancyRecipe.init()(self.app_info, override_maps)
+            )
 
         if totp_found and not multi_factor_auth_found:
             raise Exception("Please initialize the MultiFactorAuth recipe to use TOTP.")
@@ -449,14 +453,18 @@ class Supertokens:
         if not user_metadata_found:
             from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
 
-            self.recipe_modules.append(UserMetadataRecipe.init()(self.app_info))
+            self.recipe_modules.append(
+                UserMetadataRecipe.init()(self.app_info, override_maps)
+            )
 
         if not oauth2_found:
             from supertokens_python.recipe.oauth2provider.recipe import (
                 OAuth2ProviderRecipe,
             )
 
-            self.recipe_modules.append(OAuth2ProviderRecipe.init()(self.app_info))
+            self.recipe_modules.append(
+                OAuth2ProviderRecipe.init()(self.app_info, override_maps)
+            )
 
         self.telemetry = (
             config.telemetry

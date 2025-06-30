@@ -13,11 +13,17 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from typing_extensions import Literal
 
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseInputConfig,
+    BaseInputOverrideConfig,
+    BaseOverrideConfig,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -45,9 +51,7 @@ from .constants import (
     USERS_LIST_GET_API,
     VALIDATE_KEY_API,
 )
-
-if TYPE_CHECKING:
-    from .interfaces import APIInterface, RecipeInterface
+from .interfaces import APIInterface, RecipeInterface
 
 
 class UserWithMetadata:
@@ -73,64 +77,52 @@ class UserWithMetadata:
         return user_json
 
 
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
 
 
-class DashboardConfig:
-    def __init__(
-        self,
-        api_key: Optional[str],
-        admins: Optional[List[str]],
-        override: OverrideConfig,
-        auth_mode: str,
-    ):
-        self.api_key = api_key
-        self.admins = admins
-        self.override = override
-        self.auth_mode = auth_mode
+class DashboardInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
+    api_key: Optional[str] = None
+    admins: Optional[List[str]] = None
+
+
+class DashboardConfig(BaseConfig[RecipeInterface, APIInterface]):
+    api_key: Optional[str]
+    admins: Optional[List[str]]
+    auth_mode: str
 
 
 def validate_and_normalise_user_input(
-    # app_info: AppInfo,
-    api_key: Union[str, None],
-    admins: Optional[List[str]],
-    override: Optional[InputOverrideConfig] = None,
+    input_config: DashboardInputConfig,
 ) -> DashboardConfig:
-    if override is None:
-        override = InputOverrideConfig()
+    override_config: OverrideConfig = OverrideConfig()
 
-    if api_key is not None and admins is not None:
+    if input_config.override is not None:
+        if input_config.override.functions is not None:
+            override_config.functions = input_config.override.functions
+
+        if input_config.override.apis is not None:
+            override_config.apis = input_config.override.apis
+
+    if input_config.api_key is not None and input_config.admins is not None:
         log_debug_message(
             "User Dashboard: Providing 'admins' has no effect when using an api key."
         )
 
-    admins = [normalise_email(a) for a in admins] if admins is not None else None
+    admins = (
+        [normalise_email(a) for a in input_config.admins]
+        if input_config.admins is not None
+        else None
+    )
+    auth_mode = "api-key" if input_config.api_key else "email-password"
 
     return DashboardConfig(
-        api_key,
-        admins,
-        OverrideConfig(
-            functions=override.functions,
-            apis=override.apis,
-        ),
-        "api-key" if api_key else "email-password",
+        api_key=input_config.api_key,
+        admins=admins,
+        auth_mode=auth_mode,
+        override=override_config,
     )
 
 
