@@ -13,77 +13,68 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Union
+
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseInputConfig,
+    BaseInputOverrideConfig,
+    BaseOverrideConfig,
+)
 
 if TYPE_CHECKING:
     from supertokens_python import AppInfo
     from supertokens_python.recipe.jwt import OverrideConfig as JWTOverrideConfig
 
-    from .interfaces import APIInterface, RecipeInterface
 
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.normalised_url_path import NormalisedURLPath
 
-
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-        jwt_feature: Union[JWTOverrideConfig, None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
-        self.jwt_feature = jwt_feature
+from .interfaces import APIInterface, RecipeInterface
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]):
+    jwt_feature: Union[JWTOverrideConfig, None] = None
 
 
-class OpenIdConfig:
-    def __init__(
-        self,
-        override: OverrideConfig,
-        issuer_domain: NormalisedURLDomain,
-        issuer_path: NormalisedURLPath,
-    ):
-        self.override = override
-        self.issuer_domain = issuer_domain
-        self.issuer_path = issuer_path
+class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
+
+
+class OpenIdInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
+    issuer: Union[str, None] = None
+
+
+class OpenIdConfig(BaseConfig[RecipeInterface, APIInterface]):
+    issuer_domain: NormalisedURLDomain
+    issuer_path: NormalisedURLPath
 
 
 def validate_and_normalise_user_input(
     app_info: AppInfo,
-    issuer: Union[str, None] = None,
-    override: Union[InputOverrideConfig, None] = None,
-):
-    if issuer is None:
+    input_config: OpenIdInputConfig,
+) -> OpenIdConfig:
+    if input_config.issuer is None:
         issuer_domain = app_info.api_domain
         issuer_path = app_info.api_base_path
     else:
-        issuer_domain = NormalisedURLDomain(issuer)
-        issuer_path = NormalisedURLPath(issuer)
+        issuer_domain = NormalisedURLDomain(input_config.issuer)
+        issuer_path = NormalisedURLPath(input_config.issuer)
 
     if not issuer_path.equals(app_info.api_base_path):
         raise Exception(
             "The path of the issuer URL must be equal to the apiBasePath. The default value is /auth"
         )
 
-    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
-        raise ValueError("override must be an instance of InputOverrideConfig or None")
+    override_config = OverrideConfig()
+    if input_config.override is not None:
+        if input_config.override.functions is not None:
+            override_config.functions = input_config.override.functions
 
-    if override is None:
-        override = InputOverrideConfig()
+        if input_config.override.apis is not None:
+            override_config.apis = input_config.override.apis
 
     return OpenIdConfig(
-        OverrideConfig(functions=override.functions, apis=override.apis),
-        issuer_domain,
-        issuer_path,
+        issuer_domain=issuer_domain,
+        issuer_path=issuer_path,
+        override=override_config,
     )

@@ -26,53 +26,55 @@ from supertokens_python.ingredients.emaildelivery.types import (
 from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import (
     BackwardCompatibilityService,
 )
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseInputConfig,
+    BaseInputOverrideConfig,
+    BaseOverrideConfig,
+)
+
+from .interfaces import APIInterface, RecipeInterface, TypeGetEmailForUserIdFunction
 
 if TYPE_CHECKING:
     from typing import Callable, Union
 
     from supertokens_python.supertokens import AppInfo
 
-    from .interfaces import APIInterface, RecipeInterface, TypeGetEmailForUserIdFunction
     from .types import EmailTemplateVars, VerificationEmailTemplateVars
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
+
+
+class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
 
 
 MODE_TYPE = Literal["REQUIRED", "OPTIONAL"]
 
 
-class EmailVerificationConfig:
-    def __init__(
-        self,
-        mode: MODE_TYPE,
-        get_email_delivery_config: Callable[
-            [], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
-        ],
-        get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction],
-        override: OverrideConfig,
-    ):
-        self.mode = mode
-        self.override = override
-        self.get_email_delivery_config = get_email_delivery_config
-        self.get_email_for_recipe_user_id = get_email_for_recipe_user_id
+class EmailVerificationInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
+    mode: MODE_TYPE
+    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
+    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None
+
+
+class EmailVerificationConfig(BaseConfig[RecipeInterface, APIInterface]):
+    mode: MODE_TYPE
+    get_email_delivery_config: Callable[
+        [], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
+    ]
+    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction]
 
 
 def validate_and_normalise_user_input(
     app_info: AppInfo,
-    mode: MODE_TYPE,
-    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
-    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-    override: Union[OverrideConfig, None] = None,
+    input_config: EmailVerificationInputConfig,
+    # mode: MODE_TYPE,
+    # email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
+    # get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
+    # override: Union[OverrideConfig, None] = None,
 ) -> EmailVerificationConfig:
-    if mode not in ["REQUIRED", "OPTIONAL"]:
+    if input_config.mode not in ["REQUIRED", "OPTIONAL"]:
         raise ValueError(
             "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
         )
@@ -80,27 +82,36 @@ def validate_and_normalise_user_input(
     def get_email_delivery_config() -> EmailDeliveryConfigWithService[
         VerificationEmailTemplateVars
     ]:
-        email_service = email_delivery.service if email_delivery is not None else None
+        email_service = (
+            input_config.email_delivery.service
+            if input_config.email_delivery is not None
+            else None
+        )
         if email_service is None:
             email_service = BackwardCompatibilityService(app_info)
 
-        if email_delivery is not None and email_delivery.override is not None:
-            override = email_delivery.override
+        if (
+            input_config.email_delivery is not None
+            and input_config.email_delivery.override is not None
+        ):
+            override = input_config.email_delivery.override
         else:
             override = None
         return EmailDeliveryConfigWithService(email_service, override=override)
 
-    if override is not None and not isinstance(override, OverrideConfig):  # type: ignore
-        raise ValueError("override must be of type OverrideConfig or None")
+    override_config = OverrideConfig()
+    if input_config.override is not None:
+        if input_config.override.functions is not None:
+            override_config.functions = input_config.override.functions
 
-    if override is None:
-        override = OverrideConfig()
+        if input_config.override.apis is not None:
+            override_config.apis = input_config.override.apis
 
     return EmailVerificationConfig(
-        mode,
-        get_email_delivery_config,
-        get_email_for_recipe_user_id,
-        override,
+        mode=input_config.mode,
+        get_email_delivery_config=get_email_delivery_config,
+        get_email_for_recipe_user_id=input_config.get_email_for_recipe_user_id,
+        override=override_config,
     )
 
 

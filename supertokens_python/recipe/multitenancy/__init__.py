@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Union
 
 from . import exceptions as ex
 from . import recipe
@@ -22,9 +22,8 @@ AllowedDomainsClaim = recipe.AllowedDomainsClaim
 exceptions = ex
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo
+    from supertokens_python.supertokens import RecipeInit
 
-    from ...recipe_module import RecipeModule
     from .interfaces import TypeGetAllowedDomainsForTenantId
     from .utils import InputOverrideConfig
 
@@ -34,7 +33,7 @@ def init(
         TypeGetAllowedDomainsForTenantId, None
     ] = None,
     override: Union[InputOverrideConfig, None] = None,
-) -> Callable[[AppInfo], RecipeModule]:
+) -> RecipeInit:
     return recipe.MultitenancyRecipe.init(
         get_allowed_domains_for_tenant_id,
         override,

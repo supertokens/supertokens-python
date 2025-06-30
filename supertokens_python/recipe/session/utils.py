@@ -22,6 +22,12 @@ from typing_extensions import Literal
 from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.framework import BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseInputConfig,
+    BaseInputOverrideConfig,
+    BaseOverrideConfig,
+)
 from supertokens_python.utils import (
     is_an_ip_address,
     resolve,
@@ -33,6 +39,12 @@ from supertokens_python.utils import (
 from ...types import MaybeAwaitable, RecipeUserId
 from .constants import AUTH_MODE_HEADER_KEY, SESSION_REFRESH
 from .exceptions import ClaimValidationError
+from .interfaces import (
+    APIInterface,
+    RecipeInterface,
+    SessionClaimValidator,
+    SessionContainer,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest
@@ -41,12 +53,6 @@ if TYPE_CHECKING:
     )
     from supertokens_python.supertokens import AppInfo
 
-    from .interfaces import (
-        APIInterface,
-        RecipeInterface,
-        SessionClaimValidator,
-        SessionContainer,
-    )
     from .recipe import SessionRecipe
 
 from supertokens_python.logger import log_debug_message
@@ -334,141 +340,116 @@ def get_token_transfer_method_default(
     return "any"
 
 
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-        openid_feature: Union[OpenIdInputOverrideConfig, None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
-        self.openid_feature = openid_feature
+class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]):
+    openid_feature: Optional[OpenIdInputOverrideConfig] = None
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
 
 
 TokenType = Literal["access", "refresh"]
 TokenTransferMethod = Literal["cookie", "header"]
 
 
-class SessionConfig:
-    def __init__(
-        self,
-        refresh_token_path: NormalisedURLPath,
-        cookie_domain: Union[None, str],
-        older_cookie_domain: Union[None, str],
-        get_cookie_same_site: Callable[
-            [Optional[BaseRequest], Dict[str, Any]],
-            Literal["lax", "strict", "none"],
-        ],
-        cookie_secure: bool,
-        session_expired_status_code: int,
-        error_handlers: ErrorHandlers,
-        anti_csrf_function_or_string: Union[
-            Callable[
-                [Optional[BaseRequest], Dict[str, Any]],
-                Literal["VIA_CUSTOM_HEADER", "NONE"],
-            ],
-            Literal["VIA_CUSTOM_HEADER", "NONE", "VIA_TOKEN"],
-        ],
-        get_token_transfer_method: Callable[
-            [BaseRequest, bool, Dict[str, Any]],
-            Union[TokenTransferMethod, Literal["any"]],
-        ],
-        override: OverrideConfig,
-        framework: str,
-        mode: str,
-        invalid_claim_status_code: int,
-        use_dynamic_access_token_signing_key: bool,
-        expose_access_token_to_frontend_in_cookie_based_auth: bool,
-        jwks_refresh_interval_sec: int,
-    ):
-        self.session_expired_status_code = session_expired_status_code
-        self.invalid_claim_status_code = invalid_claim_status_code
-        self.use_dynamic_access_token_signing_key = use_dynamic_access_token_signing_key
-        self.expose_access_token_to_frontend_in_cookie_based_auth = (
-            expose_access_token_to_frontend_in_cookie_based_auth
-        )
-
-        self.refresh_token_path = refresh_token_path
-        self.cookie_domain = cookie_domain
-        self.older_cookie_domain = older_cookie_domain
-        self.get_cookie_same_site = get_cookie_same_site
-        self.cookie_secure = cookie_secure
-        self.error_handlers = error_handlers
-        self.anti_csrf_function_or_string = anti_csrf_function_or_string
-        self.get_token_transfer_method = get_token_transfer_method
-        self.override = override
-        self.framework = framework
-        self.mode = mode
-        self.jwks_refresh_interval_sec = jwks_refresh_interval_sec
-
-
-def validate_and_normalise_user_input(
-    app_info: AppInfo,
-    cookie_domain: Union[str, None] = None,
-    older_cookie_domain: Union[str, None] = None,
-    cookie_secure: Union[bool, None] = None,
-    cookie_same_site: Union[Literal["lax", "strict", "none"], None] = None,
-    session_expired_status_code: Union[int, None] = None,
-    anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None,
+class SessionInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
+    cookie_domain: Union[str, None] = None
+    older_cookie_domain: Union[str, None] = None
+    cookie_secure: Union[bool, None] = None
+    cookie_same_site: Union[Literal["lax", "strict", "none"], None] = None
+    session_expired_status_code: Union[int, None] = None
+    anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None
     get_token_transfer_method: Union[
         Callable[
             [BaseRequest, bool, Dict[str, Any]],
             Union[TokenTransferMethod, Literal["any"]],
         ],
         None,
-    ] = None,
-    error_handlers: Union[ErrorHandlers, None] = None,
-    override: Union[InputOverrideConfig, None] = None,
-    invalid_claim_status_code: Union[int, None] = None,
-    use_dynamic_access_token_signing_key: Union[bool, None] = None,
-    expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
-    jwks_refresh_interval_sec: Union[int, None] = None,
+    ] = None
+    error_handlers: Union[ErrorHandlers, None] = None
+    invalid_claim_status_code: Union[int, None] = None
+    use_dynamic_access_token_signing_key: Union[bool, None] = None
+    expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None
+    jwks_refresh_interval_sec: Union[int, None] = None
+
+
+class SessionConfig(BaseConfig[RecipeInterface, APIInterface]):
+    refresh_token_path: NormalisedURLPath
+    cookie_domain: Union[None, str]
+    older_cookie_domain: Union[None, str]
+    get_cookie_same_site: Callable[
+        [Optional[BaseRequest], Dict[str, Any]],
+        Literal["lax", "strict", "none"],
+    ]
+    cookie_secure: bool
+    session_expired_status_code: int
+    error_handlers: ErrorHandlers
+    anti_csrf_function_or_string: Union[
+        Callable[
+            [Optional[BaseRequest], Dict[str, Any]],
+            Literal["VIA_CUSTOM_HEADER", "NONE"],
+        ],
+        Literal["VIA_CUSTOM_HEADER", "NONE", "VIA_TOKEN"],
+    ]
+    get_token_transfer_method: Callable[
+        [BaseRequest, bool, Dict[str, Any]],
+        Union[TokenTransferMethod, Literal["any"]],
+    ]
+    # override: OverrideConfig,
+    framework: str
+    mode: str
+    invalid_claim_status_code: int
+    use_dynamic_access_token_signing_key: bool
+    expose_access_token_to_frontend_in_cookie_based_auth: bool
+    jwks_refresh_interval_sec: int
+
+
+def validate_and_normalise_user_input(
+    app_info: AppInfo,
+    input_config: SessionInputConfig,
 ):
-    _ = cookie_same_site  # we have this otherwise pylint complains that cookie_same_site is unused, but it is being used in the get_cookie_same_site function.
-    if anti_csrf not in {"VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE", None}:
+    # _ = cookie_same_site  # we have this otherwise pylint complains that cookie_same_site is unused, but it is being used in the get_cookie_same_site function.
+    if input_config.anti_csrf not in {"VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE", None}:
         raise ValueError(
             "anti_csrf must be one of VIA_TOKEN, VIA_CUSTOM_HEADER, NONE or None"
         )
 
-    if error_handlers is not None and not isinstance(error_handlers, ErrorHandlers):  # type: ignore
+    if input_config.error_handlers is not None and not isinstance(
+        input_config.error_handlers, ErrorHandlers
+    ):  # type: ignore
         raise ValueError("error_handlers must be an instance of ErrorHandlers or None")
 
-    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
-        raise ValueError("override must be an instance of InputOverrideConfig or None")
+    # if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
+    #     raise ValueError("override must be an instance of InputOverrideConfig or None")
 
     cookie_domain = (
-        normalise_session_scope(cookie_domain) if cookie_domain is not None else None
+        normalise_session_scope(input_config.cookie_domain)
+        if input_config.cookie_domain is not None
+        else None
     )
 
     older_cookie_domain = (
-        older_cookie_domain
-        if older_cookie_domain is None or older_cookie_domain == ""
-        else normalise_session_scope(older_cookie_domain)
+        input_config.older_cookie_domain
+        if input_config.older_cookie_domain is None
+        or input_config.older_cookie_domain == ""
+        else normalise_session_scope(input_config.older_cookie_domain)
     )
 
     cookie_secure = (
-        cookie_secure
-        if cookie_secure is not None
+        input_config.cookie_secure
+        if input_config.cookie_secure is not None
         else app_info.api_domain.get_as_string_dangerous().startswith("https")
     )
 
     session_expired_status_code = (
-        session_expired_status_code if session_expired_status_code is not None else 401
+        input_config.session_expired_status_code
+        if input_config.session_expired_status_code is not None
+        else 401
     )
 
     invalid_claim_status_code = (
-        invalid_claim_status_code if invalid_claim_status_code is not None else 403
+        input_config.invalid_claim_status_code
+        if input_config.invalid_claim_status_code is not None
+        else 403
     )
 
     if session_expired_status_code == invalid_claim_status_code:
@@ -477,21 +458,27 @@ def validate_and_normalise_user_input(
             f"({invalid_claim_status_code})"
         )
 
+    get_token_transfer_method = input_config.get_token_transfer_method
     if get_token_transfer_method is None:
         get_token_transfer_method = get_token_transfer_method_default
 
+    error_handlers = input_config.error_handlers
     if error_handlers is None:
         error_handlers = InputErrorHandlers()
 
-    if override is None:
-        override = InputOverrideConfig()
-
+    use_dynamic_access_token_signing_key = (
+        input_config.use_dynamic_access_token_signing_key
+    )
     if use_dynamic_access_token_signing_key is None:
         use_dynamic_access_token_signing_key = True
 
+    expose_access_token_to_frontend_in_cookie_based_auth = (
+        input_config.expose_access_token_to_frontend_in_cookie_based_auth
+    )
     if expose_access_token_to_frontend_in_cookie_based_auth is None:
         expose_access_token_to_frontend_in_cookie_based_auth = False
 
+    cookie_same_site = input_config.cookie_same_site
     if cookie_same_site is not None:
         # this is just so that we check that the user has provided the right
         # values, since normalise_same_site throws an error if the user
@@ -538,29 +525,42 @@ def validate_and_normalise_user_input(
         ],
         Literal["VIA_CUSTOM_HEADER", "NONE", "VIA_TOKEN"],
     ] = anti_csrf_function
+
+    anti_csrf = input_config.anti_csrf
     if anti_csrf is not None:
         anti_csrf_function_or_string = anti_csrf
 
+    jwks_refresh_interval_sec = input_config.jwks_refresh_interval_sec
     if jwks_refresh_interval_sec is None:
         jwks_refresh_interval_sec = 4 * 3600  # 4 hours
 
+    override_config = OverrideConfig()
+    if input_config.override is not None:
+        if input_config.override.functions is not None:
+            override_config.functions = input_config.override.functions
+
+        if input_config.override.apis is not None:
+            override_config.apis = input_config.override.apis
+
     return SessionConfig(
-        app_info.api_base_path.append(NormalisedURLPath(SESSION_REFRESH)),
-        cookie_domain,
-        older_cookie_domain,
-        get_cookie_same_site,
-        cookie_secure,
-        session_expired_status_code,
-        error_handlers,
-        anti_csrf_function_or_string,
-        get_token_transfer_method,
-        OverrideConfig(override.functions, override.apis),
-        app_info.framework,
-        app_info.mode,
-        invalid_claim_status_code,
-        use_dynamic_access_token_signing_key,
-        expose_access_token_to_frontend_in_cookie_based_auth,
-        jwks_refresh_interval_sec,
+        refresh_token_path=app_info.api_base_path.append(
+            NormalisedURLPath(SESSION_REFRESH)
+        ),
+        cookie_domain=cookie_domain,
+        older_cookie_domain=older_cookie_domain,
+        get_cookie_same_site=get_cookie_same_site,
+        cookie_secure=cookie_secure,
+        session_expired_status_code=session_expired_status_code,
+        error_handlers=error_handlers,
+        anti_csrf_function_or_string=anti_csrf_function_or_string,
+        get_token_transfer_method=get_token_transfer_method,
+        override=override_config,
+        framework=app_info.framework,
+        mode=app_info.mode,
+        invalid_claim_status_code=invalid_claim_status_code,
+        use_dynamic_access_token_signing_key=use_dynamic_access_token_signing_key,
+        expose_access_token_to_frontend_in_cookie_based_auth=expose_access_token_to_frontend_in_cookie_based_auth,
+        jwks_refresh_interval_sec=jwks_refresh_interval_sec,
     )
 
 

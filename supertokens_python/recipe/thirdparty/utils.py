@@ -13,10 +13,16 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.thirdparty.provider import ProviderInput
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseInputConfig,
+    BaseInputOverrideConfig,
+    BaseOverrideConfig,
+)
 
 from .interfaces import APIInterface, RecipeInterface
 
@@ -46,54 +52,39 @@ class SignInAndUpFeature:
         self.providers = providers
 
 
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
 
 
-class ThirdPartyConfig:
-    def __init__(
-        self,
-        sign_in_and_up_feature: SignInAndUpFeature,
-        override: OverrideConfig,
-    ):
-        self.sign_in_and_up_feature = sign_in_and_up_feature
-        self.override = override
+class ThirdPartyInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
+    sign_in_and_up_feature: SignInAndUpFeature
+
+
+class ThirdPartyConfig(BaseConfig[RecipeInterface, APIInterface]):
+    sign_in_and_up_feature: SignInAndUpFeature
 
 
 def validate_and_normalise_user_input(
-    sign_in_and_up_feature: SignInAndUpFeature,
-    override: Union[InputOverrideConfig, None] = None,
+    input_config: ThirdPartyInputConfig,
 ) -> ThirdPartyConfig:
-    if not isinstance(sign_in_and_up_feature, SignInAndUpFeature):  # type: ignore
+    if not isinstance(input_config.sign_in_and_up_feature, SignInAndUpFeature):  # type: ignore
         raise ValueError(
             "sign_in_and_up_feature must be an instance of SignInAndUpFeature"
         )
 
-    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
-        raise ValueError("override must be an instance of InputOverrideConfig or None")
+    override_config = OverrideConfig()
+    if input_config.override is not None:
+        if input_config.override.functions is not None:
+            override_config.functions = input_config.override.functions
 
-    if override is None:
-        override = InputOverrideConfig()
+        if input_config.override.apis is not None:
+            override_config.apis = input_config.override.apis
 
     return ThirdPartyConfig(
-        sign_in_and_up_feature,
-        OverrideConfig(functions=override.functions, apis=override.apis),
+        sign_in_and_up_feature=input_config.sign_in_and_up_feature,
+        override=override_config,
     )
 
 

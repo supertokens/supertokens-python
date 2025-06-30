@@ -13,12 +13,13 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.emailpassword.types import EmailTemplateVars
 from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 
 from ...supertokens import AppInfo
 from ...types import (
@@ -118,7 +119,7 @@ class PasswordPolicyViolationError(APIResponse):
         }
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -315,7 +316,7 @@ class SignUpPostNotAllowedResponse(APIResponse):
         return {"status": self.status, "reason": self.reason}
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_email_exists_get = False
         self.disable_generate_password_reset_token_post = False

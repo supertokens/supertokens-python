@@ -306,13 +306,13 @@ async def unauthorised_f(req: BaseRequest, message: str, res: BaseResponse):
     return res
 
 
-def apis_override_session(param: APIInterface):
-    param.disable_refresh_post = True
-    return param
+def apis_override_session(original_implementation: APIInterface):
+    original_implementation.disable_refresh_post = True
+    return original_implementation
 
 
-def functions_override_session(param: RecipeInterface):
-    original_create_new_session = param.create_new_session
+def functions_override_session(original_implementation: RecipeInterface):
+    original_create_new_session = original_implementation.create_new_session
 
     async def create_new_session_custom(
         user_id: str,
@@ -336,9 +336,9 @@ def functions_override_session(param: RecipeInterface):
             user_context,
         )
 
-    param.create_new_session = create_new_session_custom
+    original_implementation.create_new_session = create_new_session_custom
 
-    return param
+    return original_implementation
 
 
 def get_app_port():

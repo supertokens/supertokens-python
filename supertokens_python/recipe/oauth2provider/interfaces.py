@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from typing_extensions import Literal
@@ -23,6 +23,7 @@ from supertokens_python.types import (
     RecipeUserId,
     User,
 )
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from .oauth2_client import OAuth2Client
@@ -1016,7 +1017,7 @@ class UpdateOAuth2ClientInput:
         )
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     @abstractmethod
     async def authorization(
         self,
@@ -1284,7 +1285,7 @@ class APIOptions:
         self.recipe_implementation: RecipeInterface = recipe_implementation
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_login_get = False
         self.disable_auth_get = False

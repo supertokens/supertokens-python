@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Union
 
 from . import exceptions as ex
 from . import recipe, utils
@@ -22,12 +22,10 @@ exceptions = ex
 InputOverrideConfig = utils.InputOverrideConfig
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo
-
-    from ...recipe_module import RecipeModule
+    from supertokens_python.supertokens import RecipeInit
 
 
 def init(
     override: Union[InputOverrideConfig, None] = None,
-) -> Callable[[AppInfo], RecipeModule]:
+) -> RecipeInit:
     return recipe.OAuth2ProviderRecipe.init(override)

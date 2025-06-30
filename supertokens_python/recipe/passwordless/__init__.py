@@ -31,11 +31,9 @@ from .recipe import PasswordlessRecipe
 from .smsdelivery import services as smsdelivery_services
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo
+    from supertokens_python.supertokens import RecipeInit
 
-    from ...recipe_module import RecipeModule
-
-InputOverrideConfig = utils.OverrideConfig
+InputOverrideConfig = utils.InputOverrideConfig
 ContactEmailOnlyConfig = utils.ContactEmailOnlyConfig
 ContactConfig = utils.ContactConfig
 PhoneOrEmailInput = utils.PhoneOrEmailInput
@@ -63,7 +61,7 @@ def init(
     ] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None,
-) -> Callable[[AppInfo], RecipeModule]:
+) -> RecipeInit:
     return PasswordlessRecipe.init(
         contact_config,
         flow_type,

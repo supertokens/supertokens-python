@@ -17,7 +17,6 @@ from oauth2provider import add_oauth2provider_routes
 from passwordless import add_passwordless_routes  # pylint: disable=import-error
 from session import add_session_routes  # pylint: disable=import-error
 from supertokens_python import (
-    AppInfo,
     InputAppInfo,
     Supertokens,
     SupertokensConfig,
@@ -66,7 +65,7 @@ from supertokens_python.recipe.webauthn.interfaces.api import (
 )
 from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
 from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
-from supertokens_python.recipe_module import RecipeModule
+from supertokens_python.supertokens import RecipeInit
 from supertokens_python.types import RecipeUserId
 from test_functions_mapper import (  # pylint: disable=import-error
     get_func,
@@ -251,9 +250,7 @@ def init_st(config: Dict[str, Any]):
     st_reset()
     override_logging.reset_override_logs()
 
-    recipe_list: List[Callable[[AppInfo], RecipeModule]] = [
-        dashboard.init(api_key="test")
-    ]
+    recipe_list: List[RecipeInit] = [dashboard.init(api_key="test")]
     for recipe_config in config.get("recipeList", []):
         recipe_id = recipe_config.get("recipeId")
         if recipe_id == "emailpassword":

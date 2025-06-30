@@ -13,13 +13,14 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+
+from supertokens_python.recipe.accountlinking.types import AccountLinkingInputConfig
 
 if TYPE_CHECKING:
     from .types import (
         AccountInfoWithRecipeIdAndUserId,
         AccountLinkingConfig,
-        InputOverrideConfig,
         RecipeLevelUser,
         SessionContainer,
         ShouldAutomaticallyLink,
@@ -58,51 +59,34 @@ def recipe_init_defined_should_do_automatic_account_linking() -> bool:
 
 def validate_and_normalise_user_input(
     _: AppInfo,
-    on_account_linked: Optional[
-        Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]
-    ] = None,
-    should_do_automatic_account_linking: Optional[
-        Callable[
-            [
-                AccountInfoWithRecipeIdAndUserId,
-                Optional[User],
-                Optional[SessionContainer],
-                str,
-                Dict[str, Any],
-            ],
-            Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
-        ]
-    ] = None,
-    override: Union[InputOverrideConfig, None] = None,
+    input_config: AccountLinkingInputConfig,
 ) -> AccountLinkingConfig:
-    from .types import (
-        AccountLinkingConfig as ALC,
-    )
-    from .types import (
-        InputOverrideConfig as IOC,
-    )
-    from .types import (
-        OverrideConfig,
-    )
+    from .types import AccountLinkingConfig, OverrideConfig
 
     global _did_use_default_should_do_automatic_account_linking
-    if override is None:
-        override = IOC()
+
+    override_config: OverrideConfig = OverrideConfig()
+
+    if (
+        input_config.override is not None
+        and input_config.override.functions is not None
+    ):
+        override_config.functions = input_config.override.functions
 
     _did_use_default_should_do_automatic_account_linking = (
-        should_do_automatic_account_linking is None
+        input_config.should_do_automatic_account_linking is None
     )
 
-    return ALC(
-        override=OverrideConfig(functions=override.functions),
+    return AccountLinkingConfig(
+        override=override_config,
         on_account_linked=(
             default_on_account_linked
-            if on_account_linked is None
-            else on_account_linked
+            if input_config.on_account_linked is None
+            else input_config.on_account_linked
         ),
         should_do_automatic_account_linking=(
             default_should_do_automatic_account_linking
-            if should_do_automatic_account_linking is None
-            else should_do_automatic_account_linking
+            if input_config.should_do_automatic_account_linking is None
+            else input_config.should_do_automatic_account_linking
         ),
     )

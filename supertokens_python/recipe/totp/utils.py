@@ -16,7 +16,11 @@ from typing import Union
 
 from supertokens_python import AppInfo
 
-from .types import OverrideConfig, TOTPConfig, TOTPNormalisedConfig
+from .types import (
+    NormalisedOverrideConfig,
+    TOTPConfig,
+    TOTPNormalisedConfig,
+)
 
 
 def validate_and_normalise_user_input(
@@ -29,17 +33,17 @@ def validate_and_normalise_user_input(
     default_skew = config.default_skew if config.default_skew is not None else 1
     default_period = config.default_period if config.default_period is not None else 30
 
-    if config.override is None:
-        override = OverrideConfig()
-    else:
-        override = OverrideConfig(
-            functions=config.override.functions,
-            apis=config.override.apis,
-        )
+    override_config = NormalisedOverrideConfig()
+    if config.override is not None:
+        if config.override.functions is not None:
+            override_config.functions = config.override.functions
+
+        if config.override.apis is not None:
+            override_config.apis = config.override.apis
 
     return TOTPNormalisedConfig(
         issuer=issuer,
         default_skew=default_skew,
         default_period=default_period,
-        override=override,
+        override=override_config,
     )

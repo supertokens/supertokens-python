@@ -13,10 +13,11 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from supertokens_python.types import RecipeUserId
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 if TYPE_CHECKING:
@@ -192,7 +193,7 @@ class DisassociateUserFromTenantOkResult:
         self.was_associated = was_associated
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -366,7 +367,7 @@ class LoginMethodsGetOkResult(APIResponse):
         }
 
 
-class APIInterface(ABC):
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_login_methods_get = False
 

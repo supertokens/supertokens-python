@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from ...ingredients.emaildelivery.types import EmailDeliveryConfig
 from . import exceptions as ex
@@ -32,9 +32,7 @@ EmailDeliveryInterface = types.EmailDeliveryInterface
 
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo
-
-    from ...recipe_module import RecipeModule
+    from supertokens_python.supertokens import RecipeInit
 
 
 def init(
@@ -42,7 +40,7 @@ def init(
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
     override: Union[OverrideConfig, None] = None,
-) -> Callable[[AppInfo], RecipeModule]:
+) -> RecipeInit:
     return EmailVerificationRecipe.init(
         mode,
         email_delivery,
