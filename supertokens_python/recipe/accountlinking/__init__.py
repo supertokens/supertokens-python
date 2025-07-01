@@ -13,10 +13,9 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Awaitable, Callable, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Union
 
 from ...types import User
-from ..session.interfaces import SessionContainer
 from . import types
 from .recipe import AccountLinkingRecipe
 
@@ -25,6 +24,9 @@ RecipeLevelUser = types.RecipeLevelUser
 AccountInfoWithRecipeIdAndUserId = types.AccountInfoWithRecipeIdAndUserId
 ShouldAutomaticallyLink = types.ShouldAutomaticallyLink
 ShouldNotAutomaticallyLink = types.ShouldNotAutomaticallyLink
+
+if TYPE_CHECKING:
+    from ..session.interfaces import SessionContainer
 
 
 def init(

@@ -20,7 +20,7 @@ from urllib.parse import urlparse
 from typing_extensions import Literal
 
 from supertokens_python.exceptions import raise_general_exception
-from supertokens_python.framework import BaseResponse
+from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.types.config import (
     BaseConfig,
@@ -47,7 +47,6 @@ from .interfaces import (
 )
 
 if TYPE_CHECKING:
-    from supertokens_python.framework import BaseRequest
     from supertokens_python.recipe.openid import (
         InputOverrideConfig as OpenIdInputOverrideConfig,
     )

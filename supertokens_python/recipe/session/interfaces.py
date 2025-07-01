@@ -29,6 +29,7 @@ from typing import (
 from typing_extensions import TypedDict
 
 from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.types import (
     MaybeAwaitable,
     RecipeUserId,
@@ -38,12 +39,9 @@ from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from ...utils import resolve
 from .exceptions import ClaimValidationError
-from .utils import SessionConfig, TokenTransferMethod
 
 if TYPE_CHECKING:
-    from supertokens_python.framework import BaseRequest
-
-from supertokens_python.framework import BaseResponse
+    from .utils import SessionConfig, TokenTransferMethod
 
 
 class SessionObj:
