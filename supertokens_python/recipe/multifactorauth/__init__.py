@@ -15,7 +15,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Optional, Union
 
-from supertokens_python.recipe.multifactorauth.types import OverrideConfig
+from supertokens_python.recipe.multifactorauth.types import (
+    MultiFactorAuthOverrideConfig,
+)
 
 from .recipe import MultiFactorAuthRecipe
 
@@ -25,7 +27,7 @@ if TYPE_CHECKING:
 
 def init(
     first_factors: Optional[List[str]] = None,
-    override: Union[OverrideConfig, None] = None,
+    override: Union[MultiFactorAuthOverrideConfig, None] = None,
 ) -> RecipeInit:
     return MultiFactorAuthRecipe.init(
         first_factors,

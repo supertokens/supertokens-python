@@ -30,12 +30,11 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import RecipeInterface
 from supertokens_python.types.base import UserContext
 from supertokens_python.types.config import (
     BaseConfig,
-    BaseInputConfig,
-    BaseInputOverrideConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
     BaseOverrideConfig,
 )
 from supertokens_python.types.response import CamelCaseBaseModel
-from supertokens_python.types.utils import UseDefaultIfNone
 
 InterfaceType = TypeVar("InterfaceType")
 """Generic Type for use in `InterfaceOverride`"""
@@ -184,28 +183,26 @@ class InterfaceOverride(Protocol[InterfaceType]):
     ) -> InterfaceType: ...
 
 
-class OverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
+WebauthnOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedWebauthnOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
 
 
-class NormalisedOverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
-
-
-class WebauthnConfig(BaseInputConfig[RecipeInterface, APIInterface]):
+class WebauthnConfig(BaseConfig[RecipeInterface, APIInterface]):
     get_relying_party_id: Optional[Union[str, GetRelyingPartyId]] = None
     get_relying_party_name: Optional[Union[str, GetRelyingPartyName]] = None
     get_origin: Optional[GetOrigin] = None
     email_delivery: Optional[EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]] = None
     validate_email_address: Optional[ValidateEmailAddress] = None
-    override: UseDefaultIfNone[Optional[OverrideConfig]] = OverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
-class NormalisedWebauthnConfig(BaseConfig[RecipeInterface, APIInterface]):
+class NormalisedWebauthnConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
     get_relying_party_id: NormalisedGetRelyingPartyId
     get_relying_party_name: NormalisedGetRelyingPartyName
     get_origin: NormalisedGetOrigin
     get_email_delivery_config: NormalisedGetEmailDeliveryConfig
     validate_email_address: NormalisedValidateEmailAddress
-    override: NormalisedOverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 class WebauthnIngredients(CamelCaseBaseModel):

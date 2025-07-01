@@ -19,7 +19,7 @@ from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterfac
 from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 if TYPE_CHECKING:
-    from .utils import JWTConfig
+    from .utils import NormalisedJWTConfig
 
 
 class JsonWebKey:
@@ -72,7 +72,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: "JWTConfig",
+        config: "NormalisedJWTConfig",
         recipe_implementation: RecipeInterface,
     ):
         self.request = request

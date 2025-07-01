@@ -150,8 +150,8 @@ from .constants import (
     VALIDATE_KEY_API,
 )
 from .utils import (
-    DashboardInputConfig,
-    InputOverrideConfig,
+    DashboardConfig,
+    DashboardOverrideConfig,
     validate_and_normalise_user_input,
 )
 
@@ -164,11 +164,11 @@ class DashboardRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        input_config: DashboardInputConfig,
+        config: DashboardConfig,
     ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
-            input_config=input_config,
+            config=config,
         )
         recipe_implementation = RecipeImplementation()
         self.recipe_implementation = self.config.override.functions(
@@ -642,9 +642,9 @@ class DashboardRecipe(RecipeModule):
     def init(
         api_key: Optional[str],
         admins: Optional[List[str]] = None,
-        override: Optional[InputOverrideConfig] = None,
+        override: Optional[DashboardOverrideConfig] = None,
     ):
-        input_config = DashboardInputConfig(
+        config = DashboardConfig(
             api_key=api_key,
             admins=admins,
             override=override,
@@ -655,9 +655,9 @@ class DashboardRecipe(RecipeModule):
                 DashboardRecipe.__instance = DashboardRecipe(
                     recipe_id=DashboardRecipe.recipe_id,
                     app_info=app_info,
-                    input_config=apply_plugins(
+                    config=apply_plugins(
                         recipe_id=DashboardRecipe.recipe_id,
-                        config=input_config,
+                        config=config,
                         plugins=plugins,
                     ),
                 )

@@ -188,7 +188,7 @@ async def test_that_if_disabling_api_the_default_email_exists_api_does_not_work(
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io"),
             emailpassword.init(
-                override=emailpassword.InputOverrideConfig(
+                override=emailpassword.EmailPasswordOverrideConfig(
                     apis=apis_override_email_password
                 )
             ),

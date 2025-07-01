@@ -18,12 +18,11 @@ from typing_extensions import Literal
 
 from supertokens_python.types.config import (
     BaseConfig,
-    BaseInputConfig,
-    BaseInputOverrideConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
     BaseOverrideConfig,
 )
 from supertokens_python.types.response import APIResponse
-from supertokens_python.types.utils import UseDefaultIfNone
 
 from .interfaces import APIInterface, RecipeInterface
 
@@ -184,21 +183,19 @@ class VerifyTOTPOkResult(OkResult):
         return {"status": self.status}
 
 
-class OverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
+TOTPOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedTOTPOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
 
 
-class NormalisedOverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
-
-
-class TOTPConfig(BaseInputConfig[RecipeInterface, APIInterface]):
+class TOTPConfig(BaseConfig[RecipeInterface, APIInterface]):
     issuer: Optional[str] = None
     default_skew: Optional[int] = None
     default_period: Optional[int] = None
-    override: UseDefaultIfNone[Optional[OverrideConfig]] = OverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
-class TOTPNormalisedConfig(BaseConfig[RecipeInterface, APIInterface]):
+class NormalisedTOTPConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
     issuer: str
     default_skew: int
     default_period: int
-    override: NormalisedOverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933

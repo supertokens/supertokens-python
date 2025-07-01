@@ -22,9 +22,9 @@ from .emaildelivery import services as emaildelivery_services
 from .interfaces import TypeGetEmailForUserIdFunction
 from .recipe import EmailVerificationRecipe
 from .types import EmailTemplateVars
-from .utils import MODE_TYPE, OverrideConfig
+from .utils import MODE_TYPE, EmailVerificationOverrideConfig
 
-InputOverrideConfig = utils.OverrideConfig
+InputOverrideConfig = utils.EmailVerificationOverrideConfig
 exception = ex
 SMTPService = emaildelivery_services.SMTPService
 EmailVerificationClaim = recipe.EmailVerificationClaim
@@ -39,7 +39,7 @@ def init(
     mode: MODE_TYPE,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-    override: Union[OverrideConfig, None] = None,
+    override: Union[EmailVerificationOverrideConfig, None] = None,
 ) -> RecipeInit:
     return EmailVerificationRecipe.init(
         mode,

@@ -17,6 +17,8 @@ from typing import TYPE_CHECKING, Union
 
 from . import exceptions as ex
 from . import recipe
+from .interfaces import TypeGetAllowedDomainsForTenantId
+from .utils import MultitenancyOverrideConfig
 
 AllowedDomainsClaim = recipe.AllowedDomainsClaim
 exceptions = ex
@@ -24,15 +26,12 @@ exceptions = ex
 if TYPE_CHECKING:
     from supertokens_python.supertokens import RecipeInit
 
-    from .interfaces import TypeGetAllowedDomainsForTenantId
-    from .utils import InputOverrideConfig
-
 
 def init(
     get_allowed_domains_for_tenant_id: Union[
         TypeGetAllowedDomainsForTenantId, None
     ] = None,
-    override: Union[InputOverrideConfig, None] = None,
+    override: Union[MultitenancyOverrideConfig, None] = None,
 ) -> RecipeInit:
     return recipe.MultitenancyRecipe.init(
         get_allowed_domains_for_tenant_id,

@@ -27,7 +27,7 @@ if TYPE_CHECKING:
         ProviderInput,
     )
 
-    from .utils import MultitenancyConfig
+    from .utils import NormalisedMultitenancyConfig
 
 
 class TenantConfig:
@@ -283,7 +283,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: MultitenancyConfig,
+        config: NormalisedMultitenancyConfig,
         recipe_implementation: RecipeInterface,
         static_third_party_providers: List[ProviderInput],
         all_available_first_factors: List[str],

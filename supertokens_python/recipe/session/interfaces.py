@@ -41,7 +41,7 @@ from ...utils import resolve
 from .exceptions import ClaimValidationError
 
 if TYPE_CHECKING:
-    from .utils import SessionConfig, TokenTransferMethod
+    from .utils import NormalisedSessionConfig, TokenTransferMethod
 
 
 class SessionObj:
@@ -372,7 +372,7 @@ class APIOptions:
         request: BaseRequest,
         response: Optional[BaseResponse],
         recipe_id: str,
-        config: SessionConfig,
+        config: NormalisedSessionConfig,
         recipe_implementation: RecipeInterface,
     ):
         self.request = request
@@ -445,7 +445,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def __init__(
         self,
         recipe_implementation: RecipeInterface,
-        config: SessionConfig,
+        config: NormalisedSessionConfig,
         access_token: str,
         front_token: str,
         refresh_token: Optional[TokenInfo],

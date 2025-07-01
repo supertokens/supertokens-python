@@ -374,7 +374,7 @@ def config(
                             on_unauthorised=unauthorised_f
                         ),
                         anti_csrf=anti_csrf,
-                        override=session.InputOverrideConfig(
+                        override=session.SessionOverrideConfig(
                             apis=apis_override_session,
                             functions=functions_override_session,
                         ),
@@ -398,7 +398,7 @@ def config(
                             on_unauthorised=unauthorised_f
                         ),
                         anti_csrf=anti_csrf,
-                        override=session.InputOverrideConfig(
+                        override=session.SessionOverrideConfig(
                             apis=apis_override_session,
                             functions=functions_override_session,
                         ),
@@ -419,7 +419,7 @@ def config(
                 session.init(
                     error_handlers=InputErrorHandlers(on_unauthorised=unauthorised_f),
                     anti_csrf=anti_csrf,
-                    override=session.InputOverrideConfig(apis=apis_override_session),
+                    override=session.SessionOverrideConfig(apis=apis_override_session),
                 )
             ],
             telemetry=False,

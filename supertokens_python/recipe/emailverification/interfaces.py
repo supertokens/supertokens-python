@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
 
     from .types import EmailVerificationUser, VerificationEmailTemplateVars
-    from .utils import EmailVerificationConfig
+    from .utils import NormalisedEmailVerificationConfig
 
 
 class CreateEmailVerificationTokenOkResult:
@@ -141,7 +141,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: EmailVerificationConfig,
+        config: NormalisedEmailVerificationConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         email_delivery: EmailDeliveryIngredient[VerificationEmailTemplateVars],

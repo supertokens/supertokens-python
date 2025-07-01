@@ -17,15 +17,15 @@ from typing import Union
 from supertokens_python import AppInfo
 
 from .types import (
-    NormalisedOverrideConfig,
+    NormalisedTOTPConfig,
+    NormalisedTOTPOverrideConfig,
     TOTPConfig,
-    TOTPNormalisedConfig,
 )
 
 
 def validate_and_normalise_user_input(
     app_info: AppInfo, config: Union[TOTPConfig, None]
-) -> TOTPNormalisedConfig:
+) -> NormalisedTOTPConfig:
     if config is None:
         config = TOTPConfig()
 
@@ -33,7 +33,7 @@ def validate_and_normalise_user_input(
     default_skew = config.default_skew if config.default_skew is not None else 1
     default_period = config.default_period if config.default_period is not None else 30
 
-    override_config = NormalisedOverrideConfig()
+    override_config = NormalisedTOTPOverrideConfig()
     if config.override is not None:
         if config.override.functions is not None:
             override_config.functions = config.override.functions
@@ -41,7 +41,7 @@ def validate_and_normalise_user_input(
         if config.override.apis is not None:
             override_config.apis = config.override.apis
 
-    return TOTPNormalisedConfig(
+    return NormalisedTOTPConfig(
         issuer=issuer,
         default_skew=default_skew,
         default_period=default_period,

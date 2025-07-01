@@ -26,7 +26,7 @@ from .recipe import SessionRecipe
 from .utils import TokenTransferMethod
 
 InputErrorHandlers = utils.InputErrorHandlers
-InputOverrideConfig = utils.InputOverrideConfig
+SessionOverrideConfig = utils.SessionOverrideConfig
 SessionContainer = interfaces.SessionContainer
 exceptions = ex
 
@@ -46,7 +46,7 @@ def init(
         None,
     ] = None,
     error_handlers: Union[InputErrorHandlers, None] = None,
-    override: Union[InputOverrideConfig, None] = None,
+    override: Union[SessionOverrideConfig, None] = None,
     invalid_claim_status_code: Union[int, None] = None,
     use_dynamic_access_token_signing_key: Union[bool, None] = None,
     expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,

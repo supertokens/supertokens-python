@@ -20,11 +20,10 @@ from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.types.config import (
     BaseConfig,
-    BaseInputConfig,
-    BaseInputOverrideConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
     BaseOverrideConfig,
 )
-from supertokens_python.types.utils import UseDefaultIfNone
 from supertokens_python.utils import (
     resolve,
 )
@@ -67,34 +66,32 @@ class ErrorHandlers:
         )
 
 
-class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
-
-
-class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
-
-
-class MultitenancyInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
-    get_allowed_domains_for_tenant_id: Optional[TypeGetAllowedDomainsForTenantId] = None
-    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
+MultitenancyOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedMultitenancyOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
 
 
 class MultitenancyConfig(BaseConfig[RecipeInterface, APIInterface]):
+    get_allowed_domains_for_tenant_id: Optional[TypeGetAllowedDomainsForTenantId] = None
+
+
+class NormalisedMultitenancyConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
     get_allowed_domains_for_tenant_id: Optional[TypeGetAllowedDomainsForTenantId]
-    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 def validate_and_normalise_user_input(
-    input_config: MultitenancyInputConfig,
-) -> MultitenancyConfig:
-    override_config = OverrideConfig()
-    if input_config.override is not None:
-        if input_config.override.functions is not None:
-            override_config.functions = input_config.override.functions
+    config: MultitenancyConfig,
+) -> NormalisedMultitenancyConfig:
+    override_config = NormalisedMultitenancyOverrideConfig()
+    if config.override is not None:
+        if config.override.functions is not None:
+            override_config.functions = config.override.functions
 
-        if input_config.override.apis is not None:
-            override_config.apis = input_config.override.apis
+        if config.override.apis is not None:
+            override_config.apis = config.override.apis
 
-    return MultitenancyConfig(
-        get_allowed_domains_for_tenant_id=input_config.get_allowed_domains_for_tenant_id,
+    return NormalisedMultitenancyConfig(
+        get_allowed_domains_for_tenant_id=config.get_allowed_domains_for_tenant_id,
         override=override_config,
     )

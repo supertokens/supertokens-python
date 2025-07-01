@@ -21,13 +21,13 @@ from supertokens_python.supertokens import RecipeInit
 
 from .recipe import DashboardRecipe
 
-InputOverrideConfig = utils.InputOverrideConfig
+DashboardOverrideConfig = utils.DashboardOverrideConfig
 
 
 def init(
     api_key: Optional[str] = None,
     admins: Optional[List[str]] = None,
-    override: Optional[InputOverrideConfig] = None,
+    override: Optional[DashboardOverrideConfig] = None,
 ) -> RecipeInit:
     return DashboardRecipe.init(
         api_key,

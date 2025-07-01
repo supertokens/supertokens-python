@@ -23,6 +23,6 @@ if TYPE_CHECKING:
 
 
 def init(
-    override: Union[utils.InputOverrideConfig, None] = None,
+    override: Union[utils.UserMetadataOverrideConfig, None] = None,
 ) -> RecipeInit:
     return UserMetadataRecipe.init(override)

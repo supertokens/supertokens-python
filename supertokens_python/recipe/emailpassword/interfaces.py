@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
     from ...types import User
     from .types import FormField
-    from .utils import EmailPasswordConfig
+    from .utils import NormalisedEmailPasswordConfig
 
 
 class SignUpOkResult:
@@ -219,7 +219,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: EmailPasswordConfig,
+        config: NormalisedEmailPasswordConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         email_delivery: EmailDeliveryIngredient[EmailTemplateVars],
@@ -227,7 +227,7 @@ class APIOptions:
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
-        self.config: EmailPasswordConfig = config
+        self.config: NormalisedEmailPasswordConfig = config
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info = app_info
         self.email_delivery = email_delivery

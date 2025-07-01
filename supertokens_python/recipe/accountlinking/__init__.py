@@ -19,7 +19,7 @@ from ...types import User
 from . import types
 from .recipe import AccountLinkingRecipe
 
-InputOverrideConfig = types.InputOverrideConfig
+AccountLinkingOverrideConfig = types.AccountLinkingOverrideConfig
 RecipeLevelUser = types.RecipeLevelUser
 AccountInfoWithRecipeIdAndUserId = types.AccountInfoWithRecipeIdAndUserId
 ShouldAutomaticallyLink = types.ShouldAutomaticallyLink
@@ -45,7 +45,7 @@ def init(
             Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
         ]
     ] = None,
-    override: Optional[InputOverrideConfig] = None,
+    override: Optional[AccountLinkingOverrideConfig] = None,
 ):
     return AccountLinkingRecipe.init(
         on_account_linked, should_do_automatic_account_linking, override

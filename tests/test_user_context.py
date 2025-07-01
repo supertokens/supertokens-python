@@ -191,13 +191,13 @@ async def test_user_context(driver_config_client: TestClient):
         framework="fastapi",
         recipe_list=[
             emailpassword.init(
-                override=emailpassword.InputOverrideConfig(
+                override=emailpassword.EmailPasswordOverrideConfig(
                     apis=apis_override_email_password,
                     functions=functions_override_email_password,
                 )
             ),
             session.init(
-                override=session.InputOverrideConfig(
+                override=session.SessionOverrideConfig(
                     functions=functions_override_session
                 )
             ),
@@ -319,13 +319,13 @@ async def test_default_context(driver_config_client: TestClient):
         framework="fastapi",
         recipe_list=[
             emailpassword.init(
-                override=emailpassword.InputOverrideConfig(
+                override=emailpassword.EmailPasswordOverrideConfig(
                     apis=apis_override_email_password,
                     functions=functions_override_email_password,
                 )
             ),
             session.init(
-                override=session.InputOverrideConfig(
+                override=session.SessionOverrideConfig(
                     functions=functions_override_session
                 )
             ),
@@ -466,13 +466,13 @@ async def test_get_request_from_user_context(driver_config_client: TestClient):
         framework="fastapi",
         recipe_list=[
             emailpassword.init(
-                override=emailpassword.InputOverrideConfig(
+                override=emailpassword.EmailPasswordOverrideConfig(
                     apis=apis_override_email_password,
                     functions=functions_override_email_password,
                 )
             ),
             session.init(
-                override=session.InputOverrideConfig(
+                override=session.SessionOverrideConfig(
                     functions=functions_override_session
                 )
             ),

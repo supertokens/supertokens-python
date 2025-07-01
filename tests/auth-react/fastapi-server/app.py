@@ -907,7 +907,7 @@ def custom_init(
                 contact_config=ContactPhoneOnlyConfig(),
                 flow_type=passwordlessFlowType,  # type: ignore - type expects only certain literals
                 sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
-                override=passwordless.InputOverrideConfig(
+                override=passwordless.PasswordlessOverrideConfig(
                     apis=override_passwordless_apis
                 ),
             )
@@ -918,7 +918,7 @@ def custom_init(
                 email_delivery=passwordless.EmailDeliveryConfig(
                     CustomPlessEmailService()
                 ),
-                override=passwordless.InputOverrideConfig(
+                override=passwordless.PasswordlessOverrideConfig(
                     apis=override_passwordless_apis
                 ),
             )
@@ -930,7 +930,7 @@ def custom_init(
                     CustomPlessEmailService()
                 ),
                 sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
-                override=passwordless.InputOverrideConfig(
+                override=passwordless.PasswordlessOverrideConfig(
                     apis=override_passwordless_apis
                 ),
             )
@@ -940,7 +940,9 @@ def custom_init(
             flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
             email_delivery=passwordless.EmailDeliveryConfig(CustomPlessEmailService()),
             sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
-            override=passwordless.InputOverrideConfig(apis=override_passwordless_apis),
+            override=passwordless.PasswordlessOverrideConfig(
+                apis=override_passwordless_apis
+            ),
         )
 
     async def get_allowed_domains_for_tenant_id(
@@ -1069,7 +1071,7 @@ def custom_init(
         {
             "id": "session",
             "init": session.init(
-                override=session.InputOverrideConfig(apis=override_session_apis)
+                override=session.SessionOverrideConfig(apis=override_session_apis)
             ),
         },
         {
@@ -1089,7 +1091,7 @@ def custom_init(
                 email_delivery=emailpassword.EmailDeliveryConfig(
                     CustomEPEmailService()
                 ),
-                override=emailpassword.InputOverrideConfig(
+                override=emailpassword.EmailPasswordOverrideConfig(
                     apis=override_email_password_apis,
                 ),
             ),
@@ -1108,7 +1110,9 @@ def custom_init(
             "id": "thirdparty",
             "init": thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers_list),
-                override=thirdparty.InputOverrideConfig(apis=override_thirdparty_apis),
+                override=thirdparty.ThirdPartyOverrideConfig(
+                    apis=override_thirdparty_apis
+                ),
             ),
         },
         {
@@ -1125,7 +1129,7 @@ def custom_init(
             "id": "multifactorauth",
             "init": multifactorauth.init(
                 first_factors=mfaInfo.get("firstFactors", None),
-                override=multifactorauth.OverrideConfig(
+                override=multifactorauth.MultiFactorAuthOverrideConfig(
                     functions=override_mfa_functions,
                     apis=override_mfa_apis,
                 ),

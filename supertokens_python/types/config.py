@@ -6,9 +6,6 @@ from supertokens_python.types.utils import UseDefaultIfNone
 
 T = TypeVar("T")
 
-# InterfaceType = TypeVar(
-#     "InterfaceType", bound=Union[BaseRecipeInterface, BaseAPIInterface], covariant=True
-# )
 """Generic Type for use in `InterfaceOverride`"""
 FunctionInterfaceType = TypeVar("FunctionInterfaceType", bound=BaseRecipeInterface)
 """Generic Type for use in `FunctionOverrideConfig`"""
@@ -19,9 +16,7 @@ APIInterfaceType = TypeVar("APIInterfaceType", bound=BaseAPIInterface)
 InterfaceOverride = Callable[[T], T]
 
 
-class BaseInputOverrideConfigWithoutAPI(
-    CamelCaseBaseModel, Generic[FunctionInterfaceType]
-):
+class OverrideConfigWithoutAPI(CamelCaseBaseModel, Generic[FunctionInterfaceType]):
     """Base class for input override config without API overrides."""
 
     functions: UseDefaultIfNone[Optional[InterfaceOverride[FunctionInterfaceType]]] = (
@@ -29,7 +24,9 @@ class BaseInputOverrideConfigWithoutAPI(
     )
 
 
-class BaseOverrideConfigWithoutAPI(CamelCaseBaseModel, Generic[FunctionInterfaceType]):
+class NormalisedOverrideConfigWithoutAPI(
+    CamelCaseBaseModel, Generic[FunctionInterfaceType]
+):
     """Base class for normalized override config without API overrides."""
 
     functions: InterfaceOverride[FunctionInterfaceType] = (
@@ -37,8 +34,8 @@ class BaseOverrideConfigWithoutAPI(CamelCaseBaseModel, Generic[FunctionInterface
     )
 
 
-class BaseInputOverrideConfig(
-    BaseInputOverrideConfigWithoutAPI[FunctionInterfaceType],
+class BaseOverrideConfig(
+    OverrideConfigWithoutAPI[FunctionInterfaceType],
     Generic[FunctionInterfaceType, APIInterfaceType],
 ):
     """Base class for input override config with API overrides."""
@@ -48,8 +45,8 @@ class BaseInputOverrideConfig(
     )
 
 
-class BaseOverrideConfig(
-    BaseOverrideConfigWithoutAPI[FunctionInterfaceType],
+class BaseNormalisedOverrideConfig(
+    NormalisedOverrideConfigWithoutAPI[FunctionInterfaceType],
     Generic[FunctionInterfaceType, APIInterfaceType],
 ):
     """Base class for normalized override config with API overrides."""
@@ -59,31 +56,31 @@ class BaseOverrideConfig(
     )
 
 
-class BaseInputConfigWithoutAPIOverride(
-    CamelCaseBaseModel, Generic[FunctionInterfaceType]
-):
+class BaseConfigWithoutAPIOverride(CamelCaseBaseModel, Generic[FunctionInterfaceType]):
     """Base class for input config of a Recipe without API overrides."""
 
-    override: Optional[BaseInputOverrideConfigWithoutAPI[FunctionInterfaceType]] = None
+    override: Optional[OverrideConfigWithoutAPI[FunctionInterfaceType]] = None
 
 
-class BaseConfigWithoutAPIOverride(CamelCaseBaseModel, Generic[FunctionInterfaceType]):
+class BaseNormalisedConfigWithoutAPIOverride(
+    CamelCaseBaseModel, Generic[FunctionInterfaceType]
+):
     """Base class for normalized config of a Recipe without API overrides."""
 
-    override: BaseOverrideConfigWithoutAPI[FunctionInterfaceType]
-
-
-class BaseInputConfig(
-    CamelCaseBaseModel, Generic[FunctionInterfaceType, APIInterfaceType]
-):
-    """Base class for input config of a Recipe with API overrides."""
-
-    override: Optional[
-        BaseInputOverrideConfig[FunctionInterfaceType, APIInterfaceType]
-    ] = None
+    override: NormalisedOverrideConfigWithoutAPI[FunctionInterfaceType]
 
 
 class BaseConfig(CamelCaseBaseModel, Generic[FunctionInterfaceType, APIInterfaceType]):
+    """Base class for input config of a Recipe with API overrides."""
+
+    override: Optional[BaseOverrideConfig[FunctionInterfaceType, APIInterfaceType]] = (
+        None
+    )
+
+
+class BaseNormalisedConfig(
+    CamelCaseBaseModel, Generic[FunctionInterfaceType, APIInterfaceType]
+):
     """Base class for normalized config of a Recipe with API overrides."""
 
-    override: BaseOverrideConfig[FunctionInterfaceType, APIInterfaceType]
+    override: BaseNormalisedOverrideConfig[FunctionInterfaceType, APIInterfaceType]

@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 def init(
     skip_adding_roles_to_access_token: Optional[bool] = None,
     skip_adding_permissions_to_access_token: Optional[bool] = None,
-    override: Union[utils.InputOverrideConfig, None] = None,
+    override: Union[utils.UserRolesOverrideConfig, None] = None,
 ) -> RecipeInit:
     return UserRolesRecipe.init(
         skip_adding_roles_to_access_token,

@@ -16,7 +16,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 
 from .recipe import JWTRecipe
-from .utils import OverrideConfig
+from .utils import JWTOverrideConfig
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import RecipeInit
@@ -24,6 +24,6 @@ if TYPE_CHECKING:
 
 def init(
     jwt_validity_seconds: Union[int, None] = None,
-    override: Union[OverrideConfig, None] = None,
+    override: Union[JWTOverrideConfig, None] = None,
 ) -> RecipeInit:
     return JWTRecipe.init(jwt_validity_seconds, override)

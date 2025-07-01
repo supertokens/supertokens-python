@@ -20,7 +20,6 @@ from typing import Any, Dict, List, Optional, Set, Union
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.session.asyncio import get_session_information
 from supertokens_python.recipe.userroles.recipe_implementation import (
@@ -36,7 +35,7 @@ from ..session import SessionRecipe
 from ..session.claim_base_classes.primitive_array_claim import PrimitiveArrayClaim
 from .exceptions import SuperTokensUserRolesError
 from .interfaces import GetPermissionsForRoleOkResult, UnknownRoleError
-from .utils import InputOverrideConfig, UserRolesInputConfig
+from .utils import UserRolesConfig, UserRolesOverrideConfig
 
 
 class UserRolesRecipe(RecipeModule):
@@ -47,7 +46,7 @@ class UserRolesRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        input_config: UserRolesInputConfig,
+        config: UserRolesConfig,
     ):
         from ..oauth2provider.recipe import OAuth2ProviderRecipe
 
@@ -55,7 +54,7 @@ class UserRolesRecipe(RecipeModule):
         self.config = validate_and_normalise_user_input(
             _recipe=self,
             _app_info=app_info,
-            input_config=input_config,
+            config=config,
         )
         recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
         self.recipe_implementation = self.config.override.functions(
@@ -211,9 +210,11 @@ class UserRolesRecipe(RecipeModule):
     def init(
         skip_adding_roles_to_access_token: Optional[bool] = None,
         skip_adding_permissions_to_access_token: Optional[bool] = None,
-        override: Union[InputOverrideConfig, None] = None,
+        override: Union[UserRolesOverrideConfig, None] = None,
     ):
-        input_config = UserRolesInputConfig(
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = UserRolesConfig(
             skip_adding_roles_to_access_token=skip_adding_roles_to_access_token,
             skip_adding_permissions_to_access_token=skip_adding_permissions_to_access_token,
             override=override,
@@ -224,9 +225,9 @@ class UserRolesRecipe(RecipeModule):
                 UserRolesRecipe.__instance = UserRolesRecipe(
                     recipe_id=UserRolesRecipe.recipe_id,
                     app_info=app_info,
-                    input_config=apply_plugins(
+                    config=apply_plugins(
                         recipe_id=UserRolesRecipe.recipe_id,
-                        config=input_config,
+                        config=config,
                         plugins=plugins,
                     ),
                 )

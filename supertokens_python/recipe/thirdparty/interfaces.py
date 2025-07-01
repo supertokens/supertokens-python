@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 
     from .types import RawUserInfoFromProvider
-    from .utils import ThirdPartyConfig
+    from .utils import NormalisedThirdPartyConfig
 
 
 class SignInUpOkResult:
@@ -137,7 +137,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: ThirdPartyConfig,
+        config: NormalisedThirdPartyConfig,
         recipe_implementation: RecipeInterface,
         providers: List[ProviderInput],
         app_info: AppInfo,
@@ -145,7 +145,7 @@ class APIOptions:
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
-        self.config: ThirdPartyConfig = config
+        self.config: NormalisedThirdPartyConfig = config
         self.providers: List[ProviderInput] = providers
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info: AppInfo = app_info

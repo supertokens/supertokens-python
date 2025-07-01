@@ -40,7 +40,7 @@ from .types import (
 )
 
 if TYPE_CHECKING:
-    from .utils import PasswordlessConfig
+    from .utils import NormalisedPasswordlessConfig
 
 
 class CreateCodeOkResult:
@@ -361,7 +361,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: PasswordlessConfig,
+        config: NormalisedPasswordlessConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         email_delivery: EmailDeliveryIngredient[PasswordlessLoginEmailTemplateVars],

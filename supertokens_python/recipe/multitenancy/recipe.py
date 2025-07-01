@@ -17,7 +17,6 @@ from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
-from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.recipe.session.claim_base_classes.primitive_array_claim import (
     PrimitiveArrayClaim,
 )
@@ -45,8 +44,8 @@ from .api import handle_login_methods_api
 from .constants import LOGIN_METHODS
 from .exceptions import MultitenancyError
 from .utils import (
-    InputOverrideConfig,
-    MultitenancyInputConfig,
+    MultitenancyConfig,
+    MultitenancyOverrideConfig,
     validate_and_normalise_user_input,
 )
 
@@ -56,10 +55,10 @@ class MultitenancyRecipe(RecipeModule):
     __instance = None
 
     def __init__(
-        self, recipe_id: str, app_info: AppInfo, input_config: MultitenancyInputConfig
+        self, recipe_id: str, app_info: AppInfo, config: MultitenancyConfig
     ) -> None:
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(input_config=input_config)
+        self.config = validate_and_normalise_user_input(config=config)
 
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.config
@@ -137,9 +136,11 @@ class MultitenancyRecipe(RecipeModule):
         get_allowed_domains_for_tenant_id: Union[
             TypeGetAllowedDomainsForTenantId, None
         ] = None,
-        override: Union[InputOverrideConfig, None] = None,
+        override: Union[MultitenancyOverrideConfig, None] = None,
     ):
-        input_config = MultitenancyInputConfig(
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = MultitenancyConfig(
             get_allowed_domains_for_tenant_id=get_allowed_domains_for_tenant_id,
             override=override,
         )
@@ -149,9 +150,9 @@ class MultitenancyRecipe(RecipeModule):
                 MultitenancyRecipe.__instance = MultitenancyRecipe(
                     recipe_id=MultitenancyRecipe.recipe_id,
                     app_info=app_info,
-                    input_config=apply_plugins(
+                    config=apply_plugins(
                         recipe_id=MultitenancyRecipe.recipe_id,
-                        config=input_config,
+                        config=config,
                         plugins=plugins,
                     ),
                 )

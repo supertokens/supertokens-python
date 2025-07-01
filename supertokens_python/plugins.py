@@ -1,10 +1,3 @@
-# TODOs:
-# - [ ] Define base classes for:
-#   - Config
-#   - RecipeInterface
-#   - APIInterface
-#   - OverrideConfig
-
 from collections import deque
 from dataclasses import dataclass
 from typing import (
@@ -28,64 +21,67 @@ from supertokens_python.constants import VERSION
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.logger import log_debug_message
-
-# from supertokens_python.recipe.accountlinking.types import AccountLinkingConfig
-# from supertokens_python.recipe.dashboard.utils import DashboardConfig
-# from supertokens_python.recipe.emailpassword.utils import EmailPasswordConfig
-# from supertokens_python.recipe.emailverification.utils import EmailVerificationConfig
-# from supertokens_python.recipe.jwt.utils import JWTConfig
-# from supertokens_python.recipe.multifactorauth.types import MultiFactorAuthConfig
-# from supertokens_python.recipe.multitenancy.utils import MultitenancyConfig
-# from supertokens_python.recipe.oauth2provider.utils import OAuth2ProviderConfig
-# from supertokens_python.recipe.openid.utils import OpenIdConfig
-# from supertokens_python.recipe.passwordless.utils import PasswordlessConfig
-# from supertokens_python.recipe.session.utils import SessionConfig
-# from supertokens_python.recipe.thirdparty.utils import ThirdPartyConfig
-# from supertokens_python.recipe.totp.types import TOTPConfig
-# from supertokens_python.recipe.usermetadata.utils import UserMetadataConfig
-# from supertokens_python.recipe.userroles.utils import UserRolesConfig
-from supertokens_python.post_init_callbacks import PostSTInitCallbacks
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.types.base import UserContext
-from supertokens_python.types.config import BaseConfig, BaseConfigWithoutAPIOverride
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseConfigWithoutAPIOverride,
+    BaseOverrideConfig,
+)
 from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 from supertokens_python.types.response import CamelCaseBaseModel
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.session.interfaces import (
-        SessionClaimValidator,
-        SessionContainer,
-    )
+    from supertokens_python.post_init_callbacks import PostSTInitCallbacks
     from supertokens_python.supertokens import SupertokensPublicConfig
+
+from supertokens_python.recipe.accountlinking.types import AccountLinkingConfig
+from supertokens_python.recipe.dashboard.utils import DashboardConfig
+from supertokens_python.recipe.emailpassword.utils import EmailPasswordConfig
+from supertokens_python.recipe.emailverification.utils import (
+    EmailVerificationConfig,
+)
+from supertokens_python.recipe.jwt.utils import JWTConfig
+from supertokens_python.recipe.multifactorauth.types import MultiFactorAuthConfig
+from supertokens_python.recipe.multitenancy.utils import MultitenancyConfig
+from supertokens_python.recipe.oauth2provider.utils import OAuth2ProviderConfig
+from supertokens_python.recipe.openid.utils import OpenIdConfig
+from supertokens_python.recipe.passwordless.utils import PasswordlessConfig
+from supertokens_python.recipe.session.interfaces import (
+    SessionClaimValidator,
+    SessionContainer,
+)
+from supertokens_python.recipe.session.utils import SessionConfig
+from supertokens_python.recipe.thirdparty.utils import ThirdPartyConfig
+from supertokens_python.recipe.totp.types import TOTPConfig
+from supertokens_python.recipe.usermetadata.utils import UserMetadataConfig
+from supertokens_python.recipe.userroles.utils import UserRolesConfig
+from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
+
+T = TypeVar(
+    "T",
+    bound=Union[
+        AccountLinkingConfig,
+        DashboardConfig,
+        EmailPasswordConfig,
+        EmailVerificationConfig,
+        JWTConfig,
+        MultiFactorAuthConfig,
+        MultitenancyConfig,
+        OAuth2ProviderConfig,
+        OpenIdConfig,
+        PasswordlessConfig,
+        SessionConfig,
+        ThirdPartyConfig,
+        TOTPConfig,
+        UserMetadataConfig,
+        UserRolesConfig,
+        WebauthnConfig,
+    ],
+)
 
 RecipeInterfaceType = TypeVar("RecipeInterfaceType", bound=BaseRecipeInterface)
 APIInterfaceType = TypeVar("APIInterfaceType", bound=BaseAPIInterface)
-ConfigType = BaseConfig[RecipeInterfaceType, APIInterfaceType]
-# T = TypeVar("T", bound=ConfigType)
-# T = TypeVar("T", bound=Union[AccountLinkingConfig, DashboardConfig, EmailPasswordConfig,
-#     EmailVerificationConfig, JWTConfig, MultiFactorAuthConfig, MultitenancyConfig,
-#     OAuth2ProviderConfig, OpenIdConfig, PasswordlessConfig, SessionConfig,
-#     ThirdPartyConfig, TOTPConfig, UserMetadataConfig, UserRolesConfig])
-
-
-# class AllRecipeConfigs:
-#     # These generally have no Input config type
-#     accountlinking: AccountLinkingConfig
-#     dashboard: DashboardConfig
-#     emailpassword: EmailPasswordConfig
-#     emailverification: EmailVerificationConfig
-#     jwt: JWTConfig
-#     multifactorauth: MultiFactorAuthConfig
-#     multitenancy: MultitenancyConfig
-#     oauth2provider: OAuth2ProviderConfig
-#     openid: OpenIdConfig
-#     passwordless: PasswordlessConfig
-#     session: SessionConfig
-#     thirdparty: ThirdPartyConfig
-#     totp: TOTPConfig  # This is the input config type
-#     usermetadata: UserMetadataConfig
-#     userroles: UserRolesConfig
-#     # webauthn: WebauthnConfig
 
 
 class RecipePluginOverride:
@@ -93,31 +89,6 @@ class RecipePluginOverride:
     functions: Optional[Callable[[Any], Any]]
     apis: Optional[Callable[[Any], Any]]
     config: Optional[Callable[[Any], Any]]
-
-
-# export type AllRecipeConfigs = {
-#     accountlinking: AccountLinkingTypeInput & { override?: { apis: never } };
-#     dashboard: DashboardTypeInput;
-#     emailpassword: EmailPasswordTypeInput;
-#     emailverification: EmailVerificationTypeInput;
-#     jwt: JWTTypeInput;
-#     multifactorauth: MultifactorAuthTypeInput;
-#     multitenancy: MultitenancyTypeInput;
-#     oauth2provider: OAuth2ProviderTypeInput;
-#     openid: OpenIdTypeInput;
-#     passwordless: PasswordlessTypeInput;
-#     session: SessionTypeInput;
-#     thirdparty: ThirdPartyTypeInput;
-#     totp: TotpTypeInput;
-#     usermetadata: UserMetadataTypeInput;
-#     userroles: UserRolesTypeInput;
-# };
-
-# export type RecipePluginOverride<T extends keyof AllRecipeConfigs> = {
-#     functions?: NonNullable<AllRecipeConfigs[T]["override"]>["functions"];
-#     apis?: NonNullable<AllRecipeConfigs[T]["override"]>["apis"];
-#     config?: (config: AllRecipeConfigs[T]) => AllRecipeConfigs[T];
-# };
 
 
 class PluginRouteHandlerResponse(CamelCaseBaseModel):
@@ -320,15 +291,14 @@ class ConfigOverrideBase:
 
 def apply_plugins(
     recipe_id: str,
-    config: Union[
-        BaseConfig[RecipeInterfaceType, APIInterfaceType],
-        BaseConfigWithoutAPIOverride[RecipeInterfaceType],
-    ],
+    config: T,
     plugins: List[OverrideMap],
-) -> Union[
-    BaseConfig[RecipeInterfaceType, APIInterfaceType],
-    BaseConfigWithoutAPIOverride[RecipeInterfaceType],
-]:
+) -> T:
+    if not isinstance(config, (BaseConfig, BaseConfigWithoutAPIOverride)):  # type: ignore
+        raise TypeError(
+            f"Expected config to be an instance of BaseConfig or BaseConfigWithoutAPIOverride. {recipe_id=} {config=}"
+        )
+
     def default_fn_override(
         original_implementation: RecipeInterfaceType,
     ) -> RecipeInterfaceType:
@@ -339,10 +309,11 @@ def apply_plugins(
     ) -> APIInterfaceType:
         return original_implementation
 
-    if config.override is None:  # type: ignore
-        raise TypeError(
-            f"Expected config.override to not be `None`. {recipe_id=} {config=}"
-        )
+    if config.override is None:
+        if isinstance(config, BaseConfigWithoutAPIOverride):
+            config.override = BaseConfigWithoutAPIOverride()  # type: ignore
+        else:
+            config.override = BaseOverrideConfig()  # type: ignore
 
     function_overrides = getattr(config.override, "functions", default_fn_override)
     api_overrides = getattr(config.override, "apis", default_api_override)
@@ -383,7 +354,7 @@ def apply_plugins(
                 original_implementation = function_layer(original_implementation)
             return original_implementation
 
-        config.override.functions = fn_override
+        config.override.functions = fn_override  # type: ignore
 
     if (
         len(api_layers) > 0
@@ -398,7 +369,7 @@ def apply_plugins(
                 original_implementation = api_layer(original_implementation)
             return original_implementation
 
-        config.override.apis = api_override
+        config.override.apis = api_override  # type: ignore
 
     return config
 

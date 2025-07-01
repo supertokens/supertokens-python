@@ -22,7 +22,6 @@ from supertokens_python.auth_utils import is_fake_email
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
-from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
 from supertokens_python.recipe.multifactorauth.types import (
@@ -73,8 +72,8 @@ from .interfaces import (
 from .recipe_implementation import RecipeImplementation
 from .utils import (
     ContactConfig,
-    InputOverrideConfig,
-    PasswordlessInputConfig,
+    PasswordlessConfig,
+    PasswordlessOverrideConfig,
     get_enabled_pwless_factors,
     validate_and_normalise_user_input,
 )
@@ -101,12 +100,12 @@ class PasswordlessRecipe(RecipeModule):
         recipe_id: str,
         app_info: AppInfo,
         ingredients: PasswordlessIngredients,
-        input_config: PasswordlessInputConfig,
+        config: PasswordlessConfig,
     ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
             app_info=app_info,
-            input_config=input_config,
+            config=config,
         )
 
         recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
@@ -486,7 +485,7 @@ class PasswordlessRecipe(RecipeModule):
         flow_type: Literal[
             "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
         ],
-        override: Union[InputOverrideConfig, None] = None,
+        override: Optional[PasswordlessOverrideConfig] = None,
         get_custom_user_input_code: Union[
             Callable[[str, Dict[str, Any]], Awaitable[str]], None
         ] = None,
@@ -497,7 +496,9 @@ class PasswordlessRecipe(RecipeModule):
             SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None
         ] = None,
     ):
-        input_config = PasswordlessInputConfig(
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = PasswordlessConfig(
             contact_config=contact_config,
             get_custom_user_input_code=get_custom_user_input_code,
             email_delivery=email_delivery,
@@ -513,9 +514,9 @@ class PasswordlessRecipe(RecipeModule):
                     recipe_id=PasswordlessRecipe.recipe_id,
                     app_info=app_info,
                     ingredients=ingredients,
-                    input_config=apply_plugins(
+                    config=apply_plugins(
                         recipe_id=PasswordlessRecipe.recipe_id,
-                        config=input_config,
+                        config=config,
                         plugins=plugins,
                     ),
                 )

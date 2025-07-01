@@ -42,7 +42,7 @@ from .interfaces import (
     UpdateEmailOrPasswordOkResult,
     WrongCredentialsError,
 )
-from .utils import EmailPasswordConfig
+from .utils import NormalisedEmailPasswordConfig
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
@@ -52,7 +52,7 @@ class RecipeImplementation(RecipeInterface):
     def __init__(
         self,
         querier: Querier,
-        ep_config: EmailPasswordConfig,
+        ep_config: NormalisedEmailPasswordConfig,
     ):
         super().__init__()
         self.querier = querier

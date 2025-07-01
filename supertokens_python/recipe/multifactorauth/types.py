@@ -21,11 +21,10 @@ from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 from supertokens_python.types import RecipeUserId, User
 from supertokens_python.types.config import (
     BaseConfig,
-    BaseInputConfig,
-    BaseInputOverrideConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
     BaseOverrideConfig,
 )
-from supertokens_python.types.utils import UseDefaultIfNone
 
 from .interfaces import APIInterface, RecipeInterface
 
@@ -43,20 +42,20 @@ class MFAClaimValue:
         self.v = v
 
 
-class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
-
-
-class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
-
-
-class MultiFactorAuthInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
-    first_factors: Optional[List[str]] = None
-    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
+MultiFactorAuthOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedMultiFactorAuthOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
 
 
 class MultiFactorAuthConfig(BaseConfig[RecipeInterface, APIInterface]):
+    first_factors: Optional[List[str]] = None
+
+
+class NormalisedMultiFactorAuthConfig(
+    BaseNormalisedConfig[RecipeInterface, APIInterface]
+):
     first_factors: Optional[List[str]]
-    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 class FactorIds:

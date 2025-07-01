@@ -22,16 +22,12 @@ from typing_extensions import Literal
 from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe.openid import (
-    InputOverrideConfig as OpenIdInputOverrideConfig,
-)
 from supertokens_python.types.config import (
     BaseConfig,
-    BaseInputConfig,
-    BaseInputOverrideConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
     BaseOverrideConfig,
 )
-from supertokens_python.types.utils import UseDefaultIfNone
 from supertokens_python.utils import (
     is_an_ip_address,
     resolve,
@@ -340,18 +336,17 @@ def get_token_transfer_method_default(
     return "any"
 
 
-class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]):
-    openid_feature: Optional[OpenIdInputOverrideConfig] = None
-
-
-class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
+SessionOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedSessionOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
 
 
 TokenType = Literal["access", "refresh"]
 TokenTransferMethod = Literal["cookie", "header"]
 
 
-class SessionInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
+class SessionConfig(BaseConfig[RecipeInterface, APIInterface]):
     cookie_domain: Union[str, None] = None
     older_cookie_domain: Union[str, None] = None
     cookie_secure: Union[bool, None] = None
@@ -370,10 +365,9 @@ class SessionInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
     use_dynamic_access_token_signing_key: Union[bool, None] = None
     expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None
     jwks_refresh_interval_sec: Union[int, None] = None
-    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
-class SessionConfig(BaseConfig[RecipeInterface, APIInterface]):
+class NormalisedSessionConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
     refresh_token_path: NormalisedURLPath
     cookie_domain: Union[None, str]
     older_cookie_domain: Union[None, str]
@@ -401,55 +395,50 @@ class SessionConfig(BaseConfig[RecipeInterface, APIInterface]):
     use_dynamic_access_token_signing_key: bool
     expose_access_token_to_frontend_in_cookie_based_auth: bool
     jwks_refresh_interval_sec: int
-    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 def validate_and_normalise_user_input(
     app_info: AppInfo,
-    input_config: SessionInputConfig,
+    config: SessionConfig,
 ):
     # _ = cookie_same_site  # we have this otherwise pylint complains that cookie_same_site is unused, but it is being used in the get_cookie_same_site function.
-    if input_config.anti_csrf not in {"VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE", None}:
+    if config.anti_csrf not in {"VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE", None}:
         raise ValueError(
             "anti_csrf must be one of VIA_TOKEN, VIA_CUSTOM_HEADER, NONE or None"
         )
 
-    if input_config.error_handlers is not None and not isinstance(
-        input_config.error_handlers, ErrorHandlers
+    if config.error_handlers is not None and not isinstance(
+        config.error_handlers, ErrorHandlers
     ):  # type: ignore
         raise ValueError("error_handlers must be an instance of ErrorHandlers or None")
 
-    # if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
-    #     raise ValueError("override must be an instance of InputOverrideConfig or None")
-
     cookie_domain = (
-        normalise_session_scope(input_config.cookie_domain)
-        if input_config.cookie_domain is not None
+        normalise_session_scope(config.cookie_domain)
+        if config.cookie_domain is not None
         else None
     )
 
     older_cookie_domain = (
-        input_config.older_cookie_domain
-        if input_config.older_cookie_domain is None
-        or input_config.older_cookie_domain == ""
-        else normalise_session_scope(input_config.older_cookie_domain)
+        config.older_cookie_domain
+        if config.older_cookie_domain is None or config.older_cookie_domain == ""
+        else normalise_session_scope(config.older_cookie_domain)
     )
 
     cookie_secure = (
-        input_config.cookie_secure
-        if input_config.cookie_secure is not None
+        config.cookie_secure
+        if config.cookie_secure is not None
         else app_info.api_domain.get_as_string_dangerous().startswith("https")
     )
 
     session_expired_status_code = (
-        input_config.session_expired_status_code
-        if input_config.session_expired_status_code is not None
+        config.session_expired_status_code
+        if config.session_expired_status_code is not None
         else 401
     )
 
     invalid_claim_status_code = (
-        input_config.invalid_claim_status_code
-        if input_config.invalid_claim_status_code is not None
+        config.invalid_claim_status_code
+        if config.invalid_claim_status_code is not None
         else 403
     )
 
@@ -459,27 +448,25 @@ def validate_and_normalise_user_input(
             f"({invalid_claim_status_code})"
         )
 
-    get_token_transfer_method = input_config.get_token_transfer_method
+    get_token_transfer_method = config.get_token_transfer_method
     if get_token_transfer_method is None:
         get_token_transfer_method = get_token_transfer_method_default
 
-    error_handlers = input_config.error_handlers
+    error_handlers = config.error_handlers
     if error_handlers is None:
         error_handlers = InputErrorHandlers()
 
-    use_dynamic_access_token_signing_key = (
-        input_config.use_dynamic_access_token_signing_key
-    )
+    use_dynamic_access_token_signing_key = config.use_dynamic_access_token_signing_key
     if use_dynamic_access_token_signing_key is None:
         use_dynamic_access_token_signing_key = True
 
     expose_access_token_to_frontend_in_cookie_based_auth = (
-        input_config.expose_access_token_to_frontend_in_cookie_based_auth
+        config.expose_access_token_to_frontend_in_cookie_based_auth
     )
     if expose_access_token_to_frontend_in_cookie_based_auth is None:
         expose_access_token_to_frontend_in_cookie_based_auth = False
 
-    cookie_same_site = input_config.cookie_same_site
+    cookie_same_site = config.cookie_same_site
     if cookie_same_site is not None:
         # this is just so that we check that the user has provided the right
         # values, since normalise_same_site throws an error if the user
@@ -527,23 +514,23 @@ def validate_and_normalise_user_input(
         Literal["VIA_CUSTOM_HEADER", "NONE", "VIA_TOKEN"],
     ] = anti_csrf_function
 
-    anti_csrf = input_config.anti_csrf
+    anti_csrf = config.anti_csrf
     if anti_csrf is not None:
         anti_csrf_function_or_string = anti_csrf
 
-    jwks_refresh_interval_sec = input_config.jwks_refresh_interval_sec
+    jwks_refresh_interval_sec = config.jwks_refresh_interval_sec
     if jwks_refresh_interval_sec is None:
         jwks_refresh_interval_sec = 4 * 3600  # 4 hours
 
-    override_config = OverrideConfig()
-    if input_config.override is not None:
-        if input_config.override.functions is not None:
-            override_config.functions = input_config.override.functions
+    override_config = NormalisedSessionOverrideConfig()
+    if config.override is not None:
+        if config.override.functions is not None:
+            override_config.functions = config.override.functions
 
-        if input_config.override.apis is not None:
-            override_config.apis = input_config.override.apis
+        if config.override.apis is not None:
+            override_config.apis = config.override.apis
 
-    return SessionConfig(
+    return NormalisedSessionConfig(
         refresh_token_path=app_info.api_base_path.append(
             NormalisedURLPath(SESSION_REFRESH)
         ),

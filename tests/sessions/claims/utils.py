@@ -71,7 +71,7 @@ def get_st_init_args(claim: SessionClaim[Any] = TrueClaim):
         url=get_new_core_app_url(),
         recipe_list=[
             session.init(
-                override=session.InputOverrideConfig(
+                override=session.SessionOverrideConfig(
                     functions=session_functions_override_with_claim(claim),
                 ),
             ),
