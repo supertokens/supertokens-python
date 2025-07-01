@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Protocol, TypeVar, Union, runtime_checkable
+from typing import Optional, Protocol, TypeVar, Union, runtime_checkable
 
 from supertokens_python.framework import BaseRequest
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
@@ -22,6 +22,11 @@ from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
     EmailDeliveryConfigWithService,
 )
+from supertokens_python.recipe.webauthn.interfaces.api import (
+    APIInterface,
+    TypeWebauthnEmailDeliveryInput,
+)
+from supertokens_python.recipe.webauthn.interfaces.recipe import RecipeInterface
 from supertokens_python.types.base import UserContext
 from supertokens_python.types.config import (
     BaseConfig,
@@ -30,13 +35,6 @@ from supertokens_python.types.config import (
     BaseOverrideConfig,
 )
 from supertokens_python.types.response import CamelCaseBaseModel
-
-if TYPE_CHECKING:
-    from supertokens_python.recipe.webauthn.interfaces.api import (
-        APIInterface,
-        TypeWebauthnEmailDeliveryInput,
-    )
-    from supertokens_python.recipe.webauthn.interfaces.recipe import RecipeInterface
 
 InterfaceType = TypeVar("InterfaceType")
 """Generic Type for use in `InterfaceOverride`"""

@@ -36,7 +36,6 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     SignInOptionsErrorResponse,
     UserVerification,
 )
-from supertokens_python.recipe.webauthn.types.config import NormalisedWebauthnConfig
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.types import RecipeUserId, User
 from supertokens_python.types.base import UserContext
@@ -47,6 +46,9 @@ from supertokens_python.types.response import (
     OkResponseBaseModel,
     StatusReasonResponseBaseModel,
 )
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.webauthn.types.config import NormalisedWebauthnConfig
 
 
 class SignUpNotAllowedErrorResponse(
@@ -94,7 +96,7 @@ TypeWebauthnEmailDeliveryInput = TypeWebauthnRecoverAccountEmailDeliveryInput
 class APIOptions(CamelCaseBaseModel):
     recipe_implementation: RecipeInterface
     app_info: AppInfo
-    config: NormalisedWebauthnConfig
+    config: "NormalisedWebauthnConfig"
     recipe_id: str
     req: BaseRequest
     res: BaseResponse

@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from typing_extensions import Literal
 
@@ -38,7 +38,9 @@ from .types import (
     PasswordlessLoginSMSTemplateVars,
     SMSDeliveryIngredient,
 )
-from .utils import PasswordlessConfig
+
+if TYPE_CHECKING:
+    from .utils import PasswordlessConfig
 
 
 class CreateCodeOkResult:

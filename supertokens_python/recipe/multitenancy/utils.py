@@ -83,11 +83,6 @@ class MultitenancyConfig(BaseConfig[RecipeInterface, APIInterface]):
 def validate_and_normalise_user_input(
     input_config: MultitenancyInputConfig,
 ) -> MultitenancyConfig:
-    if input_config.override is not None and not isinstance(
-        input_config.override, InputOverrideConfig
-    ):  # type: ignore
-        raise ValueError("override must be of type InputOverrideConfig or None")
-
     override_config = OverrideConfig()
     if input_config.override is not None:
         if input_config.override.functions is not None:

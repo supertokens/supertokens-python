@@ -18,7 +18,9 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
+from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.plugins import OverrideMap, apply_plugins
+from supertokens_python.querier import Querier
 from supertokens_python.recipe.emailverification.exceptions import (
     EmailVerificationInvalidTokenError,
 )
@@ -28,6 +30,7 @@ from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
     VerificationEmailTemplateVarsUser,
 )
+from supertokens_python.recipe.emailverification.utils import get_email_verify_link
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from ...ingredients.emaildelivery.types import EmailDeliveryConfig
@@ -47,6 +50,9 @@ from ..session.interfaces import (
     SessionClaimValidator,
     SessionContainer,
 )
+from .api import handle_email_verify_api, handle_generate_email_verify_token_api
+from .constants import USER_EMAIL_VERIFY, USER_EMAIL_VERIFY_TOKEN
+from .exceptions import SuperTokensEmailVerificationError
 from .interfaces import (
     APIInterface,
     APIOptions,
@@ -63,6 +69,12 @@ from .interfaces import (
     VerifyEmailUsingTokenOkResult,
 )
 from .recipe_implementation import RecipeImplementation
+from .utils import (
+    MODE_TYPE,
+    EmailVerificationInputConfig,
+    InputOverrideConfig,
+    validate_and_normalise_user_input,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -71,20 +83,6 @@ if TYPE_CHECKING:
     from supertokens_python.types import RecipeUserId
 
     from ...types import MaybeAwaitable, User
-
-from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.querier import Querier
-from supertokens_python.recipe.emailverification.utils import get_email_verify_link
-
-from .api import handle_email_verify_api, handle_generate_email_verify_token_api
-from .constants import USER_EMAIL_VERIFY, USER_EMAIL_VERIFY_TOKEN
-from .exceptions import SuperTokensEmailVerificationError
-from .utils import (
-    MODE_TYPE,
-    EmailVerificationInputConfig,
-    InputOverrideConfig,
-    validate_and_normalise_user_input,
-)
 
 
 class EmailVerificationRecipe(RecipeModule):
