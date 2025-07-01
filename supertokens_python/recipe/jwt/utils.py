@@ -21,6 +21,7 @@ from supertokens_python.types.config import (
     BaseInputOverrideConfig,
     BaseOverrideConfig,
 )
+from supertokens_python.types.utils import UseDefaultIfNone
 
 from .interfaces import APIInterface, RecipeInterface
 
@@ -33,10 +34,12 @@ class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
 
 class JWTInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
     jwt_validity_seconds: Optional[int] = None
+    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 class JWTConfig(BaseConfig[RecipeInterface, APIInterface]):
     jwt_validity_seconds: int
+    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 def validate_and_normalise_user_input(input_config: JWTInputConfig):

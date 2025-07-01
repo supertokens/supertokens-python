@@ -35,6 +35,7 @@ from supertokens_python.types.config import (
     BaseOverrideConfig,
 )
 from supertokens_python.types.response import CamelCaseBaseModel
+from supertokens_python.types.utils import UseDefaultIfNone
 
 InterfaceType = TypeVar("InterfaceType")
 """Generic Type for use in `InterfaceOverride`"""
@@ -195,6 +196,7 @@ class WebauthnConfig(BaseInputConfig[RecipeInterface, APIInterface]):
     get_origin: Optional[GetOrigin] = None
     email_delivery: Optional[EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]] = None
     validate_email_address: Optional[ValidateEmailAddress] = None
+    override: UseDefaultIfNone[Optional[OverrideConfig]] = OverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 class NormalisedWebauthnConfig(BaseConfig[RecipeInterface, APIInterface]):
@@ -203,6 +205,7 @@ class NormalisedWebauthnConfig(BaseConfig[RecipeInterface, APIInterface]):
     get_origin: NormalisedGetOrigin
     get_email_delivery_config: NormalisedGetEmailDeliveryConfig
     validate_email_address: NormalisedValidateEmailAddress
+    override: NormalisedOverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 class WebauthnIngredients(CamelCaseBaseModel):

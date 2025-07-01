@@ -47,6 +47,8 @@ from supertokens_python.logger import log_debug_message
 from supertokens_python.post_init_callbacks import PostSTInitCallbacks
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.types.base import UserContext
+from supertokens_python.types.config import BaseConfig, BaseConfigWithoutAPIOverride
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 from supertokens_python.types.response import CamelCaseBaseModel
 
 if TYPE_CHECKING:
@@ -56,7 +58,10 @@ if TYPE_CHECKING:
     )
     from supertokens_python.supertokens import SupertokensPublicConfig
 
-T = TypeVar("T")
+RecipeInterfaceType = TypeVar("RecipeInterfaceType", bound=BaseRecipeInterface)
+APIInterfaceType = TypeVar("APIInterfaceType", bound=BaseAPIInterface)
+ConfigType = BaseConfig[RecipeInterfaceType, APIInterfaceType]
+# T = TypeVar("T", bound=ConfigType)
 # T = TypeVar("T", bound=Union[AccountLinkingConfig, DashboardConfig, EmailPasswordConfig,
 #     EmailVerificationConfig, JWTConfig, MultiFactorAuthConfig, MultitenancyConfig,
 #     OAuth2ProviderConfig, OpenIdConfig, PasswordlessConfig, SessionConfig,
@@ -313,20 +318,31 @@ class ConfigOverrideBase:
     apis: Optional[Callable[[Any], Any]] = None
 
 
-# TODO: Pass in the OverrideConfig class as an arg, use it to define a default if None
-def apply_plugins(recipe_id: str, config: T, plugins: List[OverrideMap]) -> T:
-    # TODO: Change to recipe_implementation type
-    def default_fn_override(original_implementation: T) -> T:
+def apply_plugins(
+    recipe_id: str,
+    config: Union[
+        BaseConfig[RecipeInterfaceType, APIInterfaceType],
+        BaseConfigWithoutAPIOverride[RecipeInterfaceType],
+    ],
+    plugins: List[OverrideMap],
+) -> Union[
+    BaseConfig[RecipeInterfaceType, APIInterfaceType],
+    BaseConfigWithoutAPIOverride[RecipeInterfaceType],
+]:
+    def default_fn_override(
+        original_implementation: RecipeInterfaceType,
+    ) -> RecipeInterfaceType:
         return original_implementation
 
-    # TODO: Change to api_implementation type
-    def default_api_override(original_implementation: T) -> T:
+    def default_api_override(
+        original_implementation: APIInterfaceType,
+    ) -> APIInterfaceType:
         return original_implementation
 
-    if config.override is None:
-        config.override = ConfigOverrideBase()
-        config.override.functions = default_fn_override
-        config.override.apis = default_api_override
+    if config.override is None:  # type: ignore
+        raise TypeError(
+            f"Expected config.override to not be `None`. {recipe_id=} {config=}"
+        )
 
     function_overrides = getattr(config.override, "functions", default_fn_override)
     api_overrides = getattr(config.override, "apis", default_api_override)
@@ -358,8 +374,10 @@ def apply_plugins(recipe_id: str, config: T, plugins: List[OverrideMap]) -> T:
     # Apply overrides in reverse order of definition
     # Plugins: [plugin1, plugin2] would be applied as [override, plugin2, plugin1, original]
     if len(function_layers) > 0:
-        # TODO: Change to recipe_interface type
-        def fn_override(original_implementation: T) -> T:
+
+        def fn_override(
+            original_implementation: RecipeInterfaceType,
+        ) -> RecipeInterfaceType:
             # The layers will get called in reversed order
             for function_layer in function_layers:
                 original_implementation = function_layer(original_implementation)
@@ -367,10 +385,15 @@ def apply_plugins(recipe_id: str, config: T, plugins: List[OverrideMap]) -> T:
 
         config.override.functions = fn_override
 
-    # AccountLinking recipe does not have an API implementation
-    if len(api_layers) > 0 and recipe_id != "accountlinking":
-        # TODO: Change to api_interface type
-        def api_override(original_implementation: T) -> T:
+    if (
+        len(api_layers) > 0
+        # AccountLinking recipe does not have an API implementation, uses `BaseConfigWithoutAPIOverride` as base
+        and recipe_id != "accountlinking"
+        # `BaseConfig` is the base class for all configs with an API override.
+        and isinstance(config, BaseConfig)
+    ):
+
+        def api_override(original_implementation: APIInterfaceType) -> APIInterfaceType:
             for api_layer in api_layers:
                 original_implementation = api_layer(original_implementation)
             return original_implementation

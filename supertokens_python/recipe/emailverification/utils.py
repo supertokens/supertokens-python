@@ -32,6 +32,7 @@ from supertokens_python.types.config import (
     BaseInputOverrideConfig,
     BaseOverrideConfig,
 )
+from supertokens_python.types.utils import UseDefaultIfNone
 
 from .interfaces import APIInterface, RecipeInterface, TypeGetEmailForUserIdFunction
 
@@ -56,6 +57,7 @@ class EmailVerificationInputConfig(BaseInputConfig[RecipeInterface, APIInterface
     mode: MODE_TYPE
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
     get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None
+    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 class EmailVerificationConfig(BaseConfig[RecipeInterface, APIInterface]):
@@ -64,15 +66,12 @@ class EmailVerificationConfig(BaseConfig[RecipeInterface, APIInterface]):
         [], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
     ]
     get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction]
+    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 def validate_and_normalise_user_input(
     app_info: AppInfo,
     input_config: EmailVerificationInputConfig,
-    # mode: MODE_TYPE,
-    # email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
-    # get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-    # override: Union[OverrideConfig, None] = None,
 ) -> EmailVerificationConfig:
     if input_config.mode not in ["REQUIRED", "OPTIONAL"]:
         raise ValueError(

@@ -24,6 +24,7 @@ from supertokens_python.types.config import (
     BaseInputOverrideConfig,
     BaseOverrideConfig,
 )
+from supertokens_python.types.utils import UseDefaultIfNone
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -86,12 +87,14 @@ class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
 class DashboardInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
     api_key: Optional[str] = None
     admins: Optional[List[str]] = None
+    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 class DashboardConfig(BaseConfig[RecipeInterface, APIInterface]):
     api_key: Optional[str]
     admins: Optional[List[str]]
     auth_mode: str
+    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 def validate_and_normalise_user_input(

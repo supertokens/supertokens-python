@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from abc import ABC
 from re import fullmatch
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from phonenumbers import is_valid_number, parse
 from typing_extensions import Literal
@@ -45,6 +45,7 @@ from supertokens_python.types.config import (
     BaseInputOverrideConfig,
     BaseOverrideConfig,
 )
+from supertokens_python.types.utils import UseDefaultIfNone
 
 from .interfaces import (
     APIInterface,
@@ -155,6 +156,7 @@ class PasswordlessInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
     sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = (
         None
     )
+    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 class PasswordlessConfig(BaseConfig[RecipeInterface, APIInterface]):
@@ -171,6 +173,7 @@ class PasswordlessConfig(BaseConfig[RecipeInterface, APIInterface]):
     get_custom_user_input_code: Union[
         Callable[[str, Dict[str, Any]], Awaitable[str]], None
     ]
+    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 def validate_and_normalise_user_input(

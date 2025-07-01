@@ -23,6 +23,7 @@ from supertokens_python.types.config import (
     BaseInputOverrideConfig,
     BaseOverrideConfig,
 )
+from supertokens_python.types.utils import UseDefaultIfNone
 
 from .interfaces import APIInterface, RecipeInterface
 
@@ -60,10 +61,12 @@ class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
 
 class ThirdPartyInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
     sign_in_and_up_feature: SignInAndUpFeature
+    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 class ThirdPartyConfig(BaseConfig[RecipeInterface, APIInterface]):
     sign_in_and_up_feature: SignInAndUpFeature
+    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 def validate_and_normalise_user_input(

@@ -22,12 +22,16 @@ from typing_extensions import Literal
 from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.recipe.openid import (
+    InputOverrideConfig as OpenIdInputOverrideConfig,
+)
 from supertokens_python.types.config import (
     BaseConfig,
     BaseInputConfig,
     BaseInputOverrideConfig,
     BaseOverrideConfig,
 )
+from supertokens_python.types.utils import UseDefaultIfNone
 from supertokens_python.utils import (
     is_an_ip_address,
     resolve,
@@ -47,9 +51,6 @@ from .interfaces import (
 )
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.openid import (
-        InputOverrideConfig as OpenIdInputOverrideConfig,
-    )
     from supertokens_python.supertokens import AppInfo
 
     from .recipe import SessionRecipe
@@ -369,6 +370,7 @@ class SessionInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
     use_dynamic_access_token_signing_key: Union[bool, None] = None
     expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None
     jwks_refresh_interval_sec: Union[int, None] = None
+    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 class SessionConfig(BaseConfig[RecipeInterface, APIInterface]):
@@ -393,13 +395,13 @@ class SessionConfig(BaseConfig[RecipeInterface, APIInterface]):
         [BaseRequest, bool, Dict[str, Any]],
         Union[TokenTransferMethod, Literal["any"]],
     ]
-    # override: OverrideConfig,
     framework: str
     mode: str
     invalid_claim_status_code: int
     use_dynamic_access_token_signing_key: bool
     expose_access_token_to_frontend_in_cookie_based_auth: bool
     jwks_refresh_interval_sec: int
+    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 def validate_and_normalise_user_input(

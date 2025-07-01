@@ -28,6 +28,7 @@ from supertokens_python.types.config import (
     BaseInputOverrideConfigWithoutAPI,
     BaseOverrideConfigWithoutAPI,
 )
+from supertokens_python.types.utils import UseDefaultIfNone
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session import SessionContainer
@@ -159,6 +160,7 @@ class AccountLinkingInputConfig(BaseInputConfigWithoutAPIOverride[RecipeInterfac
             Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
         ]
     ] = None
+    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 class AccountLinkingConfig(BaseConfigWithoutAPIOverride[RecipeInterface]):
@@ -175,3 +177,4 @@ class AccountLinkingConfig(BaseConfigWithoutAPIOverride[RecipeInterface]):
         ],
         Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
     ]
+    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933

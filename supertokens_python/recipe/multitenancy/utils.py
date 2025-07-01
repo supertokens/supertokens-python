@@ -24,6 +24,7 @@ from supertokens_python.types.config import (
     BaseInputOverrideConfig,
     BaseOverrideConfig,
 )
+from supertokens_python.types.utils import UseDefaultIfNone
 from supertokens_python.utils import (
     resolve,
 )
@@ -74,10 +75,12 @@ class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
 
 class MultitenancyInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
     get_allowed_domains_for_tenant_id: Optional[TypeGetAllowedDomainsForTenantId] = None
+    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 class MultitenancyConfig(BaseConfig[RecipeInterface, APIInterface]):
     get_allowed_domains_for_tenant_id: Optional[TypeGetAllowedDomainsForTenantId]
+    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 def validate_and_normalise_user_input(
