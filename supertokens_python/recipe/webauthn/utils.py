@@ -33,9 +33,9 @@ from supertokens_python.recipe.webauthn.types.config import (
     NormalisedGetOrigin,
     NormalisedGetRelyingPartyId,
     NormalisedGetRelyingPartyName,
-    NormalisedOverrideConfig,
     NormalisedValidateEmailAddress,
     NormalisedWebauthnConfig,
+    NormalisedWebauthnOverrideConfig,
     ValidateEmailAddress,
     WebauthnConfig,
 )
@@ -60,7 +60,7 @@ def validate_and_normalise_user_input(
         config.validate_email_address
     )
 
-    override_config = NormalisedOverrideConfig()
+    override_config = NormalisedWebauthnOverrideConfig()
     if config.override is not None:
         if config.override.functions is not None:
             override_config.functions = config.override.functions

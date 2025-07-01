@@ -24,11 +24,10 @@ from supertokens_python.recipe.accountlinking.interfaces import (
 from supertokens_python.types import AccountInfo
 from supertokens_python.types.config import (
     BaseConfigWithoutAPIOverride,
-    BaseInputConfigWithoutAPIOverride,
-    BaseInputOverrideConfigWithoutAPI,
-    BaseOverrideConfigWithoutAPI,
+    BaseNormalisedConfigWithoutAPIOverride,
+    NormalisedOverrideConfigWithoutAPI,
+    OverrideConfigWithoutAPI,
 )
-from supertokens_python.types.utils import UseDefaultIfNone
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session import SessionContainer
@@ -39,6 +38,11 @@ if TYPE_CHECKING:
         RecipeUserId,
         User,
     )
+
+AccountLinkingOverrideConfig = OverrideConfigWithoutAPI[RecipeInterface]
+NormalisedAccountLinkingOverrideConfig = NormalisedOverrideConfigWithoutAPI[
+    RecipeInterface
+]
 
 
 class AccountInfoWithRecipeId(AccountInfo):
@@ -138,13 +142,7 @@ class ShouldAutomaticallyLink:
         self.should_require_verification = should_require_verification
 
 
-class InputOverrideConfig(BaseInputOverrideConfigWithoutAPI[RecipeInterface]): ...
-
-
-class OverrideConfig(BaseOverrideConfigWithoutAPI[RecipeInterface]): ...
-
-
-class AccountLinkingInputConfig(BaseInputConfigWithoutAPIOverride[RecipeInterface]):
+class AccountLinkingConfig(BaseConfigWithoutAPIOverride[RecipeInterface]):
     on_account_linked: Optional[
         Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]
     ] = None
@@ -160,10 +158,11 @@ class AccountLinkingInputConfig(BaseInputConfigWithoutAPIOverride[RecipeInterfac
             Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
         ]
     ] = None
-    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
-class AccountLinkingConfig(BaseConfigWithoutAPIOverride[RecipeInterface]):
+class NormalisedAccountLinkingConfig(
+    BaseNormalisedConfigWithoutAPIOverride[RecipeInterface]
+):
     on_account_linked: Callable[
         [User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]
     ]
@@ -177,4 +176,3 @@ class AccountLinkingConfig(BaseConfigWithoutAPIOverride[RecipeInterface]):
         ],
         Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
     ]
-    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933

@@ -22,9 +22,9 @@ from supertokens_python.framework import BaseRequest
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import emailpassword, session, thirdparty
-from supertokens_python.recipe.dashboard import DashboardRecipe, InputOverrideConfig
+from supertokens_python.recipe.dashboard import DashboardOverrideConfig, DashboardRecipe
 from supertokens_python.recipe.dashboard.interfaces import RecipeInterface
-from supertokens_python.recipe.dashboard.utils import DashboardConfig
+from supertokens_python.recipe.dashboard.utils import NormalisedDashboardConfig
 from supertokens_python.recipe.emailpassword.interfaces import (
     APIInterface as EPAPIInterface,
 )
@@ -60,7 +60,7 @@ from tests.utils import (
 
 def override_dashboard_functions(original_implementation: RecipeInterface):
     async def should_allow_access(
-        request: BaseRequest, __: DashboardConfig, ___: Dict[str, Any]
+        request: BaseRequest, __: NormalisedDashboardConfig, ___: Dict[str, Any]
     ):
         auth_header = request.get_header("authorization")
         return auth_header == "Bearer testapikey"
@@ -157,7 +157,7 @@ async def test_login_refresh(driver_config_client: TestClient):
                 anti_csrf="VIA_TOKEN",
                 cookie_domain="supertokens.io",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
-                override=session.InputOverrideConfig(apis=apis_override_session),
+                override=session.SessionOverrideConfig(apis=apis_override_session),
             )
         ],
     )
@@ -462,7 +462,7 @@ async def test_custom_response(driver_config_client: TestClient):
         framework="fastapi",
         recipe_list=[
             emailpassword.init(
-                override=emailpassword.InputOverrideConfig(
+                override=emailpassword.EmailPasswordOverrideConfig(
                     apis=override_email_password_apis
                 )
             )
@@ -570,7 +570,7 @@ async def test_should_clear_all_response_during_refresh_if_unauthorized(
             recipe_list=[
                 session.init(
                     anti_csrf="VIA_TOKEN",
-                    override=session.InputOverrideConfig(apis=override_session_apis),
+                    override=session.SessionOverrideConfig(apis=override_session_apis),
                 )
             ],
         )
@@ -686,7 +686,9 @@ async def test_search_with_email_t(driver_config_client: TestClient):
             ),
             DashboardRecipe.init(
                 api_key="testapikey",
-                override=InputOverrideConfig(functions=override_dashboard_functions),
+                override=DashboardOverrideConfig(
+                    functions=override_dashboard_functions
+                ),
             ),
             emailpassword.init(),
         ],
@@ -731,7 +733,9 @@ async def test_search_with_email_multiple_email_entry(driver_config_client: Test
             ),
             DashboardRecipe.init(
                 api_key="testapikey",
-                override=InputOverrideConfig(functions=override_dashboard_functions),
+                override=DashboardOverrideConfig(
+                    functions=override_dashboard_functions
+                ),
             ),
             emailpassword.init(),
         ],
@@ -776,7 +780,9 @@ async def test_search_with_email_iresh(driver_config_client: TestClient):
             ),
             DashboardRecipe.init(
                 api_key="testapikey",
-                override=InputOverrideConfig(functions=override_dashboard_functions),
+                override=DashboardOverrideConfig(
+                    functions=override_dashboard_functions
+                ),
             ),
             emailpassword.init(),
         ],
@@ -821,7 +827,9 @@ async def test_search_with_phone_plus_one(driver_config_client: TestClient):
             ),
             DashboardRecipe.init(
                 api_key="testapikey",
-                override=InputOverrideConfig(functions=override_dashboard_functions),
+                override=DashboardOverrideConfig(
+                    functions=override_dashboard_functions
+                ),
             ),
             PasswordlessRecipe.init(
                 contact_config=ContactConfig(contact_method="EMAIL"),
@@ -869,7 +877,9 @@ async def test_search_with_phone_one_bracket(driver_config_client: TestClient):
             ),
             DashboardRecipe.init(
                 api_key="testapikey",
-                override=InputOverrideConfig(functions=override_dashboard_functions),
+                override=DashboardOverrideConfig(
+                    functions=override_dashboard_functions
+                ),
             ),
             PasswordlessRecipe.init(
                 contact_config=ContactConfig(contact_method="EMAIL"),
@@ -917,7 +927,9 @@ async def test_search_with_provider_google(driver_config_client: TestClient):
             ),
             DashboardRecipe.init(
                 api_key="testapikey",
-                override=InputOverrideConfig(functions=override_dashboard_functions),
+                override=DashboardOverrideConfig(
+                    functions=override_dashboard_functions
+                ),
             ),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
@@ -1006,7 +1018,9 @@ async def test_search_with_provider_google_and_phone_1(
             ),
             DashboardRecipe.init(
                 api_key="testapikey",
-                override=InputOverrideConfig(functions=override_dashboard_functions),
+                override=DashboardOverrideConfig(
+                    functions=override_dashboard_functions
+                ),
             ),
             PasswordlessRecipe.init(
                 contact_config=ContactConfig(contact_method="EMAIL"),

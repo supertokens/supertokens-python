@@ -16,7 +16,6 @@ from __future__ import annotations
 from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.jwt.api.implementation import APIImplementation
 from supertokens_python.recipe.jwt.api.jwks_get import jwks_get
@@ -25,8 +24,8 @@ from supertokens_python.recipe.jwt.exceptions import SuperTokensJWTError
 from supertokens_python.recipe.jwt.interfaces import APIOptions
 from supertokens_python.recipe.jwt.recipe_implementation import RecipeImplementation
 from supertokens_python.recipe.jwt.utils import (
-    InputOverrideConfig,
-    JWTInputConfig,
+    JWTConfig,
+    JWTOverrideConfig,
     validate_and_normalise_user_input,
 )
 
@@ -48,10 +47,10 @@ class JWTRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        input_config: JWTInputConfig,
+        config: JWTConfig,
     ):
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(input_config=input_config)
+        self.config = validate_and_normalise_user_input(config=config)
 
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.config, app_info
@@ -115,9 +114,11 @@ class JWTRecipe(RecipeModule):
     @staticmethod
     def init(
         jwt_validity_seconds: Union[int, None] = None,
-        override: Union[InputOverrideConfig, None] = None,
+        override: Union[JWTOverrideConfig, None] = None,
     ):
-        input_config = JWTInputConfig(
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = JWTConfig(
             jwt_validity_seconds=jwt_validity_seconds,
             override=override,
         )
@@ -127,9 +128,9 @@ class JWTRecipe(RecipeModule):
                 JWTRecipe.__instance = JWTRecipe(
                     JWTRecipe.recipe_id,
                     app_info,
-                    input_config=apply_plugins(
+                    config=apply_plugins(
                         recipe_id=JWTRecipe.recipe_id,
-                        config=input_config,
+                        config=config,
                         plugins=plugins,
                     ),
                 )

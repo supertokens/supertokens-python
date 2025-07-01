@@ -16,7 +16,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 
 from .recipe import OpenIdRecipe
-from .utils import InputOverrideConfig
+from .utils import OpenIdOverrideConfig
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import RecipeInit
@@ -24,6 +24,6 @@ if TYPE_CHECKING:
 
 def init(
     issuer: Union[str, None] = None,
-    override: Union[InputOverrideConfig, None] = None,
+    override: Union[OpenIdOverrideConfig, None] = None,
 ) -> RecipeInit:
     return OpenIdRecipe.init(issuer, override)

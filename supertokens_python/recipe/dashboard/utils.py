@@ -20,11 +20,10 @@ from typing_extensions import Literal
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.types.config import (
     BaseConfig,
-    BaseInputConfig,
-    BaseInputOverrideConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
     BaseOverrideConfig,
 )
-from supertokens_python.types.utils import UseDefaultIfNone
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -78,51 +77,51 @@ class UserWithMetadata:
         return user_json
 
 
-class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
-
-
-class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
-
-
-class DashboardInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
-    api_key: Optional[str] = None
-    admins: Optional[List[str]] = None
-    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
+DashboardOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedDashboardOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
 
 
 class DashboardConfig(BaseConfig[RecipeInterface, APIInterface]):
+    api_key: Optional[str] = None
+    admins: Optional[List[str]] = None
+
+
+class NormalisedDashboardConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
     api_key: Optional[str]
     admins: Optional[List[str]]
     auth_mode: str
-    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 def validate_and_normalise_user_input(
-    input_config: DashboardInputConfig,
-) -> DashboardConfig:
-    override_config: OverrideConfig = OverrideConfig()
+    config: DashboardConfig,
+) -> NormalisedDashboardConfig:
+    override_config: NormalisedDashboardOverrideConfig = (
+        NormalisedDashboardOverrideConfig()
+    )
 
-    if input_config.override is not None:
-        if input_config.override.functions is not None:
-            override_config.functions = input_config.override.functions
+    if config.override is not None:
+        if config.override.functions is not None:
+            override_config.functions = config.override.functions
 
-        if input_config.override.apis is not None:
-            override_config.apis = input_config.override.apis
+        if config.override.apis is not None:
+            override_config.apis = config.override.apis
 
-    if input_config.api_key is not None and input_config.admins is not None:
+    if config.api_key is not None and config.admins is not None:
         log_debug_message(
             "User Dashboard: Providing 'admins' has no effect when using an api key."
         )
 
     admins = (
-        [normalise_email(a) for a in input_config.admins]
-        if input_config.admins is not None
+        [normalise_email(a) for a in config.admins]
+        if config.admins is not None
         else None
     )
-    auth_mode = "api-key" if input_config.api_key else "email-password"
+    auth_mode = "api-key" if config.api_key else "email-password"
 
-    return DashboardConfig(
-        api_key=input_config.api_key,
+    return NormalisedDashboardConfig(
+        api_key=config.api_key,
         admins=admins,
         auth_mode=auth_mode,
         override=override_config,
@@ -257,7 +256,7 @@ async def _get_user_for_recipe_id(
 
 
 async def validate_api_key(
-    req: BaseRequest, config: DashboardConfig, _user_context: Dict[str, Any]
+    req: BaseRequest, config: NormalisedDashboardConfig, _user_context: Dict[str, Any]
 ) -> bool:
     api_key_header_value = req.get_header("authorization")
     if not api_key_header_value:

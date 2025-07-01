@@ -38,29 +38,29 @@ from supertokens_python.utils import log_debug_message
 
 from .types import (
     MultiFactorAuthConfig,
-    MultiFactorAuthInputConfig,
-    OverrideConfig,
+    NormalisedMultiFactorAuthConfig,
+    NormalisedMultiFactorAuthOverrideConfig,
 )
 
 
 # IMPORTANT: If this function signature is modified, please update all tha places where this function is called.
 # There will be no type errors cause we use importLib to dynamically import if to prevent cyclic import issues.
 def validate_and_normalise_user_input(
-    input_config: MultiFactorAuthInputConfig,
-) -> MultiFactorAuthConfig:
-    if input_config.first_factors is not None and len(input_config.first_factors) == 0:
+    config: MultiFactorAuthConfig,
+) -> NormalisedMultiFactorAuthConfig:
+    if config.first_factors is not None and len(config.first_factors) == 0:
         raise ValueError("'first_factors' can be either None or a non-empty list")
 
-    override_config = OverrideConfig()
-    if input_config.override is not None:
-        if input_config.override.functions is not None:
-            override_config.functions = input_config.override.functions
+    override_config = NormalisedMultiFactorAuthOverrideConfig()
+    if config.override is not None:
+        if config.override.functions is not None:
+            override_config.functions = config.override.functions
 
-        if input_config.override.apis is not None:
-            override_config.apis = input_config.override.apis
+        if config.override.apis is not None:
+            override_config.apis = config.override.apis
 
-    return MultiFactorAuthConfig(
-        first_factors=input_config.first_factors,
+    return NormalisedMultiFactorAuthConfig(
+        first_factors=config.first_factors,
         override=override_config,
     )
 

@@ -14,13 +14,12 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.auth_utils import is_fake_email
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.recipe.emailpassword.types import (
     EmailPasswordIngredients,
     EmailTemplateVars,
@@ -69,8 +68,8 @@ from .constants import (
     USER_PASSWORD_RESET_TOKEN,
 )
 from .utils import (
-    EmailPasswordInputConfig,
-    InputOverrideConfig,
+    EmailPasswordConfig,
+    EmailPasswordOverrideConfig,
     InputSignUpFeature,
     validate_and_normalise_user_input,
 )
@@ -86,12 +85,12 @@ class EmailPasswordRecipe(RecipeModule):
         recipe_id: str,
         app_info: AppInfo,
         ingredients: EmailPasswordIngredients,
-        input_config: EmailPasswordInputConfig,
+        config: EmailPasswordConfig,
     ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
             app_info,
-            input_config=input_config,
+            config=config,
         )
 
         recipe_implementation = RecipeImplementation(
@@ -362,11 +361,13 @@ class EmailPasswordRecipe(RecipeModule):
 
     @staticmethod
     def init(
-        sign_up_feature: Union[InputSignUpFeature, None] = None,
-        override: Union[InputOverrideConfig, None] = None,
-        email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
+        sign_up_feature: Optional[InputSignUpFeature] = None,
+        override: Optional[EmailPasswordOverrideConfig] = None,
+        email_delivery: Optional[EmailDeliveryConfig[EmailTemplateVars]] = None,
     ):
-        input_config = EmailPasswordInputConfig(
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = EmailPasswordConfig(
             sign_up_feature=sign_up_feature,
             email_delivery=email_delivery,
             override=override,
@@ -379,9 +380,9 @@ class EmailPasswordRecipe(RecipeModule):
                     recipe_id=EmailPasswordRecipe.recipe_id,
                     app_info=app_info,
                     ingredients=ingredients,
-                    input_config=apply_plugins(
+                    config=apply_plugins(
                         recipe_id=EmailPasswordRecipe.recipe_id,
-                        config=input_config,
+                        config=config,
                         plugins=plugins,
                     ),
                 )

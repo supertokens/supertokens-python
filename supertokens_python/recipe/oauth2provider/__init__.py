@@ -19,13 +19,13 @@ from . import exceptions as ex
 from . import recipe, utils
 
 exceptions = ex
-InputOverrideConfig = utils.InputOverrideConfig
+OAuth2ProviderOverrideConfig = utils.OAuth2ProviderOverrideConfig
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import RecipeInit
 
 
 def init(
-    override: Union[InputOverrideConfig, None] = None,
+    override: Union[OAuth2ProviderOverrideConfig, None] = None,
 ) -> RecipeInit:
     return recipe.OAuth2ProviderRecipe.init(override)

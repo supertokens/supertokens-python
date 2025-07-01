@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from abc import ABC
 from re import fullmatch
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
 
 from phonenumbers import is_valid_number, parse
 from typing_extensions import Literal
@@ -41,11 +41,10 @@ from supertokens_python.recipe.passwordless.types import (
 )
 from supertokens_python.types.config import (
     BaseConfig,
-    BaseInputConfig,
-    BaseInputOverrideConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
     BaseOverrideConfig,
 )
-from supertokens_python.types.utils import UseDefaultIfNone
 
 from .interfaces import (
     APIInterface,
@@ -72,10 +71,10 @@ async def default_validate_email(value: str, _tenant_id: str):
         return "Email is invalid"
 
 
-class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
-
-
-class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
+PasswordlessOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedPasswordlessOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
 
 
 class ContactConfig(ABC):
@@ -142,7 +141,7 @@ class PhoneOrEmailInput:
         self.email = email
 
 
-class PasswordlessInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
+class PasswordlessConfig(BaseConfig[RecipeInterface, APIInterface]):
     contact_config: ContactConfig
     flow_type: Literal[
         "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
@@ -156,10 +155,9 @@ class PasswordlessInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
     sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = (
         None
     )
-    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
-class PasswordlessConfig(BaseConfig[RecipeInterface, APIInterface]):
+class NormalisedPasswordlessConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
     contact_config: ContactConfig
     flow_type: Literal[
         "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
@@ -173,38 +171,35 @@ class PasswordlessConfig(BaseConfig[RecipeInterface, APIInterface]):
     get_custom_user_input_code: Union[
         Callable[[str, Dict[str, Any]], Awaitable[str]], None
     ]
-    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 def validate_and_normalise_user_input(
     app_info: AppInfo,
-    input_config: PasswordlessInputConfig,
-) -> PasswordlessConfig:
-    override_config = OverrideConfig()
-    if input_config.override is not None:
-        if input_config.override.functions is not None:
-            override_config.functions = input_config.override.functions
+    config: PasswordlessConfig,
+) -> NormalisedPasswordlessConfig:
+    override_config = NormalisedPasswordlessOverrideConfig()
+    if config.override is not None:
+        if config.override.functions is not None:
+            override_config.functions = config.override.functions
 
-        if input_config.override.apis is not None:
-            override_config.apis = input_config.override.apis
+        if config.override.apis is not None:
+            override_config.apis = config.override.apis
 
     def get_email_delivery_config() -> EmailDeliveryConfigWithService[
         PasswordlessLoginEmailTemplateVars
     ]:
         email_service = (
-            input_config.email_delivery.service
-            if input_config.email_delivery is not None
-            else None
+            config.email_delivery.service if config.email_delivery is not None else None
         )
 
         if email_service is None:
             email_service = BackwardCompatibilityService(app_info)
 
         if (
-            input_config.email_delivery is not None
-            and input_config.email_delivery.override is not None
+            config.email_delivery is not None
+            and config.email_delivery.override is not None
         ):
-            override = input_config.email_delivery.override
+            override = config.email_delivery.override
         else:
             override = None
 
@@ -214,28 +209,23 @@ def validate_and_normalise_user_input(
         PasswordlessLoginSMSTemplateVars
     ]:
         sms_service = (
-            input_config.sms_delivery.service
-            if input_config.sms_delivery is not None
-            else None
+            config.sms_delivery.service if config.sms_delivery is not None else None
         )
 
         if sms_service is None:
             sms_service = SMSBackwardCompatibilityService(app_info)
 
-        if (
-            input_config.sms_delivery is not None
-            and input_config.sms_delivery.override is not None
-        ):
-            override = input_config.sms_delivery.override
+        if config.sms_delivery is not None and config.sms_delivery.override is not None:
+            override = config.sms_delivery.override
         else:
             override = None
 
         return SMSDeliveryConfigWithService(sms_service, override=override)
 
-    if not isinstance(input_config.contact_config, ContactConfig):  # type: ignore user might not have linter enabled
+    if not isinstance(config.contact_config, ContactConfig):  # type: ignore user might not have linter enabled
         raise ValueError("contact_config must be of type ContactConfig")
 
-    if input_config.flow_type not in [
+    if config.flow_type not in [
         "USER_INPUT_CODE",
         "MAGIC_LINK",
         "USER_INPUT_CODE_AND_MAGIC_LINK",
@@ -244,18 +234,18 @@ def validate_and_normalise_user_input(
             "flow_type must be one of USER_INPUT_CODE, MAGIC_LINK, USER_INPUT_CODE_AND_MAGIC_LINK"
         )
 
-    return PasswordlessConfig(
-        contact_config=input_config.contact_config,
+    return NormalisedPasswordlessConfig(
+        contact_config=config.contact_config,
         override=override_config,
-        flow_type=input_config.flow_type,
+        flow_type=config.flow_type,
         get_email_delivery_config=get_email_delivery_config,
         get_sms_delivery_config=get_sms_delivery_config,
-        get_custom_user_input_code=input_config.get_custom_user_input_code,
+        get_custom_user_input_code=config.get_custom_user_input_code,
     )
 
 
 def get_enabled_pwless_factors(
-    config: PasswordlessConfig,
+    config: NormalisedPasswordlessConfig,
 ) -> List[str]:
     all_factors: List[str] = []
 

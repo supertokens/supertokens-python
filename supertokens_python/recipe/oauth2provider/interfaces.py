@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.supertokens import AppInfo
 
-    from .utils import OAuth2ProviderConfig
+    from .utils import NormalisedOAuth2ProviderConfig
 
 
 class ErrorOAuth2Response(APIResponse):
@@ -1274,14 +1274,14 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: OAuth2ProviderConfig,
+        config: NormalisedOAuth2ProviderConfig,
         recipe_implementation: RecipeInterface,
     ):
         self.app_info: AppInfo = app_info
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
-        self.config: OAuth2ProviderConfig = config
+        self.config: NormalisedOAuth2ProviderConfig = config
         self.recipe_implementation: RecipeInterface = recipe_implementation
 
 

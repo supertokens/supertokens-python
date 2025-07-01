@@ -17,7 +17,6 @@ from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.querier import Querier
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
@@ -31,7 +30,7 @@ if TYPE_CHECKING:
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.supertokens import AppInfo
 
-    from .utils import InputOverrideConfig, SignInAndUpFeature
+    from .utils import SignInAndUpFeature, ThirdPartyOverrideConfig
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
@@ -44,7 +43,7 @@ from .api import (
 from .constants import APPLE_REDIRECT_HANDLER, AUTHORISATIONURL, SIGNINUP
 from .exceptions import SuperTokensThirdPartyError
 from .types import ThirdPartyIngredients
-from .utils import ThirdPartyInputConfig, validate_and_normalise_user_input
+from .utils import ThirdPartyConfig, validate_and_normalise_user_input
 
 
 class ThirdPartyRecipe(RecipeModule):
@@ -55,11 +54,11 @@ class ThirdPartyRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        input_config: ThirdPartyInputConfig,
+        config: ThirdPartyConfig,
         _ingredients: ThirdPartyIngredients,
     ):
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(input_config=input_config)
+        self.config = validate_and_normalise_user_input(config=config)
         self.providers = self.config.sign_in_and_up_feature.providers
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.providers
@@ -158,9 +157,11 @@ class ThirdPartyRecipe(RecipeModule):
     @staticmethod
     def init(
         sign_in_and_up_feature: SignInAndUpFeature,
-        override: Union[InputOverrideConfig, None] = None,
+        override: Union[ThirdPartyOverrideConfig, None] = None,
     ):
-        input_config = ThirdPartyInputConfig(
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = ThirdPartyConfig(
             sign_in_and_up_feature=sign_in_and_up_feature,
             override=override,
         )
@@ -172,9 +173,9 @@ class ThirdPartyRecipe(RecipeModule):
                     recipe_id=ThirdPartyRecipe.recipe_id,
                     app_info=app_info,
                     _ingredients=ingredients,
-                    input_config=apply_plugins(
+                    config=apply_plugins(
                         recipe_id=ThirdPartyRecipe.recipe_id,
-                        config=input_config,
+                        config=config,
                         plugins=plugins,
                     ),
                 )

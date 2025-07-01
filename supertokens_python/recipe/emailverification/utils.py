@@ -28,11 +28,10 @@ from supertokens_python.recipe.emailverification.emaildelivery.services.backward
 )
 from supertokens_python.types.config import (
     BaseConfig,
-    BaseInputConfig,
-    BaseInputOverrideConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
     BaseOverrideConfig,
 )
-from supertokens_python.types.utils import UseDefaultIfNone
 
 from .interfaces import APIInterface, RecipeInterface, TypeGetEmailForUserIdFunction
 
@@ -43,37 +42,35 @@ if TYPE_CHECKING:
 
     from .types import EmailTemplateVars, VerificationEmailTemplateVars
 
-
-class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
-
-
-class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
-
-
 MODE_TYPE = Literal["REQUIRED", "OPTIONAL"]
 
-
-class EmailVerificationInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
-    mode: MODE_TYPE
-    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
-    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None
-    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
+EmailVerificationOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedEmailVerificationOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
 
 
 class EmailVerificationConfig(BaseConfig[RecipeInterface, APIInterface]):
+    mode: MODE_TYPE
+    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
+    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None
+
+
+class NormalisedEmailVerificationConfig(
+    BaseNormalisedConfig[RecipeInterface, APIInterface]
+):
     mode: MODE_TYPE
     get_email_delivery_config: Callable[
         [], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
     ]
     get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction]
-    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 def validate_and_normalise_user_input(
     app_info: AppInfo,
-    input_config: EmailVerificationInputConfig,
-) -> EmailVerificationConfig:
-    if input_config.mode not in ["REQUIRED", "OPTIONAL"]:
+    config: EmailVerificationConfig,
+) -> NormalisedEmailVerificationConfig:
+    if config.mode not in ["REQUIRED", "OPTIONAL"]:
         raise ValueError(
             "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
         )
@@ -82,34 +79,32 @@ def validate_and_normalise_user_input(
         VerificationEmailTemplateVars
     ]:
         email_service = (
-            input_config.email_delivery.service
-            if input_config.email_delivery is not None
-            else None
+            config.email_delivery.service if config.email_delivery is not None else None
         )
         if email_service is None:
             email_service = BackwardCompatibilityService(app_info)
 
         if (
-            input_config.email_delivery is not None
-            and input_config.email_delivery.override is not None
+            config.email_delivery is not None
+            and config.email_delivery.override is not None
         ):
-            override = input_config.email_delivery.override
+            override = config.email_delivery.override
         else:
             override = None
         return EmailDeliveryConfigWithService(email_service, override=override)
 
-    override_config = OverrideConfig()
-    if input_config.override is not None:
-        if input_config.override.functions is not None:
-            override_config.functions = input_config.override.functions
+    override_config = NormalisedEmailVerificationOverrideConfig()
+    if config.override is not None:
+        if config.override.functions is not None:
+            override_config.functions = config.override.functions
 
-        if input_config.override.apis is not None:
-            override_config.apis = input_config.override.apis
+        if config.override.apis is not None:
+            override_config.apis = config.override.apis
 
-    return EmailVerificationConfig(
-        mode=input_config.mode,
+    return NormalisedEmailVerificationConfig(
+        mode=config.mode,
         get_email_delivery_config=get_email_delivery_config,
-        get_email_for_recipe_user_id=input_config.get_email_for_recipe_user_id,
+        get_email_for_recipe_user_id=config.get_email_for_recipe_user_id,
         override=override_config,
     )
 

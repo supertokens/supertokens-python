@@ -19,7 +19,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.emailverification.exceptions import (
     EmailVerificationInvalidTokenError,
@@ -71,8 +70,8 @@ from .interfaces import (
 from .recipe_implementation import RecipeImplementation
 from .utils import (
     MODE_TYPE,
-    EmailVerificationInputConfig,
-    InputOverrideConfig,
+    EmailVerificationConfig,
+    EmailVerificationOverrideConfig,
     validate_and_normalise_user_input,
 )
 
@@ -95,12 +94,12 @@ class EmailVerificationRecipe(RecipeModule):
         recipe_id: str,
         app_info: AppInfo,
         ingredients: EmailVerificationIngredients,
-        input_config: EmailVerificationInputConfig,
+        config: EmailVerificationConfig,
     ) -> None:
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
-            app_info,
-            input_config=input_config,
+            app_info=app_info,
+            config=config,
         )
 
         recipe_implementation = RecipeImplementation(
@@ -199,9 +198,11 @@ class EmailVerificationRecipe(RecipeModule):
         mode: MODE_TYPE,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
         get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-        override: Union[InputOverrideConfig, None] = None,
+        override: Optional[EmailVerificationOverrideConfig] = None,
     ):
-        input_config = EmailVerificationInputConfig(
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = EmailVerificationConfig(
             mode=mode,
             email_delivery=email_delivery,
             get_email_for_recipe_user_id=get_email_for_recipe_user_id,
@@ -217,9 +218,9 @@ class EmailVerificationRecipe(RecipeModule):
                     EmailVerificationRecipe.recipe_id,
                     app_info,
                     ingredients,
-                    input_config=apply_plugins(
+                    config=apply_plugins(
                         recipe_id=EmailVerificationRecipe.recipe_id,
-                        config=input_config,
+                        config=config,
                         plugins=plugins,
                     ),
                 )

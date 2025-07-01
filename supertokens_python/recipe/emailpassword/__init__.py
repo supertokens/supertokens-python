@@ -25,7 +25,7 @@ from .emaildelivery import services as emaildelivery_services
 from .recipe import EmailPasswordRecipe
 
 exceptions = ex
-InputOverrideConfig = utils.InputOverrideConfig
+EmailPasswordOverrideConfig = utils.EmailPasswordOverrideConfig
 InputSignUpFeature = utils.InputSignUpFeature
 InputFormField = utils.InputFormField
 SMTPService = emaildelivery_services.SMTPService
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
 def init(
     sign_up_feature: Union[utils.InputSignUpFeature, None] = None,
-    override: Union[utils.InputOverrideConfig, None] = None,
+    override: Union[utils.EmailPasswordOverrideConfig, None] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
 ) -> RecipeInit:
     return EmailPasswordRecipe.init(

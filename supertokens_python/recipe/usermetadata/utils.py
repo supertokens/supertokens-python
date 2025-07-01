@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from supertokens_python.recipe.usermetadata.interfaces import (
     APIInterface,
@@ -22,37 +22,36 @@ from supertokens_python.recipe.usermetadata.interfaces import (
 )
 from supertokens_python.types.config import (
     BaseConfig,
-    BaseInputConfig,
-    BaseInputOverrideConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
     BaseOverrideConfig,
 )
-from supertokens_python.types.utils import UseDefaultIfNone
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
     from supertokens_python.supertokens import AppInfo
 
 
-class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
+UserMetadataOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedUserMetadataOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
 
 
-class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
+class UserMetadataConfig(BaseConfig[RecipeInterface, APIInterface]): ...
 
 
-class UserMetadataInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
-    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
-
-
-class UserMetadataConfig(BaseConfig[RecipeInterface, APIInterface]):
-    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
+class NormalisedUserMetadataConfig(
+    BaseNormalisedConfig[RecipeInterface, APIInterface]
+): ...
 
 
 def validate_and_normalise_user_input(
     _recipe: UserMetadataRecipe,
     _app_info: AppInfo,
-    input_config: UserMetadataInputConfig,
-) -> UserMetadataConfig:
-    override_config = OverrideConfig()
+    input_config: UserMetadataConfig,
+) -> NormalisedUserMetadataConfig:
+    override_config = NormalisedUserMetadataOverrideConfig()
     if input_config.override is not None:
         if input_config.override.functions is not None:
             override_config.functions = input_config.override.functions
@@ -60,4 +59,4 @@ def validate_and_normalise_user_input(
         if input_config.override.apis is not None:
             override_config.apis = input_config.override.apis
 
-    return UserMetadataConfig(override=override_config)
+    return NormalisedUserMetadataConfig(override=override_config)

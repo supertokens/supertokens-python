@@ -52,7 +52,7 @@ async def test_should_merge_claims_and_passed_access_token_payload_obj(timestamp
         url=get_new_core_app_url(),
         recipe_list=[
             session.init(
-                override=session.InputOverrideConfig(
+                override=session.SessionOverrideConfig(
                     functions=session_functions_override_with_claim(
                         TrueClaim, {"user-custom-claim": "foo"}
                     ),

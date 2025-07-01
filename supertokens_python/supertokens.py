@@ -36,13 +36,6 @@ from supertokens_python.logger import (
     get_maybe_none_as_str,
     log_debug_message,
 )
-from supertokens_python.plugins import (
-    OverrideMap,
-    PluginRouteHandler,
-    SuperTokensPlugin,
-    SuperTokensPublicPlugin,
-    load_plugins,
-)
 
 from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT
 from .exceptions import SuperTokensError
@@ -71,6 +64,13 @@ from .utils import (
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
+    from supertokens_python.plugins import (
+        OverrideMap,
+        PluginRouteHandler,
+        SuperTokensPlugin,
+        SuperTokensPublicPlugin,
+        load_plugins,
+    )
     from supertokens_python.recipe.session import SessionContainer
 
     from .recipe_module import RecipeModule

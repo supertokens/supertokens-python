@@ -22,7 +22,7 @@ from supertokens_python.querier import Querier
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
-    from .utils import JWTConfig
+    from .utils import NormalisedJWTConfig
 
 from supertokens_python.recipe.jwt.interfaces import (
     CreateJwtOkResult,
@@ -38,7 +38,9 @@ DEFAULT_JWKS_MAX_AGE = 60
 
 
 class RecipeImplementation(RecipeInterface):
-    def __init__(self, querier: Querier, config: JWTConfig, app_info: AppInfo):
+    def __init__(
+        self, querier: Querier, config: NormalisedJWTConfig, app_info: AppInfo
+    ):
         super().__init__()
         self.querier = querier
         self.config = config

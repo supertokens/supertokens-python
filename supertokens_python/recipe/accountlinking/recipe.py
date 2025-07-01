@@ -23,7 +23,6 @@ from supertokens_python.logger import (
     log_debug_message,
 )
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.process_state import PROCESS_STATE, ProcessState
 from supertokens_python.querier import Querier
 from supertokens_python.recipe_module import APIHandled, RecipeModule
@@ -35,8 +34,8 @@ from .recipe_implementation import RecipeImplementation
 from .types import (
     AccountInfoWithRecipeId,
     AccountInfoWithRecipeIdAndUserId,
-    AccountLinkingInputConfig,
-    InputOverrideConfig,
+    AccountLinkingConfig,
+    AccountLinkingOverrideConfig,
     RecipeLevelUser,
     ShouldAutomaticallyLink,
     ShouldNotAutomaticallyLink,
@@ -79,12 +78,10 @@ class AccountLinkingRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        input_config: AccountLinkingInputConfig,
+        config: AccountLinkingConfig,
     ):
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(
-            app_info, input_config=input_config
-        )
+        self.config = validate_and_normalise_user_input(app_info, config=config)
         recipe_implementation: RecipeInterface = RecipeImplementation(
             Querier.get_instance(recipe_id), self, self.config
         )
@@ -147,9 +144,11 @@ class AccountLinkingRecipe(RecipeModule):
                 Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
             ]
         ] = None,
-        override: Optional[InputOverrideConfig] = None,
-    ):
-        input_config = AccountLinkingInputConfig(
+        override: Optional[AccountLinkingOverrideConfig] = None,
+    ) -> Callable[..., AccountLinkingRecipe]:
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        cofnfig = AccountLinkingConfig(
             on_account_linked=on_account_linked,
             should_do_automatic_account_linking=should_do_automatic_account_linking,
             override=override,
@@ -160,9 +159,9 @@ class AccountLinkingRecipe(RecipeModule):
                 AccountLinkingRecipe.__instance = AccountLinkingRecipe(
                     recipe_id=AccountLinkingRecipe.recipe_id,
                     app_info=app_info,
-                    input_config=apply_plugins(
+                    config=apply_plugins(
                         recipe_id=AccountLinkingRecipe.recipe_id,
-                        config=input_config,
+                        config=cofnfig,
                         plugins=plugins,
                     ),
                 )

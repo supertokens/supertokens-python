@@ -16,7 +16,6 @@ from __future__ import annotations
 from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.querier import Querier
 
 from .api.implementation import APIImplementation
@@ -26,8 +25,8 @@ from .exceptions import SuperTokensOpenIdError
 from .interfaces import APIOptions
 from .recipe_implementation import RecipeImplementation
 from .utils import (
-    InputOverrideConfig,
-    OpenIdInputConfig,
+    OpenIdConfig,
+    OpenIdOverrideConfig,
     validate_and_normalise_user_input,
 )
 
@@ -49,13 +48,13 @@ class OpenIdRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        input_config: OpenIdInputConfig,
+        config: OpenIdConfig,
     ):
         from supertokens_python.recipe.jwt import JWTRecipe
 
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
-            app_info=app_info, input_config=input_config
+            app_info=app_info, config=config
         )
         self.jwt_recipe = JWTRecipe.get_instance()
 
@@ -129,18 +128,23 @@ class OpenIdRecipe(RecipeModule):
     @staticmethod
     def init(
         issuer: Union[str, None] = None,
-        override: Union[InputOverrideConfig, None] = None,
+        override: Union[OpenIdOverrideConfig, None] = None,
     ):
-        input_config = OpenIdInputConfig(issuer=issuer, override=override)
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = OpenIdConfig(
+            issuer=issuer,
+            override=override,
+        )
 
         def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if OpenIdRecipe.__instance is None:
                 OpenIdRecipe.__instance = OpenIdRecipe(
                     recipe_id=OpenIdRecipe.recipe_id,
                     app_info=app_info,
-                    input_config=apply_plugins(
+                    config=apply_plugins(
                         recipe_id=OpenIdRecipe.recipe_id,
-                        config=input_config,
+                        config=config,
                         plugins=plugins,
                     ),
                 )

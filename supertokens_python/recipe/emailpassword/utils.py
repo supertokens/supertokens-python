@@ -26,21 +26,18 @@ from supertokens_python.recipe.emailpassword.emaildelivery.services.backward_com
 )
 from supertokens_python.types.config import (
     BaseConfig,
-    BaseInputConfig,
-    BaseInputOverrideConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
     BaseOverrideConfig,
 )
-from supertokens_python.types.utils import UseDefaultIfNone
+from supertokens_python.utils import get_filtered_list
 
+from .constants import FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID
 from .interfaces import APIInterface, RecipeInterface
 from .types import EmailTemplateVars, InputFormField, NormalisedFormField
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
-
-from supertokens_python.utils import get_filtered_list
-
-from .constants import FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID
 
 
 async def default_validator(_: str, __: str) -> Union[str, None]:
@@ -220,54 +217,54 @@ def validate_and_normalise_reset_password_using_token_config(
     )
 
 
-class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]): ...
-
-
-class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
-
-
-class EmailPasswordInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
-    sign_up_feature: Union[InputSignUpFeature, None] = None
-    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
-    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
+EmailPasswordOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedEmailPasswordOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
 
 
 class EmailPasswordConfig(BaseConfig[RecipeInterface, APIInterface]):
+    sign_up_feature: Union[InputSignUpFeature, None] = None
+    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
+
+
+class NormalisedEmailPasswordConfig(
+    BaseNormalisedConfig[RecipeInterface, APIInterface]
+):
     sign_up_feature: SignUpFeature
     sign_in_feature: SignInFeature
     reset_password_using_token_feature: ResetPasswordUsingTokenFeature
     get_email_delivery_config: Callable[
         [RecipeInterface], EmailDeliveryConfigWithService[EmailTemplateVars]
     ]
-    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 def validate_and_normalise_user_input(
     app_info: AppInfo,
-    input_config: EmailPasswordInputConfig,
-) -> EmailPasswordConfig:
+    config: EmailPasswordConfig,
+) -> NormalisedEmailPasswordConfig:
     # NOTE: We don't need to check the instance of sign_up_feature and override
     # as they will always be either None or the specified type.
 
-    override_config = OverrideConfig()
-    if input_config.override is not None:
-        if input_config.override.functions is not None:
-            override_config.functions = input_config.override.functions
+    override_config = NormalisedEmailPasswordOverrideConfig()
+    if config.override is not None:
+        if config.override.functions is not None:
+            override_config.functions = config.override.functions
 
-        if input_config.override.apis is not None:
-            override_config.apis = input_config.override.apis
+        if config.override.apis is not None:
+            override_config.apis = config.override.apis
 
-    sign_up_feature = input_config.sign_up_feature
+    sign_up_feature = config.sign_up_feature
     if sign_up_feature is None:
         sign_up_feature = InputSignUpFeature()
 
     def get_email_delivery_config(
         ep_recipe: RecipeInterface,
     ) -> EmailDeliveryConfigWithService[EmailTemplateVars]:
-        if input_config.email_delivery and input_config.email_delivery.service:
+        if config.email_delivery and config.email_delivery.service:
             return EmailDeliveryConfigWithService(
-                service=input_config.email_delivery.service,
-                override=input_config.email_delivery.override,
+                service=config.email_delivery.service,
+                override=config.email_delivery.override,
             )
 
         email_service = BackwardCompatibilityService(
@@ -275,15 +272,15 @@ def validate_and_normalise_user_input(
             recipe_interface_impl=ep_recipe,
         )
         if (
-            input_config.email_delivery is not None
-            and input_config.email_delivery.override is not None
+            config.email_delivery is not None
+            and config.email_delivery.override is not None
         ):
-            override = input_config.email_delivery.override
+            override = config.email_delivery.override
         else:
             override = None
         return EmailDeliveryConfigWithService(email_service, override=override)
 
-    return EmailPasswordConfig(
+    return NormalisedEmailPasswordConfig(
         sign_up_feature=SignUpFeature(sign_up_feature.form_fields),
         sign_in_feature=SignInFeature(
             normalise_sign_in_form_fields(sign_up_feature.form_fields)

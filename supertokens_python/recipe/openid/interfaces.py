@@ -24,7 +24,7 @@ from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterfac
 from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 if TYPE_CHECKING:
-    from .utils import OpenIdConfig
+    from .utils import NormalisedOpenIdConfig
 
 
 class GetOpenIdDiscoveryConfigurationResult:
@@ -103,7 +103,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: "OpenIdConfig",
+        config: "NormalisedOpenIdConfig",
         recipe_implementation: RecipeInterface,
     ):
         self.request = request

@@ -33,7 +33,7 @@ from .smsdelivery import services as smsdelivery_services
 if TYPE_CHECKING:
     from supertokens_python.supertokens import RecipeInit
 
-InputOverrideConfig = utils.InputOverrideConfig
+PasswordlessOverrideConfig = utils.PasswordlessOverrideConfig
 ContactEmailOnlyConfig = utils.ContactEmailOnlyConfig
 ContactConfig = utils.ContactConfig
 PhoneOrEmailInput = utils.PhoneOrEmailInput
@@ -55,7 +55,7 @@ def init(
     flow_type: Literal[
         "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
     ],
-    override: Union[InputOverrideConfig, None] = None,
+    override: Union[PasswordlessOverrideConfig, None] = None,
     get_custom_user_input_code: Union[
         Callable[[str, Dict[str, Any]], Awaitable[str]], None
     ] = None,

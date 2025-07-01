@@ -44,7 +44,9 @@ from supertokens_python.recipe.emailverification.interfaces import (
 from supertokens_python.recipe.emailverification.types import (
     EmailVerificationUser as EVUser,
 )
-from supertokens_python.recipe.emailverification.utils import OverrideConfig
+from supertokens_python.recipe.emailverification.utils import (
+    EmailVerificationOverrideConfig,
+)
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
     create_new_session,
@@ -685,7 +687,9 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
                 email_delivery=emailverification.EmailDeliveryConfig(
                     CustomEmailService()
                 ),
-                override=OverrideConfig(apis=apis_override_email_password),
+                override=EmailVerificationOverrideConfig(
+                    apis=apis_override_email_password
+                ),
             ),
             emailpassword.init(),
         ],
@@ -917,7 +921,9 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
                 email_delivery=emailverification.EmailDeliveryConfig(
                     CustomEmailService()
                 ),
-                override=OverrideConfig(apis=apis_override_email_password),
+                override=EmailVerificationOverrideConfig(
+                    apis=apis_override_email_password
+                ),
             ),
             emailpassword.init(),
         ],
@@ -1025,7 +1031,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
                 email_delivery=emailverification.EmailDeliveryConfig(
                     CustomEmailService()
                 ),
-                override=emailverification.InputOverrideConfig(
+                override=emailverification.EmailVerificationOverrideConfig(
                     apis=apis_override_email_password
                 ),
             ),

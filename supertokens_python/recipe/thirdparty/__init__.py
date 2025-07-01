@@ -20,7 +20,7 @@ from . import exceptions as ex
 from . import provider, utils
 from .recipe import ThirdPartyRecipe
 
-InputOverrideConfig = utils.InputOverrideConfig
+ThirdPartyOverrideConfig = utils.ThirdPartyOverrideConfig
 SignInAndUpFeature = utils.SignInAndUpFeature
 ProviderInput = provider.ProviderInput
 ProviderConfig = provider.ProviderConfig
@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 def init(
     sign_in_and_up_feature: Optional[SignInAndUpFeature] = None,
-    override: Union[InputOverrideConfig, None] = None,
+    override: Union[ThirdPartyOverrideConfig, None] = None,
 ) -> RecipeInit:
     if sign_in_and_up_feature is None:
         sign_in_and_up_feature = SignInAndUpFeature()

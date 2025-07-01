@@ -20,7 +20,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.usermetadata.exceptions import (
     SuperTokensUserMetadataError,
@@ -36,7 +35,7 @@ from supertokens_python.recipe_module import APIHandled, RecipeModule
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
-from .utils import InputOverrideConfig, UserMetadataInputConfig
+from .utils import UserMetadataConfig, UserMetadataOverrideConfig
 
 
 class UserMetadataRecipe(RecipeModule):
@@ -47,11 +46,11 @@ class UserMetadataRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        input_config: UserMetadataInputConfig,
+        config: UserMetadataConfig,
     ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
-            _recipe=self, _app_info=app_info, input_config=input_config
+            _recipe=self, _app_info=app_info, input_config=config
         )
         recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
         self.recipe_implementation = self.config.override.functions(
@@ -91,17 +90,19 @@ class UserMetadataRecipe(RecipeModule):
         return []
 
     @staticmethod
-    def init(override: Union[InputOverrideConfig, None] = None):
-        input_config = UserMetadataInputConfig(override=override)
+    def init(override: Union[UserMetadataOverrideConfig, None] = None):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = UserMetadataConfig(override=override)
 
         def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if UserMetadataRecipe.__instance is None:
                 UserMetadataRecipe.__instance = UserMetadataRecipe(
                     recipe_id=UserMetadataRecipe.recipe_id,
                     app_info=app_info,
-                    input_config=apply_plugins(
+                    config=apply_plugins(
                         recipe_id=UserMetadataRecipe.recipe_id,
-                        config=input_config,
+                        config=config,
                         plugins=plugins,
                     ),
                 )

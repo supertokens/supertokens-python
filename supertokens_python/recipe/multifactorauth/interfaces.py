@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from supertokens_python.types import User
 
     from ...supertokens import AppInfo
-    from .types import MFARequirementList, MultiFactorAuthConfig
+    from .types import MFARequirementList, NormalisedMultiFactorAuthConfig
 
 
 class RecipeInterface(BaseRecipeInterface):
@@ -97,7 +97,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: MultiFactorAuthConfig,
+        config: NormalisedMultiFactorAuthConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         recipe_instance: MultiFactorAuthRecipe,

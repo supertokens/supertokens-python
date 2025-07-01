@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import SessionInformationResult
 
     from ...supertokens import AppInfo
-    from .utils import DashboardConfig, UserWithMetadata
+    from .utils import NormalisedDashboardConfig, UserWithMetadata
 
 
 class SessionInfo:
@@ -54,7 +54,7 @@ class RecipeInterface(BaseRecipeInterface):
     async def should_allow_access(
         self,
         request: BaseRequest,
-        config: DashboardConfig,
+        config: NormalisedDashboardConfig,
         user_context: Dict[str, Any],
     ) -> bool:
         pass
@@ -66,14 +66,14 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: DashboardConfig,
+        config: NormalisedDashboardConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
     ):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
-        self.config: DashboardConfig = config
+        self.config: NormalisedDashboardConfig = config
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info = app_info
 

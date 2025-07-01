@@ -26,7 +26,7 @@ from supertokens_python.framework import BaseRequest
 from supertokens_python.framework.fastapi.fastapi_middleware import get_middleware
 from supertokens_python.process_state import PROCESS_STATE, ProcessState
 from supertokens_python.recipe import session
-from supertokens_python.recipe.session import InputOverrideConfig, SessionRecipe
+from supertokens_python.recipe.session import SessionOverrideConfig, SessionRecipe
 from supertokens_python.recipe.session.asyncio import (
     create_new_session as async_create_new_session,
 )
@@ -381,7 +381,7 @@ async def test_should_use_override_functions_in_session_container_methods():
         recipe_list=[
             session.init(
                 anti_csrf="VIA_TOKEN",
-                override=InputOverrideConfig(
+                override=SessionOverrideConfig(
                     functions=override_session_functions,
                 ),
             )
@@ -422,7 +422,7 @@ async def test_revoking_session_during_refresh_with_revoke_session_with_200(
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
-                override=session.InputOverrideConfig(apis=session_api_override),
+                override=session.SessionOverrideConfig(apis=session_api_override),
             )
         ],
     )
@@ -472,7 +472,7 @@ async def test_revoking_session_during_refresh_with_revoke_session_sending_401(
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
-                override=session.InputOverrideConfig(apis=session_api_override),
+                override=session.SessionOverrideConfig(apis=session_api_override),
             )
         ],
     )
@@ -521,7 +521,7 @@ async def test_revoking_session_during_refresh_and_throw_unauthorized(
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
-                override=session.InputOverrideConfig(apis=session_api_override),
+                override=session.SessionOverrideConfig(apis=session_api_override),
             )
         ],
     )
@@ -584,7 +584,7 @@ async def test_revoking_session_during_refresh_fails_if_just_sending_401(
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
-                override=session.InputOverrideConfig(apis=session_api_override),
+                override=session.SessionOverrideConfig(apis=session_api_override),
             )
         ],
     )

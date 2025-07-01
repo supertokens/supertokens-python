@@ -15,21 +15,20 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
-from supertokens_python.recipe.accountlinking.types import AccountLinkingInputConfig
+from supertokens_python.recipe.accountlinking.types import (
+    AccountInfoWithRecipeIdAndUserId,
+    AccountLinkingConfig,
+    NormalisedAccountLinkingConfig,
+    NormalisedAccountLinkingOverrideConfig,
+    RecipeLevelUser,
+    ShouldAutomaticallyLink,
+    ShouldNotAutomaticallyLink,
+)
 
 if TYPE_CHECKING:
-    from .types import (
-        AccountInfoWithRecipeIdAndUserId,
-        AccountLinkingConfig,
-        RecipeLevelUser,
-        SessionContainer,
-        ShouldAutomaticallyLink,
-        ShouldNotAutomaticallyLink,
-        User,
-    )
-
-if TYPE_CHECKING:
+    from supertokens_python.recipe.session.interfaces import SessionContainer
     from supertokens_python.supertokens import AppInfo
+    from supertokens_python.types.base import User
 
 
 async def default_on_account_linked(_: User, __: RecipeLevelUser, ___: Dict[str, Any]):
@@ -59,34 +58,31 @@ def recipe_init_defined_should_do_automatic_account_linking() -> bool:
 
 def validate_and_normalise_user_input(
     _: AppInfo,
-    input_config: AccountLinkingInputConfig,
-) -> AccountLinkingConfig:
-    from .types import AccountLinkingConfig, OverrideConfig
-
+    config: AccountLinkingConfig,
+) -> NormalisedAccountLinkingConfig:
     global _did_use_default_should_do_automatic_account_linking
 
-    override_config: OverrideConfig = OverrideConfig()
-
-    if (
-        input_config.override is not None
-        and input_config.override.functions is not None
-    ):
-        override_config.functions = input_config.override.functions
-
-    _did_use_default_should_do_automatic_account_linking = (
-        input_config.should_do_automatic_account_linking is None
+    override_config: NormalisedAccountLinkingOverrideConfig = (
+        NormalisedAccountLinkingOverrideConfig()
     )
 
-    return AccountLinkingConfig(
+    if config.override is not None and config.override.functions is not None:
+        override_config.functions = config.override.functions
+
+    _did_use_default_should_do_automatic_account_linking = (
+        config.should_do_automatic_account_linking is None
+    )
+
+    return NormalisedAccountLinkingConfig(
         override=override_config,
         on_account_linked=(
             default_on_account_linked
-            if input_config.on_account_linked is None
-            else input_config.on_account_linked
+            if config.on_account_linked is None
+            else config.on_account_linked
         ),
         should_do_automatic_account_linking=(
             default_should_do_automatic_account_linking
-            if input_config.should_do_automatic_account_linking is None
-            else input_config.should_do_automatic_account_linking
+            if config.should_do_automatic_account_linking is None
+            else config.should_do_automatic_account_linking
         ),
     )

@@ -19,7 +19,6 @@ from typing import Any, Dict, List, Optional, Union
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.post_init_callbacks import PostSTInitCallbacks
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.multifactorauth.api import (
@@ -49,8 +48,8 @@ from .types import (
     GetPhoneNumbersForFactorsFromOtherRecipesFunc,
     GetPhoneNumbersForFactorsOkResult,
     GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult,
-    InputOverrideConfig,
-    MultiFactorAuthInputConfig,
+    MultiFactorAuthConfig,
+    MultiFactorAuthOverrideConfig,
 )
 from .utils import validate_and_normalise_user_input
 
@@ -63,7 +62,7 @@ class MultiFactorAuthRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        input_config: MultiFactorAuthInputConfig,
+        config: MultiFactorAuthConfig,
     ):
         super().__init__(recipe_id, app_info)
         self.get_factors_setup_for_user_from_other_recipes_funcs: List[
@@ -81,7 +80,7 @@ class MultiFactorAuthRecipe(RecipeModule):
         self.is_get_mfa_requirements_for_auth_overridden: bool = False
 
         self.config = validate_and_normalise_user_input(
-            input_config=input_config,
+            config=config,
         )
 
         recipe_implementation = RecipeImplementation(
@@ -159,9 +158,11 @@ class MultiFactorAuthRecipe(RecipeModule):
     @staticmethod
     def init(
         first_factors: Optional[List[str]] = None,
-        override: Union[InputOverrideConfig, None] = None,
+        override: Union[MultiFactorAuthOverrideConfig, None] = None,
     ):
-        input_config = MultiFactorAuthInputConfig(
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = MultiFactorAuthConfig(
             first_factors=first_factors,
             override=override,
         )
@@ -171,9 +172,9 @@ class MultiFactorAuthRecipe(RecipeModule):
                 MultiFactorAuthRecipe.__instance = MultiFactorAuthRecipe(
                     MultiFactorAuthRecipe.recipe_id,
                     app_info,
-                    input_config=apply_plugins(
+                    config=apply_plugins(
                         recipe_id=MultiFactorAuthRecipe.recipe_id,
-                        config=input_config,
+                        config=config,
                         plugins=plugins,
                     ),
                 )

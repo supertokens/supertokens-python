@@ -18,7 +18,6 @@ from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
-from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.recipe.oauth2provider.exceptions import OAuth2ProviderError
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.types import User
@@ -67,9 +66,9 @@ from .constants import (
     USER_INFO_PATH,
 )
 from .utils import (
-    InputOverrideConfig,
+    NormalisedOAuth2ProviderConfig,
     OAuth2ProviderConfig,
-    OAuth2ProviderInputConfig,
+    OAuth2ProviderOverrideConfig,
     validate_and_normalise_user_input,
 )
 
@@ -82,11 +81,11 @@ class OAuth2ProviderRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        input_config: OAuth2ProviderInputConfig,
+        config: OAuth2ProviderConfig,
     ) -> None:
         super().__init__(recipe_id, app_info)
-        self.config: OAuth2ProviderConfig = validate_and_normalise_user_input(
-            input_config=input_config,
+        self.config: NormalisedOAuth2ProviderConfig = validate_and_normalise_user_input(
+            config=config,
         )
 
         from .recipe_implementation import RecipeImplementation
@@ -264,18 +263,20 @@ class OAuth2ProviderRecipe(RecipeModule):
 
     @staticmethod
     def init(
-        override: Union[InputOverrideConfig, None] = None,
+        override: Optional[OAuth2ProviderOverrideConfig] = None,
     ):
-        input_config = OAuth2ProviderInputConfig(override=override)
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = OAuth2ProviderConfig(override=override)
 
         def func(app_info: AppInfo, plugins: List[OverrideMap]) -> OAuth2ProviderRecipe:
             if OAuth2ProviderRecipe.__instance is None:
                 OAuth2ProviderRecipe.__instance = OAuth2ProviderRecipe(
                     recipe_id=OAuth2ProviderRecipe.recipe_id,
                     app_info=app_info,
-                    input_config=apply_plugins(
+                    config=apply_plugins(
                         recipe_id=OAuth2ProviderRecipe.recipe_id,
-                        config=input_config,
+                        config=config,
                         plugins=plugins,
                     ),
                 )
