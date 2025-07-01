@@ -30,6 +30,7 @@ from supertokens_python.types.config import (
     BaseInputOverrideConfig,
     BaseOverrideConfig,
 )
+from supertokens_python.types.utils import UseDefaultIfNone
 
 from .interfaces import APIInterface, RecipeInterface
 from .types import EmailTemplateVars, InputFormField, NormalisedFormField
@@ -228,6 +229,7 @@ class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
 class EmailPasswordInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
     sign_up_feature: Union[InputSignUpFeature, None] = None
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
+    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 class EmailPasswordConfig(BaseConfig[RecipeInterface, APIInterface]):
@@ -237,6 +239,7 @@ class EmailPasswordConfig(BaseConfig[RecipeInterface, APIInterface]):
     get_email_delivery_config: Callable[
         [RecipeInterface], EmailDeliveryConfigWithService[EmailTemplateVars]
     ]
+    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 def validate_and_normalise_user_input(

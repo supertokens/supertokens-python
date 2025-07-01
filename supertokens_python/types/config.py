@@ -1,11 +1,14 @@
-from typing import Callable, Generic, Optional, TypeVar, Union
+from typing import Callable, Generic, Optional, TypeVar
 
 from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 from supertokens_python.types.response import CamelCaseBaseModel
+from supertokens_python.types.utils import UseDefaultIfNone
 
-InterfaceType = TypeVar(
-    "InterfaceType", bound=Union[BaseRecipeInterface, BaseAPIInterface]
-)
+T = TypeVar("T")
+
+# InterfaceType = TypeVar(
+#     "InterfaceType", bound=Union[BaseRecipeInterface, BaseAPIInterface], covariant=True
+# )
 """Generic Type for use in `InterfaceOverride`"""
 FunctionInterfaceType = TypeVar("FunctionInterfaceType", bound=BaseRecipeInterface)
 """Generic Type for use in `FunctionOverrideConfig`"""
@@ -13,18 +16,7 @@ APIInterfaceType = TypeVar("APIInterfaceType", bound=BaseAPIInterface)
 """Generic Type for use in `APIOverrideConfig`"""
 
 
-InterfaceOverride = Callable[[InterfaceType], InterfaceType]
-
-# @runtime_checkable
-# class InterfaceOverride(Protocol[InterfaceType]):
-#     """
-#     Callable signature for `<Config>.override.*`.
-#     """
-
-#     def __call__(
-#         self,
-#         original_implementation: InterfaceType,
-#     ) -> InterfaceType: ...
+InterfaceOverride = Callable[[T], T]
 
 
 class BaseInputOverrideConfigWithoutAPI(
@@ -32,7 +24,9 @@ class BaseInputOverrideConfigWithoutAPI(
 ):
     """Base class for input override config without API overrides."""
 
-    functions: Optional[InterfaceOverride[FunctionInterfaceType]] = None
+    functions: UseDefaultIfNone[Optional[InterfaceOverride[FunctionInterfaceType]]] = (
+        lambda original_implementation: original_implementation
+    )
 
 
 class BaseOverrideConfigWithoutAPI(CamelCaseBaseModel, Generic[FunctionInterfaceType]):
@@ -49,7 +43,9 @@ class BaseInputOverrideConfig(
 ):
     """Base class for input override config with API overrides."""
 
-    apis: Optional[InterfaceOverride[APIInterfaceType]] = None
+    apis: UseDefaultIfNone[Optional[InterfaceOverride[APIInterfaceType]]] = (
+        lambda original_implementation: original_implementation
+    )
 
 
 class BaseOverrideConfig(

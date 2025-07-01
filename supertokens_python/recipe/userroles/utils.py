@@ -24,6 +24,7 @@ from supertokens_python.types.config import (
     BaseInputOverrideConfig,
     BaseOverrideConfig,
 )
+from supertokens_python.types.utils import UseDefaultIfNone
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
@@ -38,11 +39,13 @@ class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
 class UserRolesInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
     skip_adding_roles_to_access_token: Optional[bool] = None
     skip_adding_permissions_to_access_token: Optional[bool] = None
+    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 class UserRolesConfig(BaseConfig[RecipeInterface, APIInterface]):
     skip_adding_roles_to_access_token: bool
     skip_adding_permissions_to_access_token: bool
+    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 def validate_and_normalise_user_input(

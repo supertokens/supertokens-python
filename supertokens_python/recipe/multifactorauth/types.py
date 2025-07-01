@@ -25,6 +25,7 @@ from supertokens_python.types.config import (
     BaseInputOverrideConfig,
     BaseOverrideConfig,
 )
+from supertokens_python.types.utils import UseDefaultIfNone
 
 from .interfaces import APIInterface, RecipeInterface
 
@@ -50,10 +51,12 @@ class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
 
 class MultiFactorAuthInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
     first_factors: Optional[List[str]] = None
+    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 class MultiFactorAuthConfig(BaseConfig[RecipeInterface, APIInterface]):
     first_factors: Optional[List[str]]
+    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 class FactorIds:

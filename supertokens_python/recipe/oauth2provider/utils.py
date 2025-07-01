@@ -13,12 +13,15 @@
 # under the License.
 from __future__ import annotations
 
+from typing import Optional
+
 from supertokens_python.types.config import (
     BaseConfig,
     BaseInputConfig,
     BaseInputOverrideConfig,
     BaseOverrideConfig,
 )
+from supertokens_python.types.utils import UseDefaultIfNone
 
 from .interfaces import APIInterface, RecipeInterface
 
@@ -29,10 +32,12 @@ class InputOverrideConfig(BaseInputOverrideConfig[RecipeInterface, APIInterface]
 class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
 
 
-class OAuth2ProviderInputConfig(BaseInputConfig[RecipeInterface, APIInterface]): ...
+class OAuth2ProviderInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
+    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
-class OAuth2ProviderConfig(BaseConfig[RecipeInterface, APIInterface]): ...
+class OAuth2ProviderConfig(BaseConfig[RecipeInterface, APIInterface]):
+    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 def validate_and_normalise_user_input(input_config: OAuth2ProviderInputConfig):

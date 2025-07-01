@@ -13,18 +13,19 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Optional, Union
 
+from supertokens_python.recipe.jwt import OverrideConfig as JWTOverrideConfig
 from supertokens_python.types.config import (
     BaseConfig,
     BaseInputConfig,
     BaseInputOverrideConfig,
     BaseOverrideConfig,
 )
+from supertokens_python.types.utils import UseDefaultIfNone
 
 if TYPE_CHECKING:
     from supertokens_python import AppInfo
-    from supertokens_python.recipe.jwt import OverrideConfig as JWTOverrideConfig
 
 
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
@@ -42,11 +43,13 @@ class OverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]): ...
 
 class OpenIdInputConfig(BaseInputConfig[RecipeInterface, APIInterface]):
     issuer: Union[str, None] = None
+    override: UseDefaultIfNone[Optional[InputOverrideConfig]] = InputOverrideConfig()  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 class OpenIdConfig(BaseConfig[RecipeInterface, APIInterface]):
     issuer_domain: NormalisedURLDomain
     issuer_path: NormalisedURLPath
+    override: OverrideConfig  # type: ignore - https://github.com/microsoft/pyright/issues/5933
 
 
 def validate_and_normalise_user_input(
