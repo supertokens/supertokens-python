@@ -21,20 +21,7 @@ from supertokens_python.constants import VERSION
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.logger import log_debug_message
-from supertokens_python.types import MaybeAwaitable
-from supertokens_python.types.base import UserContext
-from supertokens_python.types.config import (
-    BaseConfig,
-    BaseConfigWithoutAPIOverride,
-    BaseOverrideConfig,
-)
-from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
-from supertokens_python.types.response import CamelCaseBaseModel
-
-if TYPE_CHECKING:
-    from supertokens_python.post_init_callbacks import PostSTInitCallbacks
-    from supertokens_python.supertokens import SupertokensPublicConfig
-
+from supertokens_python.post_init_callbacks import PostSTInitCallbacks
 from supertokens_python.recipe.accountlinking.types import AccountLinkingConfig
 from supertokens_python.recipe.dashboard.utils import DashboardConfig
 from supertokens_python.recipe.emailpassword.utils import EmailPasswordConfig
@@ -57,6 +44,19 @@ from supertokens_python.recipe.totp.types import TOTPConfig
 from supertokens_python.recipe.usermetadata.utils import UserMetadataConfig
 from supertokens_python.recipe.userroles.utils import UserRolesConfig
 from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
+from supertokens_python.types import MaybeAwaitable
+from supertokens_python.types.base import UserContext
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseConfigWithoutAPIOverride,
+    BaseOverrideConfig,
+    BaseOverrideConfigWithoutAPI,
+)
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
+from supertokens_python.types.response import CamelCaseBaseModel
+
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import SupertokensPublicConfig
 
 T = TypeVar(
     "T",
@@ -311,7 +311,7 @@ def apply_plugins(
 
     if config.override is None:
         if isinstance(config, BaseConfigWithoutAPIOverride):
-            config.override = BaseConfigWithoutAPIOverride()  # type: ignore
+            config.override = BaseOverrideConfigWithoutAPI()
         else:
             config.override = BaseOverrideConfig()  # type: ignore
 
@@ -327,7 +327,7 @@ def apply_plugins(
     # Order of 1/2 does not matter since they are independent from each other.
 
     for plugin in plugins:
-        overrides = plugin[recipe_id]
+        overrides = plugin.get(recipe_id)
         if overrides is not None:
             if overrides.config is not None:
                 config = overrides.config(config)

@@ -26,7 +26,6 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import PROCESS_STATE, ProcessState
 from supertokens_python.querier import Querier
 from supertokens_python.recipe_module import APIHandled, RecipeModule
-from supertokens_python.supertokens import Supertokens
 from supertokens_python.types.base import AccountInfoInput
 
 from .interfaces import RecipeInterface
@@ -175,11 +174,12 @@ class AccountLinkingRecipe(RecipeModule):
 
     @staticmethod
     def get_instance() -> AccountLinkingRecipe:
-        if AccountLinkingRecipe.__instance is None:
-            AccountLinkingRecipe.init()(Supertokens.get_instance().app_info)
+        if AccountLinkingRecipe.__instance is not None:
+            return AccountLinkingRecipe.__instance
 
-        assert AccountLinkingRecipe.__instance is not None
-        return AccountLinkingRecipe.__instance
+        raise_general_exception(
+            "Initialisation not done. Did you forget to call the SuperTokens.init function?"
+        )
 
     @staticmethod
     def reset():

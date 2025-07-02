@@ -21,26 +21,26 @@ from typing_extensions import Literal
 from supertokens_python.recipe.accountlinking.interfaces import (
     RecipeInterface,
 )
-from supertokens_python.types import AccountInfo
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.types import (
+    AccountInfo,
+    LoginMethod,
+    RecipeUserId,
+    User,
+)
 from supertokens_python.types.config import (
     BaseConfigWithoutAPIOverride,
     BaseNormalisedConfigWithoutAPIOverride,
-    NormalisedOverrideConfigWithoutAPI,
-    OverrideConfigWithoutAPI,
+    BaseNormalisedOverrideConfigWithoutAPI,
+    BaseOverrideConfigWithoutAPI,
 )
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
     from supertokens_python.recipe.webauthn.types.base import WebauthnInfo
-    from supertokens_python.types import (
-        LoginMethod,
-        RecipeUserId,
-        User,
-    )
 
-AccountLinkingOverrideConfig = OverrideConfigWithoutAPI[RecipeInterface]
-NormalisedAccountLinkingOverrideConfig = NormalisedOverrideConfigWithoutAPI[
+AccountLinkingOverrideConfig = BaseOverrideConfigWithoutAPI[RecipeInterface]
+NormalisedAccountLinkingOverrideConfig = BaseNormalisedOverrideConfigWithoutAPI[
     RecipeInterface
 ]
 

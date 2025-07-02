@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union
 
 from typing_extensions import Literal
 
@@ -34,13 +34,11 @@ from supertokens_python.types.config import (
 )
 
 from .interfaces import APIInterface, RecipeInterface, TypeGetEmailForUserIdFunction
+from .types import EmailTemplateVars, VerificationEmailTemplateVars
 
 if TYPE_CHECKING:
-    from typing import Callable, Union
-
     from supertokens_python.supertokens import AppInfo
 
-    from .types import EmailTemplateVars, VerificationEmailTemplateVars
 
 MODE_TYPE = Literal["REQUIRED", "OPTIONAL"]
 

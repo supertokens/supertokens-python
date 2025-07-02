@@ -10,7 +10,7 @@ from supertokens_python.plugins import (
 from supertokens_python.supertokens import SupertokensPublicConfig
 
 from .api_implementation import APIInterface
-from .config import OverrideConfig
+from .config import PluginOverrideConfig
 from .recipe import PluginTestRecipe
 from .recipe_implementation import RecipeInterface
 
@@ -79,7 +79,7 @@ def plugin_factory(
     deps: Optional[List[SuperTokensPlugin]] = None,
     add_init: bool = False,
 ):
-    override_map_obj: OverrideMap = {PluginTestRecipe.recipe_id: OverrideConfig()}
+    override_map_obj: OverrideMap = {PluginTestRecipe.recipe_id: PluginOverrideConfig()}
 
     if override_functions:
         override_map_obj[

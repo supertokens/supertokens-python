@@ -1,57 +1,36 @@
-from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Optional,
-    Protocol,
-    TypeVar,
-    runtime_checkable,
-)
+from typing import Any, Optional
 
 from supertokens_python.supertokens import (
     AppInfo,
 )
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideConfig,
+    InterfaceOverride,
+)
+from supertokens_python.types.utils import UseDefaultIfNone
 
-if TYPE_CHECKING:
-    from .api_implementation import APIInterface
-    from .recipe_implementation import RecipeInterface
+from .api_implementation import APIInterface
+from .recipe_implementation import RecipeInterface
 
-InterfaceType = TypeVar("InterfaceType")
-"""Generic Type for use in `InterfaceOverride`"""
-
-
-@runtime_checkable
-class InterfaceOverride(Protocol[InterfaceType]):
-    """
-    Callable signature for `WebauthnConfig.override.*`.
-    """
-
-    def __call__(
-        self,
-        original_implementation: InterfaceType,
-    ) -> InterfaceType: ...
+PluginTestOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedPluginTestOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
 
 
-# NOTE: Using dataclasses for these classes since validation is not required
-@dataclass
-class OverrideConfig:
-    """
-    `WebauthnConfig.override`
-    """
-
-    functions: Optional[InterfaceOverride["RecipeInterface"]] = None
-    apis: Optional[InterfaceOverride["APIInterface"]] = None
-    config: Optional[InterfaceOverride[Any]] = None
+class NormalizedPluginTestConfig(
+    BaseNormalisedConfig[RecipeInterface, APIInterface]
+): ...
 
 
-@dataclass
-class NormalizedPluginTestConfig:
-    override: OverrideConfig
+class PluginTestConfig(BaseConfig[RecipeInterface, APIInterface]): ...
 
 
-@dataclass
-class PluginTestConfig:
-    override: Optional[OverrideConfig] = None
+class PluginOverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]):
+    config: UseDefaultIfNone[Optional[InterfaceOverride[Any]]] = lambda config: config
 
 
 def validate_and_normalise_user_input(
@@ -60,12 +39,12 @@ def validate_and_normalise_user_input(
     if config is None:
         config = PluginTestConfig()
 
-    if config.override is None:
-        override = OverrideConfig()
-    else:
-        override = OverrideConfig(
-            functions=config.override.functions,
-            apis=config.override.apis,
-        )
+    override_config = NormalisedPluginTestOverrideConfig()
+    if config.override is not None:
+        if config.override.functions is not None:
+            override_config.functions = config.override.functions
 
-    return NormalizedPluginTestConfig(override=override)
+        if config.override.apis is not None:
+            override_config.apis = config.override.apis
+
+    return NormalizedPluginTestConfig(override=override_config)
