@@ -311,8 +311,6 @@ class Supertokens:
         debug: Optional[bool],
         experimental: Optional[SupertokensExperimentalConfig] = None,
     ):
-        print(f"{app_info=}")
-        print(f"{type(app_info)=}")
         if not isinstance(app_info, InputAppInfo):  # type: ignore
             raise ValueError("app_info must be an instance of InputAppInfo")
 

@@ -17,7 +17,6 @@ from __future__ import annotations
 from typing import Optional, Protocol, TypeVar, Union, runtime_checkable
 
 from supertokens_python.framework import BaseRequest
-from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
     EmailDeliveryConfigWithService,
@@ -193,7 +192,12 @@ class WebauthnConfig(BaseConfig[RecipeInterface, APIInterface]):
     get_relying_party_id: Optional[Union[str, GetRelyingPartyId]] = None
     get_relying_party_name: Optional[Union[str, GetRelyingPartyName]] = None
     get_origin: Optional[GetOrigin] = None
-    email_delivery: Optional[EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]] = None
+    email_delivery: Optional[
+        Union[
+            EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput],
+            EmailDeliveryConfigWithService[TypeWebauthnEmailDeliveryInput],
+        ]
+    ] = None
     validate_email_address: Optional[ValidateEmailAddress] = None
 
 
@@ -207,5 +211,8 @@ class NormalisedWebauthnConfig(BaseNormalisedConfig[RecipeInterface, APIInterfac
 
 class WebauthnIngredients(CamelCaseBaseModel):
     email_delivery: Optional[
-        EmailDeliveryIngredient[TypeWebauthnEmailDeliveryInput]
+        Union[
+            EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput],
+            EmailDeliveryConfigWithService[TypeWebauthnEmailDeliveryInput],
+        ]
     ] = None
