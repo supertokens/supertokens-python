@@ -147,7 +147,7 @@ class AccountLinkingRecipe(RecipeModule):
     ) -> Callable[..., AccountLinkingRecipe]:
         from supertokens_python.plugins import OverrideMap, apply_plugins
 
-        cofnfig = AccountLinkingConfig(
+        config = AccountLinkingConfig(
             on_account_linked=on_account_linked,
             should_do_automatic_account_linking=should_do_automatic_account_linking,
             override=override,
@@ -160,7 +160,7 @@ class AccountLinkingRecipe(RecipeModule):
                     app_info=app_info,
                     config=apply_plugins(
                         recipe_id=AccountLinkingRecipe.recipe_id,
-                        config=cofnfig,
+                        config=config,
                         plugins=plugins,
                     ),
                 )

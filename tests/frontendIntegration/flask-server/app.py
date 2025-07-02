@@ -38,6 +38,7 @@ from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import session
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.jwt.recipe import JWTRecipe
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
@@ -280,16 +281,6 @@ def config(
             ],
             telemetry=False,
         )
-
-
-core_host = os.environ.get("SUPERTOKENS_CORE_HOST", "localhost")
-core_port = os.environ.get("SUPERTOKENS_CORE_PORT", "3567")
-config(
-    core_url=f"http://{core_host}:{core_port}",
-    enable_anti_csrf=True,
-    enable_jwt=False,
-    jwt_property_name=None,
-)
 
 
 @app.route("/index.html", methods=["GET"])  # type: ignore
@@ -674,6 +665,7 @@ def reinitialize():
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
     JWTRecipe.reset()
+    AccountLinkingRecipe.reset()
     config(
         json["coreUrl"],
         last_set_enable_anti_csrf,  # type: ignore
@@ -695,6 +687,7 @@ async def setup_st():  # type: ignore
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
     JWTRecipe.reset()
+    AccountLinkingRecipe.reset()
     config(
         core_url=json["coreUrl"],
         enable_anti_csrf=json.get("enableAntiCsrf"),  # type: ignore
@@ -732,6 +725,15 @@ def handle_exception(e):  # type: ignore
         return Response(str(e), status=404)
     return Response(str(e), status=500)  # type: ignore
 
+
+core_host = os.environ.get("SUPERTOKENS_CORE_HOST", "localhost")
+core_port = os.environ.get("SUPERTOKENS_CORE_PORT", "3567")
+config(
+    core_url=f"http://{core_host}:{core_port}",
+    enable_anti_csrf=True,
+    enable_jwt=False,
+    jwt_property_name=None,
+)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(get_app_port()), threaded=True)

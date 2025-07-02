@@ -39,6 +39,7 @@ from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import session
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.jwt.recipe import JWTRecipe
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
@@ -673,6 +674,7 @@ def reinitialize(request: Request):  # type: ignore
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
     JWTRecipe.reset()
+    AccountLinkingRecipe.reset()
     config(
         data["coreUrl"],  # type: ignore
         last_set_enable_anti_csrf,
@@ -695,6 +697,7 @@ def setup_st(request: HttpRequest):  # type: ignore
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
     JWTRecipe.reset()
+    AccountLinkingRecipe.reset()
     config(
         core_url=data["coreUrl"],
         enable_anti_csrf=data.get("enableAntiCsrf"),

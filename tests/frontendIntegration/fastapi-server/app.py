@@ -38,6 +38,7 @@ from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import session
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.jwt.recipe import JWTRecipe
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
@@ -657,6 +658,7 @@ async def reinitialize(request: Request):
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
     JWTRecipe.reset()
+    AccountLinkingRecipe.reset()
     config(
         json["coreUrl"],
         last_set_enable_anti_csrf,
@@ -678,6 +680,7 @@ async def setup_st(request: Request):
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
     JWTRecipe.reset()
+    AccountLinkingRecipe.reset()
     config(
         core_url=json["coreUrl"],
         enable_anti_csrf=json.get("enableAntiCsrf"),
