@@ -20,7 +20,7 @@ from supertokens_python.supertokens import SupertokensPublicConfig
 
 from tests.utils import outputs, reset
 
-from .config import OverrideConfig, PluginTestConfig
+from .config import PluginTestConfig, PluginTestOverrideConfig
 from .misc import DummyRequest, DummyResponse
 from .plugins import (
     Plugin1,
@@ -50,7 +50,7 @@ def setup_and_teardown():
 
 
 def recipe_factory(override_functions: bool = False, override_apis: bool = False):
-    override = OverrideConfig()
+    override = PluginTestOverrideConfig()
 
     if override_functions:
         override.functions = function_override_factory("override")

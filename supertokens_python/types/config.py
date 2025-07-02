@@ -16,7 +16,7 @@ APIInterfaceType = TypeVar("APIInterfaceType", bound=BaseAPIInterface)
 InterfaceOverride = Callable[[T], T]
 
 
-class OverrideConfigWithoutAPI(CamelCaseBaseModel, Generic[FunctionInterfaceType]):
+class BaseOverrideConfigWithoutAPI(CamelCaseBaseModel, Generic[FunctionInterfaceType]):
     """Base class for input override config without API overrides."""
 
     functions: UseDefaultIfNone[Optional[InterfaceOverride[FunctionInterfaceType]]] = (
@@ -24,7 +24,7 @@ class OverrideConfigWithoutAPI(CamelCaseBaseModel, Generic[FunctionInterfaceType
     )
 
 
-class NormalisedOverrideConfigWithoutAPI(
+class BaseNormalisedOverrideConfigWithoutAPI(
     CamelCaseBaseModel, Generic[FunctionInterfaceType]
 ):
     """Base class for normalized override config without API overrides."""
@@ -35,7 +35,7 @@ class NormalisedOverrideConfigWithoutAPI(
 
 
 class BaseOverrideConfig(
-    OverrideConfigWithoutAPI[FunctionInterfaceType],
+    BaseOverrideConfigWithoutAPI[FunctionInterfaceType],
     Generic[FunctionInterfaceType, APIInterfaceType],
 ):
     """Base class for input override config with API overrides."""
@@ -46,7 +46,7 @@ class BaseOverrideConfig(
 
 
 class BaseNormalisedOverrideConfig(
-    NormalisedOverrideConfigWithoutAPI[FunctionInterfaceType],
+    BaseNormalisedOverrideConfigWithoutAPI[FunctionInterfaceType],
     Generic[FunctionInterfaceType, APIInterfaceType],
 ):
     """Base class for normalized override config with API overrides."""
@@ -59,7 +59,7 @@ class BaseNormalisedOverrideConfig(
 class BaseConfigWithoutAPIOverride(CamelCaseBaseModel, Generic[FunctionInterfaceType]):
     """Base class for input config of a Recipe without API overrides."""
 
-    override: Optional[OverrideConfigWithoutAPI[FunctionInterfaceType]] = None
+    override: Optional[BaseOverrideConfigWithoutAPI[FunctionInterfaceType]] = None
 
 
 class BaseNormalisedConfigWithoutAPIOverride(
@@ -67,7 +67,7 @@ class BaseNormalisedConfigWithoutAPIOverride(
 ):
     """Base class for normalized config of a Recipe without API overrides."""
 
-    override: NormalisedOverrideConfigWithoutAPI[FunctionInterfaceType]
+    override: BaseNormalisedOverrideConfigWithoutAPI[FunctionInterfaceType]
 
 
 class BaseConfig(CamelCaseBaseModel, Generic[FunctionInterfaceType, APIInterfaceType]):

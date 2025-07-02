@@ -2,6 +2,7 @@ import os
 from typing import Any, Dict, List
 
 import pytest
+from pydantic import ValidationError
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.recipe import (
     emailpassword,
@@ -23,7 +24,9 @@ from tests.utils import get_new_core_app_url
 
 @pytest.mark.asyncio
 async def test_init_validation_emailpassword():
-    with pytest.raises(ValueError) as ex:
+    with pytest.raises(
+        ValueError, match="app_info must be an instance of InputAppInfo"
+    ):
         init(
             supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info="AppInfo",  # type: ignore
@@ -32,9 +35,10 @@ async def test_init_validation_emailpassword():
                 emailpassword.init(),
             ],
         )
-    assert "app_info must be an instance of InputAppInfo" == str(ex.value)
 
-    with pytest.raises(ValueError) as ex:
+    with pytest.raises(
+        ValidationError, match="Input should be 'REQUIRED' or 'OPTIONAL'"
+    ):
         init(
             supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
@@ -49,10 +53,6 @@ async def test_init_validation_emailpassword():
                 emailpassword.init(),
             ],
         )
-    assert (
-        "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
-        == str(ex.value)
-    )
 
 
 async def get_email_for_user_id(_: RecipeUserId, __: Dict[str, Any]):
@@ -61,7 +61,9 @@ async def get_email_for_user_id(_: RecipeUserId, __: Dict[str, Any]):
 
 @pytest.mark.asyncio
 async def test_init_validation_emailverification():
-    with pytest.raises(ValueError) as ex:
+    with pytest.raises(
+        ValidationError, match="Input should be 'REQUIRED' or 'OPTIONAL'"
+    ):
         init(
             supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
@@ -73,12 +75,11 @@ async def test_init_validation_emailverification():
             framework="fastapi",
             recipe_list=[emailverification.init("config")],  # type: ignore
         )
-    assert (
-        "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
-        == str(ex.value)
-    )
 
-    with pytest.raises(ValueError) as ex:
+    with pytest.raises(
+        ValidationError,
+        match="Input should be a valid dictionary or instance of BaseOverrideConfig\\[RecipeInterface, APIInterface\\]",
+    ):
         init(
             supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
@@ -96,26 +97,29 @@ async def test_init_validation_emailverification():
                 )
             ],
         )
-    assert "override must be of type OverrideConfig or None" == str(ex.value)
 
 
 @pytest.mark.asyncio
 async def test_init_validation_jwt():
-    with pytest.raises(ValueError) as ex:
-        init(
-            supertokens_config=SupertokensConfig(get_new_core_app_url()),
-            app_info=InputAppInfo(
-                app_name="SuperTokens Demo",
-                api_domain="http://api.supertokens.io",
-                website_domain="http://supertokens.io",
-                api_base_path="/auth",
-            ),
-            framework="fastapi",
-            recipe_list=[jwt.init(jwt_validity_seconds="100")],  # type: ignore
-        )
-    assert "jwt_validity_seconds must be an integer or None" == str(ex.value)
+    # NOTE: `pydantic` auto-converts strings to integers
+    # with pytest.raises(ValueError) as ex:
+    #     init(
+    #         supertokens_config=SupertokensConfig(get_new_core_app_url()),
+    #         app_info=InputAppInfo(
+    #             app_name="SuperTokens Demo",
+    #             api_domain="http://api.supertokens.io",
+    #             website_domain="http://supertokens.io",
+    #             api_base_path="/auth",
+    #         ),
+    #         framework="fastapi",
+    #         recipe_list=[jwt.init(jwt_validity_seconds="100")],  # type: ignore
+    #     )
+    # assert "jwt_validity_seconds must be an integer or None" == str(ex.value)
 
-    with pytest.raises(ValueError) as ex:
+    with pytest.raises(
+        ValidationError,
+        match="Input should be a valid dictionary or instance of BaseOverrideConfig\\[RecipeInterface, APIInterface\\]",
+    ):
         init(
             supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
@@ -127,12 +131,14 @@ async def test_init_validation_jwt():
             framework="fastapi",
             recipe_list=[jwt.init(override="override")],  # type: ignore
         )
-    assert "override must be an instance of OverrideConfig or None" == str(ex.value)
 
 
 @pytest.mark.asyncio
 async def test_init_validation_openid():
-    with pytest.raises(ValueError) as ex:
+    with pytest.raises(
+        ValidationError,
+        match="Input should be a valid dictionary or instance of BaseOverrideConfig\\[RecipeInterface, APIInterface\\]",
+    ):
         init(
             supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
@@ -144,9 +150,6 @@ async def test_init_validation_openid():
             framework="fastapi",
             recipe_list=[openid.init(override="override")],  # type: ignore
         )
-    assert "override must be an instance of InputOverrideConfig or None" == str(
-        ex.value
-    )
 
 
 async def send_text_message(
@@ -177,7 +180,9 @@ async def test_init_validation_passwordless():
         ) -> None:
             pass
 
-    with pytest.raises(ValueError) as ex:
+    with pytest.raises(
+        ValueError, match="app_info must be an instance of InputAppInfo"
+    ):
         init(
             supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info="AppInfo",  # type: ignore
@@ -195,9 +200,11 @@ async def test_init_validation_passwordless():
                 )
             ],
         )
-    assert "app_info must be an instance of InputAppInfo" == str(ex.value)
 
-    with pytest.raises(ValueError) as ex:
+    with pytest.raises(
+        ValidationError,
+        match="Input should be 'USER_INPUT_CODE', 'MAGIC_LINK' or 'USER_INPUT_CODE_AND_MAGIC_LINK'",
+    ):
         init(
             supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
@@ -220,12 +227,10 @@ async def test_init_validation_passwordless():
                 )
             ],
         )
-    assert (
-        "flow_type must be one of USER_INPUT_CODE, MAGIC_LINK, USER_INPUT_CODE_AND_MAGIC_LINK"
-        == str(ex.value)
-    )
 
-    with pytest.raises(ValueError) as ex:
+    with pytest.raises(
+        ValidationError, match="Input should be an instance of ContactConfig"
+    ):
         init(
             supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
@@ -242,9 +247,11 @@ async def test_init_validation_passwordless():
                 )
             ],
         )
-    assert "contact_config must be of type ContactConfig" == str(ex.value)
 
-    with pytest.raises(ValueError) as ex:
+    with pytest.raises(
+        ValidationError,
+        match="Input should be a valid dictionary or instance of BaseOverrideConfig\\[RecipeInterface, APIInterface\\]",
+    ):
         init(
             supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
@@ -268,7 +275,6 @@ async def test_init_validation_passwordless():
                 )
             ],
         )
-    assert "override must be of type OverrideConfig" == str(ex.value)
 
 
 providers_list: List[thirdparty.ProviderInput] = [
@@ -310,7 +316,10 @@ providers_list: List[thirdparty.ProviderInput] = [
 
 @pytest.mark.asyncio
 async def test_init_validation_session():
-    with pytest.raises(ValueError) as ex:
+    with pytest.raises(
+        ValidationError,
+        match="Input should be 'VIA_TOKEN', 'VIA_CUSTOM_HEADER' or 'NONE'",
+    ):
         init(
             supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
@@ -322,11 +331,10 @@ async def test_init_validation_session():
             framework="fastapi",
             recipe_list=[session.init(anti_csrf="ABCDE")],  # type: ignore
         )
-    assert "anti_csrf must be one of VIA_TOKEN, VIA_CUSTOM_HEADER, NONE or None" == str(
-        ex.value
-    )
 
-    with pytest.raises(ValueError) as ex:
+    with pytest.raises(
+        ValidationError, match="Input should be an instance of ErrorHandlers"
+    ):
         init(
             supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
@@ -341,11 +349,11 @@ async def test_init_validation_session():
             # on invalid type.
             recipe_list=[session.init(error_handlers="error handlers")],  # type: ignore
         )
-    assert "error_handlers must be an instance of ErrorHandlers or None" == str(
-        ex.value
-    )
 
-    with pytest.raises(ValueError) as ex:
+    with pytest.raises(
+        ValidationError,
+        match="Input should be a valid dictionary or instance of BaseOverrideConfig\\[RecipeInterface, APIInterface\\]",
+    ):
         init(
             supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
@@ -357,14 +365,13 @@ async def test_init_validation_session():
             framework="fastapi",
             recipe_list=[session.init(override="override")],  # type: ignore
         )
-    assert "override must be an instance of InputOverrideConfig or None" == str(
-        ex.value
-    )
 
 
 @pytest.mark.asyncio
 async def test_init_validation_thirdparty():
-    with pytest.raises(ValueError) as ex:
+    with pytest.raises(
+        ValidationError, match="Input should be an instance of SignInAndUpFeature"
+    ):
         init(
             supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
@@ -381,11 +388,11 @@ async def test_init_validation_thirdparty():
                 thirdparty.init(sign_in_and_up_feature="sign in up")  # type: ignore
             ],
         )
-    assert "sign_in_and_up_feature must be an instance of SignInAndUpFeature" == str(
-        ex.value
-    )
 
-    with pytest.raises(ValueError) as ex:
+    with pytest.raises(
+        ValidationError,
+        match="Input should be a valid dictionary or instance of BaseOverrideConfig\\[RecipeInterface, APIInterface\\]",
+    ):
         init(
             supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
@@ -404,14 +411,14 @@ async def test_init_validation_thirdparty():
                 )
             ],
         )
-    assert "override must be an instance of InputOverrideConfig or None" == str(
-        ex.value
-    )
 
 
 @pytest.mark.asyncio
 async def test_init_validation_usermetadata():
-    with pytest.raises(ValueError) as ex:
+    with pytest.raises(
+        ValidationError,
+        match="Input should be a valid dictionary or instance of BaseOverrideConfig\\[RecipeInterface, APIInterface\\]",
+    ):
         init(
             supertokens_config=SupertokensConfig(get_new_core_app_url()),
             app_info=InputAppInfo(
@@ -423,6 +430,3 @@ async def test_init_validation_usermetadata():
             framework="fastapi",
             recipe_list=[usermetadata.init(override="override")],  # type: ignore
         )
-    assert "override must be an instance of InputOverrideConfig or None" == str(
-        ex.value
-    )

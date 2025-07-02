@@ -69,7 +69,6 @@ if TYPE_CHECKING:
         PluginRouteHandler,
         SuperTokensPlugin,
         SuperTokensPublicPlugin,
-        load_plugins,
     )
     from supertokens_python.recipe.session import SessionContainer
 
@@ -312,6 +311,8 @@ class Supertokens:
         debug: Optional[bool],
         experimental: Optional[SupertokensExperimentalConfig] = None,
     ):
+        print(f"{app_info=}")
+        print(f"{type(app_info)=}")
         if not isinstance(app_info, InputAppInfo):  # type: ignore
             raise ValueError("app_info must be an instance of InputAppInfo")
 
@@ -334,6 +335,8 @@ class Supertokens:
         override_maps: List[OverrideMap] = []
 
         if experimental is not None and experimental.plugins is not None:
+            from supertokens_python.plugins import load_plugins
+
             load_plugins_result = load_plugins(
                 plugins=experimental.plugins,
                 public_config=input_public_config,
@@ -397,6 +400,7 @@ class Supertokens:
         oauth2_found = False
         openid_found = False
         jwt_found = False
+        account_linking_found = False
 
         def make_recipe(
             recipe: Callable[[AppInfo, List[OverrideMap]], RecipeModule],
@@ -408,7 +412,9 @@ class Supertokens:
                 multi_factor_auth_found, \
                 oauth2_found, \
                 openid_found, \
-                jwt_found
+                jwt_found, \
+                account_linking_found
+
             recipe_module = recipe(self.app_info, override_maps)
             if recipe_module.get_recipe_id() == "multitenancy":
                 multitenancy_found = True
@@ -424,9 +430,20 @@ class Supertokens:
                 openid_found = True
             elif recipe_module.get_recipe_id() == "jwt":
                 jwt_found = True
+            elif recipe_module.get_recipe_id() == "accountlinking":
+                account_linking_found = True
             return recipe_module
 
         self.recipe_modules: List[RecipeModule] = list(map(make_recipe, recipe_list))
+
+        if not account_linking_found:
+            from supertokens_python.recipe.accountlinking.recipe import (
+                AccountLinkingRecipe,
+            )
+
+            self.recipe_modules.append(
+                AccountLinkingRecipe.init()(self.app_info, override_maps)
+            )
 
         if not jwt_found:
             from supertokens_python.recipe.jwt.recipe import JWTRecipe

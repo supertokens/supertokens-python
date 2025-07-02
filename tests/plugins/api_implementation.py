@@ -1,12 +1,14 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import (
     List,
 )
 
+from supertokens_python.types.recipe import BaseAPIInterface
+
 from .types import RecipeReturnType
 
 
-class APIInterface(ABC):
+class APIInterface(BaseAPIInterface):
     @abstractmethod
     def sign_in_post(self, message: str, stack: List[str]) -> RecipeReturnType: ...
 

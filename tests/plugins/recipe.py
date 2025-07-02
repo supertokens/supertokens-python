@@ -46,18 +46,12 @@ class PluginTestRecipe(RecipeModule):
             querier=querier,
             config=self.config,
         )
-        self.recipe_implementation = (
+        self.recipe_implementation = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )  # type: ignore
 
         api_implementation = APIImplementation()
-        self.api_implementation = (
-            api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
-        )  # type: ignore
+        self.api_implementation = self.config.override.apis(api_implementation)  # type: ignore
 
     @staticmethod
     def get_instance() -> "PluginTestRecipe":
@@ -73,6 +67,9 @@ class PluginTestRecipe(RecipeModule):
 
     @staticmethod
     def init(config: Optional[PluginTestConfig]):
+        if config is None:
+            config = PluginTestConfig()
+
         def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if PluginTestRecipe.__instance is None:
                 PluginTestRecipe.__instance = PluginTestRecipe(
@@ -80,7 +77,7 @@ class PluginTestRecipe(RecipeModule):
                     app_info=app_info,
                     config=apply_plugins(
                         recipe_id=PluginTestRecipe.recipe_id,
-                        config=config,
+                        config=config,  # type: ignore
                         plugins=plugins,
                     ),
                 )
