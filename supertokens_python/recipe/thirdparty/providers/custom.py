@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union, cast
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import pkce
@@ -67,7 +67,7 @@ def access_field(obj: Any, key: str) -> Any:
     key_parts = key.split(".")
     for part in key_parts:
         if isinstance(obj, dict):
-            obj = obj.get(part)  # type: ignore
+            obj = cast(Dict[str, Any], obj).get(part)
         else:
             return None
 

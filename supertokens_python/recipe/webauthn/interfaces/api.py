@@ -12,8 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from abc import ABC, abstractmethod
-from typing import List, Literal, Optional, TypedDict, Union
+from abc import abstractmethod
+from typing import TYPE_CHECKING, List, Literal, Optional, TypedDict, Union
 
 from typing_extensions import NotRequired, Unpack
 

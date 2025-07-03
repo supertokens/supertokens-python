@@ -42,11 +42,11 @@ class LoggerTests(TestCase):
         enable_debug_logging()
         datetime_mock.now.return_value = real_datetime(2000, 1, 1, tzinfo=timezone.utc)
 
-        with self.assertLogs(level="DEBUG") as captured:
+        with self.assertLogs(level="DEBUG") as captured:  # type: ignore
             log_debug_message("API replied with status 200")
 
-        record = captured.records[0]
-        out = json.loads(record.msg)
+        record = captured.records[0]  # type: ignore
+        out = json.loads(record.msg)  # type: ignore
 
         assert out == {
             "t": "2000-01-01T00:00:00+00Z",
