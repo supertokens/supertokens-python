@@ -61,7 +61,7 @@ pytest-mock==3.8.2
 pytest-rerunfailures==10.3
 python-dotenv==0.19.2
 pytz==2022.1
-PyYAML==5.4.1
+PyYAML==6.0.2
 requests==2.25.1
 requests-file==1.5.1
 requests-mock==1.9.3
