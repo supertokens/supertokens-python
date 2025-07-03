@@ -32,7 +32,7 @@ from supertokens_python import (
 from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailDeliveryConfigWithService,
+    EmailDeliveryConfig,
     EmailDeliveryInterface,
 )
 from supertokens_python.recipe import (
@@ -1079,9 +1079,9 @@ def custom_init(
             "id": "webauthn",
             "init": webauthn.init(
                 config=WebauthnConfig(
-                    email_delivery=EmailDeliveryConfigWithService[
-                        TypeWebauthnEmailDeliveryInput
-                    ](service=CustomWebwuthnEmailService())  # type: ignore
+                    email_delivery=EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput](
+                        service=CustomWebwuthnEmailService()
+                    )
                 )
             ),
         },
