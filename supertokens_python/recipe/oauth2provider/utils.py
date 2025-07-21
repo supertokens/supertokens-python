@@ -37,12 +37,8 @@ class NormalisedOAuth2ProviderConfig(
 
 
 def validate_and_normalise_user_input(config: OAuth2ProviderConfig):
-    override_config = NormalisedOAuth2ProviderOverrideConfig()
-    if config.override is not None:
-        if config.override.functions is not None:
-            override_config.functions = config.override.functions
-
-        if config.override.apis is not None:
-            override_config.apis = config.override.apis
+    override_config = NormalisedOAuth2ProviderOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
     return NormalisedOAuth2ProviderConfig(override=override_config)

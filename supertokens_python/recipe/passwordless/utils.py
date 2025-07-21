@@ -177,13 +177,9 @@ def validate_and_normalise_user_input(
     app_info: AppInfo,
     config: PasswordlessConfig,
 ) -> NormalisedPasswordlessConfig:
-    override_config = NormalisedPasswordlessOverrideConfig()
-    if config.override is not None:
-        if config.override.functions is not None:
-            override_config.functions = config.override.functions
-
-        if config.override.apis is not None:
-            override_config.apis = config.override.apis
+    override_config = NormalisedPasswordlessOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
     def get_email_delivery_config() -> EmailDeliveryConfigWithService[
         PasswordlessLoginEmailTemplateVars

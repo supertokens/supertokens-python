@@ -97,16 +97,9 @@ class NormalisedDashboardConfig(BaseNormalisedConfig[RecipeInterface, APIInterfa
 def validate_and_normalise_user_input(
     config: DashboardConfig,
 ) -> NormalisedDashboardConfig:
-    override_config: NormalisedDashboardOverrideConfig = (
-        NormalisedDashboardOverrideConfig()
+    override_config = NormalisedDashboardOverrideConfig.from_input_config(
+        override_config=config.override
     )
-
-    if config.override is not None:
-        if config.override.functions is not None:
-            override_config.functions = config.override.functions
-
-        if config.override.apis is not None:
-            override_config.apis = config.override.apis
 
     if config.api_key is not None and config.admins is not None:
         log_debug_message(

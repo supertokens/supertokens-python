@@ -246,13 +246,9 @@ def validate_and_normalise_user_input(
     # NOTE: We don't need to check the instance of sign_up_feature and override
     # as they will always be either None or the specified type.
 
-    override_config = NormalisedEmailPasswordOverrideConfig()
-    if config.override is not None:
-        if config.override.functions is not None:
-            override_config.functions = config.override.functions
-
-        if config.override.apis is not None:
-            override_config.apis = config.override.apis
+    override_config = NormalisedEmailPasswordOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
     sign_up_feature = config.sign_up_feature
     if sign_up_feature is None:

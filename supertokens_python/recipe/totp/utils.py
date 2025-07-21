@@ -33,13 +33,9 @@ def validate_and_normalise_user_input(
     default_skew = config.default_skew if config.default_skew is not None else 1
     default_period = config.default_period if config.default_period is not None else 30
 
-    override_config = NormalisedTOTPOverrideConfig()
-    if config.override is not None:
-        if config.override.functions is not None:
-            override_config.functions = config.override.functions
-
-        if config.override.apis is not None:
-            override_config.apis = config.override.apis
+    override_config = NormalisedTOTPOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
     return NormalisedTOTPConfig(
         issuer=issuer,

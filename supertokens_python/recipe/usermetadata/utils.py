@@ -51,12 +51,8 @@ def validate_and_normalise_user_input(
     _app_info: AppInfo,
     input_config: UserMetadataConfig,
 ) -> NormalisedUserMetadataConfig:
-    override_config = NormalisedUserMetadataOverrideConfig()
-    if input_config.override is not None:
-        if input_config.override.functions is not None:
-            override_config.functions = input_config.override.functions
-
-        if input_config.override.apis is not None:
-            override_config.apis = input_config.override.apis
+    override_config = NormalisedUserMetadataOverrideConfig.from_input_config(
+        override_config=input_config.override
+    )
 
     return NormalisedUserMetadataConfig(override=override_config)

@@ -51,13 +51,9 @@ def validate_and_normalise_user_input(
     if config.first_factors is not None and len(config.first_factors) == 0:
         raise ValueError("'first_factors' can be either None or a non-empty list")
 
-    override_config = NormalisedMultiFactorAuthOverrideConfig()
-    if config.override is not None:
-        if config.override.functions is not None:
-            override_config.functions = config.override.functions
-
-        if config.override.apis is not None:
-            override_config.apis = config.override.apis
+    override_config = NormalisedMultiFactorAuthOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
     return NormalisedMultiFactorAuthConfig(
         first_factors=config.first_factors,
