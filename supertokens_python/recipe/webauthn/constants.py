@@ -26,6 +26,8 @@ RECOVER_ACCOUNT_API = "/user/webauthn/reset"
 
 SIGNUP_EMAIL_EXISTS_API = "/webauthn/email/exists"
 
+REGISTER_CREDENTIAL_API = "/webauthn/credential"
+
 # 60 seconds (60 * 1000ms)
 DEFAULT_REGISTER_OPTIONS_TIMEOUT = 60000
 DEFAULT_REGISTER_OPTIONS_ATTESTATION = "none"
