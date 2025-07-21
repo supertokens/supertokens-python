@@ -14,7 +14,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from os import environ
 from typing import (
     TYPE_CHECKING,
@@ -36,6 +35,7 @@ from supertokens_python.logger import (
     get_maybe_none_as_str,
     log_debug_message,
 )
+from supertokens_python.types.response import CamelCaseBaseModel
 
 from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT
 from .exceptions import SuperTokensError
@@ -111,16 +111,11 @@ class SupertokensConfig:
         self.disable_core_call_cache = disable_core_call_cache
 
 
-@dataclass
-class SupertokensExperimentalConfig:
+class SupertokensExperimentalConfig(CamelCaseBaseModel):
     plugins: Optional[List[SuperTokensPlugin]] = None
 
 
-# TODO: Change to Pydantic?
-
-
-@dataclass
-class SupertokensPublicConfig:
+class SupertokensPublicConfig(CamelCaseBaseModel):
     """
     Public properties received as input to the `Supertokens.init` function.
     """
@@ -133,7 +128,6 @@ class SupertokensPublicConfig:
     debug: Optional[bool]
 
 
-@dataclass
 class SupertokensInputConfig(SupertokensPublicConfig):
     """
     Various properties received as input to the `Supertokens.init` function.
@@ -324,10 +318,9 @@ class Supertokens:
             debug=debug,
             experimental=experimental,
         )
-        # TODO: Probably just want to define this directly and use it
-        # Can build a input config from the final public config and the additional props
         input_public_config = input_config.get_public_config()
-        processed_public_config = input_public_config
+        # Use the input public config by default if no plugins provided
+        processed_public_config: SupertokensPublicConfig = input_public_config
 
         self.plugin_route_handlers = []
         override_maps: List[OverrideMap] = []

@@ -1,5 +1,4 @@
 from collections import deque
-from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -84,11 +83,15 @@ RecipeInterfaceType = TypeVar("RecipeInterfaceType", bound=BaseRecipeInterface)
 APIInterfaceType = TypeVar("APIInterfaceType", bound=BaseAPIInterface)
 
 
+class RecipeInitRequiredFunction(Protocol):
+    def __call__(self, sdk_version: str) -> bool: ...
+
+
 class RecipePluginOverride:
-    # TODO: Define a base class for the Config/RecipeInterface/ApiInterface classes, and use it here
-    functions: Optional[Callable[[Any], Any]]
-    apis: Optional[Callable[[Any], Any]]
+    functions: Optional[Callable[[BaseRecipeInterface], BaseRecipeInterface]]
+    apis: Optional[Callable[[BaseAPIInterface], BaseAPIInterface]]
     config: Optional[Callable[[Any], Any]]
+    recipe_init_required: Optional[Union[bool, RecipeInitRequiredFunction]] = None
 
 
 class PluginRouteHandlerResponse(CamelCaseBaseModel):
@@ -205,13 +208,7 @@ OverrideMap = Dict[str, Any]
 class SuperTokensPlugin(SuperTokensPluginBase):
     init: Optional[SuperTokensPluginInit] = None
     dependencies: Optional[SuperTokensPluginDependencies] = None
-    # TODO: Add types for recipes
-    # overrideMap?: {
-    #     [recipeId in keyof AllRecipeConfigs]?: RecipePluginOverride<recipeId> & {
-    #         recipeInitRequired?: boolean | ((sdkVersion: string) => boolean);
-    #     };
-    # };
-    override_map: Optional[OverrideMap] = None
+    override_map: Optional[Dict[str, RecipePluginOverride]] = None
     route_handlers: Optional[
         Union[List[PluginRouteHandler], PluginRouteHandlerFunction]
     ] = None
@@ -374,9 +371,7 @@ def apply_plugins(
     return config
 
 
-# TODO: Figure out import cycles and convert to a Pydantic BaseModel
-@dataclass
-class LoadPluginsResponse:
+class LoadPluginsResponse(CamelCaseBaseModel):
     public_config: "SupertokensPublicConfig"
     processed_plugins: List[SuperTokensPublicPlugin]
     plugin_route_handlers: List[PluginRouteHandler]
