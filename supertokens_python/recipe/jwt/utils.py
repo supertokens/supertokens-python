@@ -39,13 +39,9 @@ class NormalisedJWTConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
 
 
 def validate_and_normalise_user_input(config: JWTConfig):
-    override_config = NormalisedJWTOverrideConfig()
-    if config.override is not None:
-        if config.override.functions is not None:
-            override_config.functions = config.override.functions
-
-        if config.override.apis is not None:
-            override_config.apis = config.override.apis
+    override_config = NormalisedJWTOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
     jwt_validity_seconds = config.jwt_validity_seconds
 

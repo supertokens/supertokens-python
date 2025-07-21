@@ -91,13 +91,9 @@ def validate_and_normalise_user_input(
             override = None
         return EmailDeliveryConfigWithService(email_service, override=override)
 
-    override_config = NormalisedEmailVerificationOverrideConfig()
-    if config.override is not None:
-        if config.override.functions is not None:
-            override_config.functions = config.override.functions
-
-        if config.override.apis is not None:
-            override_config.apis = config.override.apis
+    override_config = NormalisedEmailVerificationOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
     return NormalisedEmailVerificationConfig(
         mode=config.mode,

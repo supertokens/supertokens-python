@@ -74,13 +74,9 @@ def validate_and_normalise_user_input(
             "sign_in_and_up_feature must be an instance of SignInAndUpFeature"
         )
 
-    override_config = NormalisedThirdPartyOverrideConfig()
-    if config.override is not None:
-        if config.override.functions is not None:
-            override_config.functions = config.override.functions
-
-        if config.override.apis is not None:
-            override_config.apis = config.override.apis
+    override_config = NormalisedThirdPartyOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
     return NormalisedThirdPartyConfig(
         sign_in_and_up_feature=config.sign_in_and_up_feature,

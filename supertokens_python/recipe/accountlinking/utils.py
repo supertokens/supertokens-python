@@ -62,12 +62,9 @@ def validate_and_normalise_user_input(
 ) -> NormalisedAccountLinkingConfig:
     global _did_use_default_should_do_automatic_account_linking
 
-    override_config: NormalisedAccountLinkingOverrideConfig = (
-        NormalisedAccountLinkingOverrideConfig()
+    override_config = NormalisedAccountLinkingOverrideConfig.from_input_config(
+        override_config=config.override
     )
-
-    if config.override is not None and config.override.functions is not None:
-        override_config.functions = config.override.functions
 
     _did_use_default_should_do_automatic_account_linking = (
         config.should_do_automatic_account_linking is None

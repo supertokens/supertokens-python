@@ -33,6 +33,22 @@ class BaseNormalisedOverrideConfigWithoutAPI(
         lambda original_implementation: original_implementation
     )
 
+    @classmethod
+    def from_input_config(
+        cls,
+        override_config: Optional[BaseOverrideConfigWithoutAPI[FunctionInterfaceType]],
+    ) -> "BaseNormalisedOverrideConfigWithoutAPI[FunctionInterfaceType]":
+        """Create a normalized config from the input config."""
+        normalised_config = cls()
+
+        if override_config is None:
+            return normalised_config
+
+        if override_config.functions is not None:
+            normalised_config.functions = override_config.functions
+
+        return normalised_config
+
 
 class BaseOverrideConfig(
     BaseOverrideConfigWithoutAPI[FunctionInterfaceType],
@@ -54,6 +70,27 @@ class BaseNormalisedOverrideConfig(
     apis: InterfaceOverride[APIInterfaceType] = (
         lambda original_implementation: original_implementation
     )
+
+    @classmethod
+    def from_input_config(
+        cls,
+        override_config: Optional[
+            BaseOverrideConfig[FunctionInterfaceType, APIInterfaceType]
+        ],
+    ) -> "BaseNormalisedOverrideConfig[FunctionInterfaceType, APIInterfaceType]":  # type: ignore
+        """Create a normalized config from the input config."""
+        normalised_config = cls()
+
+        if override_config is None:
+            return normalised_config
+
+        if override_config.functions is not None:
+            normalised_config.functions = override_config.functions
+
+        if override_config.apis is not None:
+            normalised_config.apis = override_config.apis
+
+        return normalised_config
 
 
 class BaseConfigWithoutAPIOverride(CamelCaseBaseModel, Generic[FunctionInterfaceType]):

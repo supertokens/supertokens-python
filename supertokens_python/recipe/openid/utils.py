@@ -61,13 +61,9 @@ def validate_and_normalise_user_input(
             "The path of the issuer URL must be equal to the apiBasePath. The default value is /auth"
         )
 
-    override_config = NormalisedOpenIdOverrideConfig()
-    if config.override is not None:
-        if config.override.functions is not None:
-            override_config.functions = config.override.functions
-
-        if config.override.apis is not None:
-            override_config.apis = config.override.apis
+    override_config = NormalisedOpenIdOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
     return NormalisedOpenIdConfig(
         issuer_domain=issuer_domain,

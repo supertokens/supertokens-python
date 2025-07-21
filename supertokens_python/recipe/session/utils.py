@@ -522,13 +522,9 @@ def validate_and_normalise_user_input(
     if jwks_refresh_interval_sec is None:
         jwks_refresh_interval_sec = 4 * 3600  # 4 hours
 
-    override_config = NormalisedSessionOverrideConfig()
-    if config.override is not None:
-        if config.override.functions is not None:
-            override_config.functions = config.override.functions
-
-        if config.override.apis is not None:
-            override_config.apis = config.override.apis
+    override_config = NormalisedSessionOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
     return NormalisedSessionConfig(
         refresh_token_path=app_info.api_base_path.append(

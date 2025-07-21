@@ -83,13 +83,9 @@ class NormalisedMultitenancyConfig(BaseNormalisedConfig[RecipeInterface, APIInte
 def validate_and_normalise_user_input(
     config: MultitenancyConfig,
 ) -> NormalisedMultitenancyConfig:
-    override_config = NormalisedMultitenancyOverrideConfig()
-    if config.override is not None:
-        if config.override.functions is not None:
-            override_config.functions = config.override.functions
-
-        if config.override.apis is not None:
-            override_config.apis = config.override.apis
+    override_config = NormalisedMultitenancyOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
     return NormalisedMultitenancyConfig(
         get_allowed_domains_for_tenant_id=config.get_allowed_domains_for_tenant_id,

@@ -60,13 +60,9 @@ def validate_and_normalise_user_input(
         config.validate_email_address
     )
 
-    override_config = NormalisedWebauthnOverrideConfig()
-    if config.override is not None:
-        if config.override.functions is not None:
-            override_config.functions = config.override.functions
-
-        if config.override.apis is not None:
-            override_config.apis = config.override.apis
+    override_config = NormalisedWebauthnOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
     def get_email_delivery_config() -> EmailDeliveryConfigWithService[
         TypeWebauthnEmailDeliveryInput

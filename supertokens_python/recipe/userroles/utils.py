@@ -50,13 +50,9 @@ def validate_and_normalise_user_input(
     _app_info: AppInfo,
     config: UserRolesConfig,
 ) -> NormalisedUserRolesConfig:
-    override_config = NormalisedUserRolesOverrideConfig()
-    if config.override is not None:
-        if config.override.functions is not None:
-            override_config.functions = config.override.functions
-
-        if config.override.apis is not None:
-            override_config.apis = config.override.apis
+    override_config = NormalisedUserRolesOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
     skip_adding_roles_to_access_token = config.skip_adding_roles_to_access_token
     if skip_adding_roles_to_access_token is None:
