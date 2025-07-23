@@ -260,7 +260,6 @@ class UserRolesRecipe(RecipeModule):
 class PermissionClaimClass(PrimitiveArrayClaim[List[str]]):
     def __init__(self) -> None:
         key = "st-perm"
-        default_max_age_in_sec = 300
 
         async def fetch_value(
             user_id: str,
@@ -290,7 +289,7 @@ class PermissionClaimClass(PrimitiveArrayClaim[List[str]]):
 
             return list(user_permissions)
 
-        super().__init__(key, fetch_value, default_max_age_in_sec)
+        super().__init__(key, fetch_value)
 
 
 PermissionClaim = PermissionClaimClass()
@@ -299,7 +298,6 @@ PermissionClaim = PermissionClaimClass()
 class UserRoleClaimClass(PrimitiveArrayClaim[List[str]]):
     def __init__(self) -> None:
         key = "st-role"
-        default_max_age_in_sec = 300
 
         async def fetch_value(
             user_id: str,
@@ -314,7 +312,7 @@ class UserRoleClaimClass(PrimitiveArrayClaim[List[str]]):
             )
             return res.roles
 
-        super().__init__(key, fetch_value, default_max_age_in_sec)
+        super().__init__(key, fetch_value)
 
 
 UserRoleClaim = UserRoleClaimClass()

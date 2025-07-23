@@ -201,8 +201,6 @@ class MultitenancyRecipe(RecipeModule):
 
 class AllowedDomainsClaimClass(PrimitiveArrayClaim[List[str]]):
     def __init__(self):
-        default_max_age_in_sec = 60 * 60
-
         async def fetch_value(
             _user_id: str,
             _recipe_user_id: RecipeUserId,
@@ -220,7 +218,7 @@ class AllowedDomainsClaimClass(PrimitiveArrayClaim[List[str]]):
                 tenant_id, user_context
             )
 
-        super().__init__("st-t-dmns", fetch_value, default_max_age_in_sec)
+        super().__init__("st-t-dmns", fetch_value)
 
 
 AllowedDomainsClaim = AllowedDomainsClaimClass()

@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [0.31.0] - 2025-07-18
+## [0.31.0] - 2025-08-21
 ### Adds plugins support
 - Adds an `experimental` property (`SuperTokensExperimentalConfig`) to the `SuperTokensConfig`
   - Plugins can be configured under using the `plugins` property in the `experimental` config
@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adds `is_recipe_initialized` method to check if a recipe has been initialized
 
 ### Breaking Changes
+- Removed default `default_max_age` from all built-in claims/validators.
+  - You can optionally set them when adding the validators.
+  - This should help with unexpected API calls during session verification.
 - `AccountLinkingRecipe.get_instance` will now raise an exception if not initialized
 - Various config classes renamed for consistency across the codebase, and classes added where they were missing
   - Old classes added to the recipe modules as aliases for backward compatibility, but will be removed in future versions. Prefer using the renamed classes.
