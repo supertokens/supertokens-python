@@ -1,5 +1,6 @@
-from typing import Any, Optional
+from typing import Any, List, Optional
 
+from pydantic import Field
 from supertokens_python.supertokens import (
     AppInfo,
 )
@@ -21,12 +22,12 @@ NormalisedPluginTestOverrideConfig = BaseNormalisedOverrideConfig[
 ]
 
 
-class NormalizedPluginTestConfig(
-    BaseNormalisedConfig[RecipeInterface, APIInterface]
-): ...
+class NormalizedPluginTestConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
+    test_property: List[str]
 
 
-class PluginTestConfig(BaseConfig[RecipeInterface, APIInterface]): ...
+class PluginTestConfig(BaseConfig[RecipeInterface, APIInterface]):
+    test_property: List[str] = Field(default_factory=lambda: ["original"])
 
 
 class PluginOverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]):
@@ -39,12 +40,10 @@ def validate_and_normalise_user_input(
     if config is None:
         config = PluginTestConfig()
 
-    override_config = NormalisedPluginTestOverrideConfig()
-    if config.override is not None:
-        if config.override.functions is not None:
-            override_config.functions = config.override.functions
+    override_config = NormalisedPluginTestOverrideConfig.from_input_config(
+        config.override
+    )
 
-        if config.override.apis is not None:
-            override_config.apis = config.override.apis
-
-    return NormalizedPluginTestConfig(override=override_config)
+    return NormalizedPluginTestConfig(
+        override=override_config, test_property=config.test_property
+    )

@@ -217,12 +217,19 @@ def test_overrides(
 
 # TODO: Figure out a way to add circular dependencies and test them
 @mark.parametrize(
-    ("plugins", "recipe_expectation", "api_expectation", "init_expectation"),
+    (
+        "plugins",
+        "recipe_expectation",
+        "api_expectation",
+        "config_expectation",
+        "init_expectation",
+    ),
     [
         param(
             [Plugin1, Plugin1],
             outputs(["plugin1", "original"]),
             outputs(["original"]),
+            outputs(["original", "plugin1"]),
             outputs(["plugin1"]),
             id="1,1 => 1",
         ),
@@ -230,6 +237,7 @@ def test_overrides(
             [Plugin1, Plugin2],
             outputs(["plugin2", "plugin1", "original"]),
             outputs(["original"]),
+            outputs(["original", "plugin1", "plugin2"]),
             outputs(["plugin1", "plugin2"]),
             id="1,2 => 2,1",
         ),
@@ -237,6 +245,7 @@ def test_overrides(
             [Plugin3Dep1],
             outputs(["plugin3dep1", "plugin1", "original"]),
             outputs(["original"]),
+            outputs(["original", "plugin1", "plugin3dep1"]),
             outputs(["plugin1", "plugin3dep1"]),
             id="3->1 => 3,1",
         ),
@@ -244,6 +253,7 @@ def test_overrides(
             [Plugin3Dep2_1],
             outputs(["plugin3dep2_1", "plugin1", "plugin2", "original"]),
             outputs(["original"]),
+            outputs(["original", "plugin2", "plugin1", "plugin3dep2_1"]),
             outputs(["plugin2", "plugin1", "plugin3dep2_1"]),
             id="3->(2,1) => 3,2,1",
         ),
@@ -251,6 +261,7 @@ def test_overrides(
             [Plugin3Dep1, Plugin4Dep2],
             outputs(["plugin4dep2", "plugin2", "plugin3dep1", "plugin1", "original"]),
             outputs(["original"]),
+            outputs(["original", "plugin1", "plugin3dep1", "plugin2", "plugin4dep2"]),
             outputs(["plugin1", "plugin3dep1", "plugin2", "plugin4dep2"]),
             id="3->1,4->2 => 4,2,3,1",
         ),
@@ -260,6 +271,9 @@ def test_overrides(
                 ["plugin4dep3__2_1", "plugin3dep2_1", "plugin1", "plugin2", "original"]
             ),
             outputs(["original"]),
+            outputs(
+                ["original", "plugin2", "plugin1", "plugin3dep2_1", "plugin4dep3__2_1"]
+            ),
             outputs(["plugin2", "plugin1", "plugin3dep2_1", "plugin4dep3__2_1"]),
             id="4->3->(2,1) => 4,3,1,2",
         ),
@@ -267,6 +281,7 @@ def test_overrides(
             [Plugin3Dep1, Plugin4Dep1],
             outputs(["plugin4dep1", "plugin3dep1", "plugin1", "original"]),
             outputs(["original"]),
+            outputs(["original", "plugin1", "plugin3dep1", "plugin4dep1"]),
             outputs(["plugin1", "plugin3dep1", "plugin4dep1"]),
             id="3->1,4->1 => 4,3,1",
         ),
@@ -276,6 +291,7 @@ def test_depdendencies_and_init(
     plugins: List[SuperTokensPlugin],
     recipe_expectation: Any,
     api_expectation: Any,
+    config_expectation: Any,
     init_expectation: Any,
 ):
     partial_init(
@@ -309,6 +325,10 @@ def test_depdendencies_and_init(
             message="msg",
         )
 
+    with config_expectation as expected_stack:
+        output = PluginTestRecipe.get_instance().config.test_property
+        assert output == expected_stack
+
     with init_expectation as expected_stack:
         assert PluginTestRecipe.init_calls == expected_stack
 
@@ -317,7 +337,7 @@ def test_st_config_override():
     plugin = plugin_factory("plugin1", override_functions=False, override_apis=False)
 
     def config_override(config: SupertokensPublicConfig) -> SupertokensPublicConfig:
-        config.mode = "override"  # type: ignore
+        config.mode = "asgi"
         return config
 
     plugin.config = config_override
@@ -331,7 +351,7 @@ def test_st_config_override():
         ),
     )
 
-    assert Supertokens.get_instance().app_info.mode == "override"
+    assert Supertokens.get_instance().app_info.mode == "asgi"
 
 
 def test_st_config_override_non_public_property():
@@ -343,16 +363,17 @@ def test_st_config_override_non_public_property():
 
     plugin.config = config_override
 
-    partial_init(
-        recipe_list=[
-            recipe_factory(override_functions=False, override_apis=False),
-        ],
-        experimental=SupertokensExperimentalConfig(
-            plugins=[plugin],
-        ),
-    )
-
-    assert Supertokens.get_instance().recipe_modules != []
+    with raises(
+        ValueError, match='"SupertokensPublicConfig" object has no field "recipe_list"'
+    ):
+        partial_init(
+            recipe_list=[
+                recipe_factory(override_functions=False, override_apis=False),
+            ],
+            experimental=SupertokensExperimentalConfig(
+                plugins=[plugin],
+            ),
+        )
 
 
 plugin_route_handler = PluginRouteHandler(

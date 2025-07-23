@@ -21,28 +21,10 @@ from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.logger import log_debug_message
 from supertokens_python.post_init_callbacks import PostSTInitCallbacks
-from supertokens_python.recipe.accountlinking.types import AccountLinkingConfig
-from supertokens_python.recipe.dashboard.utils import DashboardConfig
-from supertokens_python.recipe.emailpassword.utils import EmailPasswordConfig
-from supertokens_python.recipe.emailverification.utils import (
-    EmailVerificationConfig,
-)
-from supertokens_python.recipe.jwt.utils import JWTConfig
-from supertokens_python.recipe.multifactorauth.types import MultiFactorAuthConfig
-from supertokens_python.recipe.multitenancy.utils import MultitenancyConfig
-from supertokens_python.recipe.oauth2provider.utils import OAuth2ProviderConfig
-from supertokens_python.recipe.openid.utils import OpenIdConfig
-from supertokens_python.recipe.passwordless.utils import PasswordlessConfig
 from supertokens_python.recipe.session.interfaces import (
     SessionClaimValidator,
     SessionContainer,
 )
-from supertokens_python.recipe.session.utils import SessionConfig
-from supertokens_python.recipe.thirdparty.utils import ThirdPartyConfig
-from supertokens_python.recipe.totp.types import TOTPConfig
-from supertokens_python.recipe.usermetadata.utils import UserMetadataConfig
-from supertokens_python.recipe.userroles.utils import UserRolesConfig
-from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.types.base import UserContext
 from supertokens_python.types.config import (
@@ -55,32 +37,50 @@ from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterfac
 from supertokens_python.types.response import CamelCaseBaseModel
 
 if TYPE_CHECKING:
+    from supertokens_python.recipe.accountlinking.types import AccountLinkingConfig
+    from supertokens_python.recipe.dashboard.utils import DashboardConfig
+    from supertokens_python.recipe.emailpassword.utils import EmailPasswordConfig
+    from supertokens_python.recipe.emailverification.utils import (
+        EmailVerificationConfig,
+    )
+    from supertokens_python.recipe.jwt.utils import JWTConfig
+    from supertokens_python.recipe.multifactorauth.types import MultiFactorAuthConfig
+    from supertokens_python.recipe.multitenancy.utils import MultitenancyConfig
+    from supertokens_python.recipe.oauth2provider.utils import OAuth2ProviderConfig
+    from supertokens_python.recipe.openid.utils import OpenIdConfig
+    from supertokens_python.recipe.passwordless.utils import PasswordlessConfig
+    from supertokens_python.recipe.session.utils import SessionConfig
+    from supertokens_python.recipe.thirdparty.utils import ThirdPartyConfig
+    from supertokens_python.recipe.totp.types import TOTPConfig
+    from supertokens_python.recipe.usermetadata.utils import UserMetadataConfig
+    from supertokens_python.recipe.userroles.utils import UserRolesConfig
+    from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
     from supertokens_python.supertokens import SupertokensPublicConfig
 
-T = TypeVar(
-    "T",
-    bound=Union[
-        AccountLinkingConfig,
-        DashboardConfig,
-        EmailPasswordConfig,
-        EmailVerificationConfig,
-        JWTConfig,
-        MultiFactorAuthConfig,
-        MultitenancyConfig,
-        OAuth2ProviderConfig,
-        OpenIdConfig,
-        PasswordlessConfig,
-        SessionConfig,
-        ThirdPartyConfig,
-        TOTPConfig,
-        UserMetadataConfig,
-        UserRolesConfig,
-        WebauthnConfig,
-    ],
-)
+T = TypeVar("T")
+
 
 RecipeInterfaceType = TypeVar("RecipeInterfaceType", bound=BaseRecipeInterface)
 APIInterfaceType = TypeVar("APIInterfaceType", bound=BaseAPIInterface)
+
+RecipeConfigType = Union[
+    "AccountLinkingConfig",
+    "DashboardConfig",
+    "EmailPasswordConfig",
+    "EmailVerificationConfig",
+    "JWTConfig",
+    "MultiFactorAuthConfig",
+    "MultitenancyConfig",
+    "OAuth2ProviderConfig",
+    "OpenIdConfig",
+    "PasswordlessConfig",
+    "SessionConfig",
+    "ThirdPartyConfig",
+    "TOTPConfig",
+    "UserMetadataConfig",
+    "UserRolesConfig",
+    "WebauthnConfig",
+]
 
 
 class RecipeInitRequiredFunction(Protocol):
@@ -88,9 +88,9 @@ class RecipeInitRequiredFunction(Protocol):
 
 
 class RecipePluginOverride:
-    functions: Optional[Callable[[BaseRecipeInterface], BaseRecipeInterface]]
-    apis: Optional[Callable[[BaseAPIInterface], BaseAPIInterface]]
-    config: Optional[Callable[[Any], Any]]
+    functions: Optional[Callable[[BaseRecipeInterface], BaseRecipeInterface]] = None
+    apis: Optional[Callable[[BaseAPIInterface], BaseAPIInterface]] = None
+    config: Optional[Callable[[Any], Any]] = None
     recipe_init_required: Optional[Union[bool, RecipeInitRequiredFunction]] = None
 
 
@@ -202,13 +202,13 @@ class SuperTokensPluginBase(CamelCaseBaseModel):
     exports: Optional[Dict[str, Any]] = None
 
 
-OverrideMap = Dict[str, Any]
+OverrideMap = Dict[str, RecipePluginOverride]
 
 
 class SuperTokensPlugin(SuperTokensPluginBase):
     init: Optional[SuperTokensPluginInit] = None
     dependencies: Optional[SuperTokensPluginDependencies] = None
-    override_map: Optional[Dict[str, RecipePluginOverride]] = None
+    override_map: Optional[OverrideMap] = None
     route_handlers: Optional[
         Union[List[PluginRouteHandler], PluginRouteHandlerFunction]
     ] = None
@@ -281,16 +281,11 @@ class SuperTokensPublicPlugin(SuperTokensPluginBase):
         )
 
 
-class ConfigOverrideBase:
-    functions: Optional[Callable[[Any], Any]] = None
-    apis: Optional[Callable[[Any], Any]] = None
-
-
 def apply_plugins(
     recipe_id: str,
-    config: T,
+    config: RecipeConfigType,
     plugins: List[OverrideMap],
-) -> T:
+) -> RecipeConfigType:
     if not isinstance(config, (BaseConfig, BaseConfigWithoutAPIOverride)):  # type: ignore
         raise TypeError(
             f"Expected config to be an instance of BaseConfig or BaseConfigWithoutAPIOverride. {recipe_id=} {config=}"
@@ -310,7 +305,7 @@ def apply_plugins(
         if isinstance(config, BaseConfigWithoutAPIOverride):
             config.override = BaseOverrideConfigWithoutAPI()
         else:
-            config.override = BaseOverrideConfig()  # type: ignore
+            config.override = BaseOverrideConfig()  # type: ignore - generic type invariance
 
     function_overrides = getattr(config.override, "functions", default_fn_override)
     api_overrides = getattr(config.override, "apis", default_api_override)
