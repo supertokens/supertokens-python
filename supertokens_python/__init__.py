@@ -17,17 +17,18 @@ from typing import Any, Dict, List, Optional
 from typing_extensions import Literal
 
 from supertokens_python.framework.request import BaseRequest
-from supertokens_python.recipe_module import RecipeModule
 from supertokens_python.types import RecipeUserId
 
-from . import supertokens
+from . import plugins, supertokens
 
 InputAppInfo = supertokens.InputAppInfo
 Supertokens = supertokens.Supertokens
 SupertokensConfig = supertokens.SupertokensConfig
 AppInfo = supertokens.AppInfo
 SupertokensExperimentalConfig = supertokens.SupertokensExperimentalConfig
-RecipeModule = RecipeModule
+
+SupertokensPublicConfig = supertokens.SupertokensPublicConfig
+plugins.LoadPluginsResponse.model_rebuild()
 
 
 def init(

@@ -35,6 +35,12 @@ from supertokens_python.logger import (
     get_maybe_none_as_str,
     log_debug_message,
 )
+from supertokens_python.plugins import (
+    OverrideMap,
+    PluginRouteHandler,
+    SuperTokensPlugin,
+    SuperTokensPublicPlugin,
+)
 from supertokens_python.types.response import CamelCaseBaseModel
 
 from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT
@@ -64,12 +70,6 @@ from .utils import (
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
-    from supertokens_python.plugins import (
-        OverrideMap,
-        PluginRouteHandler,
-        SuperTokensPlugin,
-        SuperTokensPublicPlugin,
-    )
     from supertokens_python.recipe.session import SessionContainer
 
     from .recipe_module import RecipeModule
@@ -109,60 +109,6 @@ class SupertokensConfig:
         self.api_key = api_key
         self.network_interceptor = network_interceptor
         self.disable_core_call_cache = disable_core_call_cache
-
-
-class SupertokensExperimentalConfig(CamelCaseBaseModel):
-    plugins: Optional[List[SuperTokensPlugin]] = None
-
-
-class SupertokensPublicConfig(CamelCaseBaseModel):
-    """
-    Public properties received as input to the `Supertokens.init` function.
-    """
-
-    app_info: InputAppInfo
-    framework: Literal["fastapi", "flask", "django"]
-    supertokens_config: SupertokensConfig
-    mode: Optional[Literal["asgi", "wsgi"]]
-    telemetry: Optional[bool]
-    debug: Optional[bool]
-
-
-class SupertokensInputConfig(SupertokensPublicConfig):
-    """
-    Various properties received as input to the `Supertokens.init` function.
-    """
-
-    recipe_list: List[Callable[[AppInfo, List[OverrideMap]], RecipeModule]]
-    experimental: Optional[SupertokensExperimentalConfig] = None
-
-    def get_public_config(self) -> SupertokensPublicConfig:
-        return SupertokensPublicConfig(
-            app_info=self.app_info,
-            framework=self.framework,
-            supertokens_config=self.supertokens_config,
-            mode=self.mode,
-            telemetry=self.telemetry,
-            debug=self.debug,
-        )
-
-    @classmethod
-    def from_public_config(
-        cls,
-        config: SupertokensPublicConfig,
-        recipe_list: List[Callable[[AppInfo, List[OverrideMap]], RecipeModule]],
-        experimental: Optional[SupertokensExperimentalConfig],
-    ) -> "SupertokensInputConfig":
-        return cls(
-            app_info=config.app_info,
-            framework=config.framework,
-            supertokens_config=config.supertokens_config,
-            mode=config.mode,
-            telemetry=config.telemetry,
-            debug=config.debug,
-            recipe_list=recipe_list,
-            experimental=experimental,
-        )
 
 
 class Host:
@@ -275,6 +221,60 @@ class RecipeInit(Protocol):
     def __call__(
         self, app_info: AppInfo, plugins: List[OverrideMap]
     ) -> RecipeModule: ...
+
+
+class SupertokensExperimentalConfig(CamelCaseBaseModel):
+    plugins: Optional[List["SuperTokensPlugin"]] = None
+
+
+class SupertokensPublicConfig(CamelCaseBaseModel):
+    """
+    Public properties received as input to the `Supertokens.init` function.
+    """
+
+    app_info: InputAppInfo
+    framework: Literal["fastapi", "flask", "django"]
+    supertokens_config: SupertokensConfig
+    mode: Optional[Literal["asgi", "wsgi"]]
+    telemetry: Optional[bool]
+    debug: Optional[bool]
+
+
+class SupertokensInputConfig(SupertokensPublicConfig):
+    """
+    Various properties received as input to the `Supertokens.init` function.
+    """
+
+    recipe_list: List[Callable[[AppInfo, List["OverrideMap"]], "RecipeModule"]]
+    experimental: Optional[SupertokensExperimentalConfig] = None
+
+    def get_public_config(self) -> SupertokensPublicConfig:
+        return SupertokensPublicConfig(
+            app_info=self.app_info,
+            framework=self.framework,
+            supertokens_config=self.supertokens_config,
+            mode=self.mode,
+            telemetry=self.telemetry,
+            debug=self.debug,
+        )
+
+    @classmethod
+    def from_public_config(
+        cls,
+        config: SupertokensPublicConfig,
+        recipe_list: List[Callable[[AppInfo, List["OverrideMap"]], "RecipeModule"]],
+        experimental: Optional[SupertokensExperimentalConfig],
+    ) -> "SupertokensInputConfig":
+        return cls(
+            app_info=config.app_info,
+            framework=config.framework,
+            supertokens_config=config.supertokens_config,
+            mode=config.mode,
+            telemetry=config.telemetry,
+            debug=config.debug,
+            recipe_list=recipe_list,
+            experimental=experimental,
+        )
 
 
 class Supertokens:

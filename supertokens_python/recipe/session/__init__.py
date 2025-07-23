@@ -13,17 +13,19 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Union
 
 from typing_extensions import Literal
 
 from supertokens_python.framework import BaseRequest
-from supertokens_python.supertokens import RecipeInit
 
 from . import exceptions as ex
 from . import interfaces, utils
 from .recipe import SessionRecipe
 from .utils import TokenTransferMethod
+
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import RecipeInit
 
 InputErrorHandlers = utils.InputErrorHandlers
 SessionOverrideConfig = utils.SessionOverrideConfig

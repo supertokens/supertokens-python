@@ -3,6 +3,7 @@ from typing import Any, List, Optional, Union
 from supertokens_python.plugins import (
     OverrideMap,
     PluginDependenciesOkResponse,
+    RecipePluginOverride,
     SuperTokensPlugin,
     SuperTokensPluginDependencies,
     SuperTokensPublicPlugin,
@@ -10,7 +11,7 @@ from supertokens_python.plugins import (
 from supertokens_python.supertokens import SupertokensPublicConfig
 
 from .api_implementation import APIInterface
-from .config import PluginOverrideConfig
+from .config import PluginTestConfig
 from .recipe import PluginTestRecipe
 from .recipe_implementation import RecipeInterface
 
@@ -41,6 +42,14 @@ def api_override_factory(identifier: str):
         return original_implementation
 
     return function_override
+
+
+def config_override_factory(identifier: str):
+    def config_override(original_config: PluginTestConfig) -> PluginTestConfig:
+        original_config.test_property.append(identifier)
+        return original_config
+
+    return config_override
 
 
 def init_factory(identifier: str):
@@ -76,17 +85,23 @@ def plugin_factory(
     identifier: str,
     override_functions: bool = False,
     override_apis: bool = False,
+    override_config: bool = False,
     deps: Optional[List[SuperTokensPlugin]] = None,
     add_init: bool = False,
 ):
-    override_map_obj: OverrideMap = {PluginTestRecipe.recipe_id: PluginOverrideConfig()}
+    override_map_obj: OverrideMap = {PluginTestRecipe.recipe_id: RecipePluginOverride()}
 
     if override_functions:
         override_map_obj[
             PluginTestRecipe.recipe_id
-        ].functions = function_override_factory(identifier)
+        ].functions = function_override_factory(identifier)  # type: ignore
     if override_apis:
         override_map_obj[PluginTestRecipe.recipe_id].apis = api_override_factory(
+            identifier
+        )  # type: ignore
+
+    if override_config:
+        override_map_obj[PluginTestRecipe.recipe_id].config = config_override_factory(
             identifier
         )
 
@@ -107,40 +122,47 @@ def plugin_factory(
 Plugin1 = plugin_factory(
     "plugin1",
     override_functions=True,
+    override_config=True,
     add_init=True,
 )
 Plugin2 = plugin_factory(
     "plugin2",
     override_functions=True,
+    override_config=True,
     add_init=True,
 )
 Plugin3Dep1 = plugin_factory(
     "plugin3dep1",
     override_functions=True,
+    override_config=True,
     deps=[Plugin1],
     add_init=True,
 )
 Plugin3Dep2_1 = plugin_factory(
     "plugin3dep2_1",
     override_functions=True,
+    override_config=True,
     deps=[Plugin2, Plugin1],
     add_init=True,
 )
 Plugin4Dep1 = plugin_factory(
     "plugin4dep1",
     override_functions=True,
+    override_config=True,
     deps=[Plugin1],
     add_init=True,
 )
 Plugin4Dep2 = plugin_factory(
     "plugin4dep2",
     override_functions=True,
+    override_config=True,
     deps=[Plugin2],
     add_init=True,
 )
 Plugin4Dep3__2_1 = plugin_factory(
     "plugin4dep3__2_1",
     override_functions=True,
+    override_config=True,
     deps=[Plugin3Dep2_1],
     add_init=True,
 )

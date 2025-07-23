@@ -52,7 +52,6 @@ from supertokens_python.recipe.session.utils import (
     get_auth_mode_from_header,
     get_required_claim_validators,
 )
-from supertokens_python.supertokens import Supertokens
 from supertokens_python.types import MaybeAwaitable, RecipeUserId
 from supertokens_python.utils import (
     FRAMEWORKS,
@@ -88,6 +87,8 @@ async def get_session_from_request(
     ] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Optional[SessionContainer]:
+    from supertokens_python.supertokens import Supertokens
+
     log_debug_message("getSession: Started")
 
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
@@ -245,6 +246,8 @@ async def create_new_session_in_request(
     session_data_in_database: Dict[str, Any],
     tenant_id: str,
 ) -> SessionContainer:
+    from supertokens_python.supertokens import Supertokens
+
     log_debug_message("createNewSession: Started")
 
     # Handling framework specific request/response wrapping
@@ -356,6 +359,8 @@ async def refresh_session_in_request(
     config: NormalisedSessionConfig,
     recipe_interface_impl: SessionRecipeInterface,
 ) -> SessionContainer:
+    from supertokens_python.supertokens import Supertokens
+
     log_debug_message("refreshSession: Started")
 
     response_mutators: List[ResponseMutator] = []
