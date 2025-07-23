@@ -17,25 +17,37 @@ from typing import Any, Dict, List, Optional
 from typing_extensions import Literal
 
 from supertokens_python.framework.request import BaseRequest
+from supertokens_python.recipe_module import RecipeModule
 from supertokens_python.types import RecipeUserId
 
-from . import plugins, supertokens
+from .plugins import LoadPluginsResponse
+from .supertokens import (
+    AppInfo,
+    InputAppInfo,
+    RecipeInit,
+    Supertokens,
+    SupertokensConfig,
+    SupertokensExperimentalConfig,
+    SupertokensInputConfig,
+    SupertokensPublicConfig,
+)
 
-InputAppInfo = supertokens.InputAppInfo
-Supertokens = supertokens.Supertokens
-SupertokensConfig = supertokens.SupertokensConfig
-AppInfo = supertokens.AppInfo
-SupertokensExperimentalConfig = supertokens.SupertokensExperimentalConfig
+# Some Pydantic models need a rebuild to resolve ForwardRefs
+# Referencing imports here to prevent lint errors.
+# Caveat: These will be available for import from this module directly.
+RecipeModule  # type: ignore
 
-SupertokensPublicConfig = supertokens.SupertokensPublicConfig
-plugins.LoadPluginsResponse.model_rebuild()
+# LoadPluginsResponse -> SupertokensPublicConfig
+LoadPluginsResponse.model_rebuild()
+# SupertokensInputConfig -> RecipeModule
+SupertokensInputConfig.model_rebuild()
 
 
 def init(
     app_info: InputAppInfo,
     framework: Literal["fastapi", "flask", "django"],
     supertokens_config: SupertokensConfig,
-    recipe_list: List[supertokens.RecipeInit],
+    recipe_list: List[RecipeInit],
     mode: Optional[Literal["asgi", "wsgi"]] = None,
     telemetry: Optional[bool] = None,
     debug: Optional[bool] = None,
@@ -54,7 +66,7 @@ def init(
 
 
 def get_all_cors_headers() -> List[str]:
-    return supertokens.Supertokens.get_instance().get_all_cors_headers()
+    return Supertokens.get_instance().get_all_cors_headers()
 
 
 def get_request_from_user_context(
@@ -65,3 +77,19 @@ def get_request_from_user_context(
 
 def convert_to_recipe_user_id(user_id: str) -> RecipeUserId:
     return RecipeUserId(user_id)
+
+
+__all__ = [
+    "AppInfo",
+    "InputAppInfo",
+    "RecipeInit",
+    "RecipeUserId",
+    "Supertokens",
+    "SupertokensConfig",
+    "SupertokensExperimentalConfig",
+    "SupertokensPublicConfig",
+    "convert_to_recipe_user_id",
+    "get_all_cors_headers",
+    "get_request_from_user_context",
+    "init",
+]
