@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+- Removed default `default_max_age` from all built-in claims/validators.
+  - You can optionally set them when adding the validators.
+  - This should help with unexpected API calls during session verification.
+
 ## [0.30.0] - 2025-05-27
 ### Adds Webauthn (Passkeys) support
 - Adds Webauthn recipe with support for:
