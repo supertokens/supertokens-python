@@ -72,7 +72,7 @@ class BaseNormalisedOverrideConfig(
     )
 
     @classmethod
-    def from_input_config(
+    def from_input_config(  # type: ignore - invalid override due to subclassing
         cls,
         override_config: Optional[
             BaseOverrideConfig[FunctionInterfaceType, APIInterfaceType]
