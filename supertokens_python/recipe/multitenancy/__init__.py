@@ -15,9 +15,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union
 
-from recipe import AllowedDomainsClaim, MultitenancyRecipe
-
 from .interfaces import TypeGetAllowedDomainsForTenantId
+from .recipe import AllowedDomainsClaim, MultitenancyRecipe
 from .utils import InputOverrideConfig, MultitenancyOverrideConfig
 
 if TYPE_CHECKING:

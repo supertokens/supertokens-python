@@ -15,9 +15,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union
 
-from utils import InputOverrideConfig, UserMetadataOverrideConfig
-
 from .recipe import UserMetadataRecipe
+from .utils import InputOverrideConfig, UserMetadataOverrideConfig
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import RecipeInit
