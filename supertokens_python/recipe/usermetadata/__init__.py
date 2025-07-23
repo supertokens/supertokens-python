@@ -15,7 +15,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union
 
-from . import utils
+from utils import InputOverrideConfig, UserMetadataOverrideConfig
+
 from .recipe import UserMetadataRecipe
 
 if TYPE_CHECKING:
@@ -23,6 +24,14 @@ if TYPE_CHECKING:
 
 
 def init(
-    override: Union[utils.UserMetadataOverrideConfig, None] = None,
+    override: Union[UserMetadataOverrideConfig, None] = None,
 ) -> RecipeInit:
     return UserMetadataRecipe.init(override)
+
+
+__all__ = [
+    "InputOverrideConfig",  # deprecated, use `UserMetadataOverrideConfig` instead
+    "UserMetadataOverrideConfig",
+    "UserMetadataRecipe",
+    "init",
+]

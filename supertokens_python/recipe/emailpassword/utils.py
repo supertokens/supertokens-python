@@ -221,6 +221,8 @@ EmailPasswordOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
 NormalisedEmailPasswordOverrideConfig = BaseNormalisedOverrideConfig[
     RecipeInterface, APIInterface
 ]
+InputOverrideConfig = EmailPasswordOverrideConfig
+"""Deprecated, use `EmailPasswordOverrideConfig` instead."""
 
 
 class EmailPasswordConfig(BaseConfig[RecipeInterface, APIInterface]):

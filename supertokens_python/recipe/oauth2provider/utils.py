@@ -26,6 +26,8 @@ OAuth2ProviderOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
 NormalisedOAuth2ProviderOverrideConfig = BaseNormalisedOverrideConfig[
     RecipeInterface, APIInterface
 ]
+InputOverrideConfig = OAuth2ProviderOverrideConfig
+"""Deprecated, use `OAuth2ProviderOverrideConfig` instead."""
 
 
 class OAuth2ProviderConfig(BaseConfig[RecipeInterface, APIInterface]): ...

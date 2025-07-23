@@ -16,12 +16,10 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from supertokens_python.recipe.dashboard import utils
 from supertokens_python.supertokens import RecipeInit
 
 from .recipe import DashboardRecipe
-
-DashboardOverrideConfig = utils.DashboardOverrideConfig
+from .utils import DashboardOverrideConfig, InputOverrideConfig
 
 
 def init(
@@ -34,3 +32,11 @@ def init(
         admins,
         override,
     )
+
+
+__all__ = [
+    "DashboardOverrideConfig",
+    "DashboardRecipe",
+    "InputOverrideConfig",  # deprecated, use DashboardOverrideConfig instead
+    "init",
+]

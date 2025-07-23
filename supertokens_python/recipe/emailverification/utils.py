@@ -46,6 +46,8 @@ EmailVerificationOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterfa
 NormalisedEmailVerificationOverrideConfig = BaseNormalisedOverrideConfig[
     RecipeInterface, APIInterface
 ]
+InputOverrideConfig = EmailVerificationOverrideConfig
+"""Deprecated, use `EmailVerificationOverrideConfig` instead."""
 
 
 class EmailVerificationConfig(BaseConfig[RecipeInterface, APIInterface]):

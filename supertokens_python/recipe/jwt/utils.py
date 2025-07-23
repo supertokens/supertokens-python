@@ -28,6 +28,8 @@ JWTOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
 NormalisedJWTOverrideConfig = BaseNormalisedOverrideConfig[
     RecipeInterface, APIInterface
 ]
+OverrideConfig = JWTOverrideConfig
+"""Deprecated, use `JWTOverrideConfig` instead."""
 
 
 class JWTConfig(BaseConfig[RecipeInterface, APIInterface]):

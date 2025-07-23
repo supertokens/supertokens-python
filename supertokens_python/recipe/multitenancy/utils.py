@@ -70,6 +70,8 @@ MultitenancyOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
 NormalisedMultitenancyOverrideConfig = BaseNormalisedOverrideConfig[
     RecipeInterface, APIInterface
 ]
+InputOverrideConfig = MultitenancyOverrideConfig
+"""Deprecated, use `MultitenancyOverrideConfig` instead."""
 
 
 class MultitenancyConfig(BaseConfig[RecipeInterface, APIInterface]):

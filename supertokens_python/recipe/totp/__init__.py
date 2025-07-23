@@ -15,7 +15,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union
 
-from supertokens_python.recipe.totp.types import TOTPConfig
+from supertokens_python.recipe.totp.types import (
+    OverrideConfig,
+    TOTPConfig,
+    TOTPOverrideConfig,
+)
 
 from .recipe import TOTPRecipe
 
@@ -29,3 +33,12 @@ def init(
     return TOTPRecipe.init(
         config=config,
     )
+
+
+__all__ = [
+    "OverrideConfig",  # deprecated, use `TOTPOverrideConfig` instead
+    "TOTPConfig",
+    "TOTPOverrideConfig",
+    "TOTPRecipe",
+    "init",
+]

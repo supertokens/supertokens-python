@@ -16,16 +16,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional, Union
 
-from . import exceptions as ex
-from . import provider, utils
+from .provider import ProviderClientConfig, ProviderConfig, ProviderInput
 from .recipe import ThirdPartyRecipe
-
-ThirdPartyOverrideConfig = utils.ThirdPartyOverrideConfig
-SignInAndUpFeature = utils.SignInAndUpFeature
-ProviderInput = provider.ProviderInput
-ProviderConfig = provider.ProviderConfig
-ProviderClientConfig = provider.ProviderClientConfig
-exceptions = ex
+from .utils import InputOverrideConfig, SignInAndUpFeature, ThirdPartyOverrideConfig
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import RecipeInit
@@ -38,3 +31,15 @@ def init(
     if sign_in_and_up_feature is None:
         sign_in_and_up_feature = SignInAndUpFeature()
     return ThirdPartyRecipe.init(sign_in_and_up_feature, override)
+
+
+__all__ = [
+    "InputOverrideConfig",  # deprecated, use `ThirdPartyOverrideConfig` instead
+    "ProviderClientConfig",
+    "ProviderConfig",
+    "ProviderInput",
+    "SignInAndUpFeature",
+    "ThirdPartyOverrideConfig",
+    "ThirdPartyRecipe",
+    "init",
+]

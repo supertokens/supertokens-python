@@ -19,18 +19,17 @@ from typing_extensions import Literal
 
 from supertokens_python.framework import BaseRequest
 
-from . import exceptions as ex
-from . import interfaces, utils
+from .interfaces import SessionContainer
 from .recipe import SessionRecipe
-from .utils import TokenTransferMethod
+from .utils import (
+    InputErrorHandlers,
+    InputOverrideConfig,
+    SessionOverrideConfig,
+    TokenTransferMethod,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import RecipeInit
-
-InputErrorHandlers = utils.InputErrorHandlers
-SessionOverrideConfig = utils.SessionOverrideConfig
-SessionContainer = interfaces.SessionContainer
-exceptions = ex
 
 
 def init(
@@ -69,3 +68,14 @@ def init(
         expose_access_token_to_frontend_in_cookie_based_auth,
         jwks_refresh_interval_sec,
     )
+
+
+__all__ = [
+    "InputErrorHandlers",
+    "InputOverrideConfig",  # deprecated, use SessionOverrideConfig instead
+    "SessionContainer",
+    "SessionOverrideConfig",
+    "SessionRecipe",
+    "TokenTransferMethod",
+    "init",
+]

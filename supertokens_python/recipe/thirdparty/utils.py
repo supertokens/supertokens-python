@@ -56,6 +56,8 @@ ThirdPartyOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
 NormalisedThirdPartyOverrideConfig = BaseNormalisedOverrideConfig[
     RecipeInterface, APIInterface
 ]
+InputOverrideConfig = ThirdPartyOverrideConfig
+"""Deprecated: Use `ThirdPartyOverrideConfig` instead."""
 
 
 class ThirdPartyConfig(BaseConfig[RecipeInterface, APIInterface]):

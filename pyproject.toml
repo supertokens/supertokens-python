@@ -3,7 +3,10 @@ line-length = 88 # Match Black's formatting
 src = ["supertokens_python"]
 
 [tool.ruff.lint]
-extend-select = ["I"] # enable import sorting
+extend-select = [
+    "I", # enable import sorting
+    "RUF022", # Sort __all__ exports
+]
 
 [tool.ruff.format]
 quote-style = "double" # Default

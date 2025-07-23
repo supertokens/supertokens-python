@@ -81,6 +81,8 @@ DashboardOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
 NormalisedDashboardOverrideConfig = BaseNormalisedOverrideConfig[
     RecipeInterface, APIInterface
 ]
+InputOverrideConfig = DashboardOverrideConfig
+"""Deprecated, use `DashboardOverrideConfig` instead."""
 
 
 class DashboardConfig(BaseConfig[RecipeInterface, APIInterface]):

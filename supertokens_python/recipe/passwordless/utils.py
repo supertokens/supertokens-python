@@ -75,6 +75,8 @@ PasswordlessOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
 NormalisedPasswordlessOverrideConfig = BaseNormalisedOverrideConfig[
     RecipeInterface, APIInterface
 ]
+InputOverrideConfig = PasswordlessOverrideConfig
+"""Deprecated, use `PasswordlessOverrideConfig` instead."""
 
 
 class ContactConfig(ABC):

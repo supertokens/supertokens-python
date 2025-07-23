@@ -187,6 +187,8 @@ TOTPOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
 NormalisedTOTPOverrideConfig = BaseNormalisedOverrideConfig[
     RecipeInterface, APIInterface
 ]
+OverrideConfig = TOTPOverrideConfig
+"""Deprecated: Use `TOTPOverrideConfig` instead."""
 
 
 class TOTPConfig(BaseConfig[RecipeInterface, APIInterface]):

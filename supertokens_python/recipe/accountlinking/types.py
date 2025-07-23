@@ -43,6 +43,8 @@ AccountLinkingOverrideConfig = BaseOverrideConfigWithoutAPI[RecipeInterface]
 NormalisedAccountLinkingOverrideConfig = BaseNormalisedOverrideConfigWithoutAPI[
     RecipeInterface
 ]
+InputOverrideConfig = AccountLinkingOverrideConfig
+"""Deprecated, use `AccountLinkingOverrideConfig` instead."""
 
 
 class AccountInfoWithRecipeId(AccountInfo):

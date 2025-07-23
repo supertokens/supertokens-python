@@ -57,30 +57,31 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
     from supertokens_python.supertokens import SupertokensPublicConfig
 
-T = TypeVar("T")
+RecipeConfigType = TypeVar(
+    "RecipeConfigType",
+    bound=Union[
+        "AccountLinkingConfig",
+        "DashboardConfig",
+        "EmailPasswordConfig",
+        "EmailVerificationConfig",
+        "JWTConfig",
+        "MultiFactorAuthConfig",
+        "MultitenancyConfig",
+        "OAuth2ProviderConfig",
+        "OpenIdConfig",
+        "PasswordlessConfig",
+        "SessionConfig",
+        "ThirdPartyConfig",
+        "TOTPConfig",
+        "UserMetadataConfig",
+        "UserRolesConfig",
+        "WebauthnConfig",
+    ],
+)
 
 
 RecipeInterfaceType = TypeVar("RecipeInterfaceType", bound=BaseRecipeInterface)
 APIInterfaceType = TypeVar("APIInterfaceType", bound=BaseAPIInterface)
-
-RecipeConfigType = Union[
-    "AccountLinkingConfig",
-    "DashboardConfig",
-    "EmailPasswordConfig",
-    "EmailVerificationConfig",
-    "JWTConfig",
-    "MultiFactorAuthConfig",
-    "MultitenancyConfig",
-    "OAuth2ProviderConfig",
-    "OpenIdConfig",
-    "PasswordlessConfig",
-    "SessionConfig",
-    "ThirdPartyConfig",
-    "TOTPConfig",
-    "UserMetadataConfig",
-    "UserRolesConfig",
-    "WebauthnConfig",
-]
 
 
 class RecipeInitRequiredFunction(Protocol):

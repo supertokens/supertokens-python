@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, List, Optional, Union
 
 from supertokens_python.recipe.multifactorauth.types import (
     MultiFactorAuthOverrideConfig,
+    OverrideConfig,
 )
 
 from .recipe import MultiFactorAuthRecipe
@@ -33,3 +34,11 @@ def init(
         first_factors,
         override,
     )
+
+
+__all__ = [
+    "MultiFactorAuthOverrideConfig",
+    "MultiFactorAuthRecipe",
+    "OverrideConfig",  # deprecated, use MultiFactorAuthOverrideConfig instead
+    "init",
+]

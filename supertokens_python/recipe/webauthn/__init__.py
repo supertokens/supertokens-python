@@ -60,11 +60,10 @@ def init(config: Optional[WebauthnConfig] = None):
 
 
 __all__ = [
-    "init",
     "APIInterface",
     "RecipeInterface",
-    "WebauthnOverrideConfig",
     "WebauthnConfig",
+    "WebauthnOverrideConfig",
     "WebauthnRecipe",
     "consume_recover_account_token",
     "create_recover_account_link",
@@ -72,6 +71,7 @@ __all__ = [
     "get_credential",
     "get_generated_options",
     "get_user_from_recover_account_token",
+    "init",
     "list_credentials",
     "recover_account",
     "register_credential",

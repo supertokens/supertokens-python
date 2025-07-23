@@ -25,29 +25,27 @@ from supertokens_python.recipe.passwordless.types import (
     SMSTemplateVars,
 )
 
-from . import types, utils
-from .emaildelivery import services as emaildelivery_services
+from .emaildelivery.services import SMTPService
 from .recipe import PasswordlessRecipe
-from .smsdelivery import services as smsdelivery_services
+from .smsdelivery.services import SuperTokensSMSService, TwilioService
+from .types import (
+    CreateAndSendCustomEmailParameters,
+    CreateAndSendCustomTextMessageParameters,
+    EmailDeliveryInterface,
+    SMSDeliveryInterface,
+)
+from .utils import (
+    ContactConfig,
+    ContactEmailOnlyConfig,
+    ContactEmailOrPhoneConfig,
+    ContactPhoneOnlyConfig,
+    InputOverrideConfig,
+    PasswordlessOverrideConfig,
+    PhoneOrEmailInput,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import RecipeInit
-
-PasswordlessOverrideConfig = utils.PasswordlessOverrideConfig
-ContactEmailOnlyConfig = utils.ContactEmailOnlyConfig
-ContactConfig = utils.ContactConfig
-PhoneOrEmailInput = utils.PhoneOrEmailInput
-CreateAndSendCustomTextMessageParameters = (
-    types.CreateAndSendCustomTextMessageParameters
-)
-CreateAndSendCustomEmailParameters = types.CreateAndSendCustomEmailParameters
-ContactPhoneOnlyConfig = utils.ContactPhoneOnlyConfig
-ContactEmailOrPhoneConfig = utils.ContactEmailOrPhoneConfig
-SMTPService = emaildelivery_services.SMTPService
-TwilioService = smsdelivery_services.TwilioService
-SuperTokensSMSService = smsdelivery_services.SuperTokensSMSService
-EmailDeliveryInterface = types.EmailDeliveryInterface
-SMSDeliveryInterface = types.SMSDeliveryInterface
 
 
 def init(
@@ -70,3 +68,22 @@ def init(
         email_delivery,
         sms_delivery,
     )
+
+
+__all__ = [
+    "ContactConfig",
+    "ContactEmailOnlyConfig",
+    "ContactEmailOrPhoneConfig",
+    "ContactPhoneOnlyConfig",
+    "CreateAndSendCustomEmailParameters",
+    "CreateAndSendCustomTextMessageParameters",
+    "EmailDeliveryInterface",
+    "InputOverrideConfig",  # deprecated, use PasswordlessOverrideConfig instead
+    "PasswordlessOverrideConfig",
+    "PhoneOrEmailInput",
+    "SMSDeliveryInterface",
+    "SMTPService",
+    "SuperTokensSMSService",
+    "TwilioService",
+    "init",
+]

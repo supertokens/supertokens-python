@@ -36,6 +36,8 @@ UserMetadataOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
 NormalisedUserMetadataOverrideConfig = BaseNormalisedOverrideConfig[
     RecipeInterface, APIInterface
 ]
+InputOverrideConfig = UserMetadataOverrideConfig
+"""Deprecated: Use `UserMetadataOverrideConfig` instead."""
 
 
 class UserMetadataConfig(BaseConfig[RecipeInterface, APIInterface]): ...

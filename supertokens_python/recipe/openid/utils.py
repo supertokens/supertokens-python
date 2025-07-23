@@ -34,6 +34,8 @@ OpenIdOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
 NormalisedOpenIdOverrideConfig = BaseNormalisedOverrideConfig[
     RecipeInterface, APIInterface
 ]
+InputOverrideConfig = OpenIdOverrideConfig
+"""Deprecated, use `OpenIdOverrideConfig` instead."""
 
 
 class OpenIdConfig(BaseConfig[RecipeInterface, APIInterface]):

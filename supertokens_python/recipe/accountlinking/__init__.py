@@ -15,15 +15,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Union
 
-from ...types import User
-from . import types
-from .recipe import AccountLinkingRecipe
+from supertokens_python.types import User
 
-AccountLinkingOverrideConfig = types.AccountLinkingOverrideConfig
-RecipeLevelUser = types.RecipeLevelUser
-AccountInfoWithRecipeIdAndUserId = types.AccountInfoWithRecipeIdAndUserId
-ShouldAutomaticallyLink = types.ShouldAutomaticallyLink
-ShouldNotAutomaticallyLink = types.ShouldNotAutomaticallyLink
+from .recipe import AccountLinkingRecipe
+from .types import (
+    AccountInfoWithRecipeIdAndUserId,
+    AccountLinkingOverrideConfig,
+    InputOverrideConfig,
+    RecipeLevelUser,
+    ShouldAutomaticallyLink,
+    ShouldNotAutomaticallyLink,
+)
 
 if TYPE_CHECKING:
     from ..session.interfaces import SessionContainer
@@ -50,3 +52,15 @@ def init(
     return AccountLinkingRecipe.init(
         on_account_linked, should_do_automatic_account_linking, override
     )
+
+
+__all__ = [
+    "AccountInfoWithRecipeIdAndUserId",
+    "AccountLinkingOverrideConfig",
+    "AccountLinkingRecipe",
+    "InputOverrideConfig",  # deprecated, use AccountLinkingOverrideConfig instead
+    "RecipeLevelUser",
+    "ShouldAutomaticallyLink",
+    "ShouldNotAutomaticallyLink",
+    "init",
+]

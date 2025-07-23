@@ -15,11 +15,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional, Union
 
-from . import recipe, utils
-from .recipe import UserRolesRecipe
-
-PermissionClaim = recipe.PermissionClaim
-UserRoleClaim = recipe.UserRoleClaim
+from .recipe import PermissionClaim, UserRoleClaim, UserRolesRecipe
+from .utils import InputOverrideConfig, UserRolesOverrideConfig
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import RecipeInit
@@ -28,10 +25,20 @@ if TYPE_CHECKING:
 def init(
     skip_adding_roles_to_access_token: Optional[bool] = None,
     skip_adding_permissions_to_access_token: Optional[bool] = None,
-    override: Union[utils.UserRolesOverrideConfig, None] = None,
+    override: Union[UserRolesOverrideConfig, None] = None,
 ) -> RecipeInit:
     return UserRolesRecipe.init(
         skip_adding_roles_to_access_token,
         skip_adding_permissions_to_access_token,
         override,
     )
+
+
+__all__ = [
+    "InputOverrideConfig",  # deprecated, use `UserRolesOverrideConfig` instead
+    "PermissionClaim",
+    "UserRoleClaim",
+    "UserRolesOverrideConfig",
+    "UserRolesRecipe",
+    "init",
+]

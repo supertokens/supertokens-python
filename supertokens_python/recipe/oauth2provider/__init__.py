@@ -15,11 +15,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union
 
-from . import exceptions as ex
-from . import recipe, utils
-
-exceptions = ex
-OAuth2ProviderOverrideConfig = utils.OAuth2ProviderOverrideConfig
+from .recipe import OAuth2ProviderRecipe
+from .utils import InputOverrideConfig, OAuth2ProviderOverrideConfig
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import RecipeInit
@@ -28,4 +25,12 @@ if TYPE_CHECKING:
 def init(
     override: Union[OAuth2ProviderOverrideConfig, None] = None,
 ) -> RecipeInit:
-    return recipe.OAuth2ProviderRecipe.init(override)
+    return OAuth2ProviderRecipe.init(override)
+
+
+__all__ = [
+    "InputOverrideConfig",  # deprecated, use OAuth2ProviderOverrideConfig instead
+    "OAuth2ProviderOverrideConfig",
+    "OAuth2ProviderRecipe",
+    "init",
+]

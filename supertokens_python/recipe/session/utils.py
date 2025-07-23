@@ -340,6 +340,8 @@ SessionOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
 NormalisedSessionOverrideConfig = BaseNormalisedOverrideConfig[
     RecipeInterface, APIInterface
 ]
+InputOverrideConfig = SessionOverrideConfig
+"""Deprecated: Use `SessionOverrideConfig` instead."""
 
 
 TokenType = Literal["access", "refresh"]

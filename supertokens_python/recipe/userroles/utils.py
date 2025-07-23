@@ -33,6 +33,8 @@ UserRolesOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
 NormalisedUserRolesOverrideConfig = BaseNormalisedOverrideConfig[
     RecipeInterface, APIInterface
 ]
+InputOverrideConfig = UserRolesOverrideConfig
+"""Deprecated: Use `UserRolesOverrideConfig` instead."""
 
 
 class UserRolesConfig(BaseConfig[RecipeInterface, APIInterface]):

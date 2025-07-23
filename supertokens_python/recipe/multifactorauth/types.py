@@ -46,6 +46,8 @@ MultiFactorAuthOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface
 NormalisedMultiFactorAuthOverrideConfig = BaseNormalisedOverrideConfig[
     RecipeInterface, APIInterface
 ]
+OverrideConfig = MultiFactorAuthOverrideConfig
+"""Deprecated, use `MultiFactorAuthOverrideConfig` instead."""
 
 
 class MultiFactorAuthConfig(BaseConfig[RecipeInterface, APIInterface]):
