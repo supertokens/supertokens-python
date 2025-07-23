@@ -1,5 +1,6 @@
 from typing import Any, List, Optional, Union
 
+from supertokens_python.constants import VERSION
 from supertokens_python.plugins import (
     OverrideMap,
     PluginDependenciesOkResponse,
@@ -111,7 +112,7 @@ def plugin_factory(
 
     class Plugin(SuperTokensPlugin):
         id: str = identifier
-        compatible_sdk_versions: Union[str, List[str]] = ["0.30.0"]
+        compatible_sdk_versions: Union[str, List[str]] = [VERSION]
         override_map: Optional[OverrideMap] = override_map_obj
         init: Any = init_fn
         dependencies: Optional[SuperTokensPluginDependencies] = dependency_factory(deps)
