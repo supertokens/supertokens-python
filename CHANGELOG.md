@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adds an `experimental` property (`SuperTokensExperimentalConfig`) to the `SuperTokensConfig`
   - Plugins can be configured under using the `plugins` property in the `experimental` config
 - Refactors the AccountLinking recipe to be automatically initialized on SuperTokens init
+- Adds `is_recipe_initialized` method to check if a recipe has been initialized
 
 ### Breaking Changes
 - `AccountLinkingRecipe.get_instance` will now raise an exception if not initialized

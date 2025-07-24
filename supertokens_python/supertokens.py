@@ -900,6 +900,18 @@ class Supertokens:
 
         return user_context.get("_default", {}).get("request")
 
+    @staticmethod
+    def is_recipe_initialized(recipe_id: str) -> bool:
+        """
+        Check if a recipe is initialized.
+        :param recipe_id: The ID of the recipe to check.
+        :return: Whether the recipe is initialized.
+        """
+        return any(
+            recipe.get_recipe_id() == recipe_id
+            for recipe in Supertokens.get_instance().recipe_modules
+        )
+
 
 def get_request_from_user_context(
     user_context: Optional[Dict[str, Any]],

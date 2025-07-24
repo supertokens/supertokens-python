@@ -79,6 +79,9 @@ def convert_to_recipe_user_id(user_id: str) -> RecipeUserId:
     return RecipeUserId(user_id)
 
 
+is_recipe_initialized = Supertokens.is_recipe_initialized
+
+
 __all__ = [
     "AppInfo",
     "InputAppInfo",
@@ -92,4 +95,5 @@ __all__ = [
     "get_all_cors_headers",
     "get_request_from_user_context",
     "init",
+    "is_recipe_initialized",
 ]
