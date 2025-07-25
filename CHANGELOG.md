@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.30.1] - 2025-07-21
+- Adds missing register credential endpoint to the Webauthn recipe
+
 ## [0.30.0] - 2025-05-27
 ### Adds Webauthn (Passkeys) support
 - Adds Webauthn recipe with support for:

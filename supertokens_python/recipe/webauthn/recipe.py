@@ -40,6 +40,9 @@ from supertokens_python.recipe.webauthn.api.generate_recover_account_token impor
 )
 from supertokens_python.recipe.webauthn.api.implementation import APIImplementation
 from supertokens_python.recipe.webauthn.api.recover_account import recover_account_api
+from supertokens_python.recipe.webauthn.api.register_credentials import (
+    register_credential_api,
+)
 from supertokens_python.recipe.webauthn.api.register_options import register_options_api
 from supertokens_python.recipe.webauthn.api.sign_in import sign_in_api
 from supertokens_python.recipe.webauthn.api.sign_in_options import sign_in_options_api
@@ -47,6 +50,7 @@ from supertokens_python.recipe.webauthn.api.sign_up import sign_up_api
 from supertokens_python.recipe.webauthn.constants import (
     GENERATE_RECOVER_ACCOUNT_TOKEN_API,
     RECOVER_ACCOUNT_API,
+    REGISTER_CREDENTIAL_API,
     REGISTER_OPTIONS_API,
     SIGN_IN_API,
     SIGN_UP_API,
@@ -365,6 +369,12 @@ class WebauthnRecipe(RecipeModule):
                 request_id=SIGNUP_EMAIL_EXISTS_API,
                 disabled=self.api_implementation.disable_email_exists_get,
             ),
+            APIHandled(
+                method="post",
+                path_without_api_base_path=NormalisedURLPath(REGISTER_CREDENTIAL_API),
+                request_id=REGISTER_CREDENTIAL_API,
+                disabled=self.api_implementation.disable_register_credential_post,
+            ),
         ]
 
     async def handle_api_request(
@@ -422,6 +432,11 @@ class WebauthnRecipe(RecipeModule):
 
         if request_id == SIGNUP_EMAIL_EXISTS_API:
             return await email_exists_api(
+                self.api_implementation, tenant_id, options, user_context
+            )
+
+        if request_id == REGISTER_CREDENTIAL_API:
+            return await register_credential_api(
                 self.api_implementation, tenant_id, options, user_context
             )
 
