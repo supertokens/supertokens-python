@@ -13,18 +13,22 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Awaitable, Callable, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Union
 
-from ...types import User
-from ..session.interfaces import SessionContainer
-from . import types
+from supertokens_python.types import User
+
 from .recipe import AccountLinkingRecipe
+from .types import (
+    AccountInfoWithRecipeIdAndUserId,
+    AccountLinkingOverrideConfig,
+    InputOverrideConfig,
+    RecipeLevelUser,
+    ShouldAutomaticallyLink,
+    ShouldNotAutomaticallyLink,
+)
 
-InputOverrideConfig = types.InputOverrideConfig
-RecipeLevelUser = types.RecipeLevelUser
-AccountInfoWithRecipeIdAndUserId = types.AccountInfoWithRecipeIdAndUserId
-ShouldAutomaticallyLink = types.ShouldAutomaticallyLink
-ShouldNotAutomaticallyLink = types.ShouldNotAutomaticallyLink
+if TYPE_CHECKING:
+    from ..session.interfaces import SessionContainer
 
 
 def init(
@@ -43,8 +47,20 @@ def init(
             Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
         ]
     ] = None,
-    override: Optional[InputOverrideConfig] = None,
+    override: Optional[AccountLinkingOverrideConfig] = None,
 ):
     return AccountLinkingRecipe.init(
         on_account_linked, should_do_automatic_account_linking, override
     )
+
+
+__all__ = [
+    "AccountInfoWithRecipeIdAndUserId",
+    "AccountLinkingOverrideConfig",
+    "AccountLinkingRecipe",
+    "InputOverrideConfig",  # deprecated, use AccountLinkingOverrideConfig instead
+    "RecipeLevelUser",
+    "ShouldAutomaticallyLink",
+    "ShouldNotAutomaticallyLink",
+    "init",
+]

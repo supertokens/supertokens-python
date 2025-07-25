@@ -24,7 +24,8 @@ from supertokens_python.recipe.jwt.exceptions import SuperTokensJWTError
 from supertokens_python.recipe.jwt.interfaces import APIOptions
 from supertokens_python.recipe.jwt.recipe_implementation import RecipeImplementation
 from supertokens_python.recipe.jwt.utils import (
-    OverrideConfig,
+    JWTConfig,
+    JWTOverrideConfig,
     validate_and_normalise_user_input,
 )
 
@@ -46,26 +47,19 @@ class JWTRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        jwt_validity_seconds: Union[int, None] = None,
-        override: Union[OverrideConfig, None] = None,
+        config: JWTConfig,
     ):
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(jwt_validity_seconds, override)
+        self.config = validate_and_normalise_user_input(config=config)
 
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.config, app_info
         )
-        self.recipe_implementation = (
+        self.recipe_implementation = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
         api_implementation = APIImplementation()
-        self.api_implementation = (
-            api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
-        )
+        self.api_implementation = self.config.override.apis(api_implementation)
 
     def get_apis_handled(self) -> List[APIHandled]:
         return [
@@ -120,12 +114,25 @@ class JWTRecipe(RecipeModule):
     @staticmethod
     def init(
         jwt_validity_seconds: Union[int, None] = None,
-        override: Union[OverrideConfig, None] = None,
+        override: Union[JWTOverrideConfig, None] = None,
     ):
-        def func(app_info: AppInfo):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = JWTConfig(
+            jwt_validity_seconds=jwt_validity_seconds,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if JWTRecipe.__instance is None:
                 JWTRecipe.__instance = JWTRecipe(
-                    JWTRecipe.recipe_id, app_info, jwt_validity_seconds, override
+                    JWTRecipe.recipe_id,
+                    app_info,
+                    config=apply_plugins(
+                        recipe_id=JWTRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return JWTRecipe.__instance
             raise_general_exception(

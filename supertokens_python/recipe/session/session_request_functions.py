@@ -47,12 +47,11 @@ from supertokens_python.recipe.session.jwt import (
     parse_jwt_without_signature_verification,
 )
 from supertokens_python.recipe.session.utils import (
-    SessionConfig,
+    NormalisedSessionConfig,
     TokenTransferMethod,
     get_auth_mode_from_header,
     get_required_claim_validators,
 )
-from supertokens_python.supertokens import Supertokens
 from supertokens_python.types import MaybeAwaitable, RecipeUserId
 from supertokens_python.utils import (
     FRAMEWORKS,
@@ -75,7 +74,7 @@ LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken"
 
 async def get_session_from_request(
     request: Any,
-    config: SessionConfig,
+    config: NormalisedSessionConfig,
     recipe_interface_impl: SessionRecipeInterface,
     session_required: Optional[bool] = None,
     anti_csrf_check: Optional[bool] = None,
@@ -88,6 +87,8 @@ async def get_session_from_request(
     ] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -> Optional[SessionContainer]:
+    from supertokens_python.supertokens import Supertokens
+
     log_debug_message("getSession: Started")
 
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
@@ -240,11 +241,13 @@ async def create_new_session_in_request(
     access_token_payload: Dict[str, Any],
     user_id: str,
     recipe_user_id: RecipeUserId,
-    config: SessionConfig,
+    config: NormalisedSessionConfig,
     app_info: AppInfo,
     session_data_in_database: Dict[str, Any],
     tenant_id: str,
 ) -> SessionContainer:
+    from supertokens_python.supertokens import Supertokens
+
     log_debug_message("createNewSession: Started")
 
     # Handling framework specific request/response wrapping
@@ -353,9 +356,11 @@ async def create_new_session_in_request(
 async def refresh_session_in_request(
     request: Any,
     user_context: Dict[str, Any],
-    config: SessionConfig,
+    config: NormalisedSessionConfig,
     recipe_interface_impl: SessionRecipeInterface,
 ) -> SessionContainer:
+    from supertokens_python.supertokens import Supertokens
+
     log_debug_message("refreshSession: Started")
 
     response_mutators: List[ResponseMutator] = []

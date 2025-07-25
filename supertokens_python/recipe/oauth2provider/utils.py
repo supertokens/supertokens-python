@@ -13,42 +13,34 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideConfig,
+)
 
-if TYPE_CHECKING:
-    from typing import Union
+from .interfaces import APIInterface, RecipeInterface
 
-    from .interfaces import APIInterface, RecipeInterface
-
-
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
-
-
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+OAuth2ProviderOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedOAuth2ProviderOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+InputOverrideConfig = OAuth2ProviderOverrideConfig
+"""Deprecated, use `OAuth2ProviderOverrideConfig` instead."""
 
 
-class OAuth2ProviderConfig:
-    def __init__(self, override: Union[OverrideConfig, None] = None):
-        self.override = override
+class OAuth2ProviderConfig(BaseConfig[RecipeInterface, APIInterface]): ...
 
 
-def validate_and_normalise_user_input(
-    override: Union[InputOverrideConfig, None] = None,
-):
-    if override is None:
-        return OAuth2ProviderConfig(OverrideConfig())
-    return OAuth2ProviderConfig(OverrideConfig(override.functions, override.apis))
+class NormalisedOAuth2ProviderConfig(
+    BaseNormalisedConfig[RecipeInterface, APIInterface]
+): ...
+
+
+def validate_and_normalise_user_input(config: OAuth2ProviderConfig):
+    override_config = NormalisedOAuth2ProviderOverrideConfig.from_input_config(
+        override_config=config.override
+    )
+
+    return NormalisedOAuth2ProviderConfig(override=override_config)

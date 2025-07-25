@@ -28,9 +28,9 @@ from supertokens_python.framework.flask.flask_response import (
 )
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import emailpassword, session, thirdparty
-from supertokens_python.recipe.dashboard import DashboardRecipe, InputOverrideConfig
+from supertokens_python.recipe.dashboard import DashboardOverrideConfig, DashboardRecipe
 from supertokens_python.recipe.dashboard.interfaces import RecipeInterface
-from supertokens_python.recipe.dashboard.utils import DashboardConfig
+from supertokens_python.recipe.dashboard.utils import NormalisedDashboardConfig
 from supertokens_python.recipe.emailpassword.interfaces import APIInterface, APIOptions
 from supertokens_python.recipe.passwordless import ContactConfig, PasswordlessRecipe
 from supertokens_python.recipe.session import SessionContainer
@@ -81,7 +81,7 @@ def get_driver_config_app(core_url: str) -> Flask:
 
     def override_dashboard_functions(original_implementation: RecipeInterface):
         async def should_allow_access(
-            request: BaseRequest, __: DashboardConfig, ___: Dict[str, Any]
+            request: BaseRequest, __: NormalisedDashboardConfig, ___: Dict[str, Any]
         ):
             auth_header = request.get_header("authorization")
             return auth_header == "Bearer testapikey"
@@ -110,7 +110,7 @@ def get_driver_config_app(core_url: str) -> Flask:
                 get_token_transfer_method=lambda _, __, ___: "cookie",
             ),
             emailpassword.init(
-                override=emailpassword.InputOverrideConfig(
+                override=emailpassword.EmailPasswordOverrideConfig(
                     apis=override_email_password_apis
                 )
             ),
@@ -159,7 +159,9 @@ def get_driver_config_app(core_url: str) -> Flask:
             ),
             DashboardRecipe.init(
                 api_key="testapikey",
-                override=InputOverrideConfig(functions=override_dashboard_functions),
+                override=DashboardOverrideConfig(
+                    functions=override_dashboard_functions
+                ),
             ),
             PasswordlessRecipe.init(
                 contact_config=ContactConfig(contact_method="EMAIL"),

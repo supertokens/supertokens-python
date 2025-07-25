@@ -21,7 +21,7 @@ from typing_extensions import TypedDict
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.querier import Querier
-from supertokens_python.recipe.session.utils import SessionConfig
+from supertokens_python.recipe.session.utils import NormalisedSessionConfig
 from supertokens_python.utils import RWLockContext, RWMutex, get_timestamp_ms
 
 
@@ -88,7 +88,9 @@ def find_matching_keys(
     return None
 
 
-def get_latest_keys(config: SessionConfig, kid: Optional[str] = None) -> List[PyJWK]:
+def get_latest_keys(
+    config: NormalisedSessionConfig, kid: Optional[str] = None
+) -> List[PyJWK]:
     global cached_keys
 
     if environ.get("SUPERTOKENS_ENV") == "testing":

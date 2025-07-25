@@ -14,11 +14,17 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING
 
 from supertokens_python.recipe.usermetadata.interfaces import (
     APIInterface,
     RecipeInterface,
+)
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideConfig,
 )
 
 if TYPE_CHECKING:
@@ -26,30 +32,29 @@ if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
 
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+UserMetadataOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedUserMetadataOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+InputOverrideConfig = UserMetadataOverrideConfig
+"""Deprecated: Use `UserMetadataOverrideConfig` instead."""
 
 
-class UserMetadataConfig:
-    def __init__(self, override: InputOverrideConfig) -> None:
-        self.override = override
+class UserMetadataConfig(BaseConfig[RecipeInterface, APIInterface]): ...
+
+
+class NormalisedUserMetadataConfig(
+    BaseNormalisedConfig[RecipeInterface, APIInterface]
+): ...
 
 
 def validate_and_normalise_user_input(
     _recipe: UserMetadataRecipe,
     _app_info: AppInfo,
-    override: Union[InputOverrideConfig, None] = None,
-) -> UserMetadataConfig:
-    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
-        raise ValueError("override must be an instance of InputOverrideConfig or None")
+    input_config: UserMetadataConfig,
+) -> NormalisedUserMetadataConfig:
+    override_config = NormalisedUserMetadataOverrideConfig.from_input_config(
+        override_config=input_config.override
+    )
 
-    if override is None:
-        override = InputOverrideConfig()
-
-    return UserMetadataConfig(override=override)
+    return NormalisedUserMetadataConfig(override=override_config)

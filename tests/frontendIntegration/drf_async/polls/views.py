@@ -40,6 +40,7 @@ from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import session
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.jwt.recipe import JWTRecipe
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
@@ -306,13 +307,13 @@ async def unauthorised_f(req: BaseRequest, message: str, res: BaseResponse):
     return res
 
 
-def apis_override_session(param: APIInterface):
-    param.disable_refresh_post = True
-    return param
+def apis_override_session(original_implementation: APIInterface):
+    original_implementation.disable_refresh_post = True
+    return original_implementation
 
 
-def functions_override_session(param: RecipeInterface):
-    original_create_new_session = param.create_new_session
+def functions_override_session(original_implementation: RecipeInterface):
+    original_create_new_session = original_implementation.create_new_session
 
     async def create_new_session_custom(
         user_id: str,
@@ -336,9 +337,9 @@ def functions_override_session(param: RecipeInterface):
             user_context,
         )
 
-    param.create_new_session = create_new_session_custom
+    original_implementation.create_new_session = create_new_session_custom
 
-    return param
+    return original_implementation
 
 
 def get_app_port():
@@ -374,7 +375,7 @@ def config(
                             on_unauthorised=unauthorised_f
                         ),
                         anti_csrf=anti_csrf,
-                        override=session.InputOverrideConfig(
+                        override=session.SessionOverrideConfig(
                             apis=apis_override_session,
                             functions=functions_override_session,
                         ),
@@ -398,7 +399,7 @@ def config(
                             on_unauthorised=unauthorised_f
                         ),
                         anti_csrf=anti_csrf,
-                        override=session.InputOverrideConfig(
+                        override=session.SessionOverrideConfig(
                             apis=apis_override_session,
                             functions=functions_override_session,
                         ),
@@ -419,7 +420,7 @@ def config(
                 session.init(
                     error_handlers=InputErrorHandlers(on_unauthorised=unauthorised_f),
                     anti_csrf=anti_csrf,
-                    override=session.InputOverrideConfig(apis=apis_override_session),
+                    override=session.SessionOverrideConfig(apis=apis_override_session),
                 )
             ],
             telemetry=False,
@@ -671,6 +672,7 @@ async def reinitialize(request: Request):  # type: ignore
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
     JWTRecipe.reset()
+    AccountLinkingRecipe.reset()
     config(
         data["coreUrl"],  # type: ignore
         last_set_enable_anti_csrf,
@@ -693,6 +695,7 @@ async def setup_st(request: HttpRequest):  # type: ignore
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
     JWTRecipe.reset()
+    AccountLinkingRecipe.reset()
     config(
         core_url=data["coreUrl"],
         enable_anti_csrf=data.get("enableAntiCsrf"),

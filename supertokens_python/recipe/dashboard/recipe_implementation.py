@@ -27,7 +27,7 @@ from supertokens_python.utils import log_debug_message, normalise_http_method
 
 from .exceptions import DashboardOperationNotAllowedError
 from .interfaces import RecipeInterface
-from .utils import DashboardConfig, validate_api_key
+from .utils import NormalisedDashboardConfig, validate_api_key
 
 
 class RecipeImplementation(RecipeInterface):
@@ -37,7 +37,7 @@ class RecipeImplementation(RecipeInterface):
     async def should_allow_access(
         self,
         request: BaseRequest,
-        config: DashboardConfig,
+        config: NormalisedDashboardConfig,
         user_context: Dict[str, Any],
     ) -> bool:
         # For cases where we're not using the API key, the JWT is being used; we allow their access by default

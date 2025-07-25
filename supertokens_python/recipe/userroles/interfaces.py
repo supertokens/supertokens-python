@@ -1,5 +1,7 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any, Dict, List, Union
+
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 
 
 class AddRoleToUserOkResult:
@@ -55,7 +57,7 @@ class GetAllRolesOkResult:
         self.roles = roles
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     @abstractmethod
     async def add_role_to_user(
         self,
@@ -123,5 +125,5 @@ class RecipeInterface(ABC):
         pass
 
 
-class APIInterface(ABC):
+class APIInterface(BaseAPIInterface):
     pass

@@ -13,11 +13,17 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from typing_extensions import Literal
 
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideConfig,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -45,9 +51,7 @@ from .constants import (
     USERS_LIST_GET_API,
     VALIDATE_KEY_API,
 )
-
-if TYPE_CHECKING:
-    from .interfaces import APIInterface, RecipeInterface
+from .interfaces import APIInterface, RecipeInterface
 
 
 class UserWithMetadata:
@@ -73,64 +77,49 @@ class UserWithMetadata:
         return user_json
 
 
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+DashboardOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedDashboardOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+InputOverrideConfig = DashboardOverrideConfig
+"""Deprecated, use `DashboardOverrideConfig` instead."""
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+class DashboardConfig(BaseConfig[RecipeInterface, APIInterface]):
+    api_key: Optional[str] = None
+    admins: Optional[List[str]] = None
 
 
-class DashboardConfig:
-    def __init__(
-        self,
-        api_key: Optional[str],
-        admins: Optional[List[str]],
-        override: OverrideConfig,
-        auth_mode: str,
-    ):
-        self.api_key = api_key
-        self.admins = admins
-        self.override = override
-        self.auth_mode = auth_mode
+class NormalisedDashboardConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
+    api_key: Optional[str]
+    admins: Optional[List[str]]
+    auth_mode: str
 
 
 def validate_and_normalise_user_input(
-    # app_info: AppInfo,
-    api_key: Union[str, None],
-    admins: Optional[List[str]],
-    override: Optional[InputOverrideConfig] = None,
-) -> DashboardConfig:
-    if override is None:
-        override = InputOverrideConfig()
+    config: DashboardConfig,
+) -> NormalisedDashboardConfig:
+    override_config = NormalisedDashboardOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
-    if api_key is not None and admins is not None:
+    if config.api_key is not None and config.admins is not None:
         log_debug_message(
             "User Dashboard: Providing 'admins' has no effect when using an api key."
         )
 
-    admins = [normalise_email(a) for a in admins] if admins is not None else None
+    admins = (
+        [normalise_email(a) for a in config.admins]
+        if config.admins is not None
+        else None
+    )
+    auth_mode = "api-key" if config.api_key else "email-password"
 
-    return DashboardConfig(
-        api_key,
-        admins,
-        OverrideConfig(
-            functions=override.functions,
-            apis=override.apis,
-        ),
-        "api-key" if api_key else "email-password",
+    return NormalisedDashboardConfig(
+        api_key=config.api_key,
+        admins=admins,
+        auth_mode=auth_mode,
+        override=override_config,
     )
 
 
@@ -262,7 +251,7 @@ async def _get_user_for_recipe_id(
 
 
 async def validate_api_key(
-    req: BaseRequest, config: DashboardConfig, _user_context: Dict[str, Any]
+    req: BaseRequest, config: NormalisedDashboardConfig, _user_context: Dict[str, Any]
 ) -> bool:
     api_key_header_value = req.get_header("authorization")
     if not api_key_header_value:

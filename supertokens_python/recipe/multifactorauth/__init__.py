@@ -13,23 +13,32 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
-from supertokens_python.recipe.multifactorauth.types import OverrideConfig
+from supertokens_python.recipe.multifactorauth.types import (
+    MultiFactorAuthOverrideConfig,
+    OverrideConfig,
+)
 
 from .recipe import MultiFactorAuthRecipe
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo
-
-    from ...recipe_module import RecipeModule
+    from supertokens_python.supertokens import RecipeInit
 
 
 def init(
     first_factors: Optional[List[str]] = None,
-    override: Union[OverrideConfig, None] = None,
-) -> Callable[[AppInfo], RecipeModule]:
+    override: Union[MultiFactorAuthOverrideConfig, None] = None,
+) -> RecipeInit:
     return MultiFactorAuthRecipe.init(
         first_factors,
         override,
     )
+
+
+__all__ = [
+    "MultiFactorAuthOverrideConfig",
+    "MultiFactorAuthRecipe",
+    "OverrideConfig",  # deprecated, use MultiFactorAuthOverrideConfig instead
+    "init",
+]

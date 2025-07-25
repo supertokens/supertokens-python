@@ -13,39 +13,42 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
-from ...ingredients.emaildelivery.types import EmailDeliveryConfig
-from . import exceptions as ex
-from . import recipe, types, utils
-from .emaildelivery import services as emaildelivery_services
+from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
+
+from .emaildelivery.services import SMTPService
 from .interfaces import TypeGetEmailForUserIdFunction
-from .recipe import EmailVerificationRecipe
-from .types import EmailTemplateVars
-from .utils import MODE_TYPE, OverrideConfig
-
-InputOverrideConfig = utils.OverrideConfig
-exception = ex
-SMTPService = emaildelivery_services.SMTPService
-EmailVerificationClaim = recipe.EmailVerificationClaim
-EmailDeliveryInterface = types.EmailDeliveryInterface
-
+from .recipe import EmailVerificationClaim, EmailVerificationRecipe
+from .types import EmailDeliveryInterface, EmailTemplateVars
+from .utils import MODE_TYPE, EmailVerificationOverrideConfig, InputOverrideConfig
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo
-
-    from ...recipe_module import RecipeModule
+    from supertokens_python.supertokens import RecipeInit
 
 
 def init(
     mode: MODE_TYPE,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-    override: Union[OverrideConfig, None] = None,
-) -> Callable[[AppInfo], RecipeModule]:
+    override: Union[EmailVerificationOverrideConfig, None] = None,
+) -> RecipeInit:
     return EmailVerificationRecipe.init(
         mode,
         email_delivery,
         get_email_for_recipe_user_id,
         override,
     )
+
+
+__all__ = [
+    "EmailDeliveryInterface",
+    "EmailTemplateVars",
+    "EmailVerificationClaim",
+    "EmailVerificationOverrideConfig",
+    "EmailVerificationRecipe",
+    "InputOverrideConfig",  # deprecated, use EmailVerificationOverrideConfig instead
+    "SMTPService",
+    "TypeGetEmailForUserIdFunction",
+    "init",
+]

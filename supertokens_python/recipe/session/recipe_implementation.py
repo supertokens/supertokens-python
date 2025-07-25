@@ -39,7 +39,7 @@ from .interfaces import (
 )
 from .jwt import ParsedJWTInfo, parse_jwt_without_signature_verification
 from .session_class import Session
-from .utils import SessionConfig, validate_claims_in_payload
+from .utils import NormalisedSessionConfig, validate_claims_in_payload
 
 if TYPE_CHECKING:
     from typing import List, Union
@@ -54,7 +54,9 @@ from .interfaces import SessionContainer
 
 
 class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-methods
-    def __init__(self, querier: Querier, config: SessionConfig, app_info: AppInfo):
+    def __init__(
+        self, querier: Querier, config: NormalisedSessionConfig, app_info: AppInfo
+    ):
         super().__init__()
         self.querier = querier
         self.config = config

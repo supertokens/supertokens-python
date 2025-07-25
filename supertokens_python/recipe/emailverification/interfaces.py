@@ -13,13 +13,14 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Union
 
 from typing_extensions import Literal
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.types import RecipeUserId
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from ...supertokens import AppInfo
@@ -29,7 +30,7 @@ if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
 
     from .types import EmailVerificationUser, VerificationEmailTemplateVars
-    from .utils import EmailVerificationConfig
+    from .utils import NormalisedEmailVerificationConfig
 
 
 class CreateEmailVerificationTokenOkResult:
@@ -84,7 +85,7 @@ class UnverifyEmailOkResult:
     pass
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -140,7 +141,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: EmailVerificationConfig,
+        config: NormalisedEmailVerificationConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         email_delivery: EmailDeliveryIngredient[VerificationEmailTemplateVars],
@@ -201,7 +202,7 @@ class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError(APIResponse):
         return {"status": self.status}
 
 
-class APIInterface(ABC):
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_email_verify_post = False
         self.disable_is_email_verified_get = False

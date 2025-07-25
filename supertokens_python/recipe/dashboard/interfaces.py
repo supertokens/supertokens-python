@@ -13,12 +13,13 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from typing_extensions import Literal
 
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 
 from ...types.response import APIResponse
 
@@ -27,7 +28,7 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import SessionInformationResult
 
     from ...supertokens import AppInfo
-    from .utils import DashboardConfig, UserWithMetadata
+    from .utils import NormalisedDashboardConfig, UserWithMetadata
 
 
 class SessionInfo:
@@ -41,7 +42,7 @@ class SessionInfo:
         self.tenant_id = info.tenant_id
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -53,7 +54,7 @@ class RecipeInterface(ABC):
     async def should_allow_access(
         self,
         request: BaseRequest,
-        config: DashboardConfig,
+        config: NormalisedDashboardConfig,
         user_context: Dict[str, Any],
     ) -> bool:
         pass
@@ -65,19 +66,19 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: DashboardConfig,
+        config: NormalisedDashboardConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
     ):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
-        self.config: DashboardConfig = config
+        self.config: NormalisedDashboardConfig = config
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info = app_info
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         # undefined should be allowed
         self.dashboard_get: Optional[

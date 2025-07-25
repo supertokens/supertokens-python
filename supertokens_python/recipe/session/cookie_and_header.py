@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 
     from .recipe import SessionRecipe
     from .utils import (
-        SessionConfig,
+        NormalisedSessionConfig,
         TokenTransferMethod,
         TokenType,
     )
@@ -111,7 +111,7 @@ def get_cookie(request: BaseRequest, key: str):
 
 def _set_cookie(
     response: BaseResponse,
-    config: SessionConfig,
+    config: NormalisedSessionConfig,
     key: str,
     value: str,
     expires: int,
@@ -141,7 +141,7 @@ def _set_cookie(
 
 
 def set_cookie_response_mutator(
-    config: SessionConfig,
+    config: NormalisedSessionConfig,
     key: str,
     value: str,
     expires: int,
@@ -207,7 +207,7 @@ def clear_session_from_all_token_transfer_methods(
 
 
 def clear_session_mutator(
-    config: SessionConfig,
+    config: NormalisedSessionConfig,
     transfer_method: TokenTransferMethod,
     request: BaseRequest,
 ):
@@ -222,7 +222,7 @@ def clear_session_mutator(
 
 def _clear_session(
     response: BaseResponse,
-    config: SessionConfig,
+    config: NormalisedSessionConfig,
     transfer_method: TokenTransferMethod,
     request: BaseRequest,
     user_context: Dict[str, Any],
@@ -244,7 +244,7 @@ def _clear_session(
 
 
 def clear_session_response_mutator(
-    config: SessionConfig,
+    config: NormalisedSessionConfig,
     transfer_method: TokenTransferMethod,
     request: BaseRequest,
 ):
@@ -293,7 +293,7 @@ def get_token(
 
 def _set_token(
     response: BaseResponse,
-    config: SessionConfig,
+    config: NormalisedSessionConfig,
     token_type: TokenType,
     value: str,
     expires: int,
@@ -323,7 +323,7 @@ def _set_token(
 
 
 def token_response_mutator(
-    config: SessionConfig,
+    config: NormalisedSessionConfig,
     token_type: TokenType,
     value: str,
     expires: int,
@@ -356,7 +356,7 @@ def set_token_in_header(response: BaseResponse, name: str, value: str):
 def access_token_mutator(
     access_token: str,
     front_token: str,
-    config: SessionConfig,
+    config: NormalisedSessionConfig,
     transfer_method: TokenTransferMethod,
     request: BaseRequest,
 ):
@@ -381,7 +381,7 @@ def _set_access_token_in_response(
     res: BaseResponse,
     access_token: str,
     front_token: str,
-    config: SessionConfig,
+    config: NormalisedSessionConfig,
     transfer_method: TokenTransferMethod,
     request: BaseRequest,
     user_context: Dict[str, Any],
@@ -430,7 +430,7 @@ def _set_access_token_in_response(
 
 # This function checks for multiple cookies with the same name and clears the cookies for the older domain.
 def clear_session_cookies_from_older_cookie_domain(
-    request: BaseRequest, config: SessionConfig, user_context: Dict[str, Any]
+    request: BaseRequest, config: NormalisedSessionConfig, user_context: Dict[str, Any]
 ):
     allowed_transfer_method = config.get_token_transfer_method(
         request, False, user_context

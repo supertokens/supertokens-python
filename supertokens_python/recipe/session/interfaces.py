@@ -29,20 +29,19 @@ from typing import (
 from typing_extensions import TypedDict
 
 from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.types import (
     MaybeAwaitable,
     RecipeUserId,
 )
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from ...utils import resolve
 from .exceptions import ClaimValidationError
-from .utils import SessionConfig, TokenTransferMethod
 
 if TYPE_CHECKING:
-    from supertokens_python.framework import BaseRequest
-
-from supertokens_python.framework import BaseResponse
+    from .utils import NormalisedSessionConfig, TokenTransferMethod
 
 
 class SessionObj:
@@ -187,7 +186,7 @@ class GetSessionTokensDangerouslyDict(TypedDict):
     antiCsrfToken: Optional[str]
 
 
-class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
+class RecipeInterface(BaseRecipeInterface):  # pylint: disable=too-many-public-methods
     def __init__(self):
         pass
 
@@ -373,7 +372,7 @@ class APIOptions:
         request: BaseRequest,
         response: Optional[BaseResponse],
         recipe_id: str,
-        config: SessionConfig,
+        config: NormalisedSessionConfig,
         recipe_implementation: RecipeInterface,
     ):
         self.request = request
@@ -383,7 +382,7 @@ class APIOptions:
         self.recipe_implementation = recipe_implementation
 
 
-class APIInterface(ABC):
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_refresh_post = False
         self.disable_signout_post = False
@@ -446,7 +445,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def __init__(
         self,
         recipe_implementation: RecipeInterface,
-        config: SessionConfig,
+        config: NormalisedSessionConfig,
         access_token: str,
         front_token: str,
         refresh_token: Optional[TokenInfo],

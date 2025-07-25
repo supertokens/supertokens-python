@@ -21,8 +21,10 @@ def session_functions_override_with_claim(
     if params is None:
         params = {}
 
-    def session_function_override(oi: RecipeInterface) -> RecipeInterface:
-        oi_create_new_session = oi.create_new_session
+    def session_function_override(
+        original_implementation: RecipeInterface,
+    ) -> RecipeInterface:
+        oi_create_new_session = original_implementation.create_new_session
 
         async def new_create_new_session(
             user_id: str,
@@ -58,8 +60,8 @@ def session_functions_override_with_claim(
                 user_context,
             )
 
-        oi.create_new_session = new_create_new_session
-        return oi
+        original_implementation.create_new_session = new_create_new_session
+        return original_implementation
 
     return session_function_override
 
@@ -69,7 +71,7 @@ def get_st_init_args(claim: SessionClaim[Any] = TrueClaim):
         url=get_new_core_app_url(),
         recipe_list=[
             session.init(
-                override=session.InputOverrideConfig(
+                override=session.SessionOverrideConfig(
                     functions=session_functions_override_with_claim(claim),
                 ),
             ),

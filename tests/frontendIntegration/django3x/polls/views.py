@@ -34,6 +34,7 @@ from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import session
+from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.jwt.recipe import JWTRecipe
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
@@ -349,7 +350,7 @@ def config(
                             on_unauthorised=unauthorised_f
                         ),
                         anti_csrf=anti_csrf,
-                        override=session.InputOverrideConfig(
+                        override=session.SessionOverrideConfig(
                             apis=apis_override_session,
                             functions=functions_override_session,
                         ),
@@ -373,7 +374,7 @@ def config(
                             on_unauthorised=unauthorised_f
                         ),
                         anti_csrf=anti_csrf,
-                        override=session.InputOverrideConfig(
+                        override=session.SessionOverrideConfig(
                             apis=apis_override_session,
                             functions=functions_override_session,
                         ),
@@ -394,7 +395,7 @@ def config(
                 session.init(
                     error_handlers=InputErrorHandlers(on_unauthorised=unauthorised_f),
                     anti_csrf=anti_csrf,
-                    override=session.InputOverrideConfig(apis=apis_override_session),
+                    override=session.SessionOverrideConfig(apis=apis_override_session),
                 )
             ],
             telemetry=False,
@@ -608,6 +609,7 @@ async def reinitialize(request: HttpRequest):
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
     JWTRecipe.reset()
+    AccountLinkingRecipe.reset()
     config(
         data["coreUrl"],
         last_set_enable_anti_csrf,
@@ -628,6 +630,7 @@ async def setup_st(request: HttpRequest):
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
     JWTRecipe.reset()
+    AccountLinkingRecipe.reset()
     config(
         core_url=data["coreUrl"],
         enable_anti_csrf=data.get("enableAntiCsrf"),

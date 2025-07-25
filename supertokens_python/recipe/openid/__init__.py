@@ -13,19 +13,25 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Union
 
 from .recipe import OpenIdRecipe
-from .utils import InputOverrideConfig
+from .utils import InputOverrideConfig, OpenIdOverrideConfig
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo
-
-    from ...recipe_module import RecipeModule
+    from supertokens_python.supertokens import RecipeInit
 
 
 def init(
     issuer: Union[str, None] = None,
-    override: Union[InputOverrideConfig, None] = None,
-) -> Callable[[AppInfo], RecipeModule]:
+    override: Union[OpenIdOverrideConfig, None] = None,
+) -> RecipeInit:
     return OpenIdRecipe.init(issuer, override)
+
+
+__all__ = [
+    "InputOverrideConfig",  # deprecated, use OpenIdOverrideConfig instead
+    "OpenIdOverrideConfig",
+    "OpenIdRecipe",
+    "init",
+]

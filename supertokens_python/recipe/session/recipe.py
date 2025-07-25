@@ -18,10 +18,18 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 from typing_extensions import Literal
 
+from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.framework.response import BaseResponse
+from supertokens_python.logger import log_debug_message
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.querier import Querier
+from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from ...types import MaybeAwaitable
+from .api import handle_refresh_api, handle_signout_api
+from .constants import SESSION_REFRESH, SIGNOUT
 from .cookie_and_header import (
+    clear_session_from_all_token_transfer_methods,
     get_cors_allowed_headers,
 )
 from .exceptions import (
@@ -31,20 +39,6 @@ from .exceptions import (
     TokenTheftError,
     UnauthorisedError,
 )
-
-if TYPE_CHECKING:
-    from supertokens_python.framework import BaseRequest
-    from supertokens_python.supertokens import AppInfo
-
-from supertokens_python.exceptions import SuperTokensError, raise_general_exception
-from supertokens_python.logger import log_debug_message
-from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.querier import Querier
-from supertokens_python.recipe_module import APIHandled, RecipeModule
-
-from .api import handle_refresh_api, handle_signout_api
-from .constants import SESSION_REFRESH, SIGNOUT
-from .cookie_and_header import clear_session_from_all_token_transfer_methods
 from .interfaces import (
     APIInterface,
     APIOptions,
@@ -58,10 +52,15 @@ from .recipe_implementation import (
 )
 from .utils import (
     InputErrorHandlers,
-    InputOverrideConfig,
+    SessionConfig,
+    SessionOverrideConfig,
     TokenTransferMethod,
     validate_and_normalise_user_input,
 )
+
+if TYPE_CHECKING:
+    from supertokens_python.framework import BaseRequest
+    from supertokens_python.supertokens import AppInfo
 
 
 class SessionRecipe(RecipeModule):
@@ -72,44 +71,12 @@ class SessionRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        cookie_domain: Union[str, None] = None,
-        older_cookie_domain: Union[str, None] = None,
-        cookie_secure: Union[bool, None] = None,
-        cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
-        session_expired_status_code: Union[int, None] = None,
-        anti_csrf: Union[
-            Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None
-        ] = None,
-        get_token_transfer_method: Union[
-            Callable[
-                [BaseRequest, bool, Dict[str, Any]],
-                Union[TokenTransferMethod, Literal["any"]],
-            ],
-            None,
-        ] = None,
-        error_handlers: Union[InputErrorHandlers, None] = None,
-        override: Union[InputOverrideConfig, None] = None,
-        invalid_claim_status_code: Union[int, None] = None,
-        use_dynamic_access_token_signing_key: Union[bool, None] = None,
-        expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
-        jwks_refresh_interval_sec: Union[int, None] = None,
+        config: SessionConfig,
     ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
-            app_info,
-            cookie_domain,
-            older_cookie_domain,
-            cookie_secure,
-            cookie_same_site,
-            session_expired_status_code,
-            anti_csrf,
-            get_token_transfer_method,
-            error_handlers,
-            override,
-            invalid_claim_status_code,
-            use_dynamic_access_token_signing_key,
-            expose_access_token_to_frontend_in_cookie_based_auth,
-            jwks_refresh_interval_sec,
+            app_info=app_info,
+            config=config,
         )
         log_debug_message(
             "session init: anti_csrf: %s", self.config.anti_csrf_function_or_string
@@ -123,8 +90,10 @@ class SessionRecipe(RecipeModule):
 
         # we check the input cookie_same_site because the normalised version is
         # always a function.
-        if cookie_same_site is not None:
-            log_debug_message("session init: cookie_same_site: %s", cookie_same_site)
+        if config.cookie_same_site is not None:
+            log_debug_message(
+                "session init: cookie_same_site: %s", config.cookie_same_site
+            )
         else:
             log_debug_message("session init: cookie_same_site: function")
 
@@ -142,19 +111,15 @@ class SessionRecipe(RecipeModule):
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.config, self.app_info
         )
-        self.recipe_implementation: RecipeInterface = (
+        self.recipe_implementation: RecipeInterface = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
         from .api.implementation import APIImplementation
 
         api_implementation = APIImplementation()
-        self.api_implementation: APIInterface = (
+        self.api_implementation: APIInterface = self.config.override.apis(
             api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
         )
 
         self.claims_added_by_other_recipes: List[SessionClaim[Any]] = []
@@ -290,30 +255,40 @@ class SessionRecipe(RecipeModule):
             None,
         ] = None,
         error_handlers: Union[InputErrorHandlers, None] = None,
-        override: Union[InputOverrideConfig, None] = None,
+        override: Union[SessionOverrideConfig, None] = None,
         invalid_claim_status_code: Union[int, None] = None,
         use_dynamic_access_token_signing_key: Union[bool, None] = None,
         expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
         jwks_refresh_interval_sec: Union[int, None] = None,
     ):
-        def func(app_info: AppInfo):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = SessionConfig(
+            cookie_domain=cookie_domain,
+            older_cookie_domain=older_cookie_domain,
+            cookie_secure=cookie_secure,
+            cookie_same_site=cookie_same_site,
+            session_expired_status_code=session_expired_status_code,
+            anti_csrf=anti_csrf,
+            get_token_transfer_method=get_token_transfer_method,
+            error_handlers=error_handlers,
+            override=override,
+            invalid_claim_status_code=invalid_claim_status_code,
+            use_dynamic_access_token_signing_key=use_dynamic_access_token_signing_key,
+            expose_access_token_to_frontend_in_cookie_based_auth=expose_access_token_to_frontend_in_cookie_based_auth,
+            jwks_refresh_interval_sec=jwks_refresh_interval_sec,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if SessionRecipe.__instance is None:
                 SessionRecipe.__instance = SessionRecipe(
-                    SessionRecipe.recipe_id,
-                    app_info,
-                    cookie_domain,
-                    older_cookie_domain,
-                    cookie_secure,
-                    cookie_same_site,
-                    session_expired_status_code,
-                    anti_csrf,
-                    get_token_transfer_method,
-                    error_handlers,
-                    override,
-                    invalid_claim_status_code,
-                    use_dynamic_access_token_signing_key,
-                    expose_access_token_to_frontend_in_cookie_based_auth,
-                    jwks_refresh_interval_sec,
+                    recipe_id=SessionRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=SessionRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return SessionRecipe.__instance
             raise_general_exception(

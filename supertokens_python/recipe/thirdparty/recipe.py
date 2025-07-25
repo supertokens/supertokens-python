@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.supertokens import AppInfo
 
-    from .utils import InputOverrideConfig, SignInAndUpFeature
+    from .utils import SignInAndUpFeature, ThirdPartyOverrideConfig
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
@@ -43,7 +43,7 @@ from .api import (
 from .constants import APPLE_REDIRECT_HANDLER, AUTHORISATIONURL, SIGNINUP
 from .exceptions import SuperTokensThirdPartyError
 from .types import ThirdPartyIngredients
-from .utils import validate_and_normalise_user_input
+from .utils import ThirdPartyConfig, validate_and_normalise_user_input
 
 
 class ThirdPartyRecipe(RecipeModule):
@@ -54,29 +54,21 @@ class ThirdPartyRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        sign_in_and_up_feature: SignInAndUpFeature,
+        config: ThirdPartyConfig,
         _ingredients: ThirdPartyIngredients,
-        override: Union[InputOverrideConfig, None] = None,
     ):
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(
-            sign_in_and_up_feature,
-            override,
-        )
+        self.config = validate_and_normalise_user_input(config=config)
         self.providers = self.config.sign_in_and_up_feature.providers
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.providers
         )
-        self.recipe_implementation: RecipeInterface = (
+        self.recipe_implementation: RecipeInterface = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
         api_implementation = APIImplementation()
-        self.api_implementation: APIInterface = (
+        self.api_implementation: APIInterface = self.config.override.apis(
             api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
         )
 
         def callback():
@@ -165,17 +157,27 @@ class ThirdPartyRecipe(RecipeModule):
     @staticmethod
     def init(
         sign_in_and_up_feature: SignInAndUpFeature,
-        override: Union[InputOverrideConfig, None] = None,
+        override: Union[ThirdPartyOverrideConfig, None] = None,
     ):
-        def func(app_info: AppInfo):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = ThirdPartyConfig(
+            sign_in_and_up_feature=sign_in_and_up_feature,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if ThirdPartyRecipe.__instance is None:
                 ingredients = ThirdPartyIngredients()
                 ThirdPartyRecipe.__instance = ThirdPartyRecipe(
-                    ThirdPartyRecipe.recipe_id,
-                    app_info,
-                    sign_in_and_up_feature,
-                    ingredients,
-                    override,
+                    recipe_id=ThirdPartyRecipe.recipe_id,
+                    app_info=app_info,
+                    _ingredients=ingredients,
+                    config=apply_plugins(
+                        recipe_id=ThirdPartyRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return ThirdPartyRecipe.__instance
             raise_general_exception(

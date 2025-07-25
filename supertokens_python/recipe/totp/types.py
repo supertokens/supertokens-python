@@ -12,10 +12,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from typing_extensions import Literal
 
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideConfig,
+)
 from supertokens_python.types.response import APIResponse
 
 from .interfaces import APIInterface, RecipeInterface
@@ -177,39 +183,21 @@ class VerifyTOTPOkResult(OkResult):
         return {"status": self.status}
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Optional[Callable[[RecipeInterface], RecipeInterface]] = None,
-        apis: Optional[Callable[[APIInterface], APIInterface]] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+TOTPOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedTOTPOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+OverrideConfig = TOTPOverrideConfig
+"""Deprecated: Use `TOTPOverrideConfig` instead."""
 
 
-class TOTPConfig:
-    def __init__(
-        self,
-        issuer: Optional[str] = None,
-        default_skew: Optional[int] = None,
-        default_period: Optional[int] = None,
-        override: Optional[OverrideConfig] = None,
-    ):
-        self.issuer = issuer
-        self.default_skew = default_skew
-        self.default_period = default_period
-        self.override = override
+class TOTPConfig(BaseConfig[RecipeInterface, APIInterface]):
+    issuer: Optional[str] = None
+    default_skew: Optional[int] = None
+    default_period: Optional[int] = None
 
 
-class TOTPNormalisedConfig:
-    def __init__(
-        self,
-        issuer: str,
-        default_skew: int,
-        default_period: int,
-        override: OverrideConfig,
-    ):
-        self.issuer = issuer
-        self.default_skew = default_skew
-        self.default_period = default_period
-        self.override = override
+class NormalisedTOTPConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
+    issuer: str
+    default_skew: int
+    default_period: int

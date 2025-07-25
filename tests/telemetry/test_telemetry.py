@@ -40,7 +40,7 @@ async def test_telemetry():
                 session.init(
                     anti_csrf="VIA_TOKEN",
                     cookie_domain="supertokens.io",
-                    override=session.InputOverrideConfig(),
+                    override=session.SessionOverrideConfig(),
                 )
             ],
             telemetry=True,
@@ -73,7 +73,7 @@ async def test_read_from_env():
                 session.init(
                     anti_csrf="VIA_TOKEN",
                     cookie_domain="supertokens.io",
-                    override=session.InputOverrideConfig(),
+                    override=session.SessionOverrideConfig(),
                 )
             ],
         )

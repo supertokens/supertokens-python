@@ -106,7 +106,9 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[jwt.init(override=jwt.OverrideConfig(functions=custom_functions))],
+        recipe_list=[
+            jwt.init(override=jwt.JWTOverrideConfig(functions=custom_functions))
+        ],
     )
 
     response = driver_config_client.post(
@@ -147,7 +149,7 @@ async def test_overriding_APIs(driver_config_client: TestClient):
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[jwt.init(override=jwt.OverrideConfig(apis=custom_api))],
+        recipe_list=[jwt.init(override=jwt.JWTOverrideConfig(apis=custom_api))],
     )
 
     response = driver_config_client.get(url="/auth/jwt/jwks.json")

@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.auth_utils import is_fake_email
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
@@ -68,7 +68,8 @@ from .constants import (
     USER_PASSWORD_RESET_TOKEN,
 )
 from .utils import (
-    InputOverrideConfig,
+    EmailPasswordConfig,
+    EmailPasswordOverrideConfig,
     InputSignUpFeature,
     validate_and_normalise_user_input,
 )
@@ -84,25 +85,19 @@ class EmailPasswordRecipe(RecipeModule):
         recipe_id: str,
         app_info: AppInfo,
         ingredients: EmailPasswordIngredients,
-        sign_up_feature: Union[InputSignUpFeature, None] = None,
-        override: Union[InputOverrideConfig, None] = None,
-        email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
+        config: EmailPasswordConfig,
     ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
             app_info,
-            sign_up_feature,
-            override,
-            email_delivery,
+            config=config,
         )
 
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.config
         )
-        self.recipe_implementation = (
+        self.recipe_implementation = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
         email_delivery_ingredient = ingredients.email_delivery
@@ -114,11 +109,7 @@ class EmailPasswordRecipe(RecipeModule):
             self.email_delivery = email_delivery_ingredient
 
         api_implementation = APIImplementation()
-        self.api_implementation = (
-            api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
-        )
+        self.api_implementation = self.config.override.apis(api_implementation)
 
         def callback():
             mfa_instance = MultiFactorAuthRecipe.get_instance()
@@ -370,20 +361,30 @@ class EmailPasswordRecipe(RecipeModule):
 
     @staticmethod
     def init(
-        sign_up_feature: Union[InputSignUpFeature, None] = None,
-        override: Union[InputOverrideConfig, None] = None,
-        email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
+        sign_up_feature: Optional[InputSignUpFeature] = None,
+        override: Optional[EmailPasswordOverrideConfig] = None,
+        email_delivery: Optional[EmailDeliveryConfig[EmailTemplateVars]] = None,
     ):
-        def func(app_info: AppInfo):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = EmailPasswordConfig(
+            sign_up_feature=sign_up_feature,
+            email_delivery=email_delivery,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if EmailPasswordRecipe.__instance is None:
                 ingredients = EmailPasswordIngredients(None)
                 EmailPasswordRecipe.__instance = EmailPasswordRecipe(
-                    EmailPasswordRecipe.recipe_id,
-                    app_info,
-                    ingredients,
-                    sign_up_feature,
-                    override,
-                    email_delivery=email_delivery,
+                    recipe_id=EmailPasswordRecipe.recipe_id,
+                    app_info=app_info,
+                    ingredients=ingredients,
+                    config=apply_plugins(
+                        recipe_id=EmailPasswordRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return EmailPasswordRecipe.__instance
             raise Exception(

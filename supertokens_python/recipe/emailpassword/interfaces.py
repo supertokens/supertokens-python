@@ -13,12 +13,13 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.emailpassword.types import EmailTemplateVars
 from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 
 from ...supertokens import AppInfo
 from ...types import (
@@ -32,7 +33,7 @@ if TYPE_CHECKING:
 
     from ...types import User
     from .types import FormField
-    from .utils import EmailPasswordConfig
+    from .utils import NormalisedEmailPasswordConfig
 
 
 class SignUpOkResult:
@@ -118,7 +119,7 @@ class PasswordPolicyViolationError(APIResponse):
         }
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -218,7 +219,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: EmailPasswordConfig,
+        config: NormalisedEmailPasswordConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         email_delivery: EmailDeliveryIngredient[EmailTemplateVars],
@@ -226,7 +227,7 @@ class APIOptions:
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
-        self.config: EmailPasswordConfig = config
+        self.config: NormalisedEmailPasswordConfig = config
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info = app_info
         self.email_delivery = email_delivery
@@ -315,7 +316,7 @@ class SignUpPostNotAllowedResponse(APIResponse):
         return {"status": self.status, "reason": self.reason}
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_email_exists_get = False
         self.disable_generate_password_reset_token_post = False

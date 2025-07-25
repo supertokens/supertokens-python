@@ -32,7 +32,7 @@ from supertokens_python import (
 from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailDeliveryConfigWithService,
+    EmailDeliveryConfig,
     EmailDeliveryInterface,
 )
 from supertokens_python.recipe import (
@@ -486,13 +486,11 @@ def custom_init(
     WebauthnRecipe.reset()
 
     def override_email_verification_apis(
-        original_implementation_email_verification: EmailVerificationAPIInterface,
+        original_implementation: EmailVerificationAPIInterface,
     ):
-        original_email_verify_post = (
-            original_implementation_email_verification.email_verify_post
-        )
+        original_email_verify_post = original_implementation.email_verify_post
         original_generate_email_verify_token_post = (
-            original_implementation_email_verification.generate_email_verify_token_post
+            original_implementation.generate_email_verify_token_post
         )
 
         async def email_verify_post(
@@ -531,11 +529,11 @@ def custom_init(
                 session, api_options, user_context
             )
 
-        original_implementation_email_verification.email_verify_post = email_verify_post
-        original_implementation_email_verification.generate_email_verify_token_post = (
+        original_implementation.email_verify_post = email_verify_post
+        original_implementation.generate_email_verify_token_post = (
             generate_email_verify_token_post
         )
-        return original_implementation_email_verification
+        return original_implementation
 
     def override_email_password_apis(
         original_implementation: EmailPasswordAPIInterface,
@@ -888,7 +886,7 @@ def custom_init(
                 contact_config=ContactPhoneOnlyConfig(),
                 flow_type=passwordlessFlowType,  # type: ignore - type expects only certain literals
                 sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
-                override=passwordless.InputOverrideConfig(
+                override=passwordless.PasswordlessOverrideConfig(
                     apis=override_passwordless_apis
                 ),
             )
@@ -899,7 +897,7 @@ def custom_init(
                 email_delivery=passwordless.EmailDeliveryConfig(
                     CustomPlessEmailService()
                 ),
-                override=passwordless.InputOverrideConfig(
+                override=passwordless.PasswordlessOverrideConfig(
                     apis=override_passwordless_apis
                 ),
             )
@@ -911,7 +909,7 @@ def custom_init(
                     CustomPlessEmailService()
                 ),
                 sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
-                override=passwordless.InputOverrideConfig(
+                override=passwordless.PasswordlessOverrideConfig(
                     apis=override_passwordless_apis
                 ),
             )
@@ -921,7 +919,9 @@ def custom_init(
             flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
             email_delivery=passwordless.EmailDeliveryConfig(CustomPlessEmailService()),
             sms_delivery=passwordless.SMSDeliveryConfig(CustomSMSService()),
-            override=passwordless.InputOverrideConfig(apis=override_passwordless_apis),
+            override=passwordless.PasswordlessOverrideConfig(
+                apis=override_passwordless_apis
+            ),
         )
 
     async def get_allowed_domains_for_tenant_id(
@@ -1050,7 +1050,7 @@ def custom_init(
         {
             "id": "session",
             "init": session.init(
-                override=session.InputOverrideConfig(apis=override_session_apis)
+                override=session.SessionOverrideConfig(apis=override_session_apis)
             ),
         },
         {
@@ -1070,7 +1070,7 @@ def custom_init(
                 email_delivery=emailpassword.EmailDeliveryConfig(
                     CustomEPEmailService()
                 ),
-                override=emailpassword.InputOverrideConfig(
+                override=emailpassword.EmailPasswordOverrideConfig(
                     apis=override_email_password_apis,
                 ),
             ),
@@ -1079,9 +1079,9 @@ def custom_init(
             "id": "webauthn",
             "init": webauthn.init(
                 config=WebauthnConfig(
-                    email_delivery=EmailDeliveryConfigWithService[
-                        TypeWebauthnEmailDeliveryInput
-                    ](service=CustomWebwuthnEmailService())  # type: ignore
+                    email_delivery=EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput](
+                        service=CustomWebwuthnEmailService()
+                    )
                 )
             ),
         },
@@ -1089,7 +1089,9 @@ def custom_init(
             "id": "thirdparty",
             "init": thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers_list),
-                override=thirdparty.InputOverrideConfig(apis=override_thirdparty_apis),
+                override=thirdparty.ThirdPartyOverrideConfig(
+                    apis=override_thirdparty_apis
+                ),
             ),
         },
         {
@@ -1106,7 +1108,7 @@ def custom_init(
             "id": "multifactorauth",
             "init": multifactorauth.init(
                 first_factors=mfaInfo.get("firstFactors", None),
-                override=multifactorauth.OverrideConfig(
+                override=multifactorauth.MultiFactorAuthOverrideConfig(
                     functions=override_mfa_functions,
                     apis=override_mfa_apis,
                 ),

@@ -17,20 +17,19 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Union
 
 from typing_extensions import Literal
 
-if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo, BaseRequest
+from supertokens_python.framework import BaseRequest
 
-    from ...recipe_module import RecipeModule
-    from .utils import TokenTransferMethod
-
-from . import exceptions as ex
-from . import interfaces, utils
+from .interfaces import SessionContainer
 from .recipe import SessionRecipe
+from .utils import (
+    InputErrorHandlers,
+    InputOverrideConfig,
+    SessionOverrideConfig,
+    TokenTransferMethod,
+)
 
-InputErrorHandlers = utils.InputErrorHandlers
-InputOverrideConfig = utils.InputOverrideConfig
-SessionContainer = interfaces.SessionContainer
-exceptions = ex
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import RecipeInit
 
 
 def init(
@@ -48,12 +47,12 @@ def init(
         None,
     ] = None,
     error_handlers: Union[InputErrorHandlers, None] = None,
-    override: Union[InputOverrideConfig, None] = None,
+    override: Union[SessionOverrideConfig, None] = None,
     invalid_claim_status_code: Union[int, None] = None,
     use_dynamic_access_token_signing_key: Union[bool, None] = None,
     expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None,
     jwks_refresh_interval_sec: Union[int, None] = None,
-) -> Callable[[AppInfo], RecipeModule]:
+) -> RecipeInit:
     return SessionRecipe.init(
         cookie_domain,
         older_cookie_domain,
@@ -69,3 +68,14 @@ def init(
         expose_access_token_to_frontend_in_cookie_based_auth,
         jwks_refresh_interval_sec,
     )
+
+
+__all__ = [
+    "InputErrorHandlers",
+    "InputOverrideConfig",  # deprecated, use SessionOverrideConfig instead
+    "SessionContainer",
+    "SessionOverrideConfig",
+    "SessionRecipe",
+    "TokenTransferMethod",
+    "init",
+]
