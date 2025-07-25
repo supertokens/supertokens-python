@@ -393,7 +393,9 @@ def load_plugins(
 
         if VERSION not in version_constraints:
             # TODO: Better checks
-            raise Exception("Plugin version mismatch")
+            raise Exception(
+                f"Plugin version mismatch. Version {VERSION} not in {version_constraints=} for plugin {plugin.id}"
+            )
 
         # TODO: Overkill, but could topologically sort the plugins based on dependencies
         dependencies = plugin.get_dependencies(

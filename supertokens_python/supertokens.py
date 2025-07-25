@@ -227,12 +227,11 @@ class SupertokensExperimentalConfig(CamelCaseBaseModel):
     plugins: Optional[List["SuperTokensPlugin"]] = None
 
 
-class SupertokensPublicConfig(CamelCaseBaseModel):
+class _BaseSupertokensPublicConfig(CamelCaseBaseModel):
     """
     Public properties received as input to the `Supertokens.init` function.
     """
 
-    app_info: InputAppInfo
     framework: Literal["fastapi", "flask", "django"]
     supertokens_config: SupertokensConfig
     mode: Optional[Literal["asgi", "wsgi"]]
@@ -240,17 +239,33 @@ class SupertokensPublicConfig(CamelCaseBaseModel):
     debug: Optional[bool]
 
 
-class SupertokensInputConfig(SupertokensPublicConfig):
+class SupertokensPublicConfig(_BaseSupertokensPublicConfig):
+    """
+    Public properties received as input to the `Supertokens.init` function.
+    """
+
+    app_info: AppInfo  # Uses the Normalised AppInfo class
+
+
+class _BaseSupertokensInputConfig(_BaseSupertokensPublicConfig):
+    recipe_list: List[Callable[[AppInfo, List["OverrideMap"]], "RecipeModule"]]
+    experimental: Optional[SupertokensExperimentalConfig] = None
+
+
+class SupertokensInputConfigWithNormalisedAppInfo(_BaseSupertokensInputConfig):
+    app_info: AppInfo
+
+
+class SupertokensInputConfig(_BaseSupertokensInputConfig):
     """
     Various properties received as input to the `Supertokens.init` function.
     """
 
-    recipe_list: List[Callable[[AppInfo, List["OverrideMap"]], "RecipeModule"]]
-    experimental: Optional[SupertokensExperimentalConfig] = None
+    app_info: InputAppInfo
 
-    def get_public_config(self) -> SupertokensPublicConfig:
+    def to_public_config(self, normalised_app_info: AppInfo) -> SupertokensPublicConfig:
         return SupertokensPublicConfig(
-            app_info=self.app_info,
+            app_info=normalised_app_info,
             framework=self.framework,
             supertokens_config=self.supertokens_config,
             mode=self.mode,
@@ -262,11 +277,12 @@ class SupertokensInputConfig(SupertokensPublicConfig):
     def from_public_config(
         cls,
         config: SupertokensPublicConfig,
+        app_info: InputAppInfo,
         recipe_list: List[Callable[[AppInfo, List["OverrideMap"]], "RecipeModule"]],
         experimental: Optional[SupertokensExperimentalConfig],
     ) -> "SupertokensInputConfig":
         return cls(
-            app_info=config.app_info,
+            app_info=app_info,
             framework=config.framework,
             supertokens_config=config.supertokens_config,
             mode=config.mode,
@@ -308,6 +324,18 @@ class Supertokens:
         if not isinstance(app_info, InputAppInfo):  # type: ignore
             raise ValueError("app_info must be an instance of InputAppInfo")
 
+        self.app_info = AppInfo(
+            app_info.app_name,
+            app_info.api_domain,
+            app_info.website_domain,
+            framework,
+            app_info.api_gateway_path,
+            app_info.api_base_path,
+            app_info.website_base_path,
+            mode,
+            app_info.origin,
+        )
+
         input_config = SupertokensInputConfig(
             app_info=app_info,
             framework=framework,
@@ -318,7 +346,9 @@ class Supertokens:
             debug=debug,
             experimental=experimental,
         )
-        input_public_config = input_config.get_public_config()
+        input_public_config = input_config.to_public_config(
+            normalised_app_info=self.app_info
+        )
         # Use the input public config by default if no plugins provided
         processed_public_config: SupertokensPublicConfig = input_public_config
 
@@ -340,6 +370,7 @@ class Supertokens:
 
         config = SupertokensInputConfig.from_public_config(
             config=processed_public_config,
+            app_info=input_config.app_info,
             recipe_list=recipe_list,
             experimental=experimental,
         )
