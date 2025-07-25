@@ -406,6 +406,18 @@ def load_plugins(
         final_plugin_list.extend(dependencies)
         input_plugin_seen_list.update({dep.id for dep in dependencies})
 
+    # Secondary check to ensure no duplicate plugins
+    # Should ideally be handled in the dependency resolution above.
+    unique_plugins: Set[str] = set()
+    duplicate_plugins: List[str] = []
+    for plugin in final_plugin_list:
+        if plugin.id in unique_plugins:
+            duplicate_plugins.append(plugin.id)
+        unique_plugins.add(plugin.id)
+
+    if len(duplicate_plugins) > 0:
+        raise Exception(f"Duplicate plugins found: {', '.join(duplicate_plugins)}")
+
     processed_plugin_list = [
         SuperTokensPublicPlugin.from_plugin(plugin) for plugin in final_plugin_list
     ]
