@@ -67,6 +67,7 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import RecipeInterface
 from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
 from supertokens_python.recipe.webauthn.types.config import (
     NormalisedWebauthnConfig,
+    OverrideConfig,
     WebauthnConfig,
 )
 
@@ -88,6 +89,9 @@ def init(config: Optional[WebauthnConfig] = None):
 
 __all__ = [
     &#34;init&#34;,
+    &#34;APIInterface&#34;,
+    &#34;RecipeInterface&#34;,
+    &#34;OverrideConfig&#34;,
     &#34;WebauthnConfig&#34;,
     &#34;WebauthnRecipe&#34;,
     &#34;consume_recover_account_token&#34;,
@@ -280,9 +284,572 @@ __all__ = [
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="supertokens_python.recipe.webauthn.APIInterface"><code class="flex name class">
+<span>class <span class="ident">APIInterface</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class APIInterface(ABC):
+    disable_register_options_post: bool = False
+    disable_sign_in_options_post: bool = False
+    disable_sign_up_post: bool = False
+    disable_sign_in_post: bool = False
+    disable_generate_recover_account_token_post: bool = False
+    disable_recover_account_post: bool = False
+    disable_register_credential_post: bool = False
+    disable_email_exists_get: bool = False
+
+    @abstractmethod
+    async def register_options_post(
+        self,
+        *,
+        tenant_id: str,
+        options: APIOptions,
+        user_context: UserContext,
+        **kwargs: Unpack[RegisterOptionsPOSTKwargsInput],
+    ) -&gt; Union[
+        RegisterOptionsPOSTResponse,
+        GeneralErrorResponse,
+        RegisterOptionsPOSTErrorResponse,
+    ]: ...
+
+    @abstractmethod
+    async def sign_in_options_post(
+        self,
+        *,
+        tenant_id: str,
+        options: APIOptions,
+        user_context: UserContext,
+    ) -&gt; Union[
+        SignInOptionsPOSTResponse, GeneralErrorResponse, SignInOptionsPOSTErrorResponse
+    ]: ...
+
+    @abstractmethod
+    async def sign_up_post(
+        self,
+        *,
+        webauthn_generated_options_id: str,
+        credential: RegistrationPayload,
+        tenant_id: str,
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Optional[bool],
+        options: APIOptions,
+        user_context: UserContext,
+    ) -&gt; Union[SignUpPOSTResponse, GeneralErrorResponse, SignUpPOSTErrorResponse]: ...
+
+    @abstractmethod
+    async def sign_in_post(
+        self,
+        *,
+        webauthn_generated_options_id: str,
+        credential: AuthenticationPayload,
+        tenant_id: str,
+        session: Optional[SessionContainer],
+        should_try_linking_with_session_user: Optional[bool],
+        options: APIOptions,
+        user_context: UserContext,
+    ) -&gt; Union[SignInPOSTResponse, GeneralErrorResponse, SignInPOSTErrorResponse]: ...
+
+    @abstractmethod
+    async def generate_recover_account_token_post(
+        self,
+        *,
+        email: str,
+        tenant_id: str,
+        options: APIOptions,
+        user_context: UserContext,
+    ) -&gt; Union[
+        OkResponseBaseModel,
+        GeneralErrorResponse,
+        GenerateRecoverAccountTokenPOSTErrorResponse,
+    ]: ...
+
+    @abstractmethod
+    async def recover_account_post(
+        self,
+        *,
+        token: str,
+        webauthn_generated_options_id: str,
+        credential: RegistrationPayload,
+        tenant_id: str,
+        options: APIOptions,
+        user_context: UserContext,
+    ) -&gt; Union[
+        RecoverAccountPOSTResponse,
+        GeneralErrorResponse,
+        RecoverAccountPOSTErrorResponse,
+    ]: ...
+
+    @abstractmethod
+    async def register_credential_post(
+        self,
+        *,
+        webauthn_generated_options_id: str,
+        credential: RegistrationPayload,
+        tenant_id: str,
+        session: SessionContainer,
+        options: APIOptions,
+        user_context: UserContext,
+    ) -&gt; Union[
+        OkResponseBaseModel, GeneralErrorResponse, RegisterCredentialPOSTErrorResponse
+    ]: ...
+
+    @abstractmethod
+    async def email_exists_get(
+        self,
+        *,
+        email: str,
+        tenant_id: str,
+        options: APIOptions,
+        user_context: UserContext,
+    ) -&gt; Union[EmailExistsGetResponse, GeneralErrorResponse]: ...</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.webauthn.api.implementation.APIImplementation" href="api/implementation.html#supertokens_python.recipe.webauthn.api.implementation.APIImplementation">APIImplementation</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.webauthn.APIInterface.disable_email_exists_get"><code class="name">var <span class="ident">disable_email_exists_get</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.APIInterface.disable_generate_recover_account_token_post"><code class="name">var <span class="ident">disable_generate_recover_account_token_post</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.APIInterface.disable_recover_account_post"><code class="name">var <span class="ident">disable_recover_account_post</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.APIInterface.disable_register_credential_post"><code class="name">var <span class="ident">disable_register_credential_post</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.APIInterface.disable_register_options_post"><code class="name">var <span class="ident">disable_register_options_post</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.APIInterface.disable_sign_in_options_post"><code class="name">var <span class="ident">disable_sign_in_options_post</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.APIInterface.disable_sign_in_post"><code class="name">var <span class="ident">disable_sign_in_post</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.APIInterface.disable_sign_up_post"><code class="name">var <span class="ident">disable_sign_up_post</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.webauthn.APIInterface.email_exists_get"><code class="name flex">
+<span>async def <span class="ident">email_exists_get</span></span>(<span>self, *, email: str, tenant_id: str, options: <a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.api.EmailExistsGetResponse" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.EmailExistsGetResponse">EmailExistsGetResponse</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.APIInterface.generate_recover_account_token_post"><code class="name flex">
+<span>async def <span class="ident">generate_recover_account_token_post</span></span>(<span>self, *, email: str, tenant_id: str, options: <a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.types.response.OkResponseBaseModel" href="../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse">RecoverAccountNotAllowedErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.APIInterface.recover_account_post"><code class="name flex">
+<span>async def <span class="ident">recover_account_post</span></span>(<span>self, *, token: str, webauthn_generated_options_id: str, credential: <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload">RegistrationPayload</a>, tenant_id: str, options: <a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountPOSTResponse" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountPOSTResponse">RecoverAccountPOSTResponse</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse">RecoverAccountTokenInvalidErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse">InvalidCredentialsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse">OptionsNotFoundErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse">InvalidOptionsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse">InvalidAuthenticatorErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.APIInterface.register_credential_post"><code class="name flex">
+<span>async def <span class="ident">register_credential_post</span></span>(<span>self, *, webauthn_generated_options_id: str, credential: <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload">RegistrationPayload</a>, tenant_id: str, session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, options: <a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.types.response.OkResponseBaseModel" href="../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse">InvalidCredentialsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse">OptionsNotFoundErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse">InvalidOptionsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterCredentialNotAllowedErrorResponse" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.RegisterCredentialNotAllowedErrorResponse">RegisterCredentialNotAllowedErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse">InvalidAuthenticatorErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.APIInterface.register_options_post"><code class="name flex">
+<span>async def <span class="ident">register_options_post</span></span>(<span>self, *, tenant_id: str, options: <a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIOptions">APIOptions</a>, user_context: Dict[str, Any], **kwargs: Unpack[<a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTKwargsInput" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTKwargsInput">RegisterOptionsPOSTKwargsInput</a>]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse">RegisterOptionsPOSTResponse</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse">RecoverAccountTokenInvalidErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse">InvalidOptionsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidEmailErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidEmailErrorResponse">InvalidEmailErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.APIInterface.sign_in_options_post"><code class="name flex">
+<span>async def <span class="ident">sign_in_options_post</span></span>(<span>self, *, tenant_id: str, options: <a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse">SignInOptionsPOSTResponse</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse">InvalidOptionsErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.APIInterface.sign_in_post"><code class="name flex">
+<span>async def <span class="ident">sign_in_post</span></span>(<span>self, *, webauthn_generated_options_id: str, credential: <a title="supertokens_python.recipe.webauthn.interfaces.recipe.AuthenticationPayload" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.AuthenticationPayload">AuthenticationPayload</a>, tenant_id: str, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], should_try_linking_with_session_user: Optional[bool], options: <a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.api.SignInPOSTResponse" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.SignInPOSTResponse">SignInPOSTResponse</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse">InvalidCredentialsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.api.SignInNotAllowedErrorResponse" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.SignInNotAllowedErrorResponse">SignInNotAllowedErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.APIInterface.sign_up_post"><code class="name flex">
+<span>async def <span class="ident">sign_up_post</span></span>(<span>self, *, webauthn_generated_options_id: str, credential: <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload">RegistrationPayload</a>, tenant_id: str, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], should_try_linking_with_session_user: Optional[bool], options: <a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.api.SignUpPOSTResponse" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.SignUpPOSTResponse">SignUpPOSTResponse</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.api.SignUpNotAllowedErrorResponse" href="interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.SignUpNotAllowedErrorResponse">SignUpNotAllowedErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse">InvalidAuthenticatorErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.EmailAlreadyExistsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.EmailAlreadyExistsErrorResponse">EmailAlreadyExistsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse">InvalidCredentialsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse">OptionsNotFoundErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse">InvalidOptionsErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.OverrideConfig"><code class="flex name class">
+<span>class <span class="ident">OverrideConfig</span></span>
+<span>(</span><span>functions: Optional[InterfaceOverride[<a title="supertokens_python.recipe.webauthn.RecipeInterface" href="#supertokens_python.recipe.webauthn.RecipeInterface">RecipeInterface</a>]] = None, apis: Optional[InterfaceOverride[<a title="supertokens_python.recipe.webauthn.APIInterface" href="#supertokens_python.recipe.webauthn.APIInterface">APIInterface</a>]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p><code><a title="supertokens_python.recipe.webauthn.WebauthnConfig.override" href="#supertokens_python.recipe.webauthn.WebauthnConfig.override">WebauthnConfig.override</a></code></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@dataclass
+class OverrideConfig:
+    &#34;&#34;&#34;
+    `WebauthnConfig.override`
+    &#34;&#34;&#34;
+
+    functions: Optional[InterfaceOverride[RecipeInterface]] = None
+    apis: Optional[InterfaceOverride[APIInterface]] = None</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.webauthn.OverrideConfig.apis"><code class="name">var <span class="ident">apis</span> : Optional[InterfaceOverride[<a title="supertokens_python.recipe.webauthn.APIInterface" href="#supertokens_python.recipe.webauthn.APIInterface">APIInterface</a>]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.OverrideConfig.functions"><code class="name">var <span class="ident">functions</span> : Optional[InterfaceOverride[<a title="supertokens_python.recipe.webauthn.RecipeInterface" href="#supertokens_python.recipe.webauthn.RecipeInterface">RecipeInterface</a>]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.RecipeInterface"><code class="flex name class">
+<span>class <span class="ident">RecipeInterface</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RecipeInterface(ABC):
+    @abstractmethod
+    async def register_options(
+        self,
+        *,
+        relying_party_id: str,
+        relying_party_name: str,
+        origin: str,
+        resident_key: Optional[ResidentKey] = None,
+        user_verification: Optional[UserVerification] = None,
+        user_presence: Optional[bool] = None,
+        attestation: Optional[Attestation] = None,
+        supported_algorithm_ids: Optional[List[int]] = None,
+        timeout: Optional[int] = None,
+        tenant_id: str,
+        user_context: UserContext,
+        **kwargs: Unpack[RegisterOptionsKwargsInput],
+    ) -&gt; Union[RegisterOptionsResponse, RegisterOptionsErrorResponse]: ...
+
+    @abstractmethod
+    async def sign_in_options(
+        self,
+        *,
+        relying_party_id: str,
+        relying_party_name: str,
+        origin: str,
+        user_verification: Optional[UserVerification] = None,
+        user_presence: Optional[bool] = None,
+        timeout: Optional[int] = None,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[SignInOptionsResponse, SignInOptionsErrorResponse]: ...
+
+    @abstractmethod
+    async def sign_up(
+        self,
+        *,
+        webauthn_generated_options_id: str,
+        credential: RegistrationPayload,
+        session: Optional[SessionContainer] = None,
+        should_try_linking_with_session_user: Optional[bool] = None,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[SignUpReponse, SignUpErrorResponse]: ...
+
+    @abstractmethod
+    async def sign_in(
+        self,
+        *,
+        webauthn_generated_options_id: str,
+        credential: AuthenticationPayload,
+        session: Optional[SessionContainer] = None,
+        should_try_linking_with_session_user: Optional[bool] = None,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[SignInResponse, SignInErrorResponse]: ...
+
+    @abstractmethod
+    async def verify_credentials(
+        self,
+        *,
+        webauthn_generated_options_id: str,
+        credential: AuthenticationPayload,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[VerifyCredentialsResponse, VerifyCredentialsErrorResponse]: ...
+
+    @abstractmethod
+    async def create_new_recipe_user(
+        self,
+        *,
+        webauthn_generated_options_id: str,
+        credential: RegistrationPayload,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[CreateNewRecipeUserResponse, CreateNewRecipeUserErrorResponse]:
+        &#34;&#34;&#34;
+        This function is meant only for creating the recipe in the core and nothing else.
+        We added this even though signUp exists cause devs may override signup expecting it
+        to be called just during sign up. But we also need a version of signing up which can be
+        called during operations like creating a user during account recovery flow.
+        &#34;&#34;&#34;
+        ...
+
+    @abstractmethod
+    async def generate_recover_account_token(
+        self,
+        *,
+        user_id: str,
+        email: str,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[
+        GenerateRecoverAccountTokenResponse,
+        GenerateRecoverAccountTokenErrorResponse,
+    ]:
+        &#34;&#34;&#34;
+        We pass in the email as well to this function cause the input userId
+        may not be associated with an webauthn account. In this case, we
+        need to know which email to use to create an webauthn account later on.
+        &#34;&#34;&#34;
+
+    @abstractmethod
+    async def consume_recover_account_token(
+        self,
+        *,
+        token: str,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[
+        ConsumeRecoverAccountTokenResponse, ConsumeRecoverAccountTokenErrorResponse
+    ]: ...
+
+    @abstractmethod
+    async def register_credential(
+        self,
+        *,
+        webauthn_generated_options_id: str,
+        credential: RegistrationPayload,
+        user_context: UserContext,
+        recipe_user_id: str,
+    ) -&gt; Union[OkResponseBaseModel, RegisterCredentialErrorResponse]: ...
+
+    @abstractmethod
+    async def get_user_from_recover_account_token(
+        self,
+        *,
+        token: str,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[
+        GetUserFromRecoverAccountTokenResponse,
+        GetUserFromRecoverAccountTokenErrorResponse,
+    ]: ...
+
+    @abstractmethod
+    async def remove_credential(
+        self,
+        *,
+        webauthn_credential_id: str,
+        recipe_user_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[OkResponseBaseModel, RemoveCredentialErrorResponse]: ...
+
+    @abstractmethod
+    async def get_credential(
+        self,
+        *,
+        webauthn_credential_id: str,
+        recipe_user_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[GetCredentialResponse, GetCredentialErrorResponse]: ...
+
+    @abstractmethod
+    async def list_credentials(
+        self,
+        *,
+        recipe_user_id: str,
+        user_context: UserContext,
+    ) -&gt; ListCredentialsResponse: ...
+
+    @abstractmethod
+    async def remove_generated_options(
+        self,
+        *,
+        webauthn_generated_options_id: str,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[OkResponseBaseModel, RemoveGeneratedOptionsErrorResponse]: ...
+
+    @abstractmethod
+    async def get_generated_options(
+        self,
+        *,
+        webauthn_generated_options_id: str,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[GetGeneratedOptionsResponse, GetGeneratedOptionsErrorResponse]: ...
+
+    @abstractmethod
+    async def update_user_email(
+        self,
+        *,
+        recipe_user_id: str,
+        email: str,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[OkResponseBaseModel, UpdateUserEmailErrorResponse]: ...</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.webauthn.recipe_implementation.RecipeImplementation" href="recipe_implementation.html#supertokens_python.recipe.webauthn.recipe_implementation.RecipeImplementation">RecipeImplementation</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.webauthn.RecipeInterface.consume_recover_account_token"><code class="name flex">
+<span>async def <span class="ident">consume_recover_account_token</span></span>(<span>self, *, token: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.ConsumeRecoverAccountTokenResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.ConsumeRecoverAccountTokenResponse">ConsumeRecoverAccountTokenResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse">RecoverAccountTokenInvalidErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.RecipeInterface.create_new_recipe_user"><code class="name flex">
+<span>async def <span class="ident">create_new_recipe_user</span></span>(<span>self, *, webauthn_generated_options_id: str, credential: <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload">RegistrationPayload</a>, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.CreateNewRecipeUserResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.CreateNewRecipeUserResponse">CreateNewRecipeUserResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.EmailAlreadyExistsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.EmailAlreadyExistsErrorResponse">EmailAlreadyExistsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse">OptionsNotFoundErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse">InvalidOptionsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse">InvalidCredentialsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse">InvalidAuthenticatorErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This function is meant only for creating the recipe in the core and nothing else.
+We added this even though signUp exists cause devs may override signup expecting it
+to be called just during sign up. But we also need a version of signing up which can be
+called during operations like creating a user during account recovery flow.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.RecipeInterface.generate_recover_account_token"><code class="name flex">
+<span>async def <span class="ident">generate_recover_account_token</span></span>(<span>self, *, user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.GenerateRecoverAccountTokenResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.GenerateRecoverAccountTokenResponse">GenerateRecoverAccountTokenResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.UnknownUserIdErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.UnknownUserIdErrorResponse">UnknownUserIdErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>We pass in the email as well to this function cause the input userId
+may not be associated with an webauthn account. In this case, we
+need to know which email to use to create an webauthn account later on.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.RecipeInterface.get_credential"><code class="name flex">
+<span>async def <span class="ident">get_credential</span></span>(<span>self, *, webauthn_credential_id: str, recipe_user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.GetCredentialResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.GetCredentialResponse">GetCredentialResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.CredentialNotFoundErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.CredentialNotFoundErrorResponse">CredentialNotFoundErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.RecipeInterface.get_generated_options"><code class="name flex">
+<span>async def <span class="ident">get_generated_options</span></span>(<span>self, *, webauthn_generated_options_id: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.GetGeneratedOptionsResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.GetGeneratedOptionsResponse">GetGeneratedOptionsResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse">OptionsNotFoundErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.RecipeInterface.get_user_from_recover_account_token"><code class="name flex">
+<span>async def <span class="ident">get_user_from_recover_account_token</span></span>(<span>self, *, token: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.GetUserFromRecoverAccountTokenResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.GetUserFromRecoverAccountTokenResponse">GetUserFromRecoverAccountTokenResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse">RecoverAccountTokenInvalidErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.RecipeInterface.list_credentials"><code class="name flex">
+<span>async def <span class="ident">list_credentials</span></span>(<span>self, *, recipe_user_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.webauthn.interfaces.recipe.ListCredentialsResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.ListCredentialsResponse">ListCredentialsResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.RecipeInterface.register_credential"><code class="name flex">
+<span>async def <span class="ident">register_credential</span></span>(<span>self, *, webauthn_generated_options_id: str, credential: <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload">RegistrationPayload</a>, user_context: Dict[str, Any], recipe_user_id: str) ‑> Union[<a title="supertokens_python.types.response.OkResponseBaseModel" href="../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse">InvalidCredentialsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse">OptionsNotFoundErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse">InvalidOptionsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse">InvalidAuthenticatorErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.RecipeInterface.register_options"><code class="name flex">
+<span>async def <span class="ident">register_options</span></span>(<span>self, *, relying_party_id: str, relying_party_name: str, origin: str, resident_key: Optional[Literal['required', 'preferred', 'discouraged']] = None, user_verification: Optional[Literal['required', 'preferred', 'discouraged']] = None, user_presence: Optional[bool] = None, attestation: Optional[Literal['none', 'indirect', 'direct', 'enterprise']] = None, supported_algorithm_ids: Optional[List[int]] = None, timeout: Optional[int] = None, tenant_id: str, user_context: Dict[str, Any], **kwargs: Unpack[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.RegisterOptionsKwargsInput" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RegisterOptionsKwargsInput">RegisterOptionsKwargsInput</a>]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.RegisterOptionsResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RegisterOptionsResponse">RegisterOptionsResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse">RecoverAccountTokenInvalidErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse">InvalidOptionsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidEmailErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidEmailErrorResponse">InvalidEmailErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.RecipeInterface.remove_credential"><code class="name flex">
+<span>async def <span class="ident">remove_credential</span></span>(<span>self, *, webauthn_credential_id: str, recipe_user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.types.response.OkResponseBaseModel" href="../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.CredentialNotFoundErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.CredentialNotFoundErrorResponse">CredentialNotFoundErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.RecipeInterface.remove_generated_options"><code class="name flex">
+<span>async def <span class="ident">remove_generated_options</span></span>(<span>self, *, webauthn_generated_options_id: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.types.response.OkResponseBaseModel" href="../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse">OptionsNotFoundErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.RecipeInterface.sign_in"><code class="name flex">
+<span>async def <span class="ident">sign_in</span></span>(<span>self, *, webauthn_generated_options_id: str, credential: <a title="supertokens_python.recipe.webauthn.interfaces.recipe.AuthenticationPayload" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.AuthenticationPayload">AuthenticationPayload</a>, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, should_try_linking_with_session_user: Optional[bool] = None, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.SignInResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.SignInResponse">SignInResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse">InvalidCredentialsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse">InvalidOptionsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse">InvalidAuthenticatorErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.CredentialNotFoundErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.CredentialNotFoundErrorResponse">CredentialNotFoundErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.UnknownUserIdErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.UnknownUserIdErrorResponse">UnknownUserIdErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse">OptionsNotFoundErrorResponse</a>, <a title="supertokens_python.types.auth_utils.LinkingToSessionUserFailedError" href="../../types/auth_utils.html#supertokens_python.types.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.RecipeInterface.sign_in_options"><code class="name flex">
+<span>async def <span class="ident">sign_in_options</span></span>(<span>self, *, relying_party_id: str, relying_party_name: str, origin: str, user_verification: Optional[Literal['required', 'preferred', 'discouraged']] = None, user_presence: Optional[bool] = None, timeout: Optional[int] = None, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.SignInOptionsResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.SignInOptionsResponse">SignInOptionsResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse">InvalidOptionsErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.RecipeInterface.sign_up"><code class="name flex">
+<span>async def <span class="ident">sign_up</span></span>(<span>self, *, webauthn_generated_options_id: str, credential: <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RegistrationPayload">RegistrationPayload</a>, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, should_try_linking_with_session_user: Optional[bool] = None, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.SignUpReponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.SignUpReponse">SignUpReponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.EmailAlreadyExistsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.EmailAlreadyExistsErrorResponse">EmailAlreadyExistsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse">OptionsNotFoundErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse">InvalidOptionsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse">InvalidCredentialsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse">InvalidAuthenticatorErrorResponse</a>, <a title="supertokens_python.types.auth_utils.LinkingToSessionUserFailedError" href="../../types/auth_utils.html#supertokens_python.types.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.RecipeInterface.update_user_email"><code class="name flex">
+<span>async def <span class="ident">update_user_email</span></span>(<span>self, *, recipe_user_id: str, email: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.types.response.OkResponseBaseModel" href="../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.EmailAlreadyExistsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.EmailAlreadyExistsErrorResponse">EmailAlreadyExistsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.UnknownUserIdErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.UnknownUserIdErrorResponse">UnknownUserIdErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.RecipeInterface.verify_credentials"><code class="name flex">
+<span>async def <span class="ident">verify_credentials</span></span>(<span>self, *, webauthn_generated_options_id: str, credential: <a title="supertokens_python.recipe.webauthn.interfaces.recipe.AuthenticationPayload" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.AuthenticationPayload">AuthenticationPayload</a>, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.VerifyCredentialsResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.VerifyCredentialsResponse">VerifyCredentialsResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse">InvalidCredentialsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse">InvalidOptionsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse">InvalidAuthenticatorErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.CredentialNotFoundErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.CredentialNotFoundErrorResponse">CredentialNotFoundErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.UnknownUserIdErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.UnknownUserIdErrorResponse">UnknownUserIdErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse">OptionsNotFoundErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
 <dt id="supertokens_python.recipe.webauthn.WebauthnConfig"><code class="flex name class">
 <span>class <span class="ident">WebauthnConfig</span></span>
-<span>(</span><span>get_relying_party_id: Optional[Union[str, GetRelyingPartyId]] = None, get_relying_party_name: Optional[Union[str, GetRelyingPartyName]] = None, get_origin: Optional[GetOrigin] = None, email_delivery: Optional[EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]] = None, validate_email_address: Optional[ValidateEmailAddress] = None, override: Optional[OverrideConfig] = None)</span>
+<span>(</span><span>get_relying_party_id: Optional[Union[str, GetRelyingPartyId]] = None, get_relying_party_name: Optional[Union[str, GetRelyingPartyName]] = None, get_origin: Optional[GetOrigin] = None, email_delivery: Optional[EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]] = None, validate_email_address: Optional[ValidateEmailAddress] = None, override: Optional[<a title="supertokens_python.recipe.webauthn.OverrideConfig" href="#supertokens_python.recipe.webauthn.OverrideConfig">OverrideConfig</a>] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>WebauthnConfig(get_relying_party_id: 'Optional[Union[str, GetRelyingPartyId]]' = None, get_relying_party_name: 'Optional[Union[str, GetRelyingPartyName]]' = None, get_origin: 'Optional[GetOrigin]' = None, email_delivery: 'Optional[EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]]' = None, validate_email_address: 'Optional[ValidateEmailAddress]' = None, override: 'Optional[OverrideConfig]' = None)</p></div>
@@ -317,7 +884,7 @@ class WebauthnConfig:
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="supertokens_python.recipe.webauthn.WebauthnConfig.override"><code class="name">var <span class="ident">override</span> : Optional[OverrideConfig]</code></dt>
+<dt id="supertokens_python.recipe.webauthn.WebauthnConfig.override"><code class="name">var <span class="ident">override</span> : Optional[<a title="supertokens_python.recipe.webauthn.OverrideConfig" href="#supertokens_python.recipe.webauthn.OverrideConfig">OverrideConfig</a>]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -628,6 +1195,12 @@ inheritance.</p></div>
                 request_id=SIGNUP_EMAIL_EXISTS_API,
                 disabled=self.api_implementation.disable_email_exists_get,
             ),
+            APIHandled(
+                method=&#34;post&#34;,
+                path_without_api_base_path=NormalisedURLPath(REGISTER_CREDENTIAL_API),
+                request_id=REGISTER_CREDENTIAL_API,
+                disabled=self.api_implementation.disable_register_credential_post,
+            ),
         ]
 
     async def handle_api_request(
@@ -688,6 +1261,11 @@ inheritance.</p></div>
                 self.api_implementation, tenant_id, options, user_context
             )
 
+        if request_id == REGISTER_CREDENTIAL_API:
+            return await register_credential_api(
+                self.api_implementation, tenant_id, options, user_context
+            )
+
         return None
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception):
@@ -712,7 +1290,7 @@ inheritance.</p></div>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.webauthn.WebauthnRecipe.api_implementation"><code class="name">var <span class="ident">api_implementation</span> : APIInterface</code></dt>
+<dt id="supertokens_python.recipe.webauthn.WebauthnRecipe.api_implementation"><code class="name">var <span class="ident">api_implementation</span> : <a title="supertokens_python.recipe.webauthn.APIInterface" href="#supertokens_python.recipe.webauthn.APIInterface">APIInterface</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -847,6 +1425,55 @@ inheritance.</p></div>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.webauthn.APIInterface" href="#supertokens_python.recipe.webauthn.APIInterface">APIInterface</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.webauthn.APIInterface.disable_email_exists_get" href="#supertokens_python.recipe.webauthn.APIInterface.disable_email_exists_get">disable_email_exists_get</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.APIInterface.disable_generate_recover_account_token_post" href="#supertokens_python.recipe.webauthn.APIInterface.disable_generate_recover_account_token_post">disable_generate_recover_account_token_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.APIInterface.disable_recover_account_post" href="#supertokens_python.recipe.webauthn.APIInterface.disable_recover_account_post">disable_recover_account_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.APIInterface.disable_register_credential_post" href="#supertokens_python.recipe.webauthn.APIInterface.disable_register_credential_post">disable_register_credential_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.APIInterface.disable_register_options_post" href="#supertokens_python.recipe.webauthn.APIInterface.disable_register_options_post">disable_register_options_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.APIInterface.disable_sign_in_options_post" href="#supertokens_python.recipe.webauthn.APIInterface.disable_sign_in_options_post">disable_sign_in_options_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.APIInterface.disable_sign_in_post" href="#supertokens_python.recipe.webauthn.APIInterface.disable_sign_in_post">disable_sign_in_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.APIInterface.disable_sign_up_post" href="#supertokens_python.recipe.webauthn.APIInterface.disable_sign_up_post">disable_sign_up_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.APIInterface.email_exists_get" href="#supertokens_python.recipe.webauthn.APIInterface.email_exists_get">email_exists_get</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.APIInterface.generate_recover_account_token_post" href="#supertokens_python.recipe.webauthn.APIInterface.generate_recover_account_token_post">generate_recover_account_token_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.APIInterface.recover_account_post" href="#supertokens_python.recipe.webauthn.APIInterface.recover_account_post">recover_account_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.APIInterface.register_credential_post" href="#supertokens_python.recipe.webauthn.APIInterface.register_credential_post">register_credential_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.APIInterface.register_options_post" href="#supertokens_python.recipe.webauthn.APIInterface.register_options_post">register_options_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.APIInterface.sign_in_options_post" href="#supertokens_python.recipe.webauthn.APIInterface.sign_in_options_post">sign_in_options_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.APIInterface.sign_in_post" href="#supertokens_python.recipe.webauthn.APIInterface.sign_in_post">sign_in_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.APIInterface.sign_up_post" href="#supertokens_python.recipe.webauthn.APIInterface.sign_up_post">sign_up_post</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.webauthn.OverrideConfig" href="#supertokens_python.recipe.webauthn.OverrideConfig">OverrideConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.webauthn.OverrideConfig.apis" href="#supertokens_python.recipe.webauthn.OverrideConfig.apis">apis</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.OverrideConfig.functions" href="#supertokens_python.recipe.webauthn.OverrideConfig.functions">functions</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.webauthn.RecipeInterface" href="#supertokens_python.recipe.webauthn.RecipeInterface">RecipeInterface</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.webauthn.RecipeInterface.consume_recover_account_token" href="#supertokens_python.recipe.webauthn.RecipeInterface.consume_recover_account_token">consume_recover_account_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.RecipeInterface.create_new_recipe_user" href="#supertokens_python.recipe.webauthn.RecipeInterface.create_new_recipe_user">create_new_recipe_user</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.RecipeInterface.generate_recover_account_token" href="#supertokens_python.recipe.webauthn.RecipeInterface.generate_recover_account_token">generate_recover_account_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.RecipeInterface.get_credential" href="#supertokens_python.recipe.webauthn.RecipeInterface.get_credential">get_credential</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.RecipeInterface.get_generated_options" href="#supertokens_python.recipe.webauthn.RecipeInterface.get_generated_options">get_generated_options</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.RecipeInterface.get_user_from_recover_account_token" href="#supertokens_python.recipe.webauthn.RecipeInterface.get_user_from_recover_account_token">get_user_from_recover_account_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.RecipeInterface.list_credentials" href="#supertokens_python.recipe.webauthn.RecipeInterface.list_credentials">list_credentials</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.RecipeInterface.register_credential" href="#supertokens_python.recipe.webauthn.RecipeInterface.register_credential">register_credential</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.RecipeInterface.register_options" href="#supertokens_python.recipe.webauthn.RecipeInterface.register_options">register_options</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.RecipeInterface.remove_credential" href="#supertokens_python.recipe.webauthn.RecipeInterface.remove_credential">remove_credential</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.RecipeInterface.remove_generated_options" href="#supertokens_python.recipe.webauthn.RecipeInterface.remove_generated_options">remove_generated_options</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.RecipeInterface.sign_in" href="#supertokens_python.recipe.webauthn.RecipeInterface.sign_in">sign_in</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.RecipeInterface.sign_in_options" href="#supertokens_python.recipe.webauthn.RecipeInterface.sign_in_options">sign_in_options</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.RecipeInterface.sign_up" href="#supertokens_python.recipe.webauthn.RecipeInterface.sign_up">sign_up</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.RecipeInterface.update_user_email" href="#supertokens_python.recipe.webauthn.RecipeInterface.update_user_email">update_user_email</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.RecipeInterface.verify_credentials" href="#supertokens_python.recipe.webauthn.RecipeInterface.verify_credentials">verify_credentials</a></code></li>
+</ul>
+</li>
 <li>
 <h4><code><a title="supertokens_python.recipe.webauthn.WebauthnConfig" href="#supertokens_python.recipe.webauthn.WebauthnConfig">WebauthnConfig</a></code></h4>
 <ul class="">

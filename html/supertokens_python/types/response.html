@@ -689,7 +689,7 @@ validated to form a valid model.</p>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']]" href="#supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']]">StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']]</a></li>
 </ul>
 <h3>Class variables</h3>
 <dl>
@@ -708,6 +708,48 @@ validated to form a valid model.</p>
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
 <li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']]"><code class="flex name class">
+<span>class <span class="ident">StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']]</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.StatusErrResponseBaseModel" href="#supertokens_python.types.response.StatusErrResponseBaseModel">StatusErrResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidEmailErrorResponse" href="../recipe/webauthn/interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidEmailErrorResponse">InvalidEmailErrorResponse</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.StatusErrResponseBaseModel" href="#supertokens_python.types.response.StatusErrResponseBaseModel">StatusErrResponseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.StatusErrResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusErrResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>
@@ -743,12 +785,12 @@ validated to form a valid model.</p>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str]</li>
+<li><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str]" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str]">StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str]</a></li>
 <li><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['LINKING_TO_SESSION_USER_FAILED'], Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER']]" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['LINKING_TO_SESSION_USER_FAILED'], Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER']]">StatusReasonResponseBaseModel[Literal['LINKING_TO_SESSION_USER_FAILED'], Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER']]</a></li>
-<li>supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['RECOVER_ACCOUNT_NOT_ALLOWED'], str]</li>
-<li>supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['REGISTER_CREDENTIAL_NOT_ALLOWED'], str]</li>
-<li>supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_IN_NOT_ALLOWED'], str]</li>
-<li>supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_UP_NOT_ALLOWED'], str]</li>
+<li><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['RECOVER_ACCOUNT_NOT_ALLOWED'], str]" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['RECOVER_ACCOUNT_NOT_ALLOWED'], str]">StatusReasonResponseBaseModel[Literal['RECOVER_ACCOUNT_NOT_ALLOWED'], str]</a></li>
+<li><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['REGISTER_CREDENTIAL_NOT_ALLOWED'], str]" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['REGISTER_CREDENTIAL_NOT_ALLOWED'], str]">StatusReasonResponseBaseModel[Literal['REGISTER_CREDENTIAL_NOT_ALLOWED'], str]</a></li>
+<li><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_IN_NOT_ALLOWED'], str]" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_IN_NOT_ALLOWED'], str]">StatusReasonResponseBaseModel[Literal['SIGN_IN_NOT_ALLOWED'], str]</a></li>
+<li><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_UP_NOT_ALLOWED'], str]" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_UP_NOT_ALLOWED'], str]">StatusReasonResponseBaseModel[Literal['SIGN_UP_NOT_ALLOWED'], str]</a></li>
 </ul>
 <h3>Class variables</h3>
 <dl>
@@ -767,6 +809,48 @@ validated to form a valid model.</p>
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
 <li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str]"><code class="flex name class">
+<span>class <span class="ident">StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str]</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse" href="../recipe/webauthn/interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidAuthenticatorErrorResponse">InvalidAuthenticatorErrorResponse</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>
@@ -813,6 +897,174 @@ validated to form a valid model.</p>
 </li>
 </ul>
 </dd>
+<dt id="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['RECOVER_ACCOUNT_NOT_ALLOWED'], str]"><code class="flex name class">
+<span>class <span class="ident">StatusReasonResponseBaseModel[Literal['RECOVER_ACCOUNT_NOT_ALLOWED'], str]</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse" href="../recipe/webauthn/interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse">RecoverAccountNotAllowedErrorResponse</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['RECOVER_ACCOUNT_NOT_ALLOWED'], str].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['REGISTER_CREDENTIAL_NOT_ALLOWED'], str]"><code class="flex name class">
+<span>class <span class="ident">StatusReasonResponseBaseModel[Literal['REGISTER_CREDENTIAL_NOT_ALLOWED'], str]</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterCredentialNotAllowedErrorResponse" href="../recipe/webauthn/interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.RegisterCredentialNotAllowedErrorResponse">RegisterCredentialNotAllowedErrorResponse</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['REGISTER_CREDENTIAL_NOT_ALLOWED'], str].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_IN_NOT_ALLOWED'], str]"><code class="flex name class">
+<span>class <span class="ident">StatusReasonResponseBaseModel[Literal['SIGN_IN_NOT_ALLOWED'], str]</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.webauthn.interfaces.api.SignInNotAllowedErrorResponse" href="../recipe/webauthn/interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.SignInNotAllowedErrorResponse">SignInNotAllowedErrorResponse</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_IN_NOT_ALLOWED'], str].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_UP_NOT_ALLOWED'], str]"><code class="flex name class">
+<span>class <span class="ident">StatusReasonResponseBaseModel[Literal['SIGN_UP_NOT_ALLOWED'], str]</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.webauthn.interfaces.api.SignUpNotAllowedErrorResponse" href="../recipe/webauthn/interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.SignUpNotAllowedErrorResponse">SignUpNotAllowedErrorResponse</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_UP_NOT_ALLOWED'], str].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
 <dt id="supertokens_python.types.response.StatusResponseBaseModel"><code class="flex name class">
 <span>class <span class="ident">StatusResponseBaseModel</span></span>
 <span>(</span><span>**data: Any)</span>
@@ -843,14 +1095,14 @@ validated to form a valid model.</p>
 <ul class="hlist">
 <li><a title="supertokens_python.types.response.StatusErrResponseBaseModel" href="#supertokens_python.types.response.StatusErrResponseBaseModel">StatusErrResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></li>
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]</li>
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']]</li>
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']]</li>
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]">StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]</a></li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']]">StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']]</a></li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']]">StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']]</a></li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]">StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']]">StatusResponseBaseModel[Literal['OK']]</a></li>
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]</li>
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]</li>
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]">StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]</a></li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]">StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]</a></li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]">StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]</a></li>
 </ul>
 <h3>Class variables</h3>
 <dl>
@@ -869,6 +1121,170 @@ validated to form a valid model.</p>
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
 <li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]"><code class="flex name class">
+<span>class <span class="ident">StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.webauthn.interfaces.recipe.CredentialNotFoundErrorResponse" href="../recipe/webauthn/interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.CredentialNotFoundErrorResponse">CredentialNotFoundErrorResponse</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']]"><code class="flex name class">
+<span>class <span class="ident">StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']]</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.webauthn.interfaces.recipe.EmailAlreadyExistsErrorResponse" href="../recipe/webauthn/interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.EmailAlreadyExistsErrorResponse">EmailAlreadyExistsErrorResponse</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']]"><code class="flex name class">
+<span>class <span class="ident">StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']]</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse" href="../recipe/webauthn/interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidCredentialsErrorResponse">InvalidCredentialsErrorResponse</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]"><code class="flex name class">
+<span>class <span class="ident">StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse" href="../recipe/webauthn/interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse">InvalidOptionsErrorResponse</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>
@@ -900,6 +1316,129 @@ validated to form a valid model.</p>
 <h3>Class variables</h3>
 <dl>
 <dt id="supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]"><code class="flex name class">
+<span>class <span class="ident">StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse" href="../recipe/webauthn/interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.OptionsNotFoundErrorResponse">OptionsNotFoundErrorResponse</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]"><code class="flex name class">
+<span>class <span class="ident">StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse" href="../recipe/webauthn/interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse">RecoverAccountTokenInvalidErrorResponse</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]"><code class="flex name class">
+<span>class <span class="ident">StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.webauthn.interfaces.recipe.UnknownUserIdErrorResponse" href="../recipe/webauthn/interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.UnknownUserIdErrorResponse">UnknownUserIdErrorResponse</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -983,6 +1522,12 @@ validated to form a valid model.</p>
 </ul>
 </li>
 <li>
+<h4><code><a title="supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']]" href="#supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']]">StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']].model_config" href="#supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.model_config" href="#supertokens_python.types.response.StatusReasonResponseBaseModel.model_config">model_config</a></code></li>
@@ -990,9 +1535,39 @@ validated to form a valid model.</p>
 </ul>
 </li>
 <li>
+<h4><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str]" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str]">StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str].model_config" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['LINKING_TO_SESSION_USER_FAILED'], Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER']]" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['LINKING_TO_SESSION_USER_FAILED'], Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER']]">StatusReasonResponseBaseModel[Literal['LINKING_TO_SESSION_USER_FAILED'], Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER']]</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['LINKING_TO_SESSION_USER_FAILED'], Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER']].model_config" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['LINKING_TO_SESSION_USER_FAILED'], Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER']].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['RECOVER_ACCOUNT_NOT_ALLOWED'], str]" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['RECOVER_ACCOUNT_NOT_ALLOWED'], str]">StatusReasonResponseBaseModel[Literal['RECOVER_ACCOUNT_NOT_ALLOWED'], str]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['RECOVER_ACCOUNT_NOT_ALLOWED'], str].model_config" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['RECOVER_ACCOUNT_NOT_ALLOWED'], str].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['REGISTER_CREDENTIAL_NOT_ALLOWED'], str]" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['REGISTER_CREDENTIAL_NOT_ALLOWED'], str]">StatusReasonResponseBaseModel[Literal['REGISTER_CREDENTIAL_NOT_ALLOWED'], str]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['REGISTER_CREDENTIAL_NOT_ALLOWED'], str].model_config" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['REGISTER_CREDENTIAL_NOT_ALLOWED'], str].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_IN_NOT_ALLOWED'], str]" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_IN_NOT_ALLOWED'], str]">StatusReasonResponseBaseModel[Literal['SIGN_IN_NOT_ALLOWED'], str]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_IN_NOT_ALLOWED'], str].model_config" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_IN_NOT_ALLOWED'], str].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_UP_NOT_ALLOWED'], str]" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_UP_NOT_ALLOWED'], str]">StatusReasonResponseBaseModel[Literal['SIGN_UP_NOT_ALLOWED'], str]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_UP_NOT_ALLOWED'], str].model_config" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['SIGN_UP_NOT_ALLOWED'], str].model_config">model_config</a></code></li>
 </ul>
 </li>
 <li>
@@ -1003,9 +1578,51 @@ validated to form a valid model.</p>
 </ul>
 </li>
 <li>
+<h4><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]">StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']].model_config" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']]">StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']].model_config" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']]">StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']].model_config" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]">StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']].model_config" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']]">StatusResponseBaseModel[Literal['OK']]</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']].model_config" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]">StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']].model_config" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]">StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']].model_config" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]">StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']].model_config" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']].model_config">model_config</a></code></li>
 </ul>
 </li>
 </ul>
