@@ -47,6 +47,7 @@ from supertokens_python.recipe.webauthn.interfaces.api import (
     APIOptions,
     EmailExistsGetResponse,
     GenerateRecoverAccountTokenPOSTErrorResponse,
+    ListCredentialsGETResponse,
     RecoverAccountNotAllowedErrorResponse,
     RecoverAccountPOSTErrorResponse,
     RecoverAccountPOSTResponse,
@@ -1068,6 +1069,24 @@ class APIImplementation(APIInterface):
             user=user_after_linking,
         )
 
+    async def list_credentials_get(
+        self,
+        *,
+        options: APIOptions,
+        user_context: UserContext,
+        session: SessionContainer,
+    ) -> Union[ListCredentialsGETResponse, GeneralErrorResponse]:
+        list_credentials_response = (
+            await options.recipe_implementation.list_credentials(
+                recipe_user_id=session.get_recipe_user_id().get_as_string(),
+                user_context=user_context,
+            )
+        )
+
+        return ListCredentialsGETResponse.from_recipe_response(
+            list_credentials_response
+        )
+
     async def register_credential_post(
         self,
         *,
@@ -1122,6 +1141,29 @@ class APIImplementation(APIInterface):
                     error_code_map=error_code_map,
                 )
             )
+
+        return OkResponseBaseModel()
+
+    async def remove_credential_post(
+        self,
+        *,
+        webauthn_credential_id: str,
+        session: SessionContainer,
+        options: APIOptions,
+        user_context: UserContext,
+    ) -> Union[
+        OkResponseBaseModel, GeneralErrorResponse, CredentialNotFoundErrorResponse
+    ]:
+        remove_credential_response = (
+            await options.recipe_implementation.remove_credential(
+                webauthn_credential_id=webauthn_credential_id,
+                recipe_user_id=session.get_recipe_user_id().get_as_string(),
+                user_context=user_context,
+            )
+        )
+
+        if remove_credential_response.status != "OK":
+            return remove_credential_response
 
         return OkResponseBaseModel()
 

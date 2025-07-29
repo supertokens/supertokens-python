@@ -15,7 +15,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Literal, Optional, TypedDict, Union
 
-from typing_extensions import NotRequired, Unpack
+from typing_extensions import NotRequired, Self, Unpack
 
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
@@ -23,10 +23,12 @@ from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.webauthn.interfaces.recipe import (
     AuthenticationPayload,
+    CredentialNotFoundErrorResponse,
     EmailAlreadyExistsErrorResponse,
     InvalidAuthenticatorErrorResponse,
     InvalidCredentialsErrorResponse,
     InvalidOptionsErrorResponse,
+    ListCredentialsResponse,
     OptionsNotFoundErrorResponse,
     RecipeInterface,
     RecoverAccountTokenInvalidErrorResponse,
@@ -194,6 +196,33 @@ class RecoverAccountPOSTResponse(OkResponseBaseModel):
     email: str
 
 
+class ListCredentialsGETResponse(OkResponseBaseModel):
+    class Credential(CamelCaseBaseModel):
+        webauthn_credential_id: str
+        relying_party_id: str
+        created_at: int
+
+    credentials: List[Credential]
+
+    @classmethod
+    def from_recipe_response(
+        cls, list_credentials_response: ListCredentialsResponse
+    ) -> Self:
+        return cls(
+            credentials=[
+                cls.Credential(
+                    webauthn_credential_id=cred.webauthn_credential_id,
+                    relying_party_id=cred.relying_party_id,
+                    created_at=cred.created_at,
+                )
+                for cred in list_credentials_response.credentials
+            ]
+        )
+
+
+RemoveCredentialPOSTErrorResponse = CredentialNotFoundErrorResponse
+
+
 class SignUpPOSTResponse(OkResponseBaseModel):
     user: User
     session: SessionContainer
@@ -228,6 +257,8 @@ class APIInterface(ABC):
     disable_recover_account_post: bool = False
     disable_register_credential_post: bool = False
     disable_email_exists_get: bool = False
+    disable_list_credentials_get: bool = False
+    disable_remove_credential_post: bool = False
 
     @abstractmethod
     async def register_options_post(
@@ -311,6 +342,15 @@ class APIInterface(ABC):
     ]: ...
 
     @abstractmethod
+    async def list_credentials_get(
+        self,
+        *,
+        options: APIOptions,
+        user_context: UserContext,
+        session: SessionContainer,
+    ) -> Union[ListCredentialsGETResponse, GeneralErrorResponse]: ...
+
+    @abstractmethod
     async def register_credential_post(
         self,
         *,
@@ -322,6 +362,18 @@ class APIInterface(ABC):
         user_context: UserContext,
     ) -> Union[
         OkResponseBaseModel, GeneralErrorResponse, RegisterCredentialPOSTErrorResponse
+    ]: ...
+
+    @abstractmethod
+    async def remove_credential_post(
+        self,
+        *,
+        webauthn_credential_id: str,
+        session: SessionContainer,
+        options: APIOptions,
+        user_context: UserContext,
+    ) -> Union[
+        OkResponseBaseModel, GeneralErrorResponse, RemoveCredentialPOSTErrorResponse
     ]: ...
 
     @abstractmethod
