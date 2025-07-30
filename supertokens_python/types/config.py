@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import Callable, Generic, Optional, TypeVar
 
 from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
@@ -93,10 +94,40 @@ class BaseNormalisedOverrideConfig(
         return normalised_config
 
 
-class BaseConfigWithoutAPIOverride(CamelCaseBaseModel, Generic[FunctionInterfaceType]):
+class BaseOverrideableConfig(CamelCaseBaseModel):
+    """Base class for input config of a Recipe without any overrides, used for plugin config overrides."""
+
+    ...
+
+
+OverrideableConfigType = TypeVar("OverrideableConfigType", bound=BaseOverrideableConfig)
+
+
+class BaseConfigWithoutAPIOverride(
+    CamelCaseBaseModel, Generic[FunctionInterfaceType, OverrideableConfigType]
+):
     """Base class for input config of a Recipe without API overrides."""
 
     override: Optional[BaseOverrideConfigWithoutAPI[FunctionInterfaceType]] = None
+
+    @abstractmethod
+    def to_overrideable_config(self) -> OverrideableConfigType:
+        """
+        Create an overrideable config from the input config.
+        """
+        raise NotImplementedError("Subclasses must implement this method.")
+
+    @abstractmethod
+    def from_overrideable_config(
+        self,
+        overrideable_config: OverrideableConfigType,
+        override: BaseOverrideConfigWithoutAPI[FunctionInterfaceType],
+    ) -> "BaseConfigWithoutAPIOverride[FunctionInterfaceType, OverrideableConfigType]":
+        """
+        Create an input config from the overrideable config.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        raise NotImplementedError("Subclasses must implement this method.")
 
 
 class BaseNormalisedConfigWithoutAPIOverride(
@@ -107,12 +138,34 @@ class BaseNormalisedConfigWithoutAPIOverride(
     override: BaseNormalisedOverrideConfigWithoutAPI[FunctionInterfaceType]
 
 
-class BaseConfig(CamelCaseBaseModel, Generic[FunctionInterfaceType, APIInterfaceType]):
+class BaseConfig(
+    CamelCaseBaseModel,
+    Generic[FunctionInterfaceType, APIInterfaceType, OverrideableConfigType],
+):
     """Base class for input config of a Recipe with API overrides."""
 
     override: Optional[BaseOverrideConfig[FunctionInterfaceType, APIInterfaceType]] = (
         None
     )
+
+    @abstractmethod
+    def to_overrideable_config(self) -> OverrideableConfigType:
+        """
+        Create an overrideable config from the input config.
+        """
+        raise NotImplementedError("Subclasses must implement this method.")
+
+    @abstractmethod
+    def from_overrideable_config(
+        self,
+        overrideable_config: OverrideableConfigType,
+        override: BaseOverrideConfig[FunctionInterfaceType, APIInterfaceType],
+    ) -> "BaseConfig[FunctionInterfaceType, APIInterfaceType, OverrideableConfigType]":
+        """
+        Create an input config from the overrideable config.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        raise NotImplementedError("Subclasses must implement this method.")
 
 
 class BaseNormalisedConfig(
