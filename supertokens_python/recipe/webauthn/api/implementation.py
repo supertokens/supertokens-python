@@ -1075,7 +1075,7 @@ class APIImplementation(APIInterface):
         options: APIOptions,
         user_context: UserContext,
         session: SessionContainer,
-    ) -> Union[ListCredentialsGETResponse, GeneralErrorResponse]:
+    ) -> ListCredentialsGETResponse:
         list_credentials_response = (
             await options.recipe_implementation.list_credentials(
                 recipe_user_id=session.get_recipe_user_id().get_as_string(),
@@ -1083,9 +1083,7 @@ class APIImplementation(APIInterface):
             )
         )
 
-        return ListCredentialsGETResponse.from_recipe_response(
-            list_credentials_response
-        )
+        return list_credentials_response
 
     async def register_credential_post(
         self,
