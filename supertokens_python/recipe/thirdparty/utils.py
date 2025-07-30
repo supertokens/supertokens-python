@@ -23,6 +23,7 @@ from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
     BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
     BaseOverrideConfig,
 )
 
@@ -60,8 +61,32 @@ InputOverrideConfig = ThirdPartyOverrideConfig
 """Deprecated: Use `ThirdPartyOverrideConfig` instead."""
 
 
-class ThirdPartyConfig(BaseConfig[RecipeInterface, APIInterface]):
+class ThirdPartyOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
     sign_in_and_up_feature: SignInAndUpFeature
+
+
+class ThirdPartyConfig(
+    ThirdPartyOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, ThirdPartyOverrideableConfig],
+):
+    def to_overrideable_config(self) -> ThirdPartyOverrideableConfig:
+        """Create a `ThirdPartyOverrideableConfig` from the current config."""
+        return ThirdPartyOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: ThirdPartyOverrideableConfig,
+    ) -> "ThirdPartyConfig":
+        """
+        Create a `ThirdPartyConfig` from a `ThirdPartyOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return ThirdPartyConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
 class NormalisedThirdPartyConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):

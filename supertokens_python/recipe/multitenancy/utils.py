@@ -22,6 +22,7 @@ from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
     BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
     BaseOverrideConfig,
 )
 from supertokens_python.utils import (
@@ -74,8 +75,32 @@ InputOverrideConfig = MultitenancyOverrideConfig
 """Deprecated, use `MultitenancyOverrideConfig` instead."""
 
 
-class MultitenancyConfig(BaseConfig[RecipeInterface, APIInterface]):
+class MultitenancyOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
     get_allowed_domains_for_tenant_id: Optional[TypeGetAllowedDomainsForTenantId] = None
+
+
+class MultitenancyConfig(
+    MultitenancyOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, MultitenancyOverrideableConfig],
+):
+    def to_overrideable_config(self) -> MultitenancyOverrideableConfig:
+        """Create a `MultitenancyOverrideableConfig` from the current config."""
+        return MultitenancyOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: MultitenancyOverrideableConfig,
+    ) -> "MultitenancyConfig":
+        """
+        Create a `MultitenancyConfig` from a `MultitenancyOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return MultitenancyConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
 class NormalisedMultitenancyConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):

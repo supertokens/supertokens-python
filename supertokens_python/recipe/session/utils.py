@@ -26,6 +26,7 @@ from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
     BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
     BaseOverrideConfig,
 )
 from supertokens_python.utils import (
@@ -348,7 +349,9 @@ TokenType = Literal["access", "refresh"]
 TokenTransferMethod = Literal["cookie", "header"]
 
 
-class SessionConfig(BaseConfig[RecipeInterface, APIInterface]):
+class SessionOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
     cookie_domain: Union[str, None] = None
     older_cookie_domain: Union[str, None] = None
     cookie_secure: Union[bool, None] = None
@@ -367,6 +370,28 @@ class SessionConfig(BaseConfig[RecipeInterface, APIInterface]):
     use_dynamic_access_token_signing_key: Union[bool, None] = None
     expose_access_token_to_frontend_in_cookie_based_auth: Union[bool, None] = None
     jwks_refresh_interval_sec: Union[int, None] = None
+
+
+class SessionConfig(
+    SessionOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, SessionOverrideableConfig],
+):
+    def to_overrideable_config(self) -> SessionOverrideableConfig:
+        """Create a `SessionOverrideableConfig` from the current config."""
+        return SessionOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: SessionOverrideableConfig,
+    ) -> "SessionConfig":
+        """
+        Create a `SessionConfig` from a `SessionOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return SessionConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
 class NormalisedSessionConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):

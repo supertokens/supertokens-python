@@ -21,6 +21,7 @@ from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
     BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
     BaseOverrideConfig,
 )
 
@@ -38,8 +39,32 @@ InputOverrideConfig = OpenIdOverrideConfig
 """Deprecated, use `OpenIdOverrideConfig` instead."""
 
 
-class OpenIdConfig(BaseConfig[RecipeInterface, APIInterface]):
+class OpenIdOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
     issuer: Optional[str] = None
+
+
+class OpenIdConfig(
+    OpenIdOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, OpenIdOverrideableConfig],
+):
+    def to_overrideable_config(self) -> OpenIdOverrideableConfig:
+        """Create a `OpenIdOverrideableConfig` from the current config."""
+        return OpenIdOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: OpenIdOverrideableConfig,
+    ) -> "OpenIdConfig":
+        """
+        Create a `OpenIdConfig` from a `OpenIdOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return OpenIdConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
 class NormalisedOpenIdConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
