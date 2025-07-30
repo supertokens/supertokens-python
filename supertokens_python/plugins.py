@@ -348,7 +348,6 @@ def apply_plugins(
 
                 config = config.from_overrideable_config(
                     overrideable_config=overridden_config,
-                    override=config.override,
                 )
 
             if overrides.functions is not None:
