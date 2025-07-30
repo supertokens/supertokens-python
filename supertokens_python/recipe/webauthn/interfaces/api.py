@@ -15,7 +15,7 @@
 from abc import abstractmethod
 from typing import TYPE_CHECKING, List, Literal, Optional, TypedDict, Union
 
-from typing_extensions import NotRequired, Self, Unpack
+from typing_extensions import NotRequired, Unpack
 
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
@@ -199,28 +199,7 @@ class RecoverAccountPOSTResponse(OkResponseBaseModel):
     email: str
 
 
-class ListCredentialsGETResponse(OkResponseBaseModel):
-    class Credential(CamelCaseBaseModel):
-        webauthn_credential_id: str
-        relying_party_id: str
-        created_at: int
-
-    credentials: List[Credential]
-
-    @classmethod
-    def from_recipe_response(
-        cls, list_credentials_response: ListCredentialsResponse
-    ) -> Self:
-        return cls(
-            credentials=[
-                cls.Credential(
-                    webauthn_credential_id=cred.webauthn_credential_id,
-                    relying_party_id=cred.relying_party_id,
-                    created_at=cred.created_at,
-                )
-                for cred in list_credentials_response.credentials
-            ]
-        )
+ListCredentialsGETResponse = ListCredentialsResponse
 
 
 RemoveCredentialPOSTErrorResponse = CredentialNotFoundErrorResponse
