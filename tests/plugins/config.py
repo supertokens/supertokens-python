@@ -8,6 +8,7 @@ from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
     BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
     BaseOverrideConfig,
     InterfaceOverride,
 )
@@ -22,12 +23,36 @@ NormalisedPluginTestOverrideConfig = BaseNormalisedOverrideConfig[
 ]
 
 
+class PluginTestOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
+    test_property: List[str] = Field(default_factory=lambda: ["original"])
+
+
+class PluginTestConfig(
+    PluginTestOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, PluginTestOverrideableConfig],
+):
+    def to_overrideable_config(self) -> PluginTestOverrideableConfig:
+        """Create a `PluginTestOverrideableConfig` from the current config."""
+        return PluginTestOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: PluginTestOverrideableConfig,
+    ) -> "PluginTestConfig":
+        """
+        Create a `PluginTestConfig` from a `PluginTestOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return PluginTestConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
+
+
 class NormalizedPluginTestConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
     test_property: List[str]
-
-
-class PluginTestConfig(BaseConfig[RecipeInterface, APIInterface]):
-    test_property: List[str] = Field(default_factory=lambda: ["original"])
 
 
 class PluginOverrideConfig(BaseOverrideConfig[RecipeInterface, APIInterface]):

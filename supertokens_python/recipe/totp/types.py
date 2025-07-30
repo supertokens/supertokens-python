@@ -20,6 +20,7 @@ from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
     BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
     BaseOverrideConfig,
 )
 from supertokens_python.types.response import APIResponse
@@ -191,10 +192,34 @@ OverrideConfig = TOTPOverrideConfig
 """Deprecated: Use `TOTPOverrideConfig` instead."""
 
 
-class TOTPConfig(BaseConfig[RecipeInterface, APIInterface]):
+class TOTPOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
     issuer: Optional[str] = None
     default_skew: Optional[int] = None
     default_period: Optional[int] = None
+
+
+class TOTPConfig(
+    TOTPOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, TOTPOverrideableConfig],
+):
+    def to_overrideable_config(self) -> TOTPOverrideableConfig:
+        """Create a `TOTPOverrideableConfig` from the current config."""
+        return TOTPOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: TOTPOverrideableConfig,
+    ) -> "TOTPConfig":
+        """
+        Create a `TOTPConfig` from a `TOTPOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return TOTPConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
 class NormalisedTOTPConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):

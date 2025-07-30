@@ -191,6 +191,8 @@ NormalisedWebauthnOverrideConfig = BaseNormalisedOverrideConfig[
 
 
 class WebauthnOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
     get_relying_party_id: Optional[Union[str, GetRelyingPartyId]] = None
     get_relying_party_name: Optional[Union[str, GetRelyingPartyName]] = None
     get_origin: Optional[GetOrigin] = None

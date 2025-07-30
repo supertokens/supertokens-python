@@ -43,6 +43,7 @@ from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
     BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
     BaseOverrideConfig,
 )
 
@@ -143,7 +144,9 @@ class PhoneOrEmailInput:
         self.email = email
 
 
-class PasswordlessConfig(BaseConfig[RecipeInterface, APIInterface]):
+class PasswordlessOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
     contact_config: ContactConfig
     flow_type: Literal[
         "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
@@ -157,6 +160,28 @@ class PasswordlessConfig(BaseConfig[RecipeInterface, APIInterface]):
     sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = (
         None
     )
+
+
+class PasswordlessConfig(
+    PasswordlessOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, PasswordlessOverrideableConfig],
+):
+    def to_overrideable_config(self) -> PasswordlessOverrideableConfig:
+        """Create a `PasswordlessOverrideableConfig` from the current config."""
+        return PasswordlessOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: PasswordlessOverrideableConfig,
+    ) -> "PasswordlessConfig":
+        """
+        Create a `PasswordlessConfig` from a `PasswordlessOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return PasswordlessConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
 class NormalisedPasswordlessConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):

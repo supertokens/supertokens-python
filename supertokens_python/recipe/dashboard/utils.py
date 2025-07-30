@@ -22,6 +22,7 @@ from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
     BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
     BaseOverrideConfig,
 )
 
@@ -85,9 +86,33 @@ InputOverrideConfig = DashboardOverrideConfig
 """Deprecated, use `DashboardOverrideConfig` instead."""
 
 
-class DashboardConfig(BaseConfig[RecipeInterface, APIInterface]):
+class DashboardOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
     api_key: Optional[str] = None
     admins: Optional[List[str]] = None
+
+
+class DashboardConfig(
+    DashboardOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, DashboardOverrideableConfig],
+):
+    def to_overrideable_config(self) -> DashboardOverrideableConfig:
+        """Create a `DashboardOverrideableConfig` from the current config."""
+        return DashboardOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: DashboardOverrideableConfig,
+    ) -> "DashboardConfig":
+        """
+        Create a `DashboardConfig` from a `DashboardOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return DashboardConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
 class NormalisedDashboardConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
