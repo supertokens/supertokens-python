@@ -32,6 +32,7 @@ from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
     BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
     BaseOverrideConfig,
 )
 from supertokens_python.types.response import CamelCaseBaseModel
@@ -189,12 +190,35 @@ NormalisedWebauthnOverrideConfig = BaseNormalisedOverrideConfig[
 ]
 
 
-class WebauthnConfig(BaseConfig[RecipeInterface, APIInterface]):
+class WebauthnOverrideableConfig(BaseOverrideableConfig):
     get_relying_party_id: Optional[Union[str, GetRelyingPartyId]] = None
     get_relying_party_name: Optional[Union[str, GetRelyingPartyName]] = None
     get_origin: Optional[GetOrigin] = None
     email_delivery: Optional[EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]] = None
     validate_email_address: Optional[ValidateEmailAddress] = None
+
+
+class WebauthnConfig(
+    WebauthnOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, WebauthnOverrideableConfig],
+):
+    def to_overrideable_config(self) -> WebauthnOverrideableConfig:
+        """Create a `WebauthnOverrideableConfig` from the current config."""
+        return WebauthnOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: WebauthnOverrideableConfig,
+        override: Optional[WebauthnOverrideConfig],
+    ) -> "WebauthnConfig":
+        """
+        Create a `WebauthnConfig` from a `WebauthnOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return WebauthnConfig(
+            **overrideable_config.model_dump(),
+            override=override,
+        )
 
 
 class NormalisedWebauthnConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
