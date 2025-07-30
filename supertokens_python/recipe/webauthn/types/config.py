@@ -209,7 +209,6 @@ class WebauthnConfig(
     def from_overrideable_config(
         self,
         overrideable_config: WebauthnOverrideableConfig,
-        override: Optional[WebauthnOverrideConfig],
     ) -> "WebauthnConfig":
         """
         Create a `WebauthnConfig` from a `WebauthnOverrideableConfig`.
@@ -217,7 +216,7 @@ class WebauthnConfig(
         """
         return WebauthnConfig(
             **overrideable_config.model_dump(),
-            override=override,
+            override=self.override,
         )
 
 

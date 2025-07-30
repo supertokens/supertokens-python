@@ -121,7 +121,6 @@ class BaseConfigWithoutAPIOverride(
     def from_overrideable_config(
         self,
         overrideable_config: OverrideableConfigType,
-        override: BaseOverrideConfigWithoutAPI[FunctionInterfaceType],
     ) -> "BaseConfigWithoutAPIOverride[FunctionInterfaceType, OverrideableConfigType]":
         """
         Create an input config from the overrideable config.
@@ -159,7 +158,6 @@ class BaseConfig(
     def from_overrideable_config(
         self,
         overrideable_config: OverrideableConfigType,
-        override: BaseOverrideConfig[FunctionInterfaceType, APIInterfaceType],
     ) -> "BaseConfig[FunctionInterfaceType, APIInterfaceType, OverrideableConfigType]":
         """
         Create an input config from the overrideable config.
