@@ -323,7 +323,12 @@ def apply_plugins(
         overrides = plugin.get(recipe_id)
         if overrides is not None:
             if overrides.config is not None:
-                config = overrides.config(config)
+                overrideable_config = config.to_overrideable_config()
+                overridden_config = overrides.config(overrideable_config)
+
+                config = config.from_overrideable_config(
+                    overrideable_config=overridden_config,
+                )
 
             if overrides.functions is not None:
                 function_layers.append(overrides.functions)

@@ -23,6 +23,7 @@ from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
     BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
     BaseOverrideConfig,
 )
 
@@ -50,8 +51,32 @@ OverrideConfig = MultiFactorAuthOverrideConfig
 """Deprecated, use `MultiFactorAuthOverrideConfig` instead."""
 
 
-class MultiFactorAuthConfig(BaseConfig[RecipeInterface, APIInterface]):
+class MultiFactorAuthOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
     first_factors: Optional[List[str]] = None
+
+
+class MultiFactorAuthConfig(
+    MultiFactorAuthOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, MultiFactorAuthOverrideableConfig],
+):
+    def to_overrideable_config(self) -> MultiFactorAuthOverrideableConfig:
+        """Create a `MultiFactorAuthOverrideableConfig` from the current config."""
+        return MultiFactorAuthOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: MultiFactorAuthOverrideableConfig,
+    ) -> "MultiFactorAuthConfig":
+        """
+        Create a `MultiFactorAuthConfig` from a `MultiFactorAuthOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return MultiFactorAuthConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
 class NormalisedMultiFactorAuthConfig(

@@ -28,6 +28,7 @@ from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
     BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
     BaseOverrideConfig,
 )
 from supertokens_python.utils import get_filtered_list
@@ -225,9 +226,33 @@ InputOverrideConfig = EmailPasswordOverrideConfig
 """Deprecated, use `EmailPasswordOverrideConfig` instead."""
 
 
-class EmailPasswordConfig(BaseConfig[RecipeInterface, APIInterface]):
+class EmailPasswordOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
     sign_up_feature: Union[InputSignUpFeature, None] = None
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
+
+
+class EmailPasswordConfig(
+    EmailPasswordOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, EmailPasswordOverrideableConfig],
+):
+    def to_overrideable_config(self) -> EmailPasswordOverrideableConfig:
+        """Create a `EmailPasswordOverrideableConfig` from the current config."""
+        return EmailPasswordOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: EmailPasswordOverrideableConfig,
+    ) -> "EmailPasswordConfig":
+        """
+        Create a `EmailPasswordConfig` from a `EmailPasswordOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return EmailPasswordConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
 class NormalisedEmailPasswordConfig(

@@ -30,6 +30,7 @@ from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
     BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
     BaseOverrideConfig,
 )
 
@@ -50,10 +51,34 @@ InputOverrideConfig = EmailVerificationOverrideConfig
 """Deprecated, use `EmailVerificationOverrideConfig` instead."""
 
 
-class EmailVerificationConfig(BaseConfig[RecipeInterface, APIInterface]):
+class EmailVerificationOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
     mode: MODE_TYPE
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
     get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None
+
+
+class EmailVerificationConfig(
+    EmailVerificationOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, EmailVerificationOverrideableConfig],
+):
+    def to_overrideable_config(self) -> EmailVerificationOverrideableConfig:
+        """Create a `EmailVerificationOverrideableConfig` from the current config."""
+        return EmailVerificationOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: EmailVerificationOverrideableConfig,
+    ) -> "EmailVerificationConfig":
+        """
+        Create a `EmailVerificationConfig` from a `EmailVerificationOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return EmailVerificationConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
 class NormalisedEmailVerificationConfig(

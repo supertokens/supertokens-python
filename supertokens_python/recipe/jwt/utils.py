@@ -19,6 +19,7 @@ from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
     BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
     BaseOverrideConfig,
 )
 
@@ -32,8 +33,32 @@ OverrideConfig = JWTOverrideConfig
 """Deprecated, use `JWTOverrideConfig` instead."""
 
 
-class JWTConfig(BaseConfig[RecipeInterface, APIInterface]):
+class JWTOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
     jwt_validity_seconds: Optional[int] = None
+
+
+class JWTConfig(
+    JWTOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, JWTOverrideableConfig],
+):
+    def to_overrideable_config(self) -> JWTOverrideableConfig:
+        """Create a `JWTOverrideableConfig` from the current config."""
+        return JWTOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: JWTOverrideableConfig,
+    ) -> "JWTConfig":
+        """
+        Create a `JWTConfig` from a `JWTOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return JWTConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
 class NormalisedJWTConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
