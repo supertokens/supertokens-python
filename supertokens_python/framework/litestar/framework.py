@@ -11,24 +11,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import TYPE_CHECKING, Any
 
-from abc import ABC, abstractmethod
-from enum import Enum
-from typing import Any, Union
+from supertokens_python.framework.types import Framework
 
-from supertokens_python.framework.request import BaseRequest
-
-frameworks = ["fastapi", "flask", "django", "litestar"]
+if TYPE_CHECKING:
+    from litestar import Request
 
 
-class FrameworkEnum(Enum):
-    FASTAPI = 1
-    FLASK = 2
-    DJANGO = 3
-    LITESTAR = 4
+class LitestarFramework(Framework):
+    def wrap_request(self, unwrapped: Request[Any, Any, Any]):
+        from supertokens_python.framework.litestar.request import (
+            LitestarRequest,
+        )
 
-
-class Framework(ABC):
-    @abstractmethod
-    def wrap_request(self, unwrapped: Any) -> Union[BaseRequest, None]:
-        pass
+        return LitestarRequest(unwrapped)

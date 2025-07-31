@@ -1,0 +1,4 @@
+litestar
+uvicorn
+python-dotenv
+supertokens-python
