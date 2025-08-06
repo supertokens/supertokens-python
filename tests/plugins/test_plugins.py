@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, List, Union
+from typing import Any, Dict, List, Union
 from unittest.mock import patch
 
 from pytest import fixture, mark, param, raises
@@ -377,10 +377,15 @@ def test_st_config_override_non_public_property():
         )
 
 
+# NOTE: Returning a string here to make it easier to write/test the handler
+async def handler_fn(*_, **__: Dict[str, Any]) -> Any:
+    return "plugin1"
+
+
 plugin_route_handler = PluginRouteHandler(
     method="get",
     path="/auth/plugin1/hello",
-    handler=lambda *_, **__: "plugin1",  # type: ignore
+    handler=handler_fn,  # type: ignore - returns string for simplicity
     verify_session_options=None,
 )
 

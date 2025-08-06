@@ -38,13 +38,14 @@ from supertokens_python.logger import (
 from supertokens_python.plugins import (
     OverrideMap,
     PluginRouteHandler,
+    PluginRouteHandlerWithPluginId,
     SuperTokensPlugin,
     SuperTokensPublicPlugin,
 )
 from supertokens_python.types.response import CamelCaseBaseModel
 
 from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT
-from .exceptions import SuperTokensError
+from .exceptions import PluginError, SuperTokensError
 from .interfaces import (
     CreateUserIdMappingOkResult,
     DeleteUserIdMappingOkResult,
@@ -306,7 +307,7 @@ class Supertokens:
 
     telemetry: bool
 
-    plugin_route_handlers: List[PluginRouteHandler]
+    plugin_route_handlers: List[PluginRouteHandlerWithPluginId]
 
     plugin_list: List[SuperTokensPublicPlugin]
 
@@ -764,12 +765,22 @@ class Supertokens:
                     override_global_claim_validators=verify_session_options.override_global_claim_validators,
                 )
 
-            return handler_from_apis.handler(
-                request=request,
-                response=response,
-                session=session,
-                user_context=user_context,
+            log_debug_message(
+                f"middleware: Request being handled by plugin `{handler_from_apis.plugin_id}`"
             )
+            try:
+                return await handler_from_apis.handler(
+                    request=request,
+                    response=response,
+                    session=session,
+                    user_context=user_context,
+                )
+            except PluginError as err:
+                log_debug_message(
+                    f"middleware: Error from plugin `{handler_from_apis.plugin_id}`: {str(err)}. "
+                    "Transforming to SuperTokensError."
+                )
+                raise err
 
         if not path.startswith(Supertokens.get_instance().app_info.api_base_path):
             log_debug_message(
@@ -899,7 +910,7 @@ class Supertokens:
         if isinstance(err, GeneralError):
             raise err
 
-        if isinstance(err, BadInputError):
+        if isinstance(err, (BadInputError, PluginError)):
             log_debug_message("errorHandler: Sending 400 status code response")
             return send_non_200_response_with_message(str(err), 400, response)
 
