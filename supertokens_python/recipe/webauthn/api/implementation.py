@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Optional, Union, cast
+from typing import List, Optional, Union, cast
 
 from typing_extensions import Unpack
 
@@ -23,6 +23,7 @@ from supertokens_python.auth_utils import (
     post_auth_checks,
     pre_auth_checks,
 )
+from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.accountlinking.types import (
     AccountInfoWithRecipeId,
@@ -1084,14 +1085,34 @@ class APIImplementation(APIInterface):
         user_context: UserContext,
         session: SessionContainer,
     ) -> ListCredentialsGETResponse:
-        list_credentials_response = (
-            await options.recipe_implementation.list_credentials(
-                recipe_user_id=session.get_recipe_user_id().get_as_string(),
-                user_context=user_context,
-            )
+        existing_user = await get_user(
+            user_id=session.get_user_id(),
+            user_context=user_context,
         )
+        if existing_user is None:
+            raise_general_exception("User not found")
 
-        return list_credentials_response
+        recipe_user_ids = [
+            lm.recipe_user_id
+            for lm in existing_user.login_methods
+            if lm.recipe_id == "webauthn"
+        ]
+
+        credentials: List[ListCredentialsGETResponse.Credential] = []
+
+        for recipe_user_id in recipe_user_ids:
+            list_credentials_response = (
+                await options.recipe_implementation.list_credentials(
+                    recipe_user_id=recipe_user_id.get_as_string(),
+                    user_context=user_context,
+                )
+            )
+
+            credentials.extend(list_credentials_response.credentials)
+
+        return ListCredentialsGETResponse(
+            credentials=credentials,
+        )
 
     async def register_credential_post(
         self,
@@ -1176,10 +1197,26 @@ class APIImplementation(APIInterface):
                 ]
             )
 
+        user = await get_user(session.get_user_id(), user_context=user_context)
+        if user is None:
+            raise_general_exception("User not found")
+
+        required_login_methods = [
+            lm
+            for lm in user.login_methods
+            if lm.recipe_id == "webauthn"
+            and lm.webauthn is not None
+            and webauthn_credential_id in lm.webauthn.credential_ids
+        ]
+        if len(required_login_methods) == 0:
+            raise_general_exception("User not found")
+
+        recipe_user_id = required_login_methods[0].recipe_user_id
+
         remove_credential_response = (
             await options.recipe_implementation.remove_credential(
                 webauthn_credential_id=webauthn_credential_id,
-                recipe_user_id=session.get_recipe_user_id().get_as_string(),
+                recipe_user_id=recipe_user_id.get_as_string(),
                 user_context=user_context,
             )
         )
