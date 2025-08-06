@@ -1,5 +1,6 @@
 from functools import partial
-from typing import Any, List
+from typing import Any, List, Union
+from unittest.mock import patch
 
 from pytest import fixture, mark, param, raises
 from supertokens_python import (
@@ -450,3 +451,50 @@ async def test_route_handlers_callable(handler_response: Any, expectation: Any):
         )
 
         assert res == expected_output
+
+
+@mark.parametrize(
+    ("sdk_version", "compatible_versions", "expectation"),
+    [
+        param(
+            "1.5.0",
+            ">=1.0.0,<2.0.0",
+            outputs(None),
+            id="[Valid][1.5.0][>=1.0.0,<2.0.0] as string",
+        ),
+        param(
+            "1.5.0",
+            [">=1.0.0", "<2.0.0"],
+            outputs(None),
+            id="[Valid][1.5.0][>=1.0.0,<2.0.0] as list of strings",
+        ),
+        param(
+            "2.0.0",
+            [">=1.0.0,<2.0.0"],
+            raises(Exception, match="Incompatible SDK version for plugin plugin1."),
+            id="[Invalid][2.0.0][>=1.0.0,<2.0.0]",
+        ),
+    ],
+)
+def test_versions(
+    sdk_version: str,
+    compatible_versions: Union[str, List[str]],
+    expectation: Any,
+):
+    plugin = plugin_factory(
+        "plugin1",
+        override_functions=False,
+        override_apis=False,
+        compatible_sdk_versions=compatible_versions,
+    )
+
+    with patch("supertokens_python.plugins.VERSION", sdk_version):
+        with expectation as _:
+            partial_init(
+                recipe_list=[
+                    recipe_factory(override_functions=False, override_apis=False),
+                ],
+                experimental=SupertokensExperimentalConfig(
+                    plugins=[plugin],
+                ),
+            )
