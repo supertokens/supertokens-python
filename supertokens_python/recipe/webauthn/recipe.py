@@ -41,7 +41,7 @@ from supertokens_python.recipe.webauthn.api.generate_recover_account_token impor
 from supertokens_python.recipe.webauthn.api.implementation import APIImplementation
 from supertokens_python.recipe.webauthn.api.list_credentials import list_credentials_api
 from supertokens_python.recipe.webauthn.api.recover_account import recover_account_api
-from supertokens_python.recipe.webauthn.api.register_credentials import (
+from supertokens_python.recipe.webauthn.api.register_credential import (
     register_credential_api,
 )
 from supertokens_python.recipe.webauthn.api.register_options import register_options_api

@@ -16,9 +16,9 @@ under the License.
 
 from typing import Optional
 
-from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework.response import BaseResponse
+from supertokens_python.recipe.session.asyncio import get_session
 from supertokens_python.recipe.webauthn.api.implementation import APIInterface
 from supertokens_python.recipe.webauthn.interfaces.api import APIOptions
 from supertokens_python.types.base import UserContext
@@ -31,12 +31,13 @@ async def list_credentials_api(
     options: APIOptions,
     user_context: UserContext,
 ) -> Optional[BaseResponse]:
-    if not api_implementation.disable_list_credentials_get:
+    if api_implementation.disable_list_credentials_get:
         return None
 
-    session = await load_session_in_auth_api_if_needed(
+    session = await get_session(
         request=options.req,
-        should_try_linking_with_session_user=None,
+        session_required=True,
+        override_global_claim_validators=lambda _, __, ___: [],
         user_context=user_context,
     )
 

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 - Adds API endpoints to list and remove Webauthn credentials
+- Prevents removal of Webauthn credentials unless all session claims are satisfied
+- Changes how sessions are fetched when listing, removing, and registering Webauthn credentials
 - Updates FDI support to `4.2`
 
 ## [0.30.1] - 2025-07-21
