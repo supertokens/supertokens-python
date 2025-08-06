@@ -40,3 +40,7 @@ class GeneralError(SuperTokensError):
 
 class BadInputError(SuperTokensError):
     pass
+
+
+class PluginError(SuperTokensError):
+    pass

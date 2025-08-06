@@ -104,7 +104,7 @@ class PluginRouteHandlerResponse(CamelCaseBaseModel):
 
 @runtime_checkable
 class PluginRouteHandlerHandlerFunction(Protocol):
-    def __call__(
+    async def __call__(
         self,
         request: BaseRequest,
         response: BaseResponse,
@@ -137,6 +137,24 @@ class PluginRouteHandler(CamelCaseBaseModel):
     path: str
     handler: PluginRouteHandlerHandlerFunction
     verify_session_options: Optional[VerifySessionOptions]
+
+
+class PluginRouteHandlerWithPluginId(PluginRouteHandler):
+    plugin_id: str
+    """
+    This is useful when multiple plugins handle the same route.
+    """
+
+    @classmethod
+    def from_route_handler(
+        cls,
+        route_handler: PluginRouteHandler,
+        plugin_id: str,
+    ):
+        return cls(
+            **route_handler.model_dump(),
+            plugin_id=plugin_id,
+        )
 
 
 @runtime_checkable
@@ -372,16 +390,17 @@ def apply_plugins(
 class LoadPluginsResponse(CamelCaseBaseModel):
     public_config: "SupertokensPublicConfig"
     processed_plugins: List[SuperTokensPublicPlugin]
-    plugin_route_handlers: List[PluginRouteHandler]
+    plugin_route_handlers: List[PluginRouteHandlerWithPluginId]
     override_maps: List[OverrideMap]
 
 
 def load_plugins(
-    plugins: List[SuperTokensPlugin], public_config: "SupertokensPublicConfig"
+    plugins: List[SuperTokensPlugin],
+    public_config: "SupertokensPublicConfig",
 ) -> LoadPluginsResponse:
     input_plugin_seen_list: Set[str] = set()
     final_plugin_list: List[SuperTokensPlugin] = []
-    plugin_route_handlers: List[PluginRouteHandler] = []
+    plugin_route_handlers: List[PluginRouteHandlerWithPluginId] = []
 
     for plugin in plugins:
         if plugin.id in input_plugin_seen_list:
@@ -445,7 +464,14 @@ def load_plugins(
             else:
                 handlers = plugin.route_handlers
 
-            plugin_route_handlers.extend(handlers)
+            plugin_route_handlers.extend(
+                [
+                    PluginRouteHandlerWithPluginId.from_route_handler(
+                        handler, plugin.id
+                    )
+                    for handler in handlers
+                ]
+            )
 
         if plugin.init is not None:
 
