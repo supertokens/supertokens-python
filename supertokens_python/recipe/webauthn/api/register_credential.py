@@ -18,9 +18,9 @@ from typing import TYPE_CHECKING, Optional
 
 from pydantic import ValidationError
 
-from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework.response import BaseResponse
+from supertokens_python.recipe.session.asyncio import get_session
 from supertokens_python.recipe.webauthn.interfaces.recipe import (
     InvalidCredentialsErrorResponse,
     RegistrationPayload,
@@ -67,9 +67,10 @@ async def register_credential_api(
             response=options.res,
         )
 
-    session = await load_session_in_auth_api_if_needed(
+    session = await get_session(
         request=options.req,
-        should_try_linking_with_session_user=None,
+        session_required=True,
+        override_global_claim_validators=lambda _, __, ___: [],
         user_context=user_context,
     )
     if session is None:

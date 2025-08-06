@@ -30,6 +30,14 @@ from supertokens_python.recipe.accountlinking.types import (
     ShouldNotAutomaticallyLink,
 )
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
+from supertokens_python.recipe.multifactorauth.asyncio import (
+    assert_allowed_to_setup_factor_else_throw_invalid_claim_error,
+)
+from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
+    MultiFactorAuthClaim,
+)
+from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
+from supertokens_python.recipe.multifactorauth.types import FactorIds
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.webauthn.constants import (
     DEFAULT_REGISTER_OPTIONS_ATTESTATION,
@@ -244,7 +252,7 @@ class APIImplementation(APIInterface):
                 recipe_id="webauthn",
                 email=email,
             ),
-            factor_ids=["webauthn"],
+            factor_ids=[FactorIds.WEBAUTHN],
             is_sign_up=True,
             is_verified=is_fake_email(email),
             sign_in_verifies_login_method=False,
@@ -320,7 +328,7 @@ class APIImplementation(APIInterface):
             authenticated_user=sign_up_response.user,
             recipe_user_id=sign_up_response.recipe_user_id,
             is_sign_up=True,
-            factor_id="webauthn",
+            factor_id=FactorIds.WEBAUTHN,
             session=session,
             request=options.req,
             tenant_id=tenant_id,
@@ -434,7 +442,7 @@ class APIImplementation(APIInterface):
                 recipe_id="webauthn",
                 email=email,
             ),
-            factor_ids=["webauthn"],
+            factor_ids=[FactorIds.WEBAUTHN],
             is_sign_up=False,
             authenticating_user=authenticating_user.user,
             is_verified=is_verified,
@@ -497,7 +505,7 @@ class APIImplementation(APIInterface):
             authenticated_user=sign_in_response.user,
             recipe_user_id=sign_in_response.recipe_user_id,
             is_sign_up=False,
-            factor_id="webauthn",
+            factor_id=FactorIds.WEBAUTHN,
             session=session,
             request=options.req,
             tenant_id=tenant_id,
@@ -1105,6 +1113,14 @@ class APIImplementation(APIInterface):
             "INVALID_CREDENTIALS_ERROR": "The credentials are incorrect. Please make sure you are using the correct credentials. (ERR_CODE_025)",
         }
 
+        mfa_instance = MultiFactorAuthRecipe.get_instance()
+        if mfa_instance is not None:
+            await assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
+                session=session,
+                factor_id=FactorIds.WEBAUTHN,
+                user_context=user_context,
+            )
+
         generated_options = await options.recipe_implementation.get_generated_options(
             webauthn_generated_options_id=webauthn_generated_options_id,
             tenant_id=tenant_id,
@@ -1152,6 +1168,14 @@ class APIImplementation(APIInterface):
     ) -> Union[
         OkResponseBaseModel, GeneralErrorResponse, CredentialNotFoundErrorResponse
     ]:
+        mfa_instance = MultiFactorAuthRecipe.get_instance()
+        if mfa_instance is not None:
+            await session.assert_claims(
+                claim_validators=[
+                    MultiFactorAuthClaim.validators.has_completed_mfa_requirements_for_auth()
+                ]
+            )
+
         remove_credential_response = (
             await options.recipe_implementation.remove_credential(
                 webauthn_credential_id=webauthn_credential_id,

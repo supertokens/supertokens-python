@@ -16,9 +16,9 @@ under the License.
 
 from typing import Optional
 
-from supertokens_python.auth_utils import load_session_in_auth_api_if_needed
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework.response import BaseResponse
+from supertokens_python.recipe.session.asyncio import get_session
 from supertokens_python.recipe.webauthn.interfaces.api import APIInterface, APIOptions
 from supertokens_python.types.base import UserContext
 from supertokens_python.utils import send_200_response
@@ -41,9 +41,10 @@ async def remove_credential_api(
     if not isinstance(webauthn_credential_id, str):
         raise_bad_input_exception("A valid webauthnCredentialId is required")
 
-    session = await load_session_in_auth_api_if_needed(
+    session = await get_session(
         request=options.req,
-        should_try_linking_with_session_user=None,
+        session_required=True,
+        override_global_claim_validators=lambda _, __, ___: [],
         user_context=user_context,
     )
 
