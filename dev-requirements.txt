@@ -7,6 +7,7 @@ fastapi==0.115.5
 Flask==3.0.3
 flask-cors==5.0.0
 nest-asyncio==1.6.0
+packaging==25.0
 pdoc3==0.11.0
 pre-commit==3.5.0
 pyfakefs==5.7.4

@@ -89,6 +89,7 @@ def plugin_factory(
     override_config: bool = False,
     deps: Optional[List[SuperTokensPlugin]] = None,
     add_init: bool = False,
+    compatible_sdk_versions: Optional[Union[str, List[str]]] = None,
 ):
     override_map_obj: OverrideMap = {PluginTestRecipe.recipe_id: RecipePluginOverride()}
 
@@ -110,9 +111,14 @@ def plugin_factory(
     if add_init:
         init_fn = init_factory(identifier)
 
+    if compatible_sdk_versions is None:
+        sdk_versions = f"=={VERSION}"
+    else:
+        sdk_versions = compatible_sdk_versions
+
     class Plugin(SuperTokensPlugin):
         id: str = identifier
-        compatible_sdk_versions: Union[str, List[str]] = [VERSION]
+        compatible_sdk_versions: Union[str, List[str]] = sdk_versions
         override_map: Optional[OverrideMap] = override_map_obj
         init: Any = init_fn
         dependencies: Optional[SuperTokensPluginDependencies] = dependency_factory(deps)

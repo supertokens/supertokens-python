@@ -14,6 +14,8 @@ from typing import (
     runtime_checkable,
 )
 
+from packaging.specifiers import SpecifierSet
+from packaging.version import Version
 from typing_extensions import Protocol
 
 from supertokens_python.constants import VERSION
@@ -387,14 +389,14 @@ def load_plugins(
             continue
 
         if isinstance(plugin.compatible_sdk_versions, list):
-            version_constraints = plugin.compatible_sdk_versions
+            version_constraints = ",".join(plugin.compatible_sdk_versions)
         else:
-            version_constraints = [plugin.compatible_sdk_versions]
+            version_constraints = plugin.compatible_sdk_versions
 
-        if VERSION not in version_constraints:
-            # TODO: Better checks
+        if not SpecifierSet(version_constraints).contains(Version(VERSION)):
             raise Exception(
-                f"Plugin version mismatch. Version {VERSION} not in {version_constraints=} for plugin {plugin.id}"
+                f"Incompatible SDK version for plugin {plugin.id}. "
+                f"Version {VERSION} not found in compatible versions {version_constraints}"
             )
 
         # TODO: Overkill, but could topologically sort the plugins based on dependencies
