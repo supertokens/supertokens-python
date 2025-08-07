@@ -14,6 +14,7 @@
 from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python import Supertokens
+from supertokens_python.exceptions import BadInputError
 from supertokens_python.interfaces import (
     CreateUserIdMappingOkResult,
     DeleteUserIdMappingOkResult,
@@ -26,8 +27,9 @@ from supertokens_python.interfaces import (
 )
 from supertokens_python.recipe.accountlinking.interfaces import GetUsersResult
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
+from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.types import User
-from supertokens_python.types.base import AccountInfoInput
+from supertokens_python.types.base import AccountInfoInput, UserContext
 
 
 async def get_users_oldest_first(
@@ -172,3 +174,44 @@ async def list_users_by_account_info(
         do_union_of_account_info,
         user_context,
     )
+
+
+# Async not really required, but keeping for consistency
+async def is_recipe_initialized(recipe_id: str) -> bool:
+    """
+    Check if a recipe is initialized.
+    :param recipe_id: The ID of the recipe to check.
+    :return: Whether the recipe is initialized.
+    """
+    return any(
+        recipe.get_recipe_id() == recipe_id
+        for recipe in Supertokens.get_instance().recipe_modules
+    )
+
+
+async def get_available_first_factors(
+    tenant_id: str,
+    session: Optional[SessionContainer],
+    user_context: Optional[UserContext],
+):
+    from supertokens_python.auth_utils import (
+        filter_out_invalid_first_factors_or_throw_if_all_are_invalid,
+    )
+    from supertokens_python.recipe.multifactorauth.types import FactorIds
+
+    available_first_factors: List[str] = []
+
+    try:
+        available_first_factors = (
+            await filter_out_invalid_first_factors_or_throw_if_all_are_invalid(
+                factor_ids=FactorIds.get_all_factors(),
+                tenant_id=tenant_id,
+                has_session=session is not None,
+                user_context=user_context if user_context is not None else {},
+            )
+        )
+    except BadInputError:
+        # All the factors were invalid, so we let it pass through and return the empty list
+        pass
+
+    return available_first_factors
