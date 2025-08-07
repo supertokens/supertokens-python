@@ -348,7 +348,7 @@ def apply_plugins(
 
                 config = config.from_overrideable_config(
                     overrideable_config=overridden_config,
-                )
+                )  # type: ignore - various config types used, but will never pass config from a different recipe
 
             if overrides.functions is not None:
                 function_layers.append(overrides.functions)
