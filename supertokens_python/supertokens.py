@@ -42,6 +42,7 @@ from supertokens_python.plugins import (
     SuperTokensPlugin,
     SuperTokensPublicPlugin,
 )
+from supertokens_python.types.base import UserContext
 from supertokens_python.types.response import CamelCaseBaseModel
 
 from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT
@@ -181,13 +182,13 @@ class AppInfo:
         self.mode = mode
 
     def get_top_level_website_domain(
-        self, request: Optional[BaseRequest], user_context: Dict[str, Any]
+        self, request: Optional[BaseRequest], user_context: UserContext
     ) -> str:
         return get_top_level_domain_for_same_site_resolution(
             self.get_origin(request, user_context).get_as_string_dangerous()
         )
 
-    def get_origin(self, request: Optional[BaseRequest], user_context: Dict[str, Any]):
+    def get_origin(self, request: Optional[BaseRequest], user_context: UserContext):
         origin = self.__origin
         if origin is None:
             origin = self.__website_domain
@@ -211,7 +212,7 @@ class AppInfo:
 
 
 def manage_session_post_response(
-    session: SessionContainer, response: BaseResponse, user_context: Dict[str, Any]
+    session: SessionContainer, response: BaseResponse, user_context: UserContext
 ):
     # Something similar happens in handle_error of session/recipe.py
     for mutator in session.response_mutators:
@@ -577,7 +578,7 @@ class Supertokens:
         self,
         include_recipe_ids: Union[None, List[str]],
         tenant_id: Optional[str] = None,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Optional[UserContext] = None,
     ) -> int:
         querier = Querier.get_instance(None)
         include_recipe_ids_str = None
@@ -601,7 +602,7 @@ class Supertokens:
         external_user_id: str,
         external_user_id_info: Optional[str],
         force: Optional[bool],
-        user_context: Optional[Dict[str, Any]],
+        user_context: Optional[UserContext],
     ) -> Union[
         CreateUserIdMappingOkResult,
         UnknownSupertokensUserIDError,
@@ -641,7 +642,7 @@ class Supertokens:
         self,
         user_id: str,
         user_id_type: Optional[UserIDTypes],
-        user_context: Optional[Dict[str, Any]],
+        user_context: Optional[UserContext],
     ) -> Union[GetUserIdMappingOkResult, UnknownMappingError]:
         querier = Querier.get_instance(None)
 
@@ -676,7 +677,7 @@ class Supertokens:
         user_id: str,
         user_id_type: Optional[UserIDTypes],
         force: Optional[bool],
-        user_context: Optional[Dict[str, Any]],
+        user_context: Optional[UserContext],
     ) -> DeleteUserIdMappingOkResult:
         querier = Querier.get_instance(None)
 
@@ -708,7 +709,7 @@ class Supertokens:
         user_id: str,
         user_id_type: Optional[UserIDTypes],
         external_user_id_info: Optional[str],
-        user_context: Optional[Dict[str, Any]],
+        user_context: Optional[UserContext],
     ) -> Union[UpdateOrDeleteUserIdMappingInfoOkResult, UnknownMappingError]:
         querier = Querier.get_instance(None)
 
@@ -734,7 +735,7 @@ class Supertokens:
         raise_general_exception("Please upgrade the SuperTokens core to >= 3.15.0")
 
     async def middleware(
-        self, request: BaseRequest, response: BaseResponse, user_context: Dict[str, Any]
+        self, request: BaseRequest, response: BaseResponse, user_context: UserContext
     ) -> Union[BaseResponse, None]:
         from supertokens_python.recipe.session.recipe import SessionRecipe
 
@@ -907,7 +908,7 @@ class Supertokens:
         request: BaseRequest,
         err: Exception,
         response: BaseResponse,
-        user_context: Dict[str, Any],
+        user_context: UserContext,
     ) -> Optional[BaseResponse]:
         log_debug_message("errorHandler: Started")
         log_debug_message(
@@ -935,7 +936,7 @@ class Supertokens:
 
     def get_request_from_user_context(
         self,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Optional[UserContext] = None,
     ) -> Optional[BaseRequest]:
         if user_context is None:
             return None
@@ -948,20 +949,8 @@ class Supertokens:
 
         return user_context.get("_default", {}).get("request")
 
-    @staticmethod
-    def is_recipe_initialized(recipe_id: str) -> bool:
-        """
-        Check if a recipe is initialized.
-        :param recipe_id: The ID of the recipe to check.
-        :return: Whether the recipe is initialized.
-        """
-        return any(
-            recipe.get_recipe_id() == recipe_id
-            for recipe in Supertokens.get_instance().recipe_modules
-        )
-
 
 def get_request_from_user_context(
-    user_context: Optional[Dict[str, Any]],
+    user_context: Optional[UserContext],
 ) -> Optional[BaseRequest]:
     return Supertokens.get_instance().get_request_from_user_context(user_context)
