@@ -61,14 +61,27 @@ class NormalisedMultiFactorAuthConfig(
 
 
 class FactorIds:
-    EMAILPASSWORD: Literal["emailpassword"] = "emailpassword"
-    OTP_EMAIL: Literal["otp-email"] = "otp-email"
-    OTP_PHONE: Literal["otp-phone"] = "otp-phone"
-    LINK_EMAIL: Literal["link-email"] = "link-email"
-    LINK_PHONE: Literal["link-phone"] = "link-phone"
-    THIRDPARTY: Literal["thirdparty"] = "thirdparty"
-    TOTP: Literal["totp"] = "totp"
-    WEBAUTHN: Literal["webauthn"] = "webauthn"
+    EMAILPASSWORD = "emailpassword"
+    OTP_EMAIL = "otp-email"
+    OTP_PHONE = "otp-phone"
+    LINK_EMAIL = "link-email"
+    LINK_PHONE = "link-phone"
+    THIRDPARTY = "thirdparty"
+    TOTP = "totp"
+    WEBAUTHN = "webauthn"
+
+    @staticmethod
+    def get_all_factors():
+        return [
+            FactorIds.EMAILPASSWORD,
+            FactorIds.OTP_EMAIL,
+            FactorIds.OTP_PHONE,
+            FactorIds.LINK_EMAIL,
+            FactorIds.LINK_PHONE,
+            FactorIds.THIRDPARTY,
+            FactorIds.TOTP,
+            FactorIds.WEBAUTHN,
+        ]
 
 
 class FactorIdsAndType:

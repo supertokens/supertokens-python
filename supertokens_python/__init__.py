@@ -12,11 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from typing_extensions import Literal
 
-from supertokens_python.framework.request import BaseRequest
 from supertokens_python.recipe_module import RecipeModule
 from supertokens_python.types import RecipeUserId
 
@@ -30,6 +29,7 @@ from .supertokens import (
     SupertokensExperimentalConfig,
     SupertokensInputConfig,
     SupertokensPublicConfig,
+    get_request_from_user_context,
 )
 
 # Some Pydantic models need a rebuild to resolve ForwardRefs
@@ -69,17 +69,8 @@ def get_all_cors_headers() -> List[str]:
     return Supertokens.get_instance().get_all_cors_headers()
 
 
-def get_request_from_user_context(
-    user_context: Optional[Dict[str, Any]],
-) -> Optional[BaseRequest]:
-    return Supertokens.get_instance().get_request_from_user_context(user_context)
-
-
 def convert_to_recipe_user_id(user_id: str) -> RecipeUserId:
     return RecipeUserId(user_id)
-
-
-is_recipe_initialized = Supertokens.is_recipe_initialized
 
 
 __all__ = [
@@ -95,5 +86,4 @@ __all__ = [
     "get_all_cors_headers",
     "get_request_from_user_context",
     "init",
-    "is_recipe_initialized",
 ]
