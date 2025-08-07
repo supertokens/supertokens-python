@@ -17,6 +17,7 @@ from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
     BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
     BaseOverrideConfig,
 )
 
@@ -30,7 +31,32 @@ InputOverrideConfig = OAuth2ProviderOverrideConfig
 """Deprecated, use `OAuth2ProviderOverrideConfig` instead."""
 
 
-class OAuth2ProviderConfig(BaseConfig[RecipeInterface, APIInterface]): ...
+class OAuth2ProviderOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
+    ...
+
+
+class OAuth2ProviderConfig(
+    OAuth2ProviderOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, OAuth2ProviderOverrideableConfig],
+):
+    def to_overrideable_config(self) -> OAuth2ProviderOverrideableConfig:
+        """Create a `OAuth2ProviderOverrideableConfig` from the current config."""
+        return OAuth2ProviderOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: OAuth2ProviderOverrideableConfig,
+    ) -> "OAuth2ProviderConfig":
+        """
+        Create a `OAuth2ProviderConfig` from a `OAuth2ProviderOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return OAuth2ProviderConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
 class NormalisedOAuth2ProviderConfig(
