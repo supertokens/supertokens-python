@@ -1,0 +1,92 @@
+name: Test Versions Action
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  supported-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
+      cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
+      pyVersions: '["3.8", "3.13"]'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supertokens/get-supported-versions-action@main
+        id: versions
+        with:
+          has-fdi: true
+          has-cdi: true
+          has-web-js: false
+
+  get-versions:
+    runs-on: ubuntu-latest
+    needs: supported-versions
+
+    strategy:
+      fail-fast: false
+      matrix:
+        fdi-version: ${{ fromJSON(needs.supported-versions.outputs.fdiVersions) }}
+        cdi-version: ${{ fromJSON(needs.supported-versions.outputs.cdiVersions) }}
+
+
+    steps:
+      - uses: supertokens/actions/get-versions-from-repo@main
+        id: node
+        with:
+          repo: supertokens-node
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cdi-versions: ${{ needs.supported-versions.outputs.cdiVersions }}
+          fdi-versions: ${{ needs.supported-versions.outputs.fdiVersions }}
+
+      - run: |
+          cdiVersion=$( echo '${{ steps.node.outputs.cdiVersions }}' | jq -r '.["${{ matrix.cdi-version }}"]' )
+          echo "Node version from CDI: $cdiVersion"
+          fdiVersion=$( echo '${{ steps.node.outputs.fdiVersions }}' | jq -r '.["${{ matrix.fdi-version }}"]' )
+          echo "Node version from FDI: $fdiVersion"
+
+      - uses: supertokens/actions/get-versions-from-repo@main
+        id: auth-react
+        with:
+          repo: supertokens-auth-react
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        #   cdi-versions: ${{ needs.supported-versions.outputs.cdiVersions }}
+          fdi-versions: ${{ needs.supported-versions.outputs.fdiVersions }}
+
+      - run: |
+          fdiVersion=$( echo '${{ steps.auth-react.outputs.fdiVersions }}' | jq -r '.["${{ matrix.fdi-version }}"]' )
+          echo "Auth React version from FDI: $fdiVersion"
+
+      - uses: supertokens/actions/get-versions-from-repo@main
+        id: website
+        with:
+          repo: supertokens-website
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        #   cdi-versions: ${{ needs.supported-versions.outputs.cdiVersions }}
+          fdi-versions: ${{ needs.supported-versions.outputs.fdiVersions }}
+
+      - run: |
+          fdiVersion=$( echo '${{ steps.website.outputs.fdiVersions }}' | jq -r '.["${{ matrix.fdi-version }}"]' )
+          echo "website version from FDI: $fdiVersion"
+
+      - uses: supertokens/actions/get-versions-from-repo@main
+        id: core
+        with:
+          repo: supertokens-core
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cdi-versions: ${{ needs.supported-versions.outputs.cdiVersions }}
+        #   fdi-versions: ${{ needs.supported-versions.outputs.fdiVersions }}
+      - run: |
+          cdiVersion=$( echo '${{ steps.core.outputs.cdiVersions }}' | jq -r '.["${{ matrix.cdi-version }}"]' )
+          echo "core version from CDI: $cdiVersion"
