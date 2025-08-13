@@ -13,8 +13,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  versions:
+  supported-versions:
     runs-on: ubuntu-latest
+    outputs:
+      fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
+      cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
+      pyVersions: '["3.8", "3.13"]'
 
     steps:
       - uses: actions/checkout@v4
@@ -26,30 +30,58 @@ jobs:
           has-cdi: true
           has-web-js: false
 
+  get-versions:
+    runs-on: ubuntu-latest
+    needs: supported-versions
+
+    strategy:
+      fail-fast: false
+      matrix:
+        fdi-version: ${{ fromJSON(needs.supported-versions.outputs.fdiVersions) }}
+        cdi-version: ${{ fromJSON(needs.supported-versions.outputs.cdiVersions) }}
+
+
+    steps:
       - uses: supertokens/actions/get-versions-from-repo@main
+        id: node
         with:
           repo: supertokens-node
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          cdi-versions: ${{ steps.versions.outputs.cdiVersions }}
-          fdi-versions: ${{ steps.versions.outputs.fdiVersions }}
+          cdi-versions: ${{ needs.supported-versions.outputs.cdiVersions }}
+          fdi-versions: ${{ needs.supported-versions.outputs.fdiVersions }}
+
+      - run: |
+          echo "Node version from CDI: ${{ steps.node.outputs.cdiVersions[matrix.cdi-version] }}"
+          echo "Node version from FDI: ${{ steps.node.outputs.fdiVersions[matrix.fdi-version] }}"
 
       - uses: supertokens/actions/get-versions-from-repo@main
+        id: auth-react
         with:
           repo: supertokens-auth-react
           github-token: ${{ secrets.GITHUB_TOKEN }}
-        #   cdi-versions: ${{ steps.versions.outputs.cdiVersions }}
-          fdi-versions: ${{ steps.versions.outputs.fdiVersions }}
+        #   cdi-versions: ${{ needs.supported-versions.outputs.cdiVersions }}
+          fdi-versions: ${{ needs.supported-versions.outputs.fdiVersions }}
+
+      - run: |
+          echo "Auth react version from FDI: ${{ steps.auth-react.outputs.fdiVersions[matrix.fdi-version] }}"
 
       - uses: supertokens/actions/get-versions-from-repo@main
+        id: website
         with:
           repo: supertokens-website
           github-token: ${{ secrets.GITHUB_TOKEN }}
-        #   cdi-versions: ${{ steps.versions.outputs.cdiVersions }}
-          fdi-versions: ${{ steps.versions.outputs.fdiVersions }}
+        #   cdi-versions: ${{ needs.supported-versions.outputs.cdiVersions }}
+          fdi-versions: ${{ needs.supported-versions.outputs.fdiVersions }}
+
+      - run: |
+          echo "Website version from FDI: ${{ steps.website.outputs.fdiVersions[matrix.fdi-version] }}"
 
       - uses: supertokens/actions/get-versions-from-repo@main
+        id: core
         with:
           repo: supertokens-core
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          cdi-versions: ${{ steps.versions.outputs.cdiVersions }}
-        #   fdi-versions: ${{ steps.versions.outputs.fdiVersions }}
+          cdi-versions: ${{ needs.supported-versions.outputs.cdiVersions }}
+        #   fdi-versions: ${{ needs.supported-versions.outputs.fdiVersions }}
+      - run: |
+          echo "Core version from CDI: ${{ steps.core.outputs.cdiVersions[matrix.cdi-version] }}"
