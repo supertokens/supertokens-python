@@ -1,0 +1,51 @@
+name: Test Versions Action
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  versions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supertokens/get-supported-versions-action@main
+        id: versions
+        with:
+          has-fdi: true
+          has-cdi: true
+          has-web-js: false
+
+      - uses: supertokens/actions/get-versions-from-repo@main
+        with:
+          repo: supertokens-node
+          cdi-versions: ${{ steps.versions.outputs.cdiVersions }}
+          fdi-versions: ${{ steps.versions.outputs.fdiVersions }}
+
+      - uses: supertokens/actions/get-versions-from-repo@main
+        with:
+          repo: supertokens-auth-react
+          cdi-versions: ${{ steps.versions.outputs.cdiVersions }}
+          fdi-versions: ${{ steps.versions.outputs.fdiVersions }}
+
+      - uses: supertokens/actions/get-versions-from-repo@main
+        with:
+          repo: supertokens-website
+          cdi-versions: ${{ steps.versions.outputs.cdiVersions }}
+          fdi-versions: ${{ steps.versions.outputs.fdiVersions }}
+
+      - uses: supertokens/actions/get-versions-from-repo@main
+        with:
+          repo: supertokens-core
+          cdi-versions: ${{ steps.versions.outputs.cdiVersions }}
+          fdi-versions: ${{ steps.versions.outputs.fdiVersions }}
