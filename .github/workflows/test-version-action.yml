@@ -51,9 +51,10 @@ jobs:
           fdi-versions: ${{ needs.supported-versions.outputs.fdiVersions }}
 
       - run: |
-          nodeCdi=$( echo '${{ steps.node.outputs.cdiVersions }}' | jq -r '.["${{ matrix.cdi-version }}"]' )
-          echo "Node version from CDI: $nodeCdi"
-          echo "Node version from FDI: ${{ steps.node.outputs.fdiVersions[matrix.fdi-version] }}"
+          cdiVersion=$( echo '${{ steps.node.outputs.cdiVersions }}' | jq -r '.["${{ matrix.cdi-version }}"]' )
+          echo "Node version from CDI: $cdiVersion"
+          fdiVersion=$( echo '${{ steps.node.outputs.fdiVersions }}' | jq -r '.["${{ matrix.fdi-version }}"]' )
+          echo "Node version from FDI: $fdiVersion"
 
       - uses: supertokens/actions/get-versions-from-repo@main
         id: auth-react
@@ -64,7 +65,8 @@ jobs:
           fdi-versions: ${{ needs.supported-versions.outputs.fdiVersions }}
 
       - run: |
-          echo "Auth react version from FDI: ${{ steps.auth-react.outputs.fdiVersions[matrix.fdi-version] }}"
+          fdiVersion=$( echo '${{ steps.auth-react.outputs.fdiVersions }}' | jq -r '.["${{ matrix.fdi-version }}"]' )
+          echo "Auth React version from FDI: $fdiVersion"
 
       - uses: supertokens/actions/get-versions-from-repo@main
         id: website
@@ -75,7 +77,8 @@ jobs:
           fdi-versions: ${{ needs.supported-versions.outputs.fdiVersions }}
 
       - run: |
-          echo "Website version from FDI: ${{ steps.website.outputs.fdiVersions[matrix.fdi-version] }}"
+          fdiVersion=$( echo '${{ steps.website.outputs.fdiVersions }}' | jq -r '.["${{ matrix.fdi-version }}"]' )
+          echo "website version from FDI: $fdiVersion"
 
       - uses: supertokens/actions/get-versions-from-repo@main
         id: core
@@ -85,4 +88,5 @@ jobs:
           cdi-versions: ${{ needs.supported-versions.outputs.cdiVersions }}
         #   fdi-versions: ${{ needs.supported-versions.outputs.fdiVersions }}
       - run: |
-          echo "Core version from CDI: ${{ steps.core.outputs.cdiVersions[matrix.cdi-version] }}"
+          cdiVersion=$( echo '${{ steps.core.outputs.cdiVersions }}' | jq -r '.["${{ matrix.cdi-version }}"]' )
+          echo "core version from CDI: $cdiVersion"
