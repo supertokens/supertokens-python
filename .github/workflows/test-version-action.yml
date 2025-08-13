@@ -51,7 +51,8 @@ jobs:
           fdi-versions: ${{ needs.supported-versions.outputs.fdiVersions }}
 
       - run: |
-          echo "Node version from CDI: ${{ steps.node.outputs.cdiVersions[matrix.cdi-version] }}"
+          nodeCdi=$( echo '${{ steps.node.outputs.cdiVersions }}' | jq -r '.["${{ matrix.cdi-version }}"]' )
+          echo "Node version from CDI: $nodeCdi"
           echo "Node version from FDI: ${{ steps.node.outputs.fdiVersions[matrix.fdi-version] }}"
 
       - uses: supertokens/actions/get-versions-from-repo@main
