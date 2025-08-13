@@ -29,23 +29,27 @@ jobs:
       - uses: supertokens/actions/get-versions-from-repo@main
         with:
           repo: supertokens-node
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           cdi-versions: ${{ steps.versions.outputs.cdiVersions }}
           fdi-versions: ${{ steps.versions.outputs.fdiVersions }}
 
       - uses: supertokens/actions/get-versions-from-repo@main
         with:
           repo: supertokens-auth-react
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           cdi-versions: ${{ steps.versions.outputs.cdiVersions }}
           fdi-versions: ${{ steps.versions.outputs.fdiVersions }}
 
       - uses: supertokens/actions/get-versions-from-repo@main
         with:
           repo: supertokens-website
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           cdi-versions: ${{ steps.versions.outputs.cdiVersions }}
           fdi-versions: ${{ steps.versions.outputs.fdiVersions }}
 
       - uses: supertokens/actions/get-versions-from-repo@main
         with:
           repo: supertokens-core
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           cdi-versions: ${{ steps.versions.outputs.cdiVersions }}
           fdi-versions: ${{ steps.versions.outputs.fdiVersions }}
