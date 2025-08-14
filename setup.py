@@ -82,7 +82,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.30.2",
+    version="0.31.0",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",
