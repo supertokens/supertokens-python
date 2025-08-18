@@ -338,7 +338,9 @@ def test_st_config_override():
     plugin = plugin_factory("plugin1", override_functions=False, override_apis=False)
 
     def config_override(config: SupertokensPublicConfig) -> SupertokensPublicConfig:
-        config.mode = "asgi"
+        config.supertokens_config = SupertokensConfig(
+            connection_uri="http://localhost:3567"
+        )
         return config
 
     plugin.config = config_override
@@ -352,7 +354,10 @@ def test_st_config_override():
         ),
     )
 
-    assert Supertokens.get_instance().app_info.mode == "asgi"
+    assert (
+        Supertokens.get_instance().supertokens_config.connection_uri
+        == "http://localhost:3567"
+    )
 
 
 def test_st_config_override_non_public_property():

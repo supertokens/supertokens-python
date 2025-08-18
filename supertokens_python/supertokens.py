@@ -233,11 +233,7 @@ class _BaseSupertokensPublicConfig(CamelCaseBaseModel):
     Public properties received as input to the `Supertokens.init` function.
     """
 
-    framework: Literal["fastapi", "flask", "django"]
     supertokens_config: SupertokensConfig
-    mode: Optional[Literal["asgi", "wsgi"]]
-    telemetry: Optional[bool]
-    debug: Optional[bool]
 
 
 class SupertokensPublicConfig(_BaseSupertokensPublicConfig):
@@ -245,10 +241,14 @@ class SupertokensPublicConfig(_BaseSupertokensPublicConfig):
     Public properties received as input to the `Supertokens.init` function.
     """
 
-    app_info: AppInfo  # Uses the Normalised AppInfo class
+    pass
 
 
 class _BaseSupertokensInputConfig(_BaseSupertokensPublicConfig):
+    framework: Literal["fastapi", "flask", "django"]
+    mode: Optional[Literal["asgi", "wsgi"]]
+    telemetry: Optional[bool]
+    debug: Optional[bool]
     recipe_list: List[Callable[[AppInfo, List["OverrideMap"]], "RecipeModule"]]
     experimental: Optional[SupertokensExperimentalConfig] = None
 
@@ -264,14 +264,20 @@ class SupertokensInputConfig(_BaseSupertokensInputConfig):
 
     app_info: InputAppInfo
 
-    def to_public_config(self, normalised_app_info: AppInfo) -> SupertokensPublicConfig:
-        return SupertokensPublicConfig(
-            app_info=normalised_app_info,
-            framework=self.framework,
-            supertokens_config=self.supertokens_config,
-            mode=self.mode,
-            telemetry=self.telemetry,
-            debug=self.debug,
+    def to_public_config(self) -> SupertokensPublicConfig:
+        return SupertokensPublicConfig(supertokens_config=self.supertokens_config)
+
+    @classmethod
+    def from_public_and_input_config(
+        cls,
+        input_config: "SupertokensInputConfig",
+        public_config: SupertokensPublicConfig,
+    ) -> "SupertokensInputConfig":
+        return cls(
+            **{
+                **input_config.model_dump(),
+                **public_config.model_dump(),
+            }
         )
 
     @classmethod
@@ -279,16 +285,20 @@ class SupertokensInputConfig(_BaseSupertokensInputConfig):
         cls,
         config: SupertokensPublicConfig,
         app_info: InputAppInfo,
+        framework: Literal["fastapi", "flask", "django"],
+        mode: Optional[Literal["asgi", "wsgi"]],
+        telemetry: Optional[bool],
+        debug: Optional[bool],
         recipe_list: List[Callable[[AppInfo, List["OverrideMap"]], "RecipeModule"]],
         experimental: Optional[SupertokensExperimentalConfig],
     ) -> "SupertokensInputConfig":
         return cls(
             app_info=app_info,
-            framework=config.framework,
+            framework=framework,
             supertokens_config=config.supertokens_config,
-            mode=config.mode,
-            telemetry=config.telemetry,
-            debug=config.debug,
+            mode=mode,
+            telemetry=telemetry,
+            debug=debug,
             recipe_list=recipe_list,
             experimental=experimental,
         )
@@ -347,9 +357,7 @@ class Supertokens:
             debug=debug,
             experimental=experimental,
         )
-        input_public_config = input_config.to_public_config(
-            normalised_app_info=self.app_info
-        )
+        input_public_config = input_config.to_public_config()
         # Use the input public config by default if no plugins provided
         processed_public_config: SupertokensPublicConfig = input_public_config
 
@@ -369,11 +377,9 @@ class Supertokens:
             self.plugin_list = load_plugins_result.processed_plugins
             self.plugin_route_handlers = load_plugins_result.plugin_route_handlers
 
-        config = SupertokensInputConfig.from_public_config(
-            config=processed_public_config,
-            app_info=input_config.app_info,
-            recipe_list=recipe_list,
-            experimental=experimental,
+        config = SupertokensInputConfig.from_public_and_input_config(
+            input_config=input_config,
+            public_config=processed_public_config,
         )
 
         self.app_info = AppInfo(
