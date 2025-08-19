@@ -25,7 +25,7 @@ from supertokens_python.recipe.multitenancy.interfaces import (
 from supertokens_python.types.response import GeneralErrorResponse
 
 from ..constants import DEFAULT_TENANT_ID
-from ..interfaces import APIInterface, ThirdPartyProvider
+from ..interfaces import APIInterface, LoginMethodWebauthn, ThirdPartyProvider
 
 
 class APIImplementation(APIInterface):
@@ -115,5 +115,6 @@ class APIImplementation(APIInterface):
                 enabled="thirdparty" in valid_first_factors,
                 providers=final_provider_list,
             ),
+            webauthn=LoginMethodWebauthn(enabled="webauthn" in valid_first_factors),
             first_factors=valid_first_factors,
         )
