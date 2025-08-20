@@ -106,6 +106,7 @@ def factor_id_to_recipe(factor_id: str) -&gt; str:
         &#34;link-email&#34;: &#34;Passwordless&#34;,
         &#34;link-phone&#34;: &#34;Passwordless&#34;,
         &#34;totp&#34;: &#34;Totp&#34;,
+        &#34;webauthn&#34;: &#34;WebAuthn&#34;,
     }
 
     return factor_id_to_recipe_map.get(factor_id, &#34;&#34;)

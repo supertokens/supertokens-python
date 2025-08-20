@@ -53,7 +53,7 @@ from supertokens_python.recipe.multitenancy.interfaces import (
 from supertokens_python.types.response import GeneralErrorResponse
 
 from ..constants import DEFAULT_TENANT_ID
-from ..interfaces import APIInterface, ThirdPartyProvider
+from ..interfaces import APIInterface, LoginMethodWebauthn, ThirdPartyProvider
 
 
 class APIImplementation(APIInterface):
@@ -143,6 +143,7 @@ class APIImplementation(APIInterface):
                 enabled=&#34;thirdparty&#34; in valid_first_factors,
                 providers=final_provider_list,
             ),
+            webauthn=LoginMethodWebauthn(enabled=&#34;webauthn&#34; in valid_first_factors),
             first_factors=valid_first_factors,
         )</code></pre>
 </details>
@@ -253,6 +254,7 @@ inheritance.</p></div>
                 enabled=&#34;thirdparty&#34; in valid_first_factors,
                 providers=final_provider_list,
             ),
+            webauthn=LoginMethodWebauthn(enabled=&#34;webauthn&#34; in valid_first_factors),
             first_factors=valid_first_factors,
         )</code></pre>
 </details>
