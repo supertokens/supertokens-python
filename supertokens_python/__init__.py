@@ -30,6 +30,7 @@ from .supertokens import (
     SupertokensInputConfig,
     SupertokensPublicConfig,
     get_request_from_user_context,
+    is_recipe_initialized,
 )
 
 # Some Pydantic models need a rebuild to resolve ForwardRefs
@@ -86,4 +87,5 @@ __all__ = [
     "get_all_cors_headers",
     "get_request_from_user_context",
     "init",
+    "is_recipe_initialized",
 ]

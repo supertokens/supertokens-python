@@ -181,19 +181,6 @@ def list_users_by_account_info(
     )
 
 
-def is_recipe_initialized(recipe_id: str) -> bool:
-    """
-    Check if a recipe is initialized.
-    :param recipe_id: The ID of the recipe to check.
-    :return: Whether the recipe is initialized.
-    """
-    from supertokens_python.asyncio import (
-        is_recipe_initialized as async_is_recipe_initialized,
-    )
-
-    return sync(async_is_recipe_initialized(recipe_id))
-
-
 def get_available_first_factors(
     tenant_id: str,
     session: Optional[SessionContainer],
