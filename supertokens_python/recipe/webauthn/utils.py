@@ -33,7 +33,6 @@ from supertokens_python.recipe.webauthn.types.config import (
     NormalisedGetOrigin,
     NormalisedGetRelyingPartyId,
     NormalisedGetRelyingPartyName,
-    NormalisedOverrideConfig,
     NormalisedValidateEmailAddress,
     NormalisedWebauthnConfig,
     NormalisedWebauthnOverrideConfig,
