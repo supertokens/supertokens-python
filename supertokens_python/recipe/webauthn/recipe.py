@@ -39,19 +39,25 @@ from supertokens_python.recipe.webauthn.api.generate_recover_account_token impor
     generate_recover_account_token_api,
 )
 from supertokens_python.recipe.webauthn.api.implementation import APIImplementation
+from supertokens_python.recipe.webauthn.api.list_credentials import list_credentials_api
 from supertokens_python.recipe.webauthn.api.recover_account import recover_account_api
-from supertokens_python.recipe.webauthn.api.register_credentials import (
+from supertokens_python.recipe.webauthn.api.register_credential import (
     register_credential_api,
 )
 from supertokens_python.recipe.webauthn.api.register_options import register_options_api
+from supertokens_python.recipe.webauthn.api.remove_credential import (
+    remove_credential_api,
+)
 from supertokens_python.recipe.webauthn.api.sign_in import sign_in_api
 from supertokens_python.recipe.webauthn.api.sign_in_options import sign_in_options_api
 from supertokens_python.recipe.webauthn.api.sign_up import sign_up_api
 from supertokens_python.recipe.webauthn.constants import (
     GENERATE_RECOVER_ACCOUNT_TOKEN_API,
+    LIST_CREDENTIALS_API,
     RECOVER_ACCOUNT_API,
     REGISTER_CREDENTIAL_API,
     REGISTER_OPTIONS_API,
+    REMOVE_CREDENTIAL_API,
     SIGN_IN_API,
     SIGN_UP_API,
     SIGNIN_OPTIONS_API,
@@ -378,6 +384,18 @@ class WebauthnRecipe(RecipeModule):
                 request_id=REGISTER_CREDENTIAL_API,
                 disabled=self.api_implementation.disable_register_credential_post,
             ),
+            APIHandled(
+                method="get",
+                path_without_api_base_path=NormalisedURLPath(LIST_CREDENTIALS_API),
+                request_id=LIST_CREDENTIALS_API,
+                disabled=self.api_implementation.disable_list_credentials_get,
+            ),
+            APIHandled(
+                method="post",
+                path_without_api_base_path=NormalisedURLPath(REMOVE_CREDENTIAL_API),
+                request_id=REMOVE_CREDENTIAL_API,
+                disabled=self.api_implementation.disable_remove_credential_post,
+            ),
         ]
 
     async def handle_api_request(
@@ -440,6 +458,16 @@ class WebauthnRecipe(RecipeModule):
 
         if request_id == REGISTER_CREDENTIAL_API:
             return await register_credential_api(
+                self.api_implementation, tenant_id, options, user_context
+            )
+
+        if request_id == LIST_CREDENTIALS_API:
+            return await list_credentials_api(
+                self.api_implementation, tenant_id, options, user_context
+            )
+
+        if request_id == REMOVE_CREDENTIAL_API:
+            return await remove_credential_api(
                 self.api_implementation, tenant_id, options, user_context
             )
 

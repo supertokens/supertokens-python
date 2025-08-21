@@ -23,10 +23,12 @@ from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.webauthn.interfaces.recipe import (
     AuthenticationPayload,
+    CredentialNotFoundErrorResponse,
     EmailAlreadyExistsErrorResponse,
     InvalidAuthenticatorErrorResponse,
     InvalidCredentialsErrorResponse,
     InvalidOptionsErrorResponse,
+    ListCredentialsResponse,
     OptionsNotFoundErrorResponse,
     RecipeInterface,
     RecoverAccountTokenInvalidErrorResponse,
@@ -197,6 +199,12 @@ class RecoverAccountPOSTResponse(OkResponseBaseModel):
     email: str
 
 
+ListCredentialsGETResponse = ListCredentialsResponse
+
+
+RemoveCredentialPOSTErrorResponse = CredentialNotFoundErrorResponse
+
+
 class SignUpPOSTResponse(OkResponseBaseModel):
     user: User
     session: SessionContainer
@@ -231,6 +239,8 @@ class APIInterface(BaseAPIInterface):
     disable_recover_account_post: bool = False
     disable_register_credential_post: bool = False
     disable_email_exists_get: bool = False
+    disable_list_credentials_get: bool = False
+    disable_remove_credential_post: bool = False
 
     @abstractmethod
     async def register_options_post(
@@ -314,6 +324,15 @@ class APIInterface(BaseAPIInterface):
     ]: ...
 
     @abstractmethod
+    async def list_credentials_get(
+        self,
+        *,
+        options: APIOptions,
+        user_context: UserContext,
+        session: SessionContainer,
+    ) -> Union[ListCredentialsGETResponse, GeneralErrorResponse]: ...
+
+    @abstractmethod
     async def register_credential_post(
         self,
         *,
@@ -325,6 +344,18 @@ class APIInterface(BaseAPIInterface):
         user_context: UserContext,
     ) -> Union[
         OkResponseBaseModel, GeneralErrorResponse, RegisterCredentialPOSTErrorResponse
+    ]: ...
+
+    @abstractmethod
+    async def remove_credential_post(
+        self,
+        *,
+        webauthn_credential_id: str,
+        session: SessionContainer,
+        options: APIOptions,
+        user_context: UserContext,
+    ) -> Union[
+        OkResponseBaseModel, GeneralErrorResponse, RemoveCredentialPOSTErrorResponse
     ]: ...
 
     @abstractmethod

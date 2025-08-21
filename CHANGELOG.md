@@ -9,7 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 ## [0.31.0] - 2025-08-21
+- Updates FDI support to `4.2`
 - Adds util function to get available first factors
+- Adds API endpoints to list and remove Webauthn credentials
+  - Prevents removal of Webauthn credentials unless all session claims are satisfied
+  - Changes how sessions are fetched when listing, removing, and registering Webauthn credentials
+  - Fixes Webauthn credential listing and removal to work even when the Webauthn user is not the primary user and when there are multiple linked Webauthn users
 
 ### Adds plugins support
 - Adds an `experimental` property (`SuperTokensExperimentalConfig`) to the `SuperTokensConfig`
