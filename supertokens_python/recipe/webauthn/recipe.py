@@ -105,18 +105,12 @@ class WebauthnRecipe(RecipeModule):
             querier=querier,
             config=self.config,
         )
-        self.recipe_implementation = (
+        self.recipe_implementation = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
         api_implementation = APIImplementation()
-        self.api_implementation = (
-            api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
-        )
+        self.api_implementation = self.config.override.apis(api_implementation)
 
         if ingredients.email_delivery is None:
             self.email_delivery = EmailDeliveryIngredient(
@@ -301,12 +295,21 @@ class WebauthnRecipe(RecipeModule):
 
     @staticmethod
     def init(config: Optional[WebauthnConfig]):
-        def func(app_info: AppInfo):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        if config is None:
+            config = WebauthnConfig()
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if WebauthnRecipe.__instance is None:
                 WebauthnRecipe.__instance = WebauthnRecipe(
                     recipe_id=WebauthnRecipe.recipe_id,
                     app_info=app_info,
-                    config=config,
+                    config=apply_plugins(
+                        recipe_id=WebauthnRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                     ingredients=WebauthnIngredients(email_delivery=None),
                 )
                 return WebauthnRecipe.__instance

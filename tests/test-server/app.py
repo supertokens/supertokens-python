@@ -17,7 +17,6 @@ from oauth2provider import add_oauth2provider_routes
 from passwordless import add_passwordless_routes  # pylint: disable=import-error
 from session import add_session_routes  # pylint: disable=import-error
 from supertokens_python import (
-    AppInfo,
     InputAppInfo,
     Supertokens,
     SupertokensConfig,
@@ -67,7 +66,7 @@ from supertokens_python.recipe.webauthn.interfaces.api import (
 )
 from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
 from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
-from supertokens_python.recipe_module import RecipeModule
+from supertokens_python.supertokens import RecipeInit
 from supertokens_python.types import RecipeUserId
 from test_functions_mapper import (  # pylint: disable=import-error
     get_func,
@@ -252,9 +251,7 @@ def init_st(config: Dict[str, Any]):
     st_reset()
     override_logging.reset_override_logs()
 
-    recipe_list: List[Callable[[AppInfo], RecipeModule]] = [
-        dashboard.init(api_key="test")
-    ]
+    recipe_list: List[RecipeInit] = [dashboard.init(api_key="test")]
     for recipe_config in config.get("recipeList", []):
         recipe_id = recipe_config.get("recipeId")
         if recipe_id == "emailpassword":
@@ -281,7 +278,7 @@ def init_st(config: Dict[str, Any]):
                             ),
                         )
                     ),
-                    override=emailpassword.InputOverrideConfig(
+                    override=emailpassword.EmailPasswordOverrideConfig(
                         apis=override_builder_with_logging(
                             "EmailPassword.override.apis",
                             recipe_config_json.get("override", {}).get("apis", None),
@@ -334,7 +331,7 @@ def init_st(config: Dict[str, Any]):
                         "useDynamicAccessTokenSigningKey"
                     ),
                     get_token_transfer_method=get_token_transfer_method,
-                    override=session.InputOverrideConfig(
+                    override=session.SessionOverrideConfig(
                         apis=override_builder_with_logging(
                             "Session.override.apis",
                             recipe_config_json.get("override", {}).get("apis", None),
@@ -364,7 +361,7 @@ def init_st(config: Dict[str, Any]):
                         "AccountLinking.onAccountLinked",
                         recipe_config_json.get("onAccountLinked"),
                     ),
-                    override=accountlinking.InputOverrideConfig(
+                    override=accountlinking.AccountLinkingOverrideConfig(
                         functions=override_builder_with_logging(
                             "AccountLinking.override.functions",
                             recipe_config_json.get("override", {}).get(
@@ -467,7 +464,7 @@ def init_st(config: Dict[str, Any]):
                     sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                         providers=providers
                     ),
-                    override=thirdparty.InputOverrideConfig(
+                    override=thirdparty.ThirdPartyOverrideConfig(
                         functions=override_builder_with_logging(
                             "ThirdParty.override.functions",
                             recipe_config_json.get("override", {}).get(
@@ -488,7 +485,7 @@ def init_st(config: Dict[str, Any]):
                 UnknownUserIdError,
             )
             from supertokens_python.recipe.emailverification.utils import (
-                OverrideConfig as EmailVerificationOverrideConfig,
+                EmailVerificationOverrideConfig as EmailVerificationOverrideConfig,
             )
 
             recipe_list.append(
@@ -530,7 +527,7 @@ def init_st(config: Dict[str, Any]):
             recipe_list.append(
                 multifactorauth.init(
                     first_factors=recipe_config_json.get("firstFactors", None),
-                    override=multifactorauth.OverrideConfig(
+                    override=multifactorauth.MultiFactorAuthOverrideConfig(
                         functions=override_builder_with_logging(
                             "MultifactorAuth.override.functions",
                             recipe_config_json.get("override", {}).get(
@@ -586,7 +583,7 @@ def init_st(config: Dict[str, Any]):
                     ),
                     contact_config=contact_config,
                     flow_type=recipe_config_json.get("flowType"),
-                    override=passwordless.InputOverrideConfig(
+                    override=passwordless.PasswordlessOverrideConfig(
                         apis=override_builder_with_logging(
                             "Passwordless.override.apis",
                             recipe_config_json.get("override", {}).get("apis"),
@@ -599,9 +596,7 @@ def init_st(config: Dict[str, Any]):
                 )
             )
         elif recipe_id == "totp":
-            from supertokens_python.recipe.totp.types import (
-                OverrideConfig as TOTPOverrideConfig,
-            )
+            from supertokens_python.recipe.totp.types import TOTPOverrideConfig
 
             recipe_config_json = json.loads(recipe_config.get("config", "{}"))
             recipe_list.append(
@@ -627,7 +622,7 @@ def init_st(config: Dict[str, Any]):
             recipe_config_json = json.loads(recipe_config.get("config", "{}"))
             recipe_list.append(
                 oauth2provider.init(
-                    override=oauth2provider.InputOverrideConfig(
+                    override=oauth2provider.OAuth2ProviderOverrideConfig(
                         apis=override_builder_with_logging(
                             "OAuth2Provider.override.apis",
                             recipe_config_json.get("override", {}).get("apis"),
@@ -641,7 +636,7 @@ def init_st(config: Dict[str, Any]):
             )
         elif recipe_id == "webauthn":
             from supertokens_python.recipe.webauthn.types.config import (
-                OverrideConfig as WebauthnOverrideConfig,
+                WebauthnOverrideConfig,
             )
 
             class WebauthnEmailDeliveryConfig(

@@ -13,41 +13,46 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import Optional
 
-if TYPE_CHECKING:
-    from .interfaces import APIInterface, RecipeInterface
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideConfig,
+)
 
+from .interfaces import APIInterface, RecipeInterface
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
-
-
-class JWTConfig:
-    def __init__(self, override: OverrideConfig, jwt_validity_seconds: int):
-        self.override = override
-        self.jwt_validity_seconds = jwt_validity_seconds
+JWTOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedJWTOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+OverrideConfig = JWTOverrideConfig
+"""Deprecated, use `JWTOverrideConfig` instead."""
 
 
-def validate_and_normalise_user_input(
-    jwt_validity_seconds: Union[int, None] = None,
-    override: Union[OverrideConfig, None] = None,
-):
-    if jwt_validity_seconds is not None and not isinstance(jwt_validity_seconds, int):  # type: ignore
-        raise ValueError("jwt_validity_seconds must be an integer or None")
+class JWTConfig(BaseConfig[RecipeInterface, APIInterface]):
+    jwt_validity_seconds: Optional[int] = None
 
-    if override is not None and not isinstance(override, OverrideConfig):  # type: ignore
-        raise ValueError("override must be an instance of OverrideConfig or None")
 
-    if override is None:
-        override = OverrideConfig()
-    if jwt_validity_seconds is None:
+class NormalisedJWTConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
+    jwt_validity_seconds: int
+
+
+def validate_and_normalise_user_input(config: JWTConfig):
+    override_config = NormalisedJWTOverrideConfig.from_input_config(
+        override_config=config.override
+    )
+
+    jwt_validity_seconds = config.jwt_validity_seconds
+
+    if config.jwt_validity_seconds is None:
         jwt_validity_seconds = 3153600000
 
-    return JWTConfig(override, jwt_validity_seconds)
+    if not isinstance(jwt_validity_seconds, int):  # type: ignore
+        raise ValueError("jwt_validity_seconds must be an integer or None")
+
+    return NormalisedJWTConfig(
+        jwt_validity_seconds=jwt_validity_seconds, override=override_config
+    )

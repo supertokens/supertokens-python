@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar, Union
+from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar, Union, cast
 
 from supertokens_python.types import MaybeAwaitable, RecipeUserId
 from supertokens_python.utils import get_timestamp_ms
@@ -105,7 +105,7 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
 
         # Doing this to ensure same code in the upcoming steps irrespective of
         # whether self.val is Primitive or PrimitiveList
-        vals: List[_T] = val if isinstance(val, list) else [val]
+        vals: List[_T] = cast(List[_T], val if isinstance(val, list) else [val])
 
         claim_val_set = set(claim_val)
         if is_include and not is_include_any:

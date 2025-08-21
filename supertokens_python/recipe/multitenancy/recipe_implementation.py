@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from supertokens_python.querier import Querier
     from supertokens_python.recipe.thirdparty.provider import ProviderConfig
 
-    from .utils import MultitenancyConfig
+    from .utils import NormalisedMultitenancyConfig
 
 from supertokens_python.querier import NormalisedURLPath
 
@@ -119,7 +119,7 @@ def parse_tenant_config(tenant: Dict[str, Any]) -> TenantConfig:
 
 
 class RecipeImplementation(RecipeInterface):
-    def __init__(self, querier: Querier, config: MultitenancyConfig):
+    def __init__(self, querier: Querier, config: NormalisedMultitenancyConfig):
         super().__init__()
         self.querier = querier
         self.config = config

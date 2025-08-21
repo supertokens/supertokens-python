@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 from override_logging import log_override_event  # pylint: disable=import-error
 from supertokens_python.recipe.emailverification import EmailVerificationClaim
@@ -35,10 +35,14 @@ def mock_claim_builder(key: str, values: Any) -> PrimitiveClaim[Any]:
             },
         )
 
-        ret_val: Any = user_context.get("st-stub-arr-value") or (
-            values[0]
-            if isinstance(values, list) and isinstance(values[0], list)
-            else values
+        ret_val: Any = cast(
+            Any,
+            user_context.get("st-stub-arr-value")
+            or (
+                values[0]
+                if isinstance(values, list) and isinstance(values[0], list)
+                else values
+            ),
         )
         log_override_event(f"claim-{key}.fetchValue", "RES", ret_val)
 

@@ -14,11 +14,11 @@ from supertokens_python.recipe import (
     thirdparty,
     usermetadata,
 )
-from supertokens_python.recipe.dashboard import InputOverrideConfig
+from supertokens_python.recipe.dashboard import DashboardOverrideConfig
 from supertokens_python.recipe.dashboard.interfaces import (
     RecipeInterface as DashboardRI,
 )
-from supertokens_python.recipe.dashboard.utils import DashboardConfig
+from supertokens_python.recipe.dashboard.utils import NormalisedDashboardConfig
 from supertokens_python.recipe.passwordless import ContactEmailOrPhoneConfig
 from supertokens_python.recipe.thirdparty.asyncio import manually_create_or_update_user
 from supertokens_python.recipe.thirdparty.interfaces import (
@@ -49,7 +49,7 @@ async def test_dashboard_recipe(app: TestClient):
     def override_dashboard_functions(oi: DashboardRI) -> DashboardRI:
         async def should_allow_access(
             _request: BaseRequest,
-            _config: DashboardConfig,
+            _config: NormalisedDashboardConfig,
             _user_context: Dict[str, Any],
         ) -> bool:
             return True
@@ -63,7 +63,9 @@ async def test_dashboard_recipe(app: TestClient):
             session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
             dashboard.init(
                 api_key="someKey",
-                override=InputOverrideConfig(functions=override_dashboard_functions),
+                override=DashboardOverrideConfig(
+                    functions=override_dashboard_functions
+                ),
             ),
         ],
     )
@@ -83,7 +85,7 @@ async def test_dashboard_users_get(app: TestClient):
     def override_dashboard_functions(oi: DashboardRI) -> DashboardRI:
         async def should_allow_access(
             _request: BaseRequest,
-            _config: DashboardConfig,
+            _config: NormalisedDashboardConfig,
             _user_context: Dict[str, Any],
         ) -> bool:
             return True
@@ -99,7 +101,7 @@ async def test_dashboard_users_get(app: TestClient):
             usermetadata.init(),
             dashboard.init(
                 api_key="someKey",
-                override=InputOverrideConfig(
+                override=DashboardOverrideConfig(
                     functions=override_dashboard_functions,
                 ),
             ),
@@ -211,7 +213,7 @@ async def test_that_get_user_works_with_combination_recipes(app: TestClient):
     def override_dashboard_functions(oi: DashboardRI) -> DashboardRI:
         async def should_allow_access(
             _request: BaseRequest,
-            _config: DashboardConfig,
+            _config: NormalisedDashboardConfig,
             _user_context: Dict[str, Any],
         ) -> bool:
             return True
@@ -231,7 +233,7 @@ async def test_that_get_user_works_with_combination_recipes(app: TestClient):
             usermetadata.init(),
             dashboard.init(
                 api_key="someKey",
-                override=InputOverrideConfig(
+                override=DashboardOverrideConfig(
                     functions=override_dashboard_functions,
                 ),
             ),

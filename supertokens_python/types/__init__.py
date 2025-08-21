@@ -27,8 +27,8 @@ from .response import APIResponse, GeneralErrorResponse
 
 __all__ = (
     "APIResponse",
-    "GeneralErrorResponse",
     "AccountInfo",
+    "GeneralErrorResponse",
     "LoginMethod",
     "MaybeAwaitable",
     "RecipeUserId",

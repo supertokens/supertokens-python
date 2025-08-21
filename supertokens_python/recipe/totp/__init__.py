@@ -13,21 +13,32 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Union
 
-from supertokens_python.recipe.totp.types import TOTPConfig
+from supertokens_python.recipe.totp.types import (
+    OverrideConfig,
+    TOTPConfig,
+    TOTPOverrideConfig,
+)
 
 from .recipe import TOTPRecipe
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo
-
-    from ...recipe_module import RecipeModule
+    from supertokens_python.supertokens import RecipeInit
 
 
 def init(
     config: Union[TOTPConfig, None] = None,
-) -> Callable[[AppInfo], RecipeModule]:
+) -> RecipeInit:
     return TOTPRecipe.init(
         config=config,
     )
+
+
+__all__ = [
+    "OverrideConfig",  # deprecated, use `TOTPOverrideConfig` instead
+    "TOTPConfig",
+    "TOTPOverrideConfig",
+    "TOTPRecipe",
+    "init",
+]

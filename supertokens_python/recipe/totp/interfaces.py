@@ -14,8 +14,10 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 
 if TYPE_CHECKING:
     from supertokens_python import AppInfo
@@ -30,8 +32,8 @@ if TYPE_CHECKING:
         InvalidTOTPError,
         LimitReachedError,
         ListDevicesOkResult,
+        NormalisedTOTPConfig,
         RemoveDeviceOkResult,
-        TOTPNormalisedConfig,
         UnknownDeviceError,
         UnknownUserIdError,
         UpdateDeviceOkResult,
@@ -42,7 +44,7 @@ if TYPE_CHECKING:
     )
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     @abstractmethod
     async def get_user_identifier_info_for_user_id(
         self, user_id: str, user_context: Dict[str, Any]
@@ -129,7 +131,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: TOTPNormalisedConfig,
+        config: NormalisedTOTPConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         recipe_instance: TOTPRecipe,
@@ -143,7 +145,7 @@ class APIOptions:
         self.recipe_instance = recipe_instance
 
 
-class APIInterface(ABC):
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_create_device_post = False
         self.disable_list_devices_get = False

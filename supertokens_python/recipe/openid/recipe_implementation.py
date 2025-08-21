@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
     from .interfaces import CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm
-    from .utils import OpenIdConfig
+    from .utils import NormalisedOpenIdConfig
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.jwt.constants import GET_JWKS_API
@@ -81,7 +81,7 @@ class RecipeImplementation(RecipeInterface):
     def __init__(
         self,
         querier: Querier,
-        config: OpenIdConfig,
+        config: NormalisedOpenIdConfig,
         app_info: AppInfo,
     ):
         super().__init__()

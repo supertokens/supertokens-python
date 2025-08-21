@@ -66,8 +66,9 @@ from .constants import (
     USER_INFO_PATH,
 )
 from .utils import (
-    InputOverrideConfig,
+    NormalisedOAuth2ProviderConfig,
     OAuth2ProviderConfig,
+    OAuth2ProviderOverrideConfig,
     validate_and_normalise_user_input,
 )
 
@@ -80,11 +81,11 @@ class OAuth2ProviderRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        override: Union[InputOverrideConfig, None] = None,
+        config: OAuth2ProviderConfig,
     ) -> None:
         super().__init__(recipe_id, app_info)
-        self.config: OAuth2ProviderConfig = validate_and_normalise_user_input(
-            override,
+        self.config: NormalisedOAuth2ProviderConfig = validate_and_normalise_user_input(
+            config=config,
         )
 
         from .recipe_implementation import RecipeImplementation
@@ -96,19 +97,13 @@ class OAuth2ProviderRecipe(RecipeModule):
             self.get_default_id_token_payload,
             self.get_default_user_info_payload,
         )
-        self.recipe_implementation: RecipeInterface = (
-            self.config.override.functions(recipe_implementation)
-            if self.config.override is not None
-            and self.config.override.functions is not None
-            else recipe_implementation
+        self.recipe_implementation: RecipeInterface = self.config.override.functions(
+            recipe_implementation
         )
 
         api_implementation = APIImplementation()
-        self.api_implementation: APIInterface = (
-            self.config.override.apis(api_implementation)
-            if self.config.override is not None
-            and self.config.override.apis is not None
-            else api_implementation
+        self.api_implementation: APIInterface = self.config.override.apis(
+            api_implementation
         )
 
         self._access_token_builders: List[PayloadBuilderFunction] = []
@@ -268,14 +263,22 @@ class OAuth2ProviderRecipe(RecipeModule):
 
     @staticmethod
     def init(
-        override: Union[InputOverrideConfig, None] = None,
+        override: Optional[OAuth2ProviderOverrideConfig] = None,
     ):
-        def func(app_info: AppInfo):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = OAuth2ProviderConfig(override=override)
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]) -> OAuth2ProviderRecipe:
             if OAuth2ProviderRecipe.__instance is None:
                 OAuth2ProviderRecipe.__instance = OAuth2ProviderRecipe(
-                    OAuth2ProviderRecipe.recipe_id,
-                    app_info,
-                    override,
+                    recipe_id=OAuth2ProviderRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=OAuth2ProviderRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
 
                 return OAuth2ProviderRecipe.__instance

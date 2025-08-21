@@ -40,7 +40,7 @@ from .interfaces import (
     RecipeInterface,
     UnlinkAccountOkResult,
 )
-from .types import AccountLinkingConfig, RecipeLevelUser
+from .types import NormalisedAccountLinkingConfig, RecipeLevelUser
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
@@ -53,7 +53,7 @@ class RecipeImplementation(RecipeInterface):
         self,
         querier: Querier,
         recipe_instance: AccountLinkingRecipe,
-        config: AccountLinkingConfig,
+        config: NormalisedAccountLinkingConfig,
     ):
         super().__init__()
         self.querier = querier

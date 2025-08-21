@@ -14,59 +14,60 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Optional, Union
+from typing import TYPE_CHECKING, Optional
 
 from supertokens_python.recipe.userroles.interfaces import APIInterface, RecipeInterface
 from supertokens_python.supertokens import AppInfo
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideConfig,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
 
 
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+UserRolesOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedUserRolesOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+InputOverrideConfig = UserRolesOverrideConfig
+"""Deprecated: Use `UserRolesOverrideConfig` instead."""
 
 
-class UserRolesConfig:
-    def __init__(
-        self,
-        skip_adding_roles_to_access_token: bool,
-        skip_adding_permissions_to_access_token: bool,
-        override: InputOverrideConfig,
-    ) -> None:
-        self.skip_adding_roles_to_access_token = skip_adding_roles_to_access_token
-        self.skip_adding_permissions_to_access_token = (
-            skip_adding_permissions_to_access_token
-        )
-        self.override = override
+class UserRolesConfig(BaseConfig[RecipeInterface, APIInterface]):
+    skip_adding_roles_to_access_token: Optional[bool] = None
+    skip_adding_permissions_to_access_token: Optional[bool] = None
+
+
+class NormalisedUserRolesConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
+    skip_adding_roles_to_access_token: bool
+    skip_adding_permissions_to_access_token: bool
 
 
 def validate_and_normalise_user_input(
     _recipe: UserRolesRecipe,
     _app_info: AppInfo,
-    skip_adding_roles_to_access_token: Optional[bool] = None,
-    skip_adding_permissions_to_access_token: Optional[bool] = None,
-    override: Union[InputOverrideConfig, None] = None,
-) -> UserRolesConfig:
-    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
-        raise ValueError("override must be an instance of InputOverrideConfig or None")
+    config: UserRolesConfig,
+) -> NormalisedUserRolesConfig:
+    override_config = NormalisedUserRolesOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
-    if override is None:
-        override = InputOverrideConfig()
-
+    skip_adding_roles_to_access_token = config.skip_adding_roles_to_access_token
     if skip_adding_roles_to_access_token is None:
         skip_adding_roles_to_access_token = False
+
+    skip_adding_permissions_to_access_token = (
+        config.skip_adding_permissions_to_access_token
+    )
     if skip_adding_permissions_to_access_token is None:
         skip_adding_permissions_to_access_token = False
 
-    return UserRolesConfig(
+    return NormalisedUserRolesConfig(
         skip_adding_roles_to_access_token=skip_adding_roles_to_access_token,
         skip_adding_permissions_to_access_token=skip_adding_permissions_to_access_token,
-        override=override,
+        override=override_config,
     )

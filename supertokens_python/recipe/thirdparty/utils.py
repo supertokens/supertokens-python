@@ -13,17 +13,23 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set
+
+from jwt import PyJWKClient, decode  # type: ignore
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.thirdparty.provider import ProviderInput
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideConfig,
+)
 
 from .interfaces import APIInterface, RecipeInterface
 
 if TYPE_CHECKING:
     from .provider import ProviderInput
-
-from jwt import PyJWKClient, decode  # type: ignore
 
 
 class SignInAndUpFeature:
@@ -46,54 +52,37 @@ class SignInAndUpFeature:
         self.providers = providers
 
 
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+ThirdPartyOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedThirdPartyOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+InputOverrideConfig = ThirdPartyOverrideConfig
+"""Deprecated: Use `ThirdPartyOverrideConfig` instead."""
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+class ThirdPartyConfig(BaseConfig[RecipeInterface, APIInterface]):
+    sign_in_and_up_feature: SignInAndUpFeature
 
 
-class ThirdPartyConfig:
-    def __init__(
-        self,
-        sign_in_and_up_feature: SignInAndUpFeature,
-        override: OverrideConfig,
-    ):
-        self.sign_in_and_up_feature = sign_in_and_up_feature
-        self.override = override
+class NormalisedThirdPartyConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
+    sign_in_and_up_feature: SignInAndUpFeature
 
 
 def validate_and_normalise_user_input(
-    sign_in_and_up_feature: SignInAndUpFeature,
-    override: Union[InputOverrideConfig, None] = None,
-) -> ThirdPartyConfig:
-    if not isinstance(sign_in_and_up_feature, SignInAndUpFeature):  # type: ignore
+    config: ThirdPartyConfig,
+) -> NormalisedThirdPartyConfig:
+    if not isinstance(config.sign_in_and_up_feature, SignInAndUpFeature):  # type: ignore
         raise ValueError(
             "sign_in_and_up_feature must be an instance of SignInAndUpFeature"
         )
 
-    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
-        raise ValueError("override must be an instance of InputOverrideConfig or None")
+    override_config = NormalisedThirdPartyOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
-    if override is None:
-        override = InputOverrideConfig()
-
-    return ThirdPartyConfig(
-        sign_in_and_up_feature,
-        OverrideConfig(functions=override.functions, apis=override.apis),
+    return NormalisedThirdPartyConfig(
+        sign_in_and_up_feature=config.sign_in_and_up_feature,
+        override=override_config,
     )
 
 

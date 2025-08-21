@@ -13,18 +13,24 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Union
 
-from . import utils
 from .recipe import UserMetadataRecipe
+from .utils import InputOverrideConfig, UserMetadataOverrideConfig
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo
-
-    from ...recipe_module import RecipeModule
+    from supertokens_python.supertokens import RecipeInit
 
 
 def init(
-    override: Union[utils.InputOverrideConfig, None] = None,
-) -> Callable[[AppInfo], RecipeModule]:
+    override: Union[UserMetadataOverrideConfig, None] = None,
+) -> RecipeInit:
     return UserMetadataRecipe.init(override)
+
+
+__all__ = [
+    "InputOverrideConfig",  # deprecated, use `UserMetadataOverrideConfig` instead
+    "UserMetadataOverrideConfig",
+    "UserMetadataRecipe",
+    "init",
+]
