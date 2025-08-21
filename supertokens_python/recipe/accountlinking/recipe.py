@@ -23,7 +23,6 @@ from supertokens_python.logger import (
     log_debug_message,
 )
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.process_state import PROCESS_STATE, ProcessState
 from supertokens_python.querier import Querier
 from supertokens_python.recipe_module import APIHandled, RecipeModule

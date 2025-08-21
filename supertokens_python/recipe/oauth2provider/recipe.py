@@ -18,7 +18,6 @@ from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
-from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.recipe.oauth2provider.exceptions import OAuth2ProviderError
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.types import User

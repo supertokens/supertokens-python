@@ -22,7 +22,6 @@ from supertokens_python.auth_utils import is_fake_email
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
-from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
 from supertokens_python.recipe.multifactorauth.types import (

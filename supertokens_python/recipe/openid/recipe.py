@@ -16,7 +16,6 @@ from __future__ import annotations
 from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.querier import Querier
 
 from .api.implementation import APIImplementation

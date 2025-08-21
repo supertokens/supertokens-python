@@ -16,7 +16,6 @@ from __future__ import annotations
 from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from supertokens_python.plugins import OverrideMap, apply_plugins
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.jwt.api.implementation import APIImplementation
 from supertokens_python.recipe.jwt.api.jwks_get import jwks_get
