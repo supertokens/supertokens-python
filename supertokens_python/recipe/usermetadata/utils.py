@@ -24,6 +24,7 @@ from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
     BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
     BaseOverrideConfig,
 )
 
@@ -40,7 +41,32 @@ InputOverrideConfig = UserMetadataOverrideConfig
 """Deprecated: Use `UserMetadataOverrideConfig` instead."""
 
 
-class UserMetadataConfig(BaseConfig[RecipeInterface, APIInterface]): ...
+class UserMetadataOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
+    ...
+
+
+class UserMetadataConfig(
+    UserMetadataOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, UserMetadataOverrideableConfig],
+):
+    def to_overrideable_config(self) -> UserMetadataOverrideableConfig:
+        """Create a `UserMetadataOverrideableConfig` from the current config."""
+        return UserMetadataOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: UserMetadataOverrideableConfig,
+    ) -> "UserMetadataConfig":
+        """
+        Create a `UserMetadataConfig` from a `UserMetadataOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return UserMetadataConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
 class NormalisedUserMetadataConfig(

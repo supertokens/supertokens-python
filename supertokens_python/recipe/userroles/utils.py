@@ -22,6 +22,7 @@ from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
     BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
     BaseOverrideConfig,
 )
 
@@ -37,9 +38,33 @@ InputOverrideConfig = UserRolesOverrideConfig
 """Deprecated: Use `UserRolesOverrideConfig` instead."""
 
 
-class UserRolesConfig(BaseConfig[RecipeInterface, APIInterface]):
+class UserRolesOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
     skip_adding_roles_to_access_token: Optional[bool] = None
     skip_adding_permissions_to_access_token: Optional[bool] = None
+
+
+class UserRolesConfig(
+    UserRolesOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, UserRolesOverrideableConfig],
+):
+    def to_overrideable_config(self) -> UserRolesOverrideableConfig:
+        """Create a `UserRolesOverrideableConfig` from the current config."""
+        return UserRolesOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: UserRolesOverrideableConfig,
+    ) -> "UserRolesConfig":
+        """
+        Create a `UserRolesConfig` from a `UserRolesOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return UserRolesConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
 class NormalisedUserRolesConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
