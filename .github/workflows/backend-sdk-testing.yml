@@ -24,6 +24,7 @@ jobs:
       cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
       pyVersions: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
       nodeVersions: '["20"]'
+      coreCdiVersionMap: ${{ steps.core-versions.outputs.cdiVersions }}
     steps:
       - uses: actions/checkout@v4
 
@@ -32,6 +33,13 @@ jobs:
         with:
           has-fdi: true
           has-cdi: true
+
+      - uses: supertokens/actions/get-versions-from-repo@main
+        id: core-versions
+        with:
+          repo: supertokens-core
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cdi-versions: ${{steps.versions.outputs.cdiVersions }}
 
   test:
     runs-on: ubuntu-latest
@@ -56,14 +64,12 @@ jobs:
           # Checking out to a custom path since the test repo will also be cloned
           path: supertokens-python
 
-      - uses: supertokens/get-versions-action@main
-        id: versions
-        with:
-          driver-name: python
-          cdi-version: ${{ matrix.cdi-version }}
-          fdi-version: ${{ matrix.fdi-version }}
-        env:
-          SUPERTOKENS_API_KEY: ${{ secrets.SUPERTOKENS_API_KEY }}
+      - name: Get core version from current CDI version
+        id: core-version
+        run: |
+          coreVersion=$(echo '${{ needs.define-versions.outputs.coreCdiVersionMap }}' | jq -r ".[${{ matrix.cdi-version }}]")
+
+          echo "coreVersion=${coreVersion}" >> $GITHUB_OUTPUT
 
       - uses: actions/setup-node@v4
         with:
@@ -82,7 +88,7 @@ jobs:
         working-directory: supertokens-python
         env:
           SUPERTOKENS_ENV: testing
-          SUPERTOKENS_CORE_VERSION: ${{ steps.versions.outputs.coreVersionXy }}
+          SUPERTOKENS_CORE_VERSION: ${{ steps.core-version.outputs.coreVersion }}
         run: |
           source venv/bin/activate
           docker compose up --build --wait
@@ -91,6 +97,6 @@ jobs:
       - uses: supertokens/backend-sdk-testing-action@main
         with:
           version: ${{ matrix.fdi-version }}
-          check-name-suffix: '[CDI=${{ matrix.cdi-version }}][Core=${{ steps.versions.outputs.coreVersionXy }}][FDI=${{ matrix.fdi-version }}][Py=${{ matrix.py-version }}][Node=${{ matrix.node-version }}]'
+          check-name-suffix: '[CDI=${{ matrix.cdi-version }}][Core=${{ steps.core-version.outputs.coreVersion }}][FDI=${{ matrix.fdi-version }}][Py=${{ matrix.py-version }}][Node=${{ matrix.node-version }}]'
           path: backend-sdk-testing
           app-server-logs: ${{ github.workspace }}/supertokens-python/python.log
