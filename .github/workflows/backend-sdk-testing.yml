@@ -67,7 +67,7 @@ jobs:
       - name: Get core version from current CDI version
         id: core-version
         run: |
-          coreVersion=$(echo '${{ needs.define-versions.outputs.coreCdiVersionMap }}' | jq -r ".[${{ matrix.cdi-version }}]")
+          coreVersion=$(echo '${{ needs.define-versions.outputs.coreCdiVersionMap }}' | jq -r '.["${{ matrix.cdi-version }}"]')
 
           echo "coreVersion=${coreVersion}" >> $GITHUB_OUTPUT
 
