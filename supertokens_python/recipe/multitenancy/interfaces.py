@@ -331,6 +331,16 @@ class LoginMethodPasswordless:
         }
 
 
+class LoginMethodWebauthn:
+    def __init__(self, enabled: bool):
+        self.enabled = enabled
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "enabled": self.enabled,
+        }
+
+
 class LoginMethodThirdParty:
     def __init__(self, enabled: bool, providers: List[ThirdPartyProvider]):
         self.enabled = enabled
@@ -349,12 +359,14 @@ class LoginMethodsGetOkResult(APIResponse):
         email_password: LoginMethodEmailPassword,
         passwordless: LoginMethodPasswordless,
         third_party: LoginMethodThirdParty,
+        webauthn: LoginMethodWebauthn,
         first_factors: List[str],
     ):
         self.status = "OK"
         self.email_password = email_password
         self.passwordless = passwordless
         self.third_party = third_party
+        self.webauthn = webauthn
         self.first_factors = first_factors
 
     def to_json(self) -> Dict[str, Any]:
@@ -363,6 +375,7 @@ class LoginMethodsGetOkResult(APIResponse):
             "emailPassword": self.email_password.to_json(),
             "passwordless": self.passwordless.to_json(),
             "thirdParty": self.third_party.to_json(),
+            "webauthn": self.webauthn.to_json(),
             "firstFactors": self.first_factors,
         }
 

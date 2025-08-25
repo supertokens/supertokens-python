@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from typing_extensions import Literal
 
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
+from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
 from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
@@ -231,7 +232,9 @@ async def get_user_for_recipe_id(
 async def _get_user_for_recipe_id(
     recipe_user_id: RecipeUserId, recipe_id: str, user_context: Dict[str, Any]
 ) -> GetUserForRecipeIdHelperResult:
-    recipe: Optional[Literal["emailpassword", "thirdparty", "passwordless"]] = None
+    recipe: Optional[
+        Literal["emailpassword", "thirdparty", "passwordless", "webauthn"]
+    ] = None
 
     user = await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
         recipe_user_id.get_as_string(), user_context
@@ -269,6 +272,12 @@ async def _get_user_for_recipe_id(
         try:
             PasswordlessRecipe.get_instance()
             recipe = "passwordless"
+        except Exception:
+            pass
+    elif recipe_id == WebauthnRecipe.recipe_id:
+        try:
+            WebauthnRecipe.get_instance()
+            recipe = "webauthn"
         except Exception:
             pass
 
