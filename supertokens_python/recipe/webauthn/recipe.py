@@ -132,7 +132,7 @@ class WebauthnRecipe(RecipeModule):
                 async def get_available_secondary_factor_ids(
                     _: TenantConfig,
                 ) -> List[str]:
-                    return ["emailpassword"]
+                    return [FactorIds.WEBAUTHN]
 
                 mfa_instance.add_func_to_get_all_available_secondary_factor_ids_from_other_recipes(
                     GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc(
@@ -143,11 +143,11 @@ class WebauthnRecipe(RecipeModule):
                 async def user_setup(user: User, _: Dict[str, Any]) -> List[str]:
                     for login_method in user.login_methods:
                         # We don't check for tenantId here because if we find the user
-                        # with emailpassword loginMethod from different tenant, then
+                        # with webauthn loginMethod from different tenant, then
                         # we assume the factor is setup for this user. And as part of factor
                         # completion, we associate that loginMethod with the session's tenantId
                         if login_method.recipe_id == self.recipe_id:
-                            return ["emailpassword"]
+                            return [FactorIds.WEBAUTHN]
 
                     return []
 
@@ -174,7 +174,8 @@ class WebauthnRecipe(RecipeModule):
 
                     # We order the login methods based on `time_joined` (oldest first)
                     ordered_login_methods = sorted(
-                        user.login_methods, key=lambda lm: lm.time_joined, reverse=True
+                        user.login_methods,
+                        key=lambda lm: lm.time_joined,
                     )
                     # We take the ones that belong to this recipe
                     recipe_ordered_login_methods = list(
@@ -185,7 +186,7 @@ class WebauthnRecipe(RecipeModule):
                     )
 
                     result: List[str] = []
-                    if len(recipe_ordered_login_methods) == 0:
+                    if len(recipe_ordered_login_methods) != 0:
                         # If there are login methods belonging to this recipe, the factor is set up
                         # In this case we only list email addresses that have a password associated with them
 
@@ -234,14 +235,14 @@ class WebauthnRecipe(RecipeModule):
                             # If there is at least one real email address linked to the user, we only suggest real addresses
                             result = [
                                 lm.email
-                                for lm in recipe_ordered_login_methods
+                                for lm in ordered_login_methods
                                 if lm.email is not None and not is_fake_email(lm.email)
                             ]
                         else:
                             # Else we use the fake ones
                             result = [
                                 lm.email
-                                for lm in recipe_ordered_login_methods
+                                for lm in ordered_login_methods
                                 if lm.email is not None and is_fake_email(lm.email)
                             ]
 
@@ -264,17 +265,8 @@ class WebauthnRecipe(RecipeModule):
                             if email != session_login_method.email
                         ]
 
-                    # If the list is empty we generate an email address to make the flow where the user is never asked for
-                    # an email address easier to implement. In many cases when the user adds an email-password factor, they
-                    # actually only want to add a password and do not care about the associated email address.
-                    # Custom implementations can choose to ignore this, and ask the user for the email anyway.
-                    if len(result) == 0:
-                        result.append(
-                            f"{session_recipe_user_id.get_as_string()}@stfakeemail.supertokens.com"
-                        )
-
                     return GetEmailsForFactorOkResult(
-                        factor_id_to_emails_map={"emailpassword": result}
+                        factor_id_to_emails_map={FactorIds.WEBAUTHN: result}
                     )
 
                 mfa_instance.add_func_to_get_emails_for_factor_from_other_recipes(
