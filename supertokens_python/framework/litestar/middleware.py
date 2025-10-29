@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional, cast
 
 from litestar import Request, Response
 from litestar.datastructures import MutableScopeHeaders
@@ -32,7 +32,10 @@ class LitestarMiddleware(ASGIMiddleware):
 
         try:
             response = LitestarResponse(Response[Any](content=None))
-            result = await st.middleware(custom_request, response, user_context)
+            result = cast(
+                Optional[LitestarResponse],
+                await st.middleware(custom_request, response, user_context),
+            )
 
             if result is not None:
                 # SuperTokens handled the request
@@ -50,8 +53,8 @@ class LitestarMiddleware(ASGIMiddleware):
                 async def modified_send(message: Message):
                     if message["type"] == "http.response.start":
                         mutable_headers = MutableScopeHeaders(message)
-                        for cookie in result.response.cookies:
-                            cookie_value = cookie.to_header().split(": ", 1)[1]
+                        for cookie in result.response.cookies:  # type: ignore
+                            cookie_value = cookie.to_header().split(": ", 1)[1]  # type: ignore
                             mutable_headers.add("set-cookie", cookie_value)
                     await send(message)
 
@@ -64,7 +67,7 @@ class LitestarMiddleware(ASGIMiddleware):
                             request.state.supertokens, SessionContainer
                         ):
                             temp_response = Response[Any](content=None)
-                            temp_response.headers = MutableScopeHeaders(message)
+                            temp_response.headers = MutableScopeHeaders(message)  # type: ignore
                             litestar_response = LitestarResponse(temp_response)
                             manage_session_post_response(
                                 request.state.supertokens,
@@ -72,8 +75,8 @@ class LitestarMiddleware(ASGIMiddleware):
                                 user_context,
                             )
                             mutable_headers = MutableScopeHeaders(message)
-                            for cookie in litestar_response.response.cookies:
-                                cookie_value = cookie.to_header().split(": ", 1)[1]
+                            for cookie in litestar_response.response.cookies:  # type: ignore
+                                cookie_value = cookie.to_header().split(": ", 1)[1]  # type: ignore
                                 mutable_headers.add("set-cookie", cookie_value)
                     await send(message)
 
@@ -82,8 +85,11 @@ class LitestarMiddleware(ASGIMiddleware):
         except SuperTokensError as e:
             # Handle SuperTokens errors
             response = LitestarResponse(Response[Any](content=None))
-            result = await st.handle_supertokens_error(
-                custom_request, e, response, user_context
+            result = cast(
+                Optional[LitestarResponse],
+                await st.handle_supertokens_error(
+                    custom_request, e, response, user_context
+                ),
             )
             if isinstance(result, LitestarResponse):
                 asgi_response = await result.response.to_asgi_response(
@@ -93,8 +99,8 @@ class LitestarMiddleware(ASGIMiddleware):
                 async def modified_send(message: Message):
                     if message["type"] == "http.response.start":
                         mutable_headers = MutableScopeHeaders(message)
-                        for cookie in result.response.cookies:
-                            cookie_value = cookie.to_header().split(": ", 1)[1]
+                        for cookie in result.response.cookies:  # type: ignore
+                            cookie_value = cookie.to_header().split(": ", 1)[1]  # type: ignore
                             mutable_headers.add("set-cookie", cookie_value)
                     await send(message)
 

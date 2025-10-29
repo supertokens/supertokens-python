@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import json
-from typing import Any, Dict, Union
+from typing import Any, Union
 from urllib.parse import parse_qsl
 
 from litestar import Request
@@ -33,10 +33,10 @@ class LitestarRequest(BaseRequest):
     ) -> Union[str, None]:
         return self.request.query_params.get(key, default)
 
-    def get_query_params(self) -> Dict[str, Any]:
+    def get_query_params(self) -> dict[str, Any]:
         return dict(self.request.query_params.items())  # type: ignore
 
-    async def json(self) -> dict:
+    async def json(self) -> dict[str, Any]:
         """
         Read the entire ASGI stream and JSON-decode it,
         sidestepping Litestar’s internal max-body-size logic.

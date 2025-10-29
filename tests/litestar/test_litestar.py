@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import json
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 from unittest import skip
 
 from litestar import Litestar, MediaType, Request, Response, get, post
@@ -61,7 +61,7 @@ from tests.utils import (
 
 def override_dashboard_functions(original_implementation: RecipeInterface):
     async def should_allow_access(
-        request: BaseRequest, __: DashboardConfig, ___: Dict[str, Any]
+        request: BaseRequest, config: DashboardConfig, user_context: Dict[str, Any]
     ):
         auth_header = request.get_header("authorization")
         return auth_header == "Bearer testapikey"
@@ -121,7 +121,7 @@ def driver_config_client() -> TestClient[Litestar]:
         },
     )
     async def handle_get_optional(
-        session: SessionContainer,
+        session: Optional[SessionContainer],
     ) -> Dict[str, Any]:
         if session is None:
             return {"s": "empty session"}
@@ -739,9 +739,9 @@ async def test_search_with_email_t(driver_config_client: TestClient[Litestar]):
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
-        skip()
+        skip("CDI version not available")
     if not is_version_gte(cdi_version, "2.20"):
-        skip()
+        skip("CDI version too old")
     await create_users(emailpassword=True)
     query = {"limit": "10", "email": "t"}
     res = driver_config_client.get(
@@ -786,9 +786,9 @@ async def test_search_with_email_multiple_email_entry(
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
-        skip()
+        skip("CDI version not available")
     if not is_version_gte(cdi_version, "2.20"):
-        skip()
+        skip("CDI version too old")
     await create_users(emailpassword=True)
     query = {"limit": "10", "email": "iresh;john"}
     res = driver_config_client.get(
@@ -831,9 +831,9 @@ async def test_search_with_email_iresh(driver_config_client: TestClient[Litestar
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
-        skip()
+        skip("CDI version not available")
     if not is_version_gte(cdi_version, "2.20"):
-        skip()
+        skip("CDI version too old")
     await create_users(emailpassword=True)
     query = {"limit": "10", "email": "iresh"}
     res = driver_config_client.get(
@@ -879,9 +879,9 @@ async def test_search_with_phone_plus_one(driver_config_client: TestClient[Lites
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
-        skip()
+        skip("CDI version not available")
     if not is_version_gte(cdi_version, "2.20"):
-        skip()
+        skip("CDI version too old")
     await create_users(passwordless=True)
     query = {"limit": "10", "phone": "+1"}
     res = driver_config_client.get(
@@ -929,9 +929,9 @@ async def test_search_with_phone_one_bracket(
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
-        skip()
+        skip("CDI version not available")
     if not is_version_gte(cdi_version, "2.20"):
-        skip()
+        skip("CDI version too old")
     await create_users(passwordless=True)
     query = {"limit": "10", "phone": "1("}
     res = driver_config_client.get(
@@ -1016,9 +1016,9 @@ async def test_search_with_provider_google(driver_config_client: TestClient[Lite
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
-        skip()
+        skip("CDI version not available")
     if not is_version_gte(cdi_version, "2.20"):
-        skip()
+        skip("CDI version too old")
     await create_users(thirdparty=True)
     query = {"limit": "10", "provider": "google"}
     res = driver_config_client.get(
@@ -1109,9 +1109,9 @@ async def test_search_with_provider_google_and_phone_1(
     querier = Querier.get_instance(DashboardRecipe.recipe_id)
     cdi_version = await querier.get_api_version()
     if not cdi_version:
-        skip()
+        skip("CDI version not available")
     if not is_version_gte(cdi_version, "2.20"):
-        skip()
+        skip("CDI version too old")
     await create_users(thirdparty=True, passwordless=True)
     query = {"limit": "10", "provider": "google", "phone": "1"}
     res = driver_config_client.get(

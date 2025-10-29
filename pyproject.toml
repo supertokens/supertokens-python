@@ -13,6 +13,9 @@ indent-style = "space" # Default
 typeCheckingMode = "strict"
 reportImportCycles = false
 include = ["supertokens_python/", "tests/", "examples/"]
+exclude = [".venv"]
+venvPath = "."
+venv = ".venv"
 
 [tool.pytest.ini_options]
 addopts = " -v -p no:warnings"
