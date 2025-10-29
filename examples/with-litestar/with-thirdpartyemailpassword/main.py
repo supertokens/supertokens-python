@@ -12,7 +12,6 @@ from supertokens_python import (
     get_all_cors_headers,
     init,
 )
-from supertokens_python.framework.litestar.middleware import LitestarMiddleware
 from supertokens_python.recipe import (
     dashboard,
     emailverification,
@@ -178,9 +177,6 @@ cors = CORSConfig(
 app = Litestar(
     route_handlers=[
         get_session_info,
-    ],
-    middleware=[
-        LitestarMiddleware(),
     ],
     cors_config=cors,
     exception_handlers={

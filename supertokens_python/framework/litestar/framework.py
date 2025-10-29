@@ -14,12 +14,13 @@
 from typing import Any
 
 from litestar import Request
+
 from supertokens_python.framework.types import Framework
 
 
 class LitestarFramework(Framework):
     def wrap_request(self, unwrapped: Request[Any, Any, Any]):
-        from supertokens_python.framework.litestar.request import (
+        from supertokens_python.framework.litestar.litestar_request import (
             LitestarRequest,
         )
 

@@ -16,6 +16,7 @@ from typing import Any, Dict, Literal, Optional
 
 from litestar import Response
 from litestar.serialization import encode_json
+
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.utils import get_timestamp_ms
 
@@ -60,7 +61,7 @@ class LitestarResponse(BaseResponse):
         )
 
     def set_header(self, key: str, value: str):
-        self.response.set_header(key, value)
+        self.response.headers[key] = value
 
     def get_header(self, key: str) -> Optional[str]:
         return self.response.headers.get(key, None)

@@ -21,7 +21,7 @@ from litestar.testing import TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework import BaseRequest
-from supertokens_python.framework.litestar.middleware import LitestarMiddleware
+from supertokens_python.framework.litestar.litestar_middleware import get_middleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import emailpassword, session, thirdparty
 from supertokens_python.recipe.dashboard import DashboardRecipe, InputOverrideConfig
@@ -169,12 +169,9 @@ def driver_config_client() -> TestClient[Litestar]:
             _create,
             _create_throw,
         ],
-        middleware=[
-            LitestarMiddleware(),
-        ],
     )
-
-    return TestClient(app)
+    return TestClient(get_middleware()(app))
+    # return TestClient(app)
 
 
 def apis_override_session(param: APIInterface):
@@ -575,11 +572,10 @@ def test_litestar_root_path(litestar_root_path: str):
         litestar_root_path = litestar_root_path[1:]
     app = Litestar(
         path=litestar_root_path,
-        middleware=[
-            LitestarMiddleware(),
-        ],
     )
-    test_client = TestClient(app)
+
+    test_client = TestClient(get_middleware()(app))
+    # test_client = TestClient(app)
 
     response = test_client.get(
         f"{litestar_root_path}/auth/signup/email/exists?email=test@example.com"
