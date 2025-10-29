@@ -484,9 +484,9 @@ async def test_custom_response(driver_config_client: TestClient[Litestar]):
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
-            response_Dict = {"custom": True}
+            response_dict = {"custom": True}
             api_options.response.set_status_code(203)
-            api_options.response.set_json_content(response_Dict)
+            api_options.response.set_json_content(response_dict)
             return await original_func(email, tenant_id, api_options, user_context)
 
         original_implementation.email_exists_get = email_exists_get
@@ -514,9 +514,9 @@ async def test_custom_response(driver_config_client: TestClient[Litestar]):
         url="/auth/signup/email/exists?email=test@example.com",
     )
 
-    Dict_response = json.loads(response.text)
+    dict_response = json.loads(response.text)
     assert response.status_code == 203
-    assert Dict_response["custom"]
+    assert dict_response["custom"]
 
 
 @mark.asyncio
@@ -539,9 +539,9 @@ async def test_optional_session(driver_config_client: TestClient[Litestar]):
         url="handle-session-optional",
     )
 
-    Dict_response = json.loads(response.text)
+    dict_response = json.loads(response.text)
     assert response.status_code == 200
-    assert Dict_response["s"] == "empty session"
+    assert dict_response["s"] == "empty session"
 
 
 @mark.parametrize(
