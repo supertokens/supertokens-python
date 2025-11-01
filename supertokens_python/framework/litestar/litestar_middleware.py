@@ -11,114 +11,87 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Union, cast
+from litestar.middleware import DefineMiddleware
+from litestar.types import ASGIApp, Receive, Scope, Send
 
 
-def get_middleware():
-    from litestar import Request as LitestarRequestClass
-    from litestar import Response as LitestarResponseClass
-    from starlette.responses import Response as StarletteResponse
-    from starlette.types import ASGIApp, Message, Receive, Scope, Send
+class SupertokensSessionMiddleware:
+    """
+    Middleware to handle session management for non-auth routes.
 
-    from supertokens_python import Supertokens
-    from supertokens_python.exceptions import SuperTokensError
-    from supertokens_python.framework import BaseResponse
-    from supertokens_python.framework.litestar.litestar_request import (
-        LitestarRequest,
-    )
-    from supertokens_python.framework.litestar.litestar_response import (
-        LitestarResponse,
-    )
-    from supertokens_python.recipe.session import SessionContainer
-    from supertokens_python.supertokens import manage_session_post_response
-    from supertokens_python.utils import default_user_context
+    This middleware applies session-related response mutators (like setting cookies)
+    for routes that use SuperTokens sessions but aren't auth routes.
+    """
 
-    class ASGIMiddleware:
-        def __init__(self, app: ASGIApp) -> None:
-            self.app = app
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
 
-        async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-            if scope["type"] != "http":
-                await self.app(scope, receive, send)
-                return
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
 
-            st = Supertokens.get_instance()
+        from litestar import Request
+        from litestar import Response as LitestarResponseObj
+        from litestar.types import Message
 
-            request = LitestarRequestClass[Any, Any, Any](
-                cast(Any, scope), receive=cast(Any, receive)
-            )
-            custom_request = LitestarRequest(request)
-            user_context = default_user_context(custom_request)
+        from supertokens_python.framework.litestar.litestar_request import (
+            LitestarRequest,
+        )
+        from supertokens_python.framework.litestar.litestar_response import (
+            LitestarResponse,
+        )
+        from supertokens_python.recipe.session import SessionContainer
+        from supertokens_python.supertokens import manage_session_post_response
+        from supertokens_python.utils import default_user_context
 
-            try:
-                response = LitestarResponse(LitestarResponseClass[Any](content={}))
-                result: Union[BaseResponse, None] = await st.middleware(
-                    custom_request, response, user_context
-                )
-                if result is None:
+        request = Request(scope, receive=receive, send=send)  # type: ignore
+        custom_request = LitestarRequest(request)
+        user_context = default_user_context(custom_request)
 
-                    async def send_wrapper(message: Message):
-                        if message["type"] == "http.response.start":
-                            if hasattr(request.state, "supertokens") and isinstance(
-                                request.state.supertokens, SessionContainer
-                            ):
-                                starlette_response = StarletteResponse()
-                                starlette_response.raw_headers = message["headers"]
-                                response = LitestarResponse(
-                                    cast(LitestarResponseClass[Any], starlette_response)
-                                )
-                                manage_session_post_response(
-                                    request.state.supertokens, response, user_context
-                                )
-                                message["headers"] = starlette_response.raw_headers
-
-                        await send(message)
-
-                    await self.app(scope, receive, send_wrapper)
-                    return
-
+        async def send_wrapper(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                # Apply session mutators to response headers
                 if hasattr(request.state, "supertokens") and isinstance(
-                    request.state.supertokens, SessionContainer
+                    getattr(request.state, "supertokens", None), SessionContainer
                 ):
+                    # Create a temporary Litestar Response
+                    temp_response = LitestarResponseObj(content=None)
+
+                    # Convert raw ASGI headers to dict for Litestar Response
+                    for name, value in message.get("headers", []):  # type: ignore
+                        temp_response.headers[
+                            name.decode() if isinstance(name, bytes) else name
+                        ] = value.decode() if isinstance(value, bytes) else value
+
+                    # Wrap it for SuperTokens
+                    wrapped_response = LitestarResponse(temp_response)
+
+                    # Apply session mutators (this will modify temp_response)
                     manage_session_post_response(
-                        request.state.supertokens, result, user_context
+                        getattr(request.state, "supertokens"),
+                        wrapped_response,
+                        user_context,
                     )
 
-                if isinstance(result, LitestarResponse):
-                    resp_any = cast(Any, result.response)
-                    asgi_response = resp_any.to_asgi_response(app=None, request=request)
-                    await asgi_response(scope, receive, send)
-                    return
+                    # Convert the Litestar Response to ASGI format to get cookies as Set-Cookie headers
+                    asgi_response = temp_response.to_asgi_response(
+                        app=None, request=None
+                    )  # type: ignore
 
-                return
+                    # Use the encoded headers which include Set-Cookie headers from cookies
+                    message["headers"] = asgi_response.encoded_headers
 
-            except SuperTokensError as e:
-                response = LitestarResponse(LitestarResponseClass[Any](content={}))
-                result: Union[BaseResponse, None] = await st.handle_supertokens_error(
-                    LitestarRequest(request), e, response, user_context
-                )
-                if isinstance(result, LitestarResponse):
-                    resp_any = cast(Any, result.response)
-                    asgi_response = resp_any.to_asgi_response(app=None, request=request)
-                    await asgi_response(scope, receive, send)
-                    return
+            await send(message)
 
-                async def send_wrapper(message: Message):
-                    if message["type"] == "http.response.start":
-                        if hasattr(request.state, "supertokens") and isinstance(
-                            request.state.supertokens, SessionContainer
-                        ):
-                            starlette_response = StarletteResponse()
-                            starlette_response.raw_headers = message["headers"]
-                            response = LitestarResponse(
-                                cast(LitestarResponseClass[Any], starlette_response)
-                            )
-                            manage_session_post_response(
-                                request.state.supertokens, response, user_context
-                            )
-                            message["headers"] = starlette_response.raw_headers
-                    await send(message)
+        await self.app(scope, receive, send_wrapper)
 
-                await self.app(scope, receive, send_wrapper)
 
-    return ASGIMiddleware
+def create_supertokens_middleware() -> DefineMiddleware:
+    """
+    Create a DefineMiddleware instance for SuperTokens session management.
+
+    Returns:
+        A DefineMiddleware configured with SupertokensSessionMiddleware
+    """
+    return DefineMiddleware(SupertokensSessionMiddleware)

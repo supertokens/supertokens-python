@@ -12,6 +12,10 @@ from supertokens_python import (
     get_all_cors_headers,
     init,
 )
+from supertokens_python.framework.litestar import (
+    create_supertokens_middleware,
+    get_supertokens_plugin,
+)
 from supertokens_python.recipe import (
     dashboard,
     emailverification,
@@ -182,6 +186,8 @@ app = Litestar(
     exception_handlers={
         Exception: f_405,
     },
+    middleware=[create_supertokens_middleware()],
+    plugins=[get_supertokens_plugin(api_base_path="/auth")],
 )
 
 if __name__ == "__main__":
