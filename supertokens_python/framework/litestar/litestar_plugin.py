@@ -26,14 +26,37 @@ class SupertokensPlugin(InitPluginProtocol):
     that processes SuperTokens authentication requests.
     """
 
-    def __init__(self, api_base_path: str = "/auth"):
+    def __init__(self, api_base_path: str = "/auth", app_root_path: str = ""):
         """
         Initialize the SuperTokens plugin.
 
         Args:
             api_base_path: The base path for SuperTokens API routes (default: "/auth")
+            app_root_path: The root path of the Litestar app (e.g., "api/v1").
+                          If provided, will be stripped from api_base_path for mounting.
         """
-        self.api_base_path = api_base_path.rstrip("/")
+        self.full_api_base_path = api_base_path.rstrip("/")
+        self.app_root_path = app_root_path.strip("/")
+
+        # Calculate the mount path by removing app_root_path prefix from api_base_path
+        if self.app_root_path and self.full_api_base_path.startswith(
+            f"/{self.app_root_path}"
+        ):
+            # Remove the root path prefix for mounting
+            self.api_base_path = self.full_api_base_path[
+                len(f"/{self.app_root_path}") :
+            ]
+        elif self.app_root_path and self.full_api_base_path.startswith(
+            self.app_root_path
+        ):
+            # Handle case where api_base_path doesn't start with /
+            self.api_base_path = self.full_api_base_path[len(self.app_root_path) :]
+        else:
+            self.api_base_path = self.full_api_base_path
+
+        # Ensure it starts with /
+        if not self.api_base_path.startswith("/"):
+            self.api_base_path = f"/{self.api_base_path}"
 
     def on_app_init(self, app_config: AppConfig) -> AppConfig:
         """
@@ -123,6 +146,11 @@ class SupertokensPlugin(InitPluginProtocol):
                     custom_request, e, error_response, user_context
                 )
 
+                # Clear the session from request.state to prevent the middleware
+                # from re-applying session cookies after we've cleared them
+                if hasattr(litestar_request.state, "supertokens"):
+                    delattr(litestar_request.state, "supertokens")
+
                 if isinstance(result, LitestarResponse):
                     asgi_response = result.response.to_asgi_response(
                         app=None, request=None
@@ -143,14 +171,31 @@ class SupertokensPlugin(InitPluginProtocol):
         return app_config
 
 
-def get_supertokens_plugin(api_base_path: str = "/auth") -> SupertokensPlugin:
+def get_supertokens_plugin(
+    api_base_path: str = "/auth", app_root_path: str = ""
+) -> SupertokensPlugin:
     """
     Get a configured SuperTokens plugin for Litestar.
 
     Args:
-        api_base_path: The base path for SuperTokens API routes (default: "/auth")
+        api_base_path: The base path for SuperTokens API routes (default: "/auth").
+                      This should match the api_base_path in your SuperTokens init().
+        app_root_path: The root path of your Litestar app if using app path (e.g., "api/v1").
+                      This will be automatically stripped from api_base_path for proper mounting.
 
     Returns:
         A configured SupertokensPlugin instance
+
+    Example:
+        # Without app root path
+        app = Litestar(
+            plugins=[get_supertokens_plugin(api_base_path="/auth")]
+        )
+
+        # With app root path
+        app = Litestar(
+            path="api/v1",
+            plugins=[get_supertokens_plugin(api_base_path="/api/v1/auth", app_root_path="api/v1")]
+        )
     """
-    return SupertokensPlugin(api_base_path=api_base_path)
+    return SupertokensPlugin(api_base_path=api_base_path, app_root_path=app_root_path)

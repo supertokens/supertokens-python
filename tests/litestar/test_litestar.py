@@ -15,7 +15,7 @@ import json
 from typing import Any, Dict, Optional, Union
 from unittest import skip
 
-from litestar import Litestar, MediaType, Request, Response, get, post
+from litestar import Litestar, Request, Response, get, post
 from litestar.di import Provide
 from litestar.testing import TestClient
 from pytest import fixture, mark
@@ -23,6 +23,7 @@ from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework import BaseRequest
 from supertokens_python.framework.litestar import (
     create_supertokens_middleware,
+    get_exception_handlers,
     get_supertokens_plugin,
 )
 from supertokens_python.querier import Querier
@@ -138,8 +139,8 @@ def driver_config_client() -> TestClient[Litestar]:
         await session.revoke_session()
         return {}
 
-    @post("/create", media_type=MediaType.TEXT)
-    async def _create(request: Request[Any, Any, Any]) -> str:
+    @post("/create")
+    async def _create(request: Request[Any, Any, Any]) -> Dict[str, Any]:
         await create_new_session(
             request=request,
             tenant_id="public",
@@ -147,7 +148,7 @@ def driver_config_client() -> TestClient[Litestar]:
             access_token_payload={},
             session_data_in_database={},
         )
-        return ""
+        return {}
 
     @post("/create-throw")
     async def _create_throw(request: Request[Any, Any, Any]) -> None:
@@ -174,6 +175,7 @@ def driver_config_client() -> TestClient[Litestar]:
         ],
         middleware=[create_supertokens_middleware()],
         plugins=[get_supertokens_plugin(api_base_path="/auth")],
+        exception_handlers=get_exception_handlers(),
     )
     return TestClient(app)
 
@@ -577,7 +579,12 @@ def test_litestar_root_path(litestar_root_path: str):
     app = Litestar(
         path=litestar_root_path,
         middleware=[create_supertokens_middleware()],
-        plugins=[get_supertokens_plugin(api_base_path=f"{litestar_root_path}/auth")],
+        plugins=[
+            get_supertokens_plugin(
+                api_base_path=f"{litestar_root_path}/auth",
+                app_root_path=litestar_root_path,
+            )
+        ],
     )
 
     test_client = TestClient(app)
@@ -636,6 +643,8 @@ async def test_should_clear_all_response_during_refresh_if_unauthorized(
     if token_transfer_method == "header":
         headers.update({"authorization": f"Bearer {info['refreshTokenFromAny']}"})
     else:
+        # Clear existing cookies from the client to avoid duplicate cookie issues
+        driver_config_client.cookies.clear()
         cookies.update(
             {"sRefreshToken": info["refreshTokenFromAny"], "sIdRefreshToken": "asdf"}
         )

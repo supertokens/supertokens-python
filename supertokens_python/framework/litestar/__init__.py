@@ -12,6 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from .litestar_exception_handlers import (
+    get_exception_handlers,
+    supertokens_exception_handler,
+)
 from .litestar_middleware import create_supertokens_middleware
 from .litestar_plugin import SupertokensPlugin, get_supertokens_plugin
 
@@ -19,4 +23,6 @@ __all__ = [
     "SupertokensPlugin",
     "get_supertokens_plugin",
     "create_supertokens_middleware",
+    "get_exception_handlers",
+    "supertokens_exception_handler",
 ]
