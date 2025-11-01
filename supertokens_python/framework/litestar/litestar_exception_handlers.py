@@ -33,11 +33,11 @@ def supertokens_exception_handler(
     logic in the event loop.
 
     Args:
-        request: The Litestar request object
-        exc: The SuperTokens exception
+            request: The Litestar request object
+            exc: The SuperTokens exception
 
     Returns:
-        A Litestar Response object with proper status code and session cookies
+            A Litestar Response object with proper status code and session cookies
     """
     from supertokens_python import Supertokens
     from supertokens_python.framework.litestar.litestar_request import LitestarRequest
@@ -101,7 +101,7 @@ def supertokens_exception_handler(
         # Create a task and run it
         import nest_asyncio  # type: ignore
 
-        nest_asyncio.apply()
+        nest_asyncio.apply()  # type: ignore
         return loop.run_until_complete(handle_async())
 
 
@@ -110,23 +110,23 @@ def get_exception_handlers() -> dict[int | type[Exception], Any]:
     Get exception handlers for SuperTokens errors.
 
     Returns:
-        A dictionary mapping exception types to handler functions.
+            A dictionary mapping exception types to handler functions.
 
     Example:
-        ```python
-        from litestar import Litestar
-        from supertokens_python.framework.litestar import (
-            get_exception_handlers,
-            get_supertokens_plugin,
-            create_supertokens_middleware,
-        )
+            ```python
+            from litestar import Litestar
+            from supertokens_python.framework.litestar import (
+                    get_exception_handlers,
+                    get_supertokens_plugin,
+                    create_supertokens_middleware,
+            )
 
-        app = Litestar(
-            route_handlers=[...],
-            middleware=[create_supertokens_middleware()],
-            plugins=[get_supertokens_plugin(api_base_path="/auth")],
-            exception_handlers=get_exception_handlers(),
-        )
-        ```
+            app = Litestar(
+                    route_handlers=[...],
+                    middleware=[create_supertokens_middleware()],
+                    plugins=[get_supertokens_plugin(api_base_path="/auth")],
+                    exception_handlers=get_exception_handlers(),
+            )
+            ```
     """
     return {SuperTokensError: supertokens_exception_handler}  # type: ignore

@@ -52,31 +52,30 @@ class SupertokensSessionMiddleware:
         async def send_wrapper(message: Message) -> None:
             if message["type"] == "http.response.start":
                 # Apply session mutators to response headers
-                if hasattr(request.state, "supertokens") and isinstance(
-                    getattr(request.state, "supertokens", None), SessionContainer
+                if hasattr(request.state, "supertokens") and isinstance(  # type: ignore
+                    getattr(request.state, "supertokens", None),  # type: ignore
+                    SessionContainer,  # type: ignore
                 ):
                     # Create a temporary Litestar Response
                     temp_response = LitestarResponseObj(content=None)
 
                     # Convert raw ASGI headers to dict for Litestar Response
                     for name, value in message.get("headers", []):  # type: ignore
-                        temp_response.headers[
-                            name.decode() if isinstance(name, bytes) else name
-                        ] = value.decode() if isinstance(value, bytes) else value
+                        temp_response.headers[name.decode()] = value.decode()
 
                     # Wrap it for SuperTokens
                     wrapped_response = LitestarResponse(temp_response)
 
                     # Apply session mutators (this will modify temp_response)
                     manage_session_post_response(
-                        getattr(request.state, "supertokens"),
+                        getattr(request.state, "supertokens"),  # type: ignore
                         wrapped_response,
                         user_context,
                     )
 
                     # Convert the Litestar Response to ASGI format to get cookies as Set-Cookie headers
-                    asgi_response = temp_response.to_asgi_response(
-                        app=None, request=None
+                    asgi_response = temp_response.to_asgi_response(  # type: ignore
+                        app=None, request=Request(scope, receive=receive, send=send)
                     )  # type: ignore
 
                     # Use the encoded headers which include Set-Cookie headers from cookies
