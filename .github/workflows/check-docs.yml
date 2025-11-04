@@ -84,6 +84,6 @@ jobs:
           else
             # Update docs and create a commit on the branch
             git add --all
-            git commit --allow-empty -nm "doc: update docs for ${{ steps.versions.outputs.releaseTag }} tag"
+            git commit -nm "doc: update docs for v${{ steps.versions.outputs.setupVersion }}"
             git push
           fi
