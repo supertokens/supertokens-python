@@ -187,7 +187,7 @@ app = Litestar(
         Exception: f_405,
     },
     middleware=[create_supertokens_middleware()],
-    plugins=[get_supertokens_plugin(api_base_path="/auth")],
+    plugins=[get_supertokens_plugin(mount_path="/auth")],
 )
 
 if __name__ == "__main__":
