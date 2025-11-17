@@ -24,7 +24,7 @@ from supertokens_python.recipe.session.interfaces import SessionContainer
 class LitestarRequest(BaseRequest):
     def __init__(self, request: Request[Any, Any, Any]):
         super().__init__()
-        self.request = request
+        self.request: Request[Any, Any, Any] = request
 
     def get_original_url(self) -> str:
         return str(self.request.url)

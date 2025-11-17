@@ -24,7 +24,7 @@ from litestar import Litestar, Request, Response, get, post
 from litestar.config.cors import CORSConfig
 from litestar.openapi import OpenAPIConfig
 from litestar.openapi.plugins import ScalarRenderPlugin
-from litestar.types import ASGIApp
+from litestar.types import ASGIApp, Receive, Scope, Send
 from supertokens_python import (
     InputAppInfo,
     Supertokens,
@@ -197,15 +197,15 @@ os.environ.setdefault("SUPERTOKENS_ENV", "testing")
 
 # Uncomment the following for response logging
 # Middleware - handled in Litestar app init
-async def log_response(request: Request, call_next):  # type: ignore
+async def log_response(request: Request[Any, Any, Any], call_next):  # type: ignore
     response = await call_next(request)  # type: ignore
 
     try:
         body_bytes = b""
         async for chunk in response.body_iterator:  # type: ignore
             body_bytes += chunk  # type: ignore
-        print(f"Response: {body_bytes.decode('utf-8')}")  # type: ignore
-        response_with_body = Response(
+        print(f"Response[Any]: {body_bytes.decode('utf-8')}")  # type: ignore
+        response_with_body = Response[Any](
             content=body_bytes,
             status_code=response.status_code,  # type: ignore
             headers=response.headers,  # type: ignore
@@ -1219,45 +1219,45 @@ custom_init()
 # Exception handler for Exception - registered in app  # type: ignore
 async def exception_handler(a, b):  # type: ignore
     print(a, b)  # type: ignore
-    return Response(content={}, status_code=500)
+    return Response[Any](content={}, status_code=500)
 
 
-@post("/test/before")
-def before() -> Response:
-    return Response(content="")
+@post("/test/before", sync_to_thread=True)
+def before() -> Response[Any]:
+    return Response[Any](content="")
 
 
-@post("/test/beforeEach")
-def before_each() -> Response:
+@post("/test/beforeEach", sync_to_thread=True)
+def before_each() -> Response[Any]:
     global code_store
     global latest_url_with_token
 
     latest_url_with_token = ""
     code_store = dict()
 
-    return Response(content="")
+    return Response[Any](content="")
 
 
-@post("/test/afterEach")
-def afterEach() -> Response:
-    return Response(content="")
+@post("/test/afterEach", sync_to_thread=True)
+def afterEach() -> Response[Any]:
+    return Response[Any](content="")
 
 
-@post("/test/after")
-def after() -> Response:
-    return Response(content="")
+@post("/test/after", sync_to_thread=True)
+def after() -> Response[Any]:
+    return Response[Any](content="")
 
 
 @post("/test/setup/app")
-async def setup_core_app_handler(request: Request) -> Response:
+async def setup_core_app_handler(request: Request[Any, Any, Any]) -> Response[Any]:
     body = await request.json()
     url = setup_core_app(**body)
 
-    return Response(content=url)
+    return Response[Any](content=url)
 
 
 @post("/test/setup/st")
-async def setup_st(request: Request) -> Response:
+async def setup_st(request: Request[Any, Any, Any]) -> None:
     print(await request.json())
     body = await request.json()
     print("Setting up ST with body:", body)
@@ -1265,7 +1265,7 @@ async def setup_st(request: Request) -> Response:
 
 
 @post("/changeEmail")
-async def change_email(request: Request) -> Response:
+async def change_email(request: Request[Any, Any, Any]) -> Response[Any]:
     body: Union[dict[str, Any], None] = await request.json()
     if body is None:
         raise Exception("Should never come here")
@@ -1277,19 +1277,19 @@ async def change_email(request: Request) -> Response:
             tenant_id_for_password_policy=body["tenantId"],
         )
         if isinstance(resp, UpdateEmailOrPasswordOkResult):
-            return Response(content={"status": "OK"})
+            return Response[Any](content={"status": "OK"})
         if isinstance(resp, EmailAlreadyExistsError):
-            return Response(content={"status": "EMAIL_ALREADY_EXISTS_ERROR"})
+            return Response[Any](content={"status": "EMAIL_ALREADY_EXISTS_ERROR"})
         if isinstance(resp, UnknownUserIdError):
-            return Response(content={"status": "UNKNOWN_USER_ID_ERROR"})
+            return Response[Any](content={"status": "UNKNOWN_USER_ID_ERROR"})
         if isinstance(resp, UpdateEmailOrPasswordEmailChangeNotAllowedError):
-            return Response(
+            return Response[Any](
                 content={
                     "status": "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
                     "reason": resp.reason,
                 }
             )
-        return Response(content=resp.to_json())
+        return Response[Any](content=resp.to_json())
 
     if body["rid"] == "thirdparty":
         user = await get_user(user_id=body["recipeUserId"])
@@ -1309,7 +1309,7 @@ async def change_email(request: Request) -> Response:
             is_verified=False,
         )
         if isinstance(resp, ManuallyCreateOrUpdateUserOkResult):
-            return Response(
+            return Response[Any](
                 content={
                     "status": "OK",
                     "createdNewRecipeUser": resp.created_new_recipe_user,
@@ -1318,10 +1318,10 @@ async def change_email(request: Request) -> Response:
         if isinstance(resp, LinkingToSessionUserFailedError):
             raise Exception("Should not come here")
         if isinstance(resp, SignInUpNotAllowed):
-            return Response(
+            return Response[Any](
                 content={"status": "SIGN_IN_UP_NOT_ALLOWED", "reason": resp.reason}
             )
-        return Response(
+        return Response[Any](
             content={"status": "EMAIL_CHANGE_NOT_ALLOWED_ERROR", "reason": resp.reason}
         )
 
@@ -1333,22 +1333,24 @@ async def change_email(request: Request) -> Response:
         )
 
         if isinstance(resp, UpdateUserOkResult):
-            return Response(content={"status": "OK"})
+            return Response[Any](content={"status": "OK"})
         if isinstance(resp, UpdateUserUnknownUserIdError):
-            return Response(content={"status": "UNKNOWN_USER_ID_ERROR"})
+            return Response[Any](content={"status": "UNKNOWN_USER_ID_ERROR"})
         if isinstance(resp, UpdateUserEmailAlreadyExistsError):
-            return Response(content={"status": "EMAIL_ALREADY_EXISTS_ERROR"})
+            return Response[Any](content={"status": "EMAIL_ALREADY_EXISTS_ERROR"})
         if isinstance(resp, UpdateUserPhoneNumberAlreadyExistsError):
-            return Response(content={"status": "PHONE_NUMBER_ALREADY_EXISTS_ERROR"})
+            return Response[Any](
+                content={"status": "PHONE_NUMBER_ALREADY_EXISTS_ERROR"}
+            )
         if isinstance(resp, EmailChangeNotAllowedError):
-            return Response(
+            return Response[Any](
                 content={
                     "status": "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
                     "reason": resp.reason,
                 }
             )
         if isinstance(resp, PhoneNumberChangeNotAllowedError):
-            return Response(
+            return Response[Any](
                 content={
                     "status": "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR",
                     "reason": resp.reason,
@@ -1361,13 +1363,13 @@ async def change_email(request: Request) -> Response:
             email=body["email"],
         )
 
-        return Response(content=resp.to_json())
+        return Response[Any](content=resp.to_json())
 
     raise Exception("Should not come here")
 
 
 @post("/setupTenant")
-async def setup_tenant(request: Request) -> Response:
+async def setup_tenant(request: Request[Any, Any, Any]) -> Response[Any]:
     body = await request.json()
     if body is None:
         raise Exception("Should never come here")
@@ -1398,11 +1400,11 @@ async def setup_tenant(request: Request) -> Response:
                 config=ProviderConfig.from_json(provider),
             )
 
-    return Response(content={"status": "OK", "createdNew": core_resp.created_new})
+    return Response[Any](content={"status": "OK", "createdNew": core_resp.created_new})
 
 
 @post("/addUserToTenant")
-async def add_user_to_tenant(request: Request) -> Response:
+async def add_user_to_tenant(request: Request[Any, Any, Any]) -> Response[Any]:
     body = await request.json()
     if body is None:
         raise Exception("Should never come here")
@@ -1419,20 +1421,22 @@ async def add_user_to_tenant(request: Request) -> Response:
             }
         )
     elif isinstance(core_resp, AssociateUserToTenantUnknownUserIdError):
-        return Response(content={"status": "UNKNOWN_USER_ID_ERROR"})
+        return Response[Any](content={"status": "UNKNOWN_USER_ID_ERROR"})
     elif isinstance(core_resp, AssociateUserToTenantEmailAlreadyExistsError):
-        return Response(content={"status": "EMAIL_ALREADY_EXISTS_ERROR"})
+        return Response[Any](content={"status": "EMAIL_ALREADY_EXISTS_ERROR"})
     elif isinstance(core_resp, AssociateUserToTenantPhoneNumberAlreadyExistsError):
-        return Response(content={"status": "PHONE_NUMBER_ALREADY_EXISTS_ERROR"})
+        return Response[Any](content={"status": "PHONE_NUMBER_ALREADY_EXISTS_ERROR"})
     elif isinstance(core_resp, AssociateUserToTenantThirdPartyUserAlreadyExistsError):
-        return Response(content={"status": "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR"})
-    return Response(
+        return Response[Any](
+            content={"status": "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR"}
+        )
+    return Response[Any](
         content={"status": "ASSOCIATION_NOT_ALLOWED_ERROR", "reason": core_resp.reason}
     )
 
 
 @post("/removeUserFromTenant")
-async def remove_user_from_tenant(request: Request) -> Response:
+async def remove_user_from_tenant(request: Request[Any, Any, Any]) -> Response[Any]:
     body = await request.json()
     if body is None:
         raise Exception("Should never come here")
@@ -1443,11 +1447,13 @@ async def remove_user_from_tenant(request: Request) -> Response:
         tenant_id, RecipeUserId(recipe_user_id)
     )
 
-    return Response(content={"status": "OK", "wasAssociated": core_resp.was_associated})
+    return Response[Any](
+        content={"status": "OK", "wasAssociated": core_resp.was_associated}
+    )
 
 
 @post("/removeTenant")
-async def remove_tenant(request: Request) -> Response:
+async def remove_tenant(request: Request[Any, Any, Any]) -> Response[Any]:
     body = await request.json()
     if body is None:
         raise Exception("Should never come here")
@@ -1455,58 +1461,62 @@ async def remove_tenant(request: Request) -> Response:
 
     core_resp = await delete_tenant(tenant_id)
 
-    return Response(content={"status": "OK", "didExist": core_resp.did_exist})
+    return Response[Any](content={"status": "OK", "didExist": core_resp.did_exist})
 
 
 @post("/addRequiredFactor")
-async def add_required_factor(request: Request, session: SessionContainer) -> Response:
+async def add_required_factor(
+    request: Request[Any, Any, Any], session: SessionContainer
+) -> Response[Any]:
     body = await request.json()
     if body is None or "factorId" not in body:
-        return Response(content={"error": "Invalid request body"}, status_code=400)
+        return Response[Any](content={"error": "Invalid request body"}, status_code=400)
 
     await add_to_required_secondary_factors_for_user(
         session.get_user_id(), body["factorId"]
     )
 
-    return Response(content={"status": "OK"})
+    return Response[Any](content={"status": "OK"})
 
 
 @post("/test/getTOTPCode")
-async def test_get_totp_code(request: Request) -> Response:
+async def test_get_totp_code(request: Request[Any, Any, Any]) -> Response[Any]:
     from pyotp import TOTP
 
     body = await request.json()
     if body is None or "secret" not in body:
-        return Response(content={"error": "Invalid request body"}, status_code=400)
+        return Response[Any](content={"error": "Invalid request body"}, status_code=400)
 
     secret = body["secret"]
     totp = TOTP(secret, digits=6, interval=1)
     code = totp.now()
 
-    return Response(content={"totp": code})
+    return Response[Any](content={"totp": code})
 
 
 @post("/test/create-oauth2-client")
-async def test_create_oauth2_client(request: Request) -> Response:
+async def test_create_oauth2_client(request: Request[Any, Any, Any]) -> Response[Any]:
     body = await request.json()
     if body is None:
         raise Exception("Invalid request body")
     client = await create_oauth2_client(CreateOAuth2ClientInput.from_json(body))
-    return Response(content=client.to_json())
+    return Response[Any](content=client.to_json())
 
 
-@get("/test/getDevice")
-def test_get_device(request: Request) -> Response:
+@get("/test/getDevice", sync_to_thread=True)
+def test_get_device(request: Request[Any, Any, Any]) -> Response[Any]:
     global code_store
     pre_auth_session_id = request.query_params.get("preAuthSessionId")
     if pre_auth_session_id is None:
-        return Response(content="")
+        return Response[Any](content="")
     codes = code_store.get(pre_auth_session_id)
-    return Response(content={"preAuthSessionId": pre_auth_session_id, "codes": codes})
+    return Response[Any](
+        content={"preAuthSessionId": pre_auth_session_id, "codes": codes}
+    )
 
 
-@get("/test/featureFlags")
-def test_feature_flags(request: Request) -> Response:
+@get("/test/featureFlags", sync_to_thread=True)
+def test_feature_flags(request: Request[Any, Any, Any]) -> Response[Any]:
     available = [
         "passwordless",
         "generalerror",
@@ -1520,17 +1530,17 @@ def test_feature_flags(request: Request) -> Response:
         "oauth2",
         "webauthn",
     ]
-    return Response(content={"available": available})
+    return Response[Any](content={"available": available})
 
 
-@get("/ping")
-def ping() -> Response:
-    return Response(content="success")
+@get("/ping", sync_to_thread=True)
+def ping() -> Response[Any]:
+    return Response[Any](content="success")
 
 
 @get("/sessionInfo")
-async def get_session_info(session_: SessionContainer) -> Response:
-    return Response(
+async def get_session_info(session_: SessionContainer) -> Response[Any]:
+    return Response[Any](
         content={
             "sessionHandle": session_.get_handle(),
             "userId": session_.get_user_id(),
@@ -1541,7 +1551,7 @@ async def get_session_info(session_: SessionContainer) -> Response:
 
 
 @get("/token")
-async def get_token() -> Response:
+async def get_token() -> Response[Any]:
     global latest_url_with_token
     t = 0
 
@@ -1551,28 +1561,30 @@ async def get_token() -> Response:
         if t > 10:
             break
 
-    return Response(content={"latestURLWithToken": latest_url_with_token})
+    return Response[Any](content={"latestURLWithToken": latest_url_with_token})
 
 
 @get("/unverifyEmail")
-async def unverify_email_api(session_: SessionContainer) -> Response:
+async def unverify_email_api(session_: SessionContainer) -> Response[Any]:
     await unverify_email(session_.get_recipe_user_id())
     await session_.fetch_and_set_claim(EmailVerificationClaim)
-    return Response(content={"status": "OK"})
+    return Response[Any](content={"status": "OK"})
 
 
 @post("/setRole")
-async def set_role_api(request: Request, session_: SessionContainer) -> Response:
+async def set_role_api(
+    request: Request[Any, Any, Any], session_: SessionContainer
+) -> Response[Any]:
     body = await request.json()
     await create_new_role_or_add_permissions(body["role"], body["permissions"])
     await add_role_to_user("public", session_.get_user_id(), body["role"])
     await session_.fetch_and_set_claim(UserRoleClaim)
     await session_.fetch_and_set_claim(PermissionClaim)
-    return Response(content={"status": "OK"})
+    return Response[Any](content={"status": "OK"})
 
 
 @post("/deleteUser")
-async def delete_user_api(request: Request) -> Response:
+async def delete_user_api(request: Request[Any, Any, Any]) -> Response[Any]:
     body = await request.json()
     user = await list_users_by_account_info(
         "public", AccountInfoInput(email=body["email"])
@@ -1580,20 +1592,22 @@ async def delete_user_api(request: Request) -> Response:
     if len(user) == 0:
         raise Exception("Should not come here")
     await delete_user(user[0].id)
-    return Response(content={"status": "OK"})
+    return Response[Any](content={"status": "OK"})
 
 
 @get("/test/webauthn/get-token")
-async def webauth_get_token(request: Request) -> Response:
+async def webauth_get_token(request: Request[Any, Any, Any]) -> Response[Any]:
     webauthn = webauthn_store.get(request.query_params.get("email", ""))
     if webauthn is None:
-        return Response(content={"error": "Webauthn not found"}, status_code=404)
+        return Response[Any](content={"error": "Webauthn not found"}, status_code=404)
 
-    return Response(content={"token": webauthn["token"]})
+    return Response[Any](content={"token": webauthn["token"]})
 
 
 @post("/test/webauthn/create-and-assert-credential")
-async def webauthn_create_and_assert_credential(request: Request) -> Response:
+async def webauthn_create_and_assert_credential(
+    request: Request[Any, Any, Any],
+) -> Response[Any]:
     body = await request.json()
     test_server_port = os.environ.get("NODE_PORT", 8082)
     response = httpx.post(
@@ -1601,11 +1615,11 @@ async def webauthn_create_and_assert_credential(request: Request) -> Response:
         json=body,
     )
 
-    return Response(content=response.json())
+    return Response[Any](content=response.json())
 
 
 @post("/test/webauthn/create-credential")
-async def webauthn_create_credential(request: Request) -> Response:
+async def webauthn_create_credential(request: Request[Any, Any, Any]) -> Response[Any]:
     body = await request.json()
     test_server_port = os.environ.get("NODE_PORT", 8082)
     response = httpx.post(
@@ -1613,7 +1627,7 @@ async def webauthn_create_credential(request: Request) -> Response:
         json=body,
     )
 
-    return Response(content=response.json())
+    return Response[Any](content=response.json())
 
 
 async def override_global_claim_validators(
@@ -1640,18 +1654,18 @@ async def override_global_claim_validators(
 
 @post("/checkRole")
 async def check_role_api(
-    request: Request,
-) -> Response:
+    request: Request[Any, Any, Any],
+) -> Response[Any]:
     # Manually verify session with custom validators
     await verify_session(
         override_global_claim_validators=override_global_claim_validators
     )(request)
-    return Response(content={"status": "OK"})
+    return Response[Any](content={"status": "OK"})
 
 
 # Exception handler for 405 - registered in app  # type: ignore
 def f_405(_, e):  # type: ignore
-    return Response(content="", status_code=404)
+    return Response[Any](content="", status_code=404)
 
 
 # cors middleware added like this due to issue with add_middleware
@@ -1659,18 +1673,22 @@ def f_405(_, e):  # type: ignore
 
 
 # Create dependency injection for verify_session
-async def provide_session(request: Request) -> SessionContainer:
+async def provide_session(request: Request[Any, Any, Any]) -> SessionContainer | None:
     """Dependency provider for session verification"""
     return await verify_session()(request)
 
 
-async def provide_optional_session(request: Request) -> Union[SessionContainer, None]:
+async def provide_optional_session(
+    request: Request[Any, Any, Any],
+) -> Union[SessionContainer, None]:
     """Dependency provider for optional session verification"""
     return await verify_session(session_required=False)(request)
 
 
 # Middleware for response logging (commented out - uncomment if needed)
-async def log_response_middleware(app: ASGIApp, scope, receive, send):
+async def log_response_middleware(
+    app: ASGIApp, scope: Scope, receive: Receive, send: Send
+):
     if scope["type"] != "http":
         await app(scope, receive, send)
         return

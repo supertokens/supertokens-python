@@ -27,9 +27,9 @@ extras_require = {
             "python-dotenv==1.0.1",
         ]
     ),
-    "frameworks": (
+    "litestar": (
         [
-            "litestar",
+            "litestar[all]",
             "uvicorn",
             "python-dotenv==1.0.1",
         ]

@@ -61,7 +61,7 @@ def supertokens_exception_handler(
             custom_request,
             exc,
             response,
-            user_context,  # type: ignore
+            user_context,
         )
 
         # Return the modified Litestar response

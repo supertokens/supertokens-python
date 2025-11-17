@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from typing import Union, cast
 
 from litestar import asgi
@@ -26,37 +27,18 @@ class SupertokensPlugin(InitPluginProtocol):
     that processes SuperTokens authentication requests.
     """
 
-    def __init__(self, api_base_path: str = "/auth", app_root_path: str = ""):
+    def __init__(self, mount_path: str = "/auth"):
         """
         Initialize the SuperTokens plugin.
 
         Args:
-                api_base_path: The base path for SuperTokens API routes (default: "/auth")
-                app_root_path: The root path of the Litestar app (e.g., "api/v1").
-                                          If provided, will be stripped from api_base_path for mounting.
+                mount_path: The path where the SuperTokens ASGI app will be mounted.
+                           This is the external path that will be accessible (e.g., "/auth" or "/api/v1/auth").
         """
-        self.full_api_base_path = api_base_path.rstrip("/")
-        self.app_root_path = app_root_path.strip("/")
-
-        # Calculate the mount path by removing app_root_path prefix from api_base_path
-        if self.app_root_path and self.full_api_base_path.startswith(
-            f"/{self.app_root_path}"
-        ):
-            # Remove the root path prefix for mounting
-            self.api_base_path = self.full_api_base_path[
-                len(f"/{self.app_root_path}") :
-            ]
-        elif self.app_root_path and self.full_api_base_path.startswith(
-            self.app_root_path
-        ):
-            # Handle case where api_base_path doesn't start with /
-            self.api_base_path = self.full_api_base_path[len(self.app_root_path) :]
-        else:
-            self.api_base_path = self.full_api_base_path
-
-        # Ensure it starts with /
-        if not self.api_base_path.startswith("/"):
-            self.api_base_path = f"/{self.api_base_path}"
+        # Normalize the mount path
+        self.mount_path = mount_path.rstrip("/") or "/"
+        if not self.mount_path.startswith("/"):
+            self.mount_path = f"/{self.mount_path}"
 
     def on_app_init(self, app_config: AppConfig) -> AppConfig:
         """
@@ -90,7 +72,6 @@ class SupertokensPlugin(InitPluginProtocol):
             ASGI app that handles SuperTokens authentication requests.
             """
             if scope["type"] != "http":
-                # Pass through non-HTTP requests
                 not_found = Response(content=None, status_code=404)
                 await not_found.to_asgi_response(  # type: ignore
                     app=None, request=Request(scope, receive, send)
@@ -100,8 +81,8 @@ class SupertokensPlugin(InitPluginProtocol):
             st = Supertokens.get_instance()
 
             # Create Litestar request and wrap it for SuperTokens
-            litestar_request = Request(scope, receive=receive, send=send)
-            custom_request = LitestarRequest(litestar_request)
+            litestar_request = Request(scope, receive=receive, send=send)  # type: ignore
+            custom_request = LitestarRequest(litestar_request)  # type: ignore
             user_context = default_user_context(custom_request)
 
             try:
@@ -109,97 +90,96 @@ class SupertokensPlugin(InitPluginProtocol):
                 litestar_response = Response(content=None)
                 response = LitestarResponse(litestar_response)
 
-                # Let SuperTokens middleware handle the request
-                result: Union[LitestarResponse, None] = cast(
+                # Let SuperTokens handle the request
+                handled: Union[LitestarResponse, None] = cast(
                     LitestarResponse,
                     await st.middleware(custom_request, response, user_context),
                 )
 
-                if result is None:
-                    # Request was not handled by SuperTokens
-                    not_found_response = Response(content=None, status_code=404)
-                    await not_found_response.to_asgi_response(
+                if handled is None:  # type: ignore
+                    not_found = Response(content=None, status_code=404)
+                    await not_found.to_asgi_response(
                         app=None, request=Request(scope, receive, send)
-                    )(scope, receive, send)  # type: ignore
+                    )(scope, receive, send)
                     return
 
                 # Handle session management
-                if hasattr(litestar_request.state, "supertokens") and isinstance(
-                    litestar_request.state.supertokens, SessionContainer
+                if hasattr(litestar_request.state, "supertokens") and isinstance(  # type: ignore
+                    litestar_request.state.supertokens,  # type: ignore
+                    SessionContainer,
                 ):
                     manage_session_post_response(
-                        litestar_request.state.supertokens, result, user_context
+                        litestar_request.state.supertokens,  # type: ignore
+                        handled,
+                        user_context,
                     )
 
-                # Send the response
-                if isinstance(result, LitestarResponse):
-                    asgi_response = result.response.to_asgi_response(
-                        app=None, request=Request(scope, receive=receive, send=send)
-                    )  # type: ignore
-                    await asgi_response(scope, receive, send)
-                    return
+                # Emit response
+                asgi_response = handled.response.to_asgi_response(  # type: ignore
+                    app=None, request=Request(scope, receive, send)
+                )
+                await asgi_response(scope, receive, send)
+                return
 
             except SuperTokensError as e:
-                # Handle SuperTokens-specific errors
-                error_response_obj = Response(content=None)
-                error_response = LitestarResponse(error_response_obj)
-                result = cast(
+                # SuperTokens error path
+                err_resp_obj = Response(content=None)
+                err_resp = LitestarResponse(err_resp_obj)
+
+                handled = cast(
                     LitestarResponse,
                     await st.handle_supertokens_error(
-                        custom_request, e, error_response, user_context
+                        custom_request, e, err_resp, user_context
                     ),
                 )
 
                 # Clear the session from request.state to prevent the middleware
                 # from re-applying session cookies after we've cleared them
-                if hasattr(litestar_request.state, "supertokens"):
-                    delattr(litestar_request.state, "supertokens")
+                if hasattr(litestar_request.state, "supertokens"):  # type: ignore
+                    delattr(litestar_request.state, "supertokens")  # type: ignore
 
-                if isinstance(result, LitestarResponse):
-                    asgi_response = result.response.to_asgi_response(
-                        app=None, request=Request(scope, receive, send)
-                    )  # type: ignore
-                    await asgi_response(scope, receive, send)
-                    return
+                asgi_response = handled.response.to_asgi_response(  # type: ignore
+                    app=None, request=Request(scope, receive, send)
+                )
+                await asgi_response(scope, receive, send)
+                return
 
-            # Fallback - this should not normally be reached
-            fallback_response = Response(content=None, status_code=500)
-            await fallback_response.to_asgi_response(
+            # Fallback
+            fallback = Response(content=None, status_code=500)
+            await fallback.to_asgi_response(
                 app=None, request=Request(scope, receive, send)
             )(scope, receive, send)  # type: ignore
 
         # Mount the SuperTokens ASGI app to handle auth routes
-        app_mount = asgi(self.api_base_path, is_mount=True)(supertokens_asgi_app)
+        app_mount = asgi(self.mount_path, is_mount=True)(supertokens_asgi_app)
         app_config.route_handlers.append(app_mount)
 
         return app_config
 
 
-def get_supertokens_plugin(
-    api_base_path: str = "/auth", app_root_path: str = ""
-) -> SupertokensPlugin:
+def get_supertokens_plugin(mount_path: str = "/auth") -> SupertokensPlugin:
     """
     Get a configured SuperTokens plugin for Litestar.
 
     Args:
-            api_base_path: The base path for SuperTokens API routes (default: "/auth").
-                                      This should match the api_base_path in your SuperTokens init().
-            app_root_path: The root path of your Litestar app if using app path (e.g., "api/v1").
-                                      This will be automatically stripped from api_base_path for proper mounting.
+            mount_path: The path where the SuperTokens ASGI app will be mounted.
+                       This is the external path that will be accessible (e.g., "/auth" or "/api/v1/auth").
+                       The mounted app will receive requests relative to this path.
 
     Returns:
             A configured SupertokensPlugin instance
 
     Example:
-            # Without app root path
+            # Mount at /auth
             app = Litestar(
-                    plugins=[get_supertokens_plugin(api_base_path="/auth")]
+                    plugins=[get_supertokens_plugin(mount_path="/auth")]
             )
 
-            # With app root path
+            # Mount at /api/v1/auth (when using Litestar app.path)
             app = Litestar(
                     path="api/v1",
-                    plugins=[get_supertokens_plugin(api_base_path="/api/v1/auth", app_root_path="api/v1")]
+                    plugins=[get_supertokens_plugin(mount_path="/auth")]
             )
+            # This makes the auth routes available at /api/v1/auth externally
     """
-    return SupertokensPlugin(api_base_path=api_base_path, app_root_path=app_root_path)
+    return SupertokensPlugin(mount_path=mount_path)

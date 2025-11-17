@@ -24,11 +24,11 @@ from supertokens_python.utils import get_timestamp_ms
 class LitestarResponse(BaseResponse):
     def __init__(self, response: Response[Any]):
         super().__init__({})
-        self.response = response
-        self.original = response
-        self.parser_checked = False
-        self.response_sent = False
-        self.status_set = False
+        self.response: Response[Any] = response
+        self.original: Response[Any] = response
+        self.parser_checked: bool = False
+        self.response_sent: bool = False
+        self.status_set: bool = False
 
     def set_html_content(self, content: str):
         if not self.response_sent:

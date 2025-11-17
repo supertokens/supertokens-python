@@ -174,7 +174,7 @@ def driver_config_client() -> TestClient[Litestar]:
             _create_throw,
         ],
         middleware=[create_supertokens_middleware()],
-        plugins=[get_supertokens_plugin(api_base_path="/auth")],
+        plugins=[get_supertokens_plugin(mount_path="/auth")],
         exception_handlers=get_exception_handlers(),
     )
     return TestClient(app)
@@ -564,7 +564,7 @@ def test_litestar_root_path(litestar_root_path: str):
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path=f"{litestar_root_path}/auth",  # It's important to prepend the root path here
+            api_base_path=f"{litestar_root_path}/auth",  # Full external path
         ),
         framework="litestar",
         recipe_list=[
@@ -581,8 +581,7 @@ def test_litestar_root_path(litestar_root_path: str):
         middleware=[create_supertokens_middleware()],
         plugins=[
             get_supertokens_plugin(
-                api_base_path=f"{litestar_root_path}/auth",
-                app_root_path=litestar_root_path,
+                mount_path="/auth",  # Mount at /auth relative to app.path
             )
         ],
     )
@@ -595,7 +594,7 @@ def test_litestar_root_path(litestar_root_path: str):
     assert response.status_code == 200
     assert response.json() == {"status": "OK", "exists": False}
 
-    # The API should migrate (and return 404 here)
+    # The API should not be available without the root path (returns 404)
     response = test_client.get("/auth/signup/email/exists?email=test@example.com")
     assert response.status_code == 404
 

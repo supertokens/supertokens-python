@@ -54,13 +54,13 @@ class SupertokensSessionMiddleware:
                 # Apply session mutators to response headers
                 if hasattr(request.state, "supertokens") and isinstance(  # type: ignore
                     getattr(request.state, "supertokens", None),  # type: ignore
-                    SessionContainer,  # type: ignore
+                    SessionContainer,
                 ):
                     # Create a temporary Litestar Response
                     temp_response = LitestarResponseObj(content=None)
 
                     # Convert raw ASGI headers to dict for Litestar Response
-                    for name, value in message.get("headers", []):  # type: ignore
+                    for name, value in message.get("headers", []):
                         temp_response.headers[name.decode()] = value.decode()
 
                     # Wrap it for SuperTokens
@@ -76,7 +76,7 @@ class SupertokensSessionMiddleware:
                     # Convert the Litestar Response to ASGI format to get cookies as Set-Cookie headers
                     asgi_response = temp_response.to_asgi_response(  # type: ignore
                         app=None, request=Request(scope, receive=receive, send=send)
-                    )  # type: ignore
+                    )
 
                     # Use the encoded headers which include Set-Cookie headers from cookies
                     message["headers"] = asgi_response.encoded_headers
@@ -91,6 +91,6 @@ def create_supertokens_middleware() -> DefineMiddleware:
     Create a DefineMiddleware instance for SuperTokens session management.
 
     Returns:
-        A DefineMiddleware configured with SupertokensSessionMiddleware
+            A DefineMiddleware configured with SupertokensSessionMiddleware
     """
     return DefineMiddleware(SupertokensSessionMiddleware)
