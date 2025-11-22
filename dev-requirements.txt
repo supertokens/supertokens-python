@@ -1,4 +1,4 @@
-black==25.9.0
+black==25.11.0
 Django==5.2.7
 django-cors-headers==4.9.0
 django-stubs==5.2.7
