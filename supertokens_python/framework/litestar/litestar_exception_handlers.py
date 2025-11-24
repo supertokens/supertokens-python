@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import asyncio
-from typing import Any
+from typing import Any, Dict, Type, Union
 
 from litestar import Request, Response
 
@@ -105,7 +105,7 @@ def supertokens_exception_handler(
         return loop.run_until_complete(handle_async())
 
 
-def get_exception_handlers() -> dict[int | type[Exception], Any]:
+def get_exception_handlers() -> Dict[Union[int, Type[Exception]], Any]:
     """
     Get exception handlers for SuperTokens errors.
 

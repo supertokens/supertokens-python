@@ -1673,7 +1673,9 @@ def f_405(_, e):  # type: ignore
 
 
 # Create dependency injection for verify_session
-async def provide_session(request: Request[Any, Any, Any]) -> SessionContainer | None:
+async def provide_session(
+    request: Request[Any, Any, Any],
+) -> Union[SessionContainer, None]:
     """Dependency provider for session verification"""
     return await verify_session()(request)
 

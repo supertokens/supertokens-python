@@ -91,7 +91,7 @@ def driver_config_client() -> TestClient[Litestar]:
     @post("/refresh")
     async def custom_refresh(
         request: Request[Any, Any, Any],
-    ) -> Dict[str, Any] | Response[Any]:
+    ) -> Union[Dict[str, Any], Response[Any]]:
         try:
             await refresh_session(request)
             return Response(content=None)
