@@ -513,4 +513,4 @@ async def test_default_user_context_func_calls():
                 [str(path)] * sum("default_user_context(" in line for line in lines)
             )
 
-    assert len(file_occurences) == 18
+    assert len(file_occurences) == 23
