@@ -62,6 +62,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - UserMetadata `InputOverrideConfig` -> `UserMetadataOverrideConfig`
     - UserRoles `InputOverrideConfig` -> `UserRolesOverrideConfig`
 
+## [0.30.3] - 2025-08-28
+- Fixes webauthn MFA integration
+- Adds missing `rp_id` field to Webauthn's `SignInOptionResponse`
+
+## [0.30.2] - 2025-08-14
+- Adds Webauthn user editing support to the Dashboard
+
 ## [0.30.1] - 2025-07-21
 - Adds missing register credential endpoint to the Webauthn recipe
 

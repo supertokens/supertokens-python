@@ -65,6 +65,11 @@ from supertokens_python.recipe.passwordless.utils import (
 )
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.usermetadata.asyncio import update_user_metadata
+from supertokens_python.recipe.webauthn.functions import update_user_email
+from supertokens_python.recipe.webauthn.interfaces.recipe import (
+    UnknownUserIdErrorResponse,
+)
+from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
 from supertokens_python.types import RecipeUserId
 
 from .....types.response import APIResponse
@@ -228,6 +233,31 @@ async def update_email_for_recipe_id(
             return EmailChangeNotAllowedErrorResponse(update_result.reason)
 
         return OkResponse()
+
+    if recipe_id == &#34;webauthn&#34;:
+        validation_error = (
+            await WebauthnRecipe.get_instance().config.validate_email_address(
+                email=email,
+                tenant_id=tenant_id,
+                user_context=user_context,
+            )
+        )
+
+        if validation_error is not None:
+            return InvalidEmailErrorResponse(validation_error)
+
+        email_update_response = await update_user_email(
+            email=email,
+            recipe_user_id=recipe_user_id.get_as_string(),
+            tenant_id=tenant_id,
+            user_context=user_context,
+        )
+
+        if isinstance(email_update_response, EmailAlreadyExistsError):
+            return EmailAlreadyExistsErrorResponse()
+
+        if isinstance(email_update_response, UnknownUserIdErrorResponse):
+            raise Exception(&#34;Should never come here&#34;)
 
     # If it comes here then the user is a third party user in which case the UI should not have allowed this
     raise Exception(&#34;Should never come here&#34;)

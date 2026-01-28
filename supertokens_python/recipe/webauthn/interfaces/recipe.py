@@ -237,6 +237,7 @@ class SignInOptionsResponse(OkResponseBaseModel):
     webauthn_generated_options_id: str
     created_at: int
     expires_at: int
+    rp_id: str
     challenge: str
     timeout: int
     user_verification: UserVerification
