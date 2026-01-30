@@ -121,7 +121,7 @@ setup(
         "asgiref>=3.4.1,<4",
         "typing_extensions>=4.1.1,<5.0.0",
         "Deprecated<1.3.0",
-        "phonenumbers>9",
+        "phonenumbers>=9.0,<10.0",
         "twilio<10",
         "aiosmtplib>=1.1.6,<4.0.0",
         "pkce<1.1.0",
