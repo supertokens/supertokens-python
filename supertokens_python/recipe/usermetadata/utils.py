@@ -14,11 +14,18 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING
 
 from supertokens_python.recipe.usermetadata.interfaces import (
     APIInterface,
     RecipeInterface,
+)
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
+    BaseOverrideConfig,
 )
 
 if TYPE_CHECKING:
@@ -26,30 +33,54 @@ if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
 
-class InputOverrideConfig:
-    def __init__(
+UserMetadataOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedUserMetadataOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+InputOverrideConfig = UserMetadataOverrideConfig
+"""Deprecated: Use `UserMetadataOverrideConfig` instead."""
+
+
+class UserMetadataOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
+    ...
+
+
+class UserMetadataConfig(
+    UserMetadataOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, UserMetadataOverrideableConfig],
+):
+    def to_overrideable_config(self) -> UserMetadataOverrideableConfig:
+        """Create a `UserMetadataOverrideableConfig` from the current config."""
+        return UserMetadataOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+        overrideable_config: UserMetadataOverrideableConfig,
+    ) -> "UserMetadataConfig":
+        """
+        Create a `UserMetadataConfig` from a `UserMetadataOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return UserMetadataConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
-class UserMetadataConfig:
-    def __init__(self, override: InputOverrideConfig) -> None:
-        self.override = override
+class NormalisedUserMetadataConfig(
+    BaseNormalisedConfig[RecipeInterface, APIInterface]
+): ...
 
 
 def validate_and_normalise_user_input(
     _recipe: UserMetadataRecipe,
     _app_info: AppInfo,
-    override: Union[InputOverrideConfig, None] = None,
-) -> UserMetadataConfig:
-    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
-        raise ValueError("override must be an instance of InputOverrideConfig or None")
+    input_config: UserMetadataConfig,
+) -> NormalisedUserMetadataConfig:
+    override_config = NormalisedUserMetadataOverrideConfig.from_input_config(
+        override_config=input_config.override
+    )
 
-    if override is None:
-        override = InputOverrideConfig()
-
-    return UserMetadataConfig(override=override)
+    return NormalisedUserMetadataConfig(override=override_config)

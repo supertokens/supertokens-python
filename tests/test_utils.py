@@ -220,6 +220,10 @@ def test_tldextract_http_toggle(
 ):
     import socket
 
+    import certifi
+
+    fs.add_real_file(certifi.where())
+
     # Disable sockets, will raise errors on HTTP calls
     socket_patch = patch.object(socket, "socket", side_effect=RuntimeError)
     environ_patch = patch.dict(

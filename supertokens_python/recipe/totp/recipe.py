@@ -72,17 +72,13 @@ class TOTPRecipe(RecipeModule):
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.config
         )
-        self.recipe_implementation: RecipeInterface = (
+        self.recipe_implementation: RecipeInterface = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
         api_implementation = APIImplementation()
-        self.api_implementation: APIInterface = (
+        self.api_implementation: APIInterface = self.config.override.apis(
             api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
         )
 
         def callback():
@@ -205,12 +201,21 @@ class TOTPRecipe(RecipeModule):
     def init(
         config: Union[TOTPConfig, None] = None,
     ):
-        def func(app_info: AppInfo):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        if config is None:
+            config = TOTPConfig()
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if TOTPRecipe.__instance is None:
                 TOTPRecipe.__instance = TOTPRecipe(
-                    TOTPRecipe.recipe_id,
-                    app_info,
-                    config,
+                    recipe_id=TOTPRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=TOTPRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return TOTPRecipe.__instance
             raise Exception(

@@ -207,7 +207,7 @@ init(
     framework="django",
     recipe_list=[
         session.init(
-            override=session.InputOverrideConfig(
+            override=session.SessionOverrideConfig(
                 apis=apis_override_session,
                 functions=functions_override_session,
             ),

@@ -358,6 +358,16 @@ class LoginMethodPasswordless:
         }
 
 
+class LoginMethodWebauthn:
+    def __init__(self, enabled: bool):
+        self.enabled = enabled
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;enabled&#34;: self.enabled,
+        }
+
+
 class LoginMethodThirdParty:
     def __init__(self, enabled: bool, providers: List[ThirdPartyProvider]):
         self.enabled = enabled
@@ -376,12 +386,14 @@ class LoginMethodsGetOkResult(APIResponse):
         email_password: LoginMethodEmailPassword,
         passwordless: LoginMethodPasswordless,
         third_party: LoginMethodThirdParty,
+        webauthn: LoginMethodWebauthn,
         first_factors: List[str],
     ):
         self.status = &#34;OK&#34;
         self.email_password = email_password
         self.passwordless = passwordless
         self.third_party = third_party
+        self.webauthn = webauthn
         self.first_factors = first_factors
 
     def to_json(self) -&gt; Dict[str, Any]:
@@ -390,6 +402,7 @@ class LoginMethodsGetOkResult(APIResponse):
             &#34;emailPassword&#34;: self.email_password.to_json(),
             &#34;passwordless&#34;: self.passwordless.to_json(),
             &#34;thirdParty&#34;: self.third_party.to_json(),
+            &#34;webauthn&#34;: self.webauthn.to_json(),
             &#34;firstFactors&#34;: self.first_factors,
         }
 
@@ -859,9 +872,38 @@ inheritance.</p></div>
 </dd>
 </dl>
 </dd>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.LoginMethodWebauthn"><code class="flex name class">
+<span>class <span class="ident">LoginMethodWebauthn</span></span>
+<span>(</span><span>enabled: bool)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LoginMethodWebauthn:
+    def __init__(self, enabled: bool):
+        self.enabled = enabled
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;enabled&#34;: self.enabled,
+        }</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.multitenancy.interfaces.LoginMethodWebauthn.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.LoginMethodsGetOkResult"><code class="flex name class">
 <span>class <span class="ident">LoginMethodsGetOkResult</span></span>
-<span>(</span><span>email_password: <a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodEmailPassword" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodEmailPassword">LoginMethodEmailPassword</a>, passwordless: <a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodPasswordless" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodPasswordless">LoginMethodPasswordless</a>, third_party: <a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodThirdParty" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodThirdParty">LoginMethodThirdParty</a>, first_factors: List[str])</span>
+<span>(</span><span>email_password: <a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodEmailPassword" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodEmailPassword">LoginMethodEmailPassword</a>, passwordless: <a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodPasswordless" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodPasswordless">LoginMethodPasswordless</a>, third_party: <a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodThirdParty" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodThirdParty">LoginMethodThirdParty</a>, webauthn: <a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodWebauthn" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodWebauthn">LoginMethodWebauthn</a>, first_factors: List[str])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -876,12 +918,14 @@ inheritance.</p></div>
         email_password: LoginMethodEmailPassword,
         passwordless: LoginMethodPasswordless,
         third_party: LoginMethodThirdParty,
+        webauthn: LoginMethodWebauthn,
         first_factors: List[str],
     ):
         self.status = &#34;OK&#34;
         self.email_password = email_password
         self.passwordless = passwordless
         self.third_party = third_party
+        self.webauthn = webauthn
         self.first_factors = first_factors
 
     def to_json(self) -&gt; Dict[str, Any]:
@@ -890,6 +934,7 @@ inheritance.</p></div>
             &#34;emailPassword&#34;: self.email_password.to_json(),
             &#34;passwordless&#34;: self.passwordless.to_json(),
             &#34;thirdParty&#34;: self.third_party.to_json(),
+            &#34;webauthn&#34;: self.webauthn.to_json(),
             &#34;firstFactors&#34;: self.first_factors,
         }</code></pre>
 </details>
@@ -1375,6 +1420,12 @@ inheritance.</p></div>
 <h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodThirdParty" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodThirdParty">LoginMethodThirdParty</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodThirdParty.to_json" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodThirdParty.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodWebauthn" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodWebauthn">LoginMethodWebauthn</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multitenancy.interfaces.LoginMethodWebauthn.to_json" href="#supertokens_python.recipe.multitenancy.interfaces.LoginMethodWebauthn.to_json">to_json</a></code></li>
 </ul>
 </li>
 <li>

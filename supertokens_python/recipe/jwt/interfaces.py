@@ -11,13 +11,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Union
+from abc import abstractmethod
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.framework import BaseRequest, BaseResponse
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
-from .utils import JWTConfig
+if TYPE_CHECKING:
+    from .utils import NormalisedJWTConfig
 
 
 class JsonWebKey:
@@ -45,7 +47,7 @@ class GetJWKSResult:
         self.validity_in_secs = validity_in_secs
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -70,7 +72,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: JWTConfig,
+        config: "NormalisedJWTConfig",
         recipe_implementation: RecipeInterface,
     ):
         self.request = request
@@ -101,7 +103,7 @@ class JWKSGetResponse(APIResponse):
         return {"keys": keys}
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_jwks_get = False
 

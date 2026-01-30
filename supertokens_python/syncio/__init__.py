@@ -25,8 +25,9 @@ from supertokens_python.interfaces import (
     UserIdMappingAlreadyExistsError,
     UserIDTypes,
 )
+from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.types import User
-from supertokens_python.types.base import AccountInfoInput
+from supertokens_python.types.base import AccountInfoInput, UserContext
 
 
 def get_users_oldest_first(
@@ -176,5 +177,21 @@ def list_users_by_account_info(
     return sync(
         async_list_users_by_account_info(
             tenant_id, account_info, do_union_of_account_info, user_context
+        )
+    )
+
+
+def get_available_first_factors(
+    tenant_id: str,
+    session: Optional[SessionContainer],
+    user_context: Optional[UserContext],
+):
+    from supertokens_python.asyncio import (
+        get_available_first_factors as async_get_available_first_factors,
+    )
+
+    return sync(
+        async_get_available_first_factors(
+            tenant_id=tenant_id, session=session, user_context=user_context
         )
     )

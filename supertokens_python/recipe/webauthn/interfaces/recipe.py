@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import (
     Any,
     Dict,
@@ -30,6 +30,7 @@ from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.types import RecipeUserId, User
 from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.types.base import UserContext
+from supertokens_python.types.recipe import BaseRecipeInterface
 from supertokens_python.types.response import (
     CamelCaseBaseModel,
     OkResponseBaseModel,
@@ -236,6 +237,7 @@ class SignInOptionsResponse(OkResponseBaseModel):
     webauthn_generated_options_id: str
     created_at: int
     expires_at: int
+    rp_id: str
     challenge: str
     timeout: int
     user_verification: UserVerification
@@ -440,7 +442,7 @@ class RegisterOptionsKwargsInput(TypedDict):
     email: NotRequired[str]
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     @abstractmethod
     async def register_options(
         self,

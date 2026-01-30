@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import re
 from unittest.mock import MagicMock
 
 import pytest
@@ -280,7 +281,7 @@ async def test_same_site_values(st_config: SupertokensConfig):
         )
         test_passed = False
     except Exception as e:
-        assert str(e) == 'cookie same site must be one of "strict", "lax", or "none"'
+        assert re.search("Input should be 'lax', 'strict' or 'none'", str(e))
 
     assert test_passed
     reset()
@@ -299,7 +300,7 @@ async def test_same_site_values(st_config: SupertokensConfig):
         )
         test_passed = False
     except Exception as e:
-        assert str(e) == 'cookie same site must be one of "strict", "lax", or "none"'
+        assert re.search("Input should be 'lax', 'strict' or 'none'", str(e))
 
     assert test_passed
     reset()

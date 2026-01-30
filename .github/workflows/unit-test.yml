@@ -24,6 +24,7 @@ jobs:
       fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
       cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
       pyVersions: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
+      coreCdiVersionMap: ${{ steps.core-versions.outputs.cdiVersions }}
 
     steps:
       - uses: actions/checkout@v4
@@ -33,6 +34,13 @@ jobs:
         with:
           has-fdi: true
           has-cdi: true
+
+      - uses: supertokens/actions/get-versions-from-repo@main
+        id: core-versions
+        with:
+          repo: supertokens-core
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cdi-versions: ${{steps.versions.outputs.cdiVersions }}
 
   test:
     runs-on: ubuntu-latest
@@ -47,13 +55,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: supertokens/get-versions-action@main
-        id: versions
-        with:
-          driver-name: python
-          cdi-version: ${{ matrix.cdi-version }}
-        env:
-          SUPERTOKENS_API_KEY: ${{ secrets.SUPERTOKENS_API_KEY }}
+      - name: Get core version from current CDI version
+        id: core-version
+        run: |
+          coreVersion=$(echo '${{ needs.define-versions.outputs.coreCdiVersionMap }}' | jq -r '.["${{ matrix.cdi-version }}"]')
+
+          echo "coreVersion=${coreVersion}" >> $GITHUB_OUTPUT
 
       - uses: actions/setup-python@v5
         with:
@@ -72,7 +79,7 @@ jobs:
           source venv/bin/activate
           make test
         env:
-          SUPERTOKENS_CORE_VERSION: ${{ steps.versions.outputs.coreVersionXy }}
+          SUPERTOKENS_CORE_VERSION: ${{ steps.core-version.outputs.coreVersion }}
 
       - uses: pmeier/pytest-results-action@main
         name: Surface failing tests
@@ -80,4 +87,4 @@ jobs:
         with:
           path: test-results/junit.xml
           summary: true
-          title: "[Core=${{ steps.versions.outputs.coreVersionXy }}][py=${{ matrix.py-version }}] Unit Test Results"
+          title: "[Core=${{ steps.core-version.outputs.coreVersion }}][py=${{ matrix.py-version }}] Unit Test Results"

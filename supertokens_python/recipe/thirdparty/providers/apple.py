@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 from re import sub
 from time import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 from jwt import encode  # type: ignore
 
@@ -106,7 +106,7 @@ class AppleImpl(GenericProvider):
             if isinstance(user, str):
                 user_dict = json.loads(user)
             elif isinstance(user, dict):
-                user_dict = user
+                user_dict = cast(Dict[str, Any], user)
             else:
                 return response
 

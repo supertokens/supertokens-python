@@ -15,7 +15,18 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Protocol,
+    Set,
+    Tuple,
+    Union,
+)
 
 from typing_extensions import Literal
 
@@ -24,9 +35,18 @@ from supertokens_python.logger import (
     get_maybe_none_as_str,
     log_debug_message,
 )
+from supertokens_python.plugins import (
+    OverrideMap,
+    PluginRouteHandler,
+    PluginRouteHandlerWithPluginId,
+    SuperTokensPlugin,
+    SuperTokensPublicPlugin,
+)
+from supertokens_python.types.base import UserContext
+from supertokens_python.types.response import CamelCaseBaseModel
 
 from .constants import FDI_KEY_HEADER, RID_KEY_HEADER, USER_COUNT
-from .exceptions import SuperTokensError
+from .exceptions import PluginError, SuperTokensError
 from .interfaces import (
     CreateUserIdMappingOkResult,
     DeleteUserIdMappingOkResult,
@@ -162,13 +182,13 @@ class AppInfo:
         self.mode = mode
 
     def get_top_level_website_domain(
-        self, request: Optional[BaseRequest], user_context: Dict[str, Any]
+        self, request: Optional[BaseRequest], user_context: UserContext
     ) -> str:
         return get_top_level_domain_for_same_site_resolution(
             self.get_origin(request, user_context).get_as_string_dangerous()
         )
 
-    def get_origin(self, request: Optional[BaseRequest], user_context: Dict[str, Any]):
+    def get_origin(self, request: Optional[BaseRequest], user_context: UserContext):
         origin = self.__origin
         if origin is None:
             origin = self.__website_domain
@@ -192,25 +212,126 @@ class AppInfo:
 
 
 def manage_session_post_response(
-    session: SessionContainer, response: BaseResponse, user_context: Dict[str, Any]
+    session: SessionContainer, response: BaseResponse, user_context: UserContext
 ):
     # Something similar happens in handle_error of session/recipe.py
     for mutator in session.response_mutators:
         mutator(response, user_context)
 
 
+class RecipeInit(Protocol):
+    def __call__(
+        self, app_info: AppInfo, plugins: List[OverrideMap]
+    ) -> RecipeModule: ...
+
+
+class SupertokensExperimentalConfig(CamelCaseBaseModel):
+    plugins: Optional[List["SuperTokensPlugin"]] = None
+
+
+class _BaseSupertokensPublicConfig(CamelCaseBaseModel):
+    """
+    Public properties received as input to the `Supertokens.init` function.
+    """
+
+    supertokens_config: SupertokensConfig
+
+
+class SupertokensPublicConfig(_BaseSupertokensPublicConfig):
+    """
+    Public properties received as input to the `Supertokens.init` function.
+    """
+
+    pass
+
+
+class _BaseSupertokensInputConfig(_BaseSupertokensPublicConfig):
+    framework: Literal["fastapi", "flask", "django"]
+    mode: Optional[Literal["asgi", "wsgi"]]
+    telemetry: Optional[bool]
+    debug: Optional[bool]
+    recipe_list: List[Callable[[AppInfo, List["OverrideMap"]], "RecipeModule"]]
+    experimental: Optional[SupertokensExperimentalConfig] = None
+
+
+class SupertokensInputConfigWithNormalisedAppInfo(_BaseSupertokensInputConfig):
+    app_info: AppInfo
+
+
+class SupertokensInputConfig(_BaseSupertokensInputConfig):
+    """
+    Various properties received as input to the `Supertokens.init` function.
+    """
+
+    app_info: InputAppInfo
+
+    def to_public_config(self) -> SupertokensPublicConfig:
+        return SupertokensPublicConfig(supertokens_config=self.supertokens_config)
+
+    @classmethod
+    def from_public_and_input_config(
+        cls,
+        input_config: "SupertokensInputConfig",
+        public_config: SupertokensPublicConfig,
+    ) -> "SupertokensInputConfig":
+        return cls(
+            **{
+                **input_config.model_dump(),
+                **public_config.model_dump(),
+            }
+        )
+
+    @classmethod
+    def from_public_config(
+        cls,
+        config: SupertokensPublicConfig,
+        app_info: InputAppInfo,
+        framework: Literal["fastapi", "flask", "django"],
+        mode: Optional[Literal["asgi", "wsgi"]],
+        telemetry: Optional[bool],
+        debug: Optional[bool],
+        recipe_list: List[Callable[[AppInfo, List["OverrideMap"]], "RecipeModule"]],
+        experimental: Optional[SupertokensExperimentalConfig],
+    ) -> "SupertokensInputConfig":
+        return cls(
+            app_info=app_info,
+            framework=framework,
+            supertokens_config=config.supertokens_config,
+            mode=mode,
+            telemetry=telemetry,
+            debug=debug,
+            recipe_list=recipe_list,
+            experimental=experimental,
+        )
+
+
 class Supertokens:
-    __instance = None
+    __instance: Optional[Supertokens] = None
+
+    recipe_modules: List[RecipeModule]
+
+    app_info: AppInfo
+
+    supertokens_config: SupertokensConfig
+
+    _telemetry_status: str
+
+    telemetry: bool
+
+    plugin_route_handlers: List[PluginRouteHandlerWithPluginId]
+
+    plugin_list: List[SuperTokensPublicPlugin]
 
     def __init__(
         self,
         app_info: InputAppInfo,
         framework: Literal["fastapi", "flask", "django"],
         supertokens_config: SupertokensConfig,
-        recipe_list: List[Callable[[AppInfo], RecipeModule]],
+        recipe_list: List[RecipeInit],
         mode: Optional[Literal["asgi", "wsgi"]],
         telemetry: Optional[bool],
         debug: Optional[bool],
+        experimental: Optional[SupertokensExperimentalConfig] = None,
     ):
         if not isinstance(app_info, InputAppInfo):  # type: ignore
             raise ValueError("app_info must be an instance of InputAppInfo")
@@ -226,7 +347,54 @@ class Supertokens:
             mode,
             app_info.origin,
         )
-        self.supertokens_config = supertokens_config
+
+        input_config = SupertokensInputConfig(
+            app_info=app_info,
+            framework=framework,
+            supertokens_config=supertokens_config,
+            recipe_list=recipe_list,
+            mode=mode,
+            telemetry=telemetry,
+            debug=debug,
+            experimental=experimental,
+        )
+        input_public_config = input_config.to_public_config()
+        # Use the input public config by default if no plugins provided
+        processed_public_config: SupertokensPublicConfig = input_public_config
+
+        self.plugin_route_handlers = []
+        override_maps: List[OverrideMap] = []
+
+        if experimental is not None and experimental.plugins is not None:
+            from supertokens_python.plugins import load_plugins
+
+            load_plugins_result = load_plugins(
+                plugins=experimental.plugins,
+                public_config=input_public_config,
+            )
+
+            override_maps = load_plugins_result.override_maps
+            processed_public_config = load_plugins_result.public_config
+            self.plugin_list = load_plugins_result.processed_plugins
+            self.plugin_route_handlers = load_plugins_result.plugin_route_handlers
+
+        config = SupertokensInputConfig.from_public_and_input_config(
+            input_config=input_config,
+            public_config=processed_public_config,
+        )
+
+        self.app_info = AppInfo(
+            config.app_info.app_name,
+            config.app_info.api_domain,
+            config.app_info.website_domain,
+            config.framework,
+            config.app_info.api_gateway_path,
+            config.app_info.api_base_path,
+            config.app_info.website_base_path,
+            config.mode,
+            config.app_info.origin,
+        )
+        self.supertokens_config = config.supertokens_config
         if debug is True:
             enable_debug_logging()
         self._telemetry_status: str = "NONE"
@@ -234,7 +402,7 @@ class Supertokens:
             "Started SuperTokens with debug logging (supertokens.init called)"
         )
         log_debug_message("app_info: %s", self.app_info.toJSON())
-        log_debug_message("framework: %s", framework)
+        log_debug_message("framework: %s", config.framework)
         hosts = list(
             map(
                 lambda h: Host(
@@ -262,8 +430,11 @@ class Supertokens:
         oauth2_found = False
         openid_found = False
         jwt_found = False
+        account_linking_found = False
 
-        def make_recipe(recipe: Callable[[AppInfo], RecipeModule]) -> RecipeModule:
+        def make_recipe(
+            recipe: Callable[[AppInfo, List[OverrideMap]], RecipeModule],
+        ) -> RecipeModule:
             nonlocal \
                 multitenancy_found, \
                 totp_found, \
@@ -271,8 +442,10 @@ class Supertokens:
                 multi_factor_auth_found, \
                 oauth2_found, \
                 openid_found, \
-                jwt_found
-            recipe_module = recipe(self.app_info)
+                jwt_found, \
+                account_linking_found
+
+            recipe_module = recipe(self.app_info, override_maps)
             if recipe_module.get_recipe_id() == "multitenancy":
                 multitenancy_found = True
             elif recipe_module.get_recipe_id() == "usermetadata":
@@ -287,24 +460,39 @@ class Supertokens:
                 openid_found = True
             elif recipe_module.get_recipe_id() == "jwt":
                 jwt_found = True
+            elif recipe_module.get_recipe_id() == "accountlinking":
+                account_linking_found = True
             return recipe_module
 
         self.recipe_modules: List[RecipeModule] = list(map(make_recipe, recipe_list))
 
+        if not account_linking_found:
+            from supertokens_python.recipe.accountlinking.recipe import (
+                AccountLinkingRecipe,
+            )
+
+            self.recipe_modules.append(
+                AccountLinkingRecipe.init()(self.app_info, override_maps)
+            )
+
         if not jwt_found:
             from supertokens_python.recipe.jwt.recipe import JWTRecipe
 
-            self.recipe_modules.append(JWTRecipe.init()(self.app_info))
+            self.recipe_modules.append(JWTRecipe.init()(self.app_info, override_maps))
 
         if not openid_found:
             from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 
-            self.recipe_modules.append(OpenIdRecipe.init()(self.app_info))
+            self.recipe_modules.append(
+                OpenIdRecipe.init()(self.app_info, override_maps)
+            )
 
         if not multitenancy_found:
             from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 
-            self.recipe_modules.append(MultitenancyRecipe.init()(self.app_info))
+            self.recipe_modules.append(
+                MultitenancyRecipe.init()(self.app_info, override_maps)
+            )
 
         if totp_found and not multi_factor_auth_found:
             raise Exception("Please initialize the MultiFactorAuth recipe to use TOTP.")
@@ -312,18 +500,22 @@ class Supertokens:
         if not user_metadata_found:
             from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
 
-            self.recipe_modules.append(UserMetadataRecipe.init()(self.app_info))
+            self.recipe_modules.append(
+                UserMetadataRecipe.init()(self.app_info, override_maps)
+            )
 
         if not oauth2_found:
             from supertokens_python.recipe.oauth2provider.recipe import (
                 OAuth2ProviderRecipe,
             )
 
-            self.recipe_modules.append(OAuth2ProviderRecipe.init()(self.app_info))
+            self.recipe_modules.append(
+                OAuth2ProviderRecipe.init()(self.app_info, override_maps)
+            )
 
         self.telemetry = (
-            telemetry
-            if telemetry is not None
+            config.telemetry
+            if config.telemetry is not None
             else (environ.get("TEST_MODE") != "testing")
         )
 
@@ -332,10 +524,11 @@ class Supertokens:
         app_info: InputAppInfo,
         framework: Literal["fastapi", "flask", "django"],
         supertokens_config: SupertokensConfig,
-        recipe_list: List[Callable[[AppInfo], RecipeModule]],
+        recipe_list: List[RecipeInit],
         mode: Optional[Literal["asgi", "wsgi"]],
         telemetry: Optional[bool],
         debug: Optional[bool],
+        experimental: Optional[SupertokensExperimentalConfig] = None,
     ):
         if Supertokens.__instance is None:
             Supertokens.__instance = Supertokens(
@@ -346,6 +539,7 @@ class Supertokens:
                 mode,
                 telemetry,
                 debug,
+                experimental=experimental,
             )
             PostSTInitCallbacks.run_post_init_callbacks()
 
@@ -384,7 +578,7 @@ class Supertokens:
         self,
         include_recipe_ids: Union[None, List[str]],
         tenant_id: Optional[str] = None,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Optional[UserContext] = None,
     ) -> int:
         querier = Querier.get_instance(None)
         include_recipe_ids_str = None
@@ -408,7 +602,7 @@ class Supertokens:
         external_user_id: str,
         external_user_id_info: Optional[str],
         force: Optional[bool],
-        user_context: Optional[Dict[str, Any]],
+        user_context: Optional[UserContext],
     ) -> Union[
         CreateUserIdMappingOkResult,
         UnknownSupertokensUserIDError,
@@ -448,7 +642,7 @@ class Supertokens:
         self,
         user_id: str,
         user_id_type: Optional[UserIDTypes],
-        user_context: Optional[Dict[str, Any]],
+        user_context: Optional[UserContext],
     ) -> Union[GetUserIdMappingOkResult, UnknownMappingError]:
         querier = Querier.get_instance(None)
 
@@ -483,7 +677,7 @@ class Supertokens:
         user_id: str,
         user_id_type: Optional[UserIDTypes],
         force: Optional[bool],
-        user_context: Optional[Dict[str, Any]],
+        user_context: Optional[UserContext],
     ) -> DeleteUserIdMappingOkResult:
         querier = Querier.get_instance(None)
 
@@ -515,7 +709,7 @@ class Supertokens:
         user_id: str,
         user_id_type: Optional[UserIDTypes],
         external_user_id_info: Optional[str],
-        user_context: Optional[Dict[str, Any]],
+        user_context: Optional[UserContext],
     ) -> Union[UpdateOrDeleteUserIdMappingInfoOkResult, UnknownMappingError]:
         querier = Querier.get_instance(None)
 
@@ -541,13 +735,59 @@ class Supertokens:
         raise_general_exception("Please upgrade the SuperTokens core to >= 3.15.0")
 
     async def middleware(
-        self, request: BaseRequest, response: BaseResponse, user_context: Dict[str, Any]
+        self, request: BaseRequest, response: BaseResponse, user_context: UserContext
     ) -> Union[BaseResponse, None]:
+        from supertokens_python.recipe.session.recipe import SessionRecipe
+
         log_debug_message("middleware: Started")
         path = Supertokens.get_instance().app_info.api_gateway_path.append(
             NormalisedURLPath(request.get_path())
         )
         method = normalise_http_method(request.method())
+
+        handler_from_apis: Optional[PluginRouteHandler] = None
+        for handler in self.plugin_route_handlers:
+            if (
+                handler.path == path.get_as_string_dangerous()
+                and handler.method == method
+            ):
+                log_debug_message(
+                    "middleware: Found matching plugin route handler for path: %s and method: %s",
+                    path.get_as_string_dangerous(),
+                    method,
+                )
+                handler_from_apis = handler
+                break
+
+        if handler_from_apis is not None:
+            session: Optional[SessionContainer] = None
+            if handler_from_apis.verify_session_options is not None:
+                verify_session_options = handler_from_apis.verify_session_options
+                session = await SessionRecipe.get_instance().verify_session(
+                    request=request,
+                    user_context=user_context,
+                    anti_csrf_check=verify_session_options.anti_csrf_check,
+                    session_required=verify_session_options.session_required,
+                    check_database=verify_session_options.check_database,
+                    override_global_claim_validators=verify_session_options.override_global_claim_validators,
+                )
+
+            log_debug_message(
+                f"middleware: Request being handled by plugin `{handler_from_apis.plugin_id}`"
+            )
+            try:
+                return await handler_from_apis.handler(
+                    request=request,
+                    response=response,
+                    session=session,
+                    user_context=user_context,
+                )
+            except PluginError as err:
+                log_debug_message(
+                    f"middleware: Error from plugin `{handler_from_apis.plugin_id}`: {str(err)}. "
+                    "Transforming to SuperTokensError."
+                )
+                raise err
 
         if not path.startswith(Supertokens.get_instance().app_info.api_base_path):
             log_debug_message(
@@ -668,7 +908,7 @@ class Supertokens:
         request: BaseRequest,
         err: Exception,
         response: BaseResponse,
-        user_context: Dict[str, Any],
+        user_context: UserContext,
     ) -> Optional[BaseResponse]:
         log_debug_message("errorHandler: Started")
         log_debug_message(
@@ -677,7 +917,7 @@ class Supertokens:
         if isinstance(err, GeneralError):
             raise err
 
-        if isinstance(err, BadInputError):
+        if isinstance(err, (BadInputError, PluginError)):
             log_debug_message("errorHandler: Sending 400 status code response")
             return send_non_200_response_with_message(str(err), 400, response)
 
@@ -696,7 +936,7 @@ class Supertokens:
 
     def get_request_from_user_context(
         self,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Optional[UserContext] = None,
     ) -> Optional[BaseRequest]:
         if user_context is None:
             return None
@@ -709,8 +949,22 @@ class Supertokens:
 
         return user_context.get("_default", {}).get("request")
 
+    def is_recipe_initialized(self, recipe_id: str) -> bool:
+        """
+        Check if a recipe is initialized.
+        :param recipe_id: The ID of the recipe to check.
+        :return: Whether the recipe is initialized.
+        """
+        return any(
+            recipe.get_recipe_id() == recipe_id for recipe in self.recipe_modules
+        )
+
 
 def get_request_from_user_context(
-    user_context: Optional[Dict[str, Any]],
+    user_context: Optional[UserContext],
 ) -> Optional[BaseRequest]:
     return Supertokens.get_instance().get_request_from_user_context(user_context)
+
+
+def is_recipe_initialized(recipe_id: str) -> bool:
+    return Supertokens.get_instance().is_recipe_initialized(recipe_id)

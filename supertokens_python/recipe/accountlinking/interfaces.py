@@ -13,12 +13,13 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from typing_extensions import Literal
 
 from supertokens_python.types.base import AccountInfoInput
+from supertokens_python.types.recipe import BaseRecipeInterface
 
 if TYPE_CHECKING:
     from supertokens_python.types import (
@@ -27,7 +28,7 @@ if TYPE_CHECKING:
     )
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     @abstractmethod
     async def get_users(
         self,

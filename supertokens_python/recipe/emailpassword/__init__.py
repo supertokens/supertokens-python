@@ -13,37 +13,48 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Union
 
-from supertokens_python.ingredients.emaildelivery import types as emaildelivery_types
-from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryConfig,
+    EmailDeliveryInterface,
+)
 from supertokens_python.recipe.emailpassword.types import EmailTemplateVars
 
-from . import exceptions as ex
-from . import utils
-from .emaildelivery import services as emaildelivery_services
+from .emaildelivery.services import SMTPService
 from .recipe import EmailPasswordRecipe
-
-exceptions = ex
-InputOverrideConfig = utils.InputOverrideConfig
-InputSignUpFeature = utils.InputSignUpFeature
-InputFormField = utils.InputFormField
-SMTPService = emaildelivery_services.SMTPService
-EmailDeliveryInterface = emaildelivery_types.EmailDeliveryInterface
+from .utils import (
+    EmailPasswordOverrideConfig,
+    InputFormField,
+    InputOverrideConfig,
+    InputSignUpFeature,
+)
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo
-
-    from ...recipe_module import RecipeModule
+    from supertokens_python.supertokens import RecipeInit
 
 
 def init(
-    sign_up_feature: Union[utils.InputSignUpFeature, None] = None,
-    override: Union[utils.InputOverrideConfig, None] = None,
+    sign_up_feature: Union[InputSignUpFeature, None] = None,
+    override: Union[EmailPasswordOverrideConfig, None] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
-) -> Callable[[AppInfo], RecipeModule]:
+) -> RecipeInit:
     return EmailPasswordRecipe.init(
         sign_up_feature,
         override,
         email_delivery,
     )
+
+
+__all__ = [
+    "EmailDeliveryConfig",
+    "EmailDeliveryInterface",
+    "EmailPasswordOverrideConfig",
+    "EmailPasswordRecipe",
+    "EmailTemplateVars",
+    "InputFormField",
+    "InputOverrideConfig",  # deprecated, use EmailPasswordOverrideConfig instead
+    "InputSignUpFeature",
+    "SMTPService",
+    "init",
+]

@@ -149,7 +149,8 @@ from .constants import (
     VALIDATE_KEY_API,
 )
 from .utils import (
-    InputOverrideConfig,
+    DashboardConfig,
+    DashboardOverrideConfig,
     validate_and_normalise_user_input,
 )
 
@@ -162,29 +163,19 @@ class DashboardRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        api_key: Optional[str],
-        admins: Optional[List[str]],
-        override: Optional[InputOverrideConfig] = None,
+        config: DashboardConfig,
     ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
-            api_key,
-            admins,
-            override,
+            config=config,
         )
         recipe_implementation = RecipeImplementation()
-        self.recipe_implementation = (
+        self.recipe_implementation = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
         api_implementation = APIImplementation()
-        self.api_implementation = (
-            api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
-        )
+        self.api_implementation = self.config.override.apis(api_implementation)
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and (
@@ -650,16 +641,26 @@ class DashboardRecipe(RecipeModule):
     def init(
         api_key: Optional[str],
         admins: Optional[List[str]] = None,
-        override: Optional[InputOverrideConfig] = None,
+        override: Optional[DashboardOverrideConfig] = None,
     ):
-        def func(app_info: AppInfo):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = DashboardConfig(
+            api_key=api_key,
+            admins=admins,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if DashboardRecipe.__instance is None:
                 DashboardRecipe.__instance = DashboardRecipe(
-                    DashboardRecipe.recipe_id,
-                    app_info,
-                    api_key,
-                    admins,
-                    override,
+                    recipe_id=DashboardRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=DashboardRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return DashboardRecipe.__instance
             raise Exception(

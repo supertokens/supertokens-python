@@ -12,8 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from abc import ABC, abstractmethod
-from typing import List, Literal, Optional, TypedDict, Union
+from abc import abstractmethod
+from typing import TYPE_CHECKING, List, Literal, Optional, TypedDict, Union
 
 from typing_extensions import NotRequired, Unpack
 
@@ -23,10 +23,12 @@ from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.webauthn.interfaces.recipe import (
     AuthenticationPayload,
+    CredentialNotFoundErrorResponse,
     EmailAlreadyExistsErrorResponse,
     InvalidAuthenticatorErrorResponse,
     InvalidCredentialsErrorResponse,
     InvalidOptionsErrorResponse,
+    ListCredentialsResponse,
     OptionsNotFoundErrorResponse,
     RecipeInterface,
     RecoverAccountTokenInvalidErrorResponse,
@@ -36,16 +38,19 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     SignInOptionsErrorResponse,
     UserVerification,
 )
-from supertokens_python.recipe.webauthn.types.config import NormalisedWebauthnConfig
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.types import RecipeUserId, User
 from supertokens_python.types.base import UserContext
+from supertokens_python.types.recipe import BaseAPIInterface
 from supertokens_python.types.response import (
     CamelCaseBaseModel,
     GeneralErrorResponse,
     OkResponseBaseModel,
     StatusReasonResponseBaseModel,
 )
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.webauthn.types.config import NormalisedWebauthnConfig
 
 
 class SignUpNotAllowedErrorResponse(
@@ -93,7 +98,7 @@ TypeWebauthnEmailDeliveryInput = TypeWebauthnRecoverAccountEmailDeliveryInput
 class APIOptions(CamelCaseBaseModel):
     recipe_implementation: RecipeInterface
     app_info: AppInfo
-    config: NormalisedWebauthnConfig
+    config: "NormalisedWebauthnConfig"
     recipe_id: str
     req: BaseRequest
     res: BaseResponse
@@ -194,6 +199,12 @@ class RecoverAccountPOSTResponse(OkResponseBaseModel):
     email: str
 
 
+ListCredentialsGETResponse = ListCredentialsResponse
+
+
+RemoveCredentialPOSTErrorResponse = CredentialNotFoundErrorResponse
+
+
 class SignUpPOSTResponse(OkResponseBaseModel):
     user: User
     session: SessionContainer
@@ -219,7 +230,7 @@ class RegisterOptionsPOSTKwargsInput(TypedDict):
     email: NotRequired[str]
 
 
-class APIInterface(ABC):
+class APIInterface(BaseAPIInterface):
     disable_register_options_post: bool = False
     disable_sign_in_options_post: bool = False
     disable_sign_up_post: bool = False
@@ -228,6 +239,8 @@ class APIInterface(ABC):
     disable_recover_account_post: bool = False
     disable_register_credential_post: bool = False
     disable_email_exists_get: bool = False
+    disable_list_credentials_get: bool = False
+    disable_remove_credential_post: bool = False
 
     @abstractmethod
     async def register_options_post(
@@ -311,6 +324,15 @@ class APIInterface(ABC):
     ]: ...
 
     @abstractmethod
+    async def list_credentials_get(
+        self,
+        *,
+        options: APIOptions,
+        user_context: UserContext,
+        session: SessionContainer,
+    ) -> Union[ListCredentialsGETResponse, GeneralErrorResponse]: ...
+
+    @abstractmethod
     async def register_credential_post(
         self,
         *,
@@ -322,6 +344,18 @@ class APIInterface(ABC):
         user_context: UserContext,
     ) -> Union[
         OkResponseBaseModel, GeneralErrorResponse, RegisterCredentialPOSTErrorResponse
+    ]: ...
+
+    @abstractmethod
+    async def remove_credential_post(
+        self,
+        *,
+        webauthn_credential_id: str,
+        session: SessionContainer,
+        options: APIOptions,
+        user_context: UserContext,
+    ) -> Union[
+        OkResponseBaseModel, GeneralErrorResponse, RemoveCredentialPOSTErrorResponse
     ]: ...
 
     @abstractmethod

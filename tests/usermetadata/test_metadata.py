@@ -27,7 +27,7 @@ from supertokens_python.recipe.usermetadata.interfaces import (
     ClearUserMetadataResult,
     RecipeInterface,
 )
-from supertokens_python.recipe.usermetadata.utils import InputOverrideConfig
+from supertokens_python.recipe.usermetadata.utils import UserMetadataOverrideConfig
 from supertokens_python.utils import is_version_gte
 from tests.utils import get_new_core_app_url
 
@@ -169,7 +169,9 @@ async def test_recipe_override():
         ),
         framework="fastapi",
         recipe_list=[
-            usermetadata.init(override=InputOverrideConfig(functions=override_func))
+            usermetadata.init(
+                override=UserMetadataOverrideConfig(functions=override_func)
+            )
         ],
     )
 
