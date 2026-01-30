@@ -45,7 +45,7 @@ on:
 
 jobs:
   test:
-    if: ${{ inputs.matrix != '{"include":[]}' }}
+    if: inputs.matrix != '{"include":[]}' && (github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'run-tests'))
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 10
@@ -83,8 +83,32 @@ jobs:
           python3 -m pip install pip setuptools --upgrade
           make dev-install && rm -rf src
 
+      - name: Get supported Python CDI versions
+        id: cdi-versions
+        uses: supertokens/get-supported-versions-action@main
+        with:
+            has-cdi: true
+            working-directory: supertokens-python
+
+      - uses: supertokens/actions/get-versions-from-repo@main
+        id: core-versions
+        with:
+          repo: supertokens-core
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cdi-versions: ${{ steps.cdi-versions.outputs.cdiVersions }}
+
+      - name: Get core version from latest Python CDI version
+        id: core-version
+        run: |
+          lastPythonCdiVersion=$(echo '${{ steps.cdi-versions.outputs.cdiVersions }}' | jq -r '.[-1]' | sed -e 's/"/\\"/g')
+          coreVersion=$(echo '${{ steps.core-versions.outputs.cdiVersions }}' | jq -r ".[\"$lastPythonCdiVersion\"]")
+
+          echo "coreVersion=${coreVersion}" >> $GITHUB_OUTPUT
+
       - name: Start core
         working-directory: supertokens-python
+        env:
+          SUPERTOKENS_CORE_VERSION: ${{ steps.core-version.outputs.coreVersion }}
         run: docker compose up --wait
 
       - name: Start Server (django)
