@@ -105,7 +105,6 @@ async def test_that_jwks_is_fetched_as_expected(caplog: LogCaptureFixture):
     JWKSConfig.update(original_jwks_config)
 
 
-@pytest.mark.skip("Requires core running in DEV + test_mode")
 async def test_that_jwks_result_is_refreshed_properly(caplog: LogCaptureFixture):
     """This test verifies that the cache used to store the pointer to the JWKS result is updated properly when the
     cache expired and the keys need to be refetched.
@@ -161,7 +160,6 @@ async def test_that_jwks_result_is_refreshed_properly(caplog: LogCaptureFixture)
     JWKSConfig.update(original_jwks_config)
 
 
-@pytest.mark.skip("Requires core running in DEV + test_mode")
 async def test_that_jwks_are_refresh_if_kid_is_unknown(caplog: LogCaptureFixture):
     """This test verifies that the SDK tried to re-fetch the keys from the core if the KID for the access token
     does not exist in the cache
@@ -607,7 +605,6 @@ async def test_session_verification_of_jwt_with_dynamic_signing_key():
     assert s_.get_user_id() == "userId"
 
 
-@pytest.mark.skip("Requires core running in DEV + test_mode")
 async def test_that_locking_for_jwks_cache_works(caplog: LogCaptureFixture):
     caplog.set_level(logging.DEBUG)
     not_returned_from_cache_count = get_log_occurence_count(
