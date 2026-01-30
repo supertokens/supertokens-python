@@ -128,6 +128,7 @@ setup(
         "pyotp<3",
         "python-dateutil<3",
         "pydantic>=2.10.6,<3.0.0",
+        "sniffio>=1.1,<2.0.0",
     ],
     python_requires=">=3.8",
     include_package_data=True,
