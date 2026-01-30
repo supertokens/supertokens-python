@@ -35,7 +35,7 @@ from ..session import SessionRecipe
 from ..session.claim_base_classes.primitive_array_claim import PrimitiveArrayClaim
 from .exceptions import SuperTokensUserRolesError
 from .interfaces import GetPermissionsForRoleOkResult, UnknownRoleError
-from .utils import InputOverrideConfig
+from .utils import UserRolesConfig, UserRolesOverrideConfig
 
 
 class UserRolesRecipe(RecipeModule):
@@ -46,25 +46,19 @@ class UserRolesRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        skip_adding_roles_to_access_token: Optional[bool] = None,
-        skip_adding_permissions_to_access_token: Optional[bool] = None,
-        override: Union[InputOverrideConfig, None] = None,
+        config: UserRolesConfig,
     ):
         from ..oauth2provider.recipe import OAuth2ProviderRecipe
 
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
-            self,
-            app_info,
-            skip_adding_roles_to_access_token,
-            skip_adding_permissions_to_access_token,
-            override,
+            _recipe=self,
+            _app_info=app_info,
+            config=config,
         )
         recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
-        self.recipe_implementation = (
+        self.recipe_implementation = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
         def callback():
@@ -216,16 +210,26 @@ class UserRolesRecipe(RecipeModule):
     def init(
         skip_adding_roles_to_access_token: Optional[bool] = None,
         skip_adding_permissions_to_access_token: Optional[bool] = None,
-        override: Union[InputOverrideConfig, None] = None,
+        override: Union[UserRolesOverrideConfig, None] = None,
     ):
-        def func(app_info: AppInfo):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = UserRolesConfig(
+            skip_adding_roles_to_access_token=skip_adding_roles_to_access_token,
+            skip_adding_permissions_to_access_token=skip_adding_permissions_to_access_token,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if UserRolesRecipe.__instance is None:
                 UserRolesRecipe.__instance = UserRolesRecipe(
-                    UserRolesRecipe.recipe_id,
-                    app_info,
-                    skip_adding_roles_to_access_token,
-                    skip_adding_permissions_to_access_token,
-                    override,
+                    recipe_id=UserRolesRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=UserRolesRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return UserRolesRecipe.__instance
             raise Exception(
@@ -255,7 +259,6 @@ class UserRolesRecipe(RecipeModule):
 class PermissionClaimClass(PrimitiveArrayClaim[List[str]]):
     def __init__(self) -> None:
         key = "st-perm"
-        default_max_age_in_sec = 300
 
         async def fetch_value(
             user_id: str,
@@ -285,7 +288,7 @@ class PermissionClaimClass(PrimitiveArrayClaim[List[str]]):
 
             return list(user_permissions)
 
-        super().__init__(key, fetch_value, default_max_age_in_sec)
+        super().__init__(key, fetch_value)
 
 
 PermissionClaim = PermissionClaimClass()
@@ -294,7 +297,6 @@ PermissionClaim = PermissionClaimClass()
 class UserRoleClaimClass(PrimitiveArrayClaim[List[str]]):
     def __init__(self) -> None:
         key = "st-role"
-        default_max_age_in_sec = 300
 
         async def fetch_value(
             user_id: str,
@@ -309,7 +311,7 @@ class UserRoleClaimClass(PrimitiveArrayClaim[List[str]]):
             )
             return res.roles
 
-        super().__init__(key, fetch_value, default_max_age_in_sec)
+        super().__init__(key, fetch_value)
 
 
 UserRoleClaim = UserRoleClaimClass()

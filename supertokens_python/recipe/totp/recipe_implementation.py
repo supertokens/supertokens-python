@@ -29,8 +29,8 @@ from .types import (
     InvalidTOTPError,
     LimitReachedError,
     ListDevicesOkResult,
+    NormalisedTOTPConfig,
     RemoveDeviceOkResult,
-    TOTPNormalisedConfig,
     UnknownDeviceError,
     UnknownUserIdError,
     UpdateDeviceOkResult,
@@ -48,7 +48,7 @@ class RecipeImplementation(RecipeInterface):
     def __init__(
         self,
         querier: Querier,
-        config: TOTPNormalisedConfig,
+        config: NormalisedTOTPConfig,
     ):
         super().__init__()
         self.querier = querier

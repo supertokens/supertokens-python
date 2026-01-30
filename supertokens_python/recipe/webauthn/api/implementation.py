@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Optional, Union, cast
+from typing import List, Optional, Union, cast
 
 from typing_extensions import Unpack
 
@@ -23,6 +23,7 @@ from supertokens_python.auth_utils import (
     post_auth_checks,
     pre_auth_checks,
 )
+from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.accountlinking.types import (
     AccountInfoWithRecipeId,
@@ -30,6 +31,14 @@ from supertokens_python.recipe.accountlinking.types import (
     ShouldNotAutomaticallyLink,
 )
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
+from supertokens_python.recipe.multifactorauth.asyncio import (
+    assert_allowed_to_setup_factor_else_throw_invalid_claim_error,
+)
+from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
+    MultiFactorAuthClaim,
+)
+from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
+from supertokens_python.recipe.multifactorauth.types import FactorIds
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.webauthn.constants import (
     DEFAULT_REGISTER_OPTIONS_ATTESTATION,
@@ -47,6 +56,7 @@ from supertokens_python.recipe.webauthn.interfaces.api import (
     APIOptions,
     EmailExistsGetResponse,
     GenerateRecoverAccountTokenPOSTErrorResponse,
+    ListCredentialsGETResponse,
     RecoverAccountNotAllowedErrorResponse,
     RecoverAccountPOSTErrorResponse,
     RecoverAccountPOSTResponse,
@@ -243,7 +253,7 @@ class APIImplementation(APIInterface):
                 recipe_id="webauthn",
                 email=email,
             ),
-            factor_ids=["webauthn"],
+            factor_ids=[FactorIds.WEBAUTHN],
             is_sign_up=True,
             is_verified=is_fake_email(email),
             sign_in_verifies_login_method=False,
@@ -319,7 +329,7 @@ class APIImplementation(APIInterface):
             authenticated_user=sign_up_response.user,
             recipe_user_id=sign_up_response.recipe_user_id,
             is_sign_up=True,
-            factor_id="webauthn",
+            factor_id=FactorIds.WEBAUTHN,
             session=session,
             request=options.req,
             tenant_id=tenant_id,
@@ -433,7 +443,7 @@ class APIImplementation(APIInterface):
                 recipe_id="webauthn",
                 email=email,
             ),
-            factor_ids=["webauthn"],
+            factor_ids=[FactorIds.WEBAUTHN],
             is_sign_up=False,
             authenticating_user=authenticating_user.user,
             is_verified=is_verified,
@@ -496,7 +506,7 @@ class APIImplementation(APIInterface):
             authenticated_user=sign_in_response.user,
             recipe_user_id=sign_in_response.recipe_user_id,
             is_sign_up=False,
-            factor_id="webauthn",
+            factor_id=FactorIds.WEBAUTHN,
             session=session,
             request=options.req,
             tenant_id=tenant_id,
@@ -1068,6 +1078,42 @@ class APIImplementation(APIInterface):
             user=user_after_linking,
         )
 
+    async def list_credentials_get(
+        self,
+        *,
+        options: APIOptions,
+        user_context: UserContext,
+        session: SessionContainer,
+    ) -> ListCredentialsGETResponse:
+        existing_user = await get_user(
+            user_id=session.get_user_id(),
+            user_context=user_context,
+        )
+        if existing_user is None:
+            raise_general_exception("User not found")
+
+        recipe_user_ids = [
+            lm.recipe_user_id
+            for lm in existing_user.login_methods
+            if lm.recipe_id == "webauthn"
+        ]
+
+        credentials: List[ListCredentialsGETResponse.Credential] = []
+
+        for recipe_user_id in recipe_user_ids:
+            list_credentials_response = (
+                await options.recipe_implementation.list_credentials(
+                    recipe_user_id=recipe_user_id.get_as_string(),
+                    user_context=user_context,
+                )
+            )
+
+            credentials.extend(list_credentials_response.credentials)
+
+        return ListCredentialsGETResponse(
+            credentials=credentials,
+        )
+
     async def register_credential_post(
         self,
         *,
@@ -1087,6 +1133,14 @@ class APIImplementation(APIInterface):
             "INVALID_AUTHENTICATOR_ERROR": "The device used for authentication is not supported. Please use a different device. (ERR_CODE_026)",
             "INVALID_CREDENTIALS_ERROR": "The credentials are incorrect. Please make sure you are using the correct credentials. (ERR_CODE_025)",
         }
+
+        mfa_instance = MultiFactorAuthRecipe.get_instance()
+        if mfa_instance is not None:
+            await assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
+                session=session,
+                factor_id=FactorIds.WEBAUTHN,
+                user_context=user_context,
+            )
 
         generated_options = await options.recipe_implementation.get_generated_options(
             webauthn_generated_options_id=webauthn_generated_options_id,
@@ -1122,6 +1176,53 @@ class APIImplementation(APIInterface):
                     error_code_map=error_code_map,
                 )
             )
+
+        return OkResponseBaseModel()
+
+    async def remove_credential_post(
+        self,
+        *,
+        webauthn_credential_id: str,
+        session: SessionContainer,
+        options: APIOptions,
+        user_context: UserContext,
+    ) -> Union[
+        OkResponseBaseModel, GeneralErrorResponse, CredentialNotFoundErrorResponse
+    ]:
+        mfa_instance = MultiFactorAuthRecipe.get_instance()
+        if mfa_instance is not None:
+            await session.assert_claims(
+                claim_validators=[
+                    MultiFactorAuthClaim.validators.has_completed_mfa_requirements_for_auth()
+                ]
+            )
+
+        user = await get_user(session.get_user_id(), user_context=user_context)
+        if user is None:
+            raise_general_exception("User not found")
+
+        required_login_methods = [
+            lm
+            for lm in user.login_methods
+            if lm.recipe_id == "webauthn"
+            and lm.webauthn is not None
+            and webauthn_credential_id in lm.webauthn.credential_ids
+        ]
+        if len(required_login_methods) == 0:
+            raise_general_exception("User not found")
+
+        recipe_user_id = required_login_methods[0].recipe_user_id
+
+        remove_credential_response = (
+            await options.recipe_implementation.remove_credential(
+                webauthn_credential_id=webauthn_credential_id,
+                recipe_user_id=recipe_user_id.get_as_string(),
+                user_context=user_context,
+            )
+        )
+
+        if remove_credential_response.status != "OK":
+            return remove_credential_response
 
         return OkResponseBaseModel()
 

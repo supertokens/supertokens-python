@@ -35,7 +35,7 @@ from supertokens_python.recipe_module import APIHandled, RecipeModule
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
-from .utils import InputOverrideConfig
+from .utils import UserMetadataConfig, UserMetadataOverrideConfig
 
 
 class UserMetadataRecipe(RecipeModule):
@@ -46,15 +46,15 @@ class UserMetadataRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        override: Union[InputOverrideConfig, None] = None,
+        config: UserMetadataConfig,
     ):
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(self, app_info, override)
+        self.config = validate_and_normalise_user_input(
+            _recipe=self, _app_info=app_info, input_config=config
+        )
         recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
-        self.recipe_implementation = (
+        self.recipe_implementation = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
@@ -90,11 +90,21 @@ class UserMetadataRecipe(RecipeModule):
         return []
 
     @staticmethod
-    def init(override: Union[InputOverrideConfig, None] = None):
-        def func(app_info: AppInfo):
+    def init(override: Union[UserMetadataOverrideConfig, None] = None):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = UserMetadataConfig(override=override)
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if UserMetadataRecipe.__instance is None:
                 UserMetadataRecipe.__instance = UserMetadataRecipe(
-                    UserMetadataRecipe.recipe_id, app_info, override
+                    recipe_id=UserMetadataRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=UserMetadataRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return UserMetadataRecipe.__instance
             raise Exception(

@@ -57,7 +57,7 @@ def st_init_generator_with_overriden_global_validators(
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
-                override=session.InputOverrideConfig(
+                override=session.SessionOverrideConfig(
                     functions=session_function_override
                 ),
             )
@@ -85,7 +85,7 @@ def st_init_generator_with_claim_validator(claim_validator: SessionClaimValidato
             session.init(
                 anti_csrf="VIA_TOKEN",
                 get_token_transfer_method=lambda _, __, ___: "cookie",
-                override=session.InputOverrideConfig(
+                override=session.SessionOverrideConfig(
                     functions=session_function_override
                 ),
             )

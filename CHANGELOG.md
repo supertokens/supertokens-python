@@ -8,8 +8,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.31.0] - 2025-08-21
+- Updates FDI support to `4.2`
+- Adds util function to get available first factors
+- Adds API endpoints to list and remove Webauthn credentials
+  - Prevents removal of Webauthn credentials unless all session claims are satisfied
+  - Changes how sessions are fetched when listing, removing, and registering Webauthn credentials
+  - Fixes Webauthn credential listing and removal to work even when the Webauthn user is not the primary user and when there are multiple linked Webauthn users
+
+### Adds plugins support
+- Adds an `experimental` property (`SuperTokensExperimentalConfig`) to the `SuperTokensConfig`
+  - Plugins can be configured under using the `plugins` property in the `experimental` config
+- Refactors the AccountLinking recipe to be automatically initialized on SuperTokens init
+- Adds `is_recipe_initialized` method to check if a recipe has been initialized
+
+### Breaking Changes
+- Removed default `default_max_age` from all built-in claims/validators.
+  - You can optionally set them when adding the validators.
+  - This should help with unexpected API calls during session verification.
+- `AccountLinkingRecipe.get_instance` will now raise an exception if not initialized
+- Various config classes renamed for consistency across the codebase, and classes added where they were missing
+  - Old classes added to the recipe modules as aliases for backward compatibility, but will be removed in future versions. Prefer using the renamed classes.
+  - `InputOverrideConfig` renamed to `<Recipe>OverrideConfig`
+  - `OverrideConfig` renamed to `Normalised<Recipe>OverrideConfig`
+  - Input config classes like `<Recipe>InputConfig` renamed to `<Recipe>Config`
+  - Normalised config classes like `<Recipe>Config` renamed to `Normalised<Recipe>Config`
+  - Changed classes:
+    - AccountLinking `InputOverrideConfig` -> `AccountLinkingOverrideConfig`
+    - Dashboard `InputOverrideConfig` -> `DashboardOverrideConfig`
+    - EmailPassword
+      - `InputOverrideConfig` -> `EmailPasswordOverrideConfig`
+      - `exceptions` export removed from `__init__`, import the `exceptions` module directly
+    - EmailVerification
+      - `InputOverrideConfig` -> `EmailVerificationOverrideConfig`
+      - `exception` export removed from `__init__`, import the `exceptions` module directly
+    - JWT `OverrideConfig` -> `JWTOverrideConfig`
+    - MultiFactorAuth `OverrideConfig` -> `MultiFactorAuthOverrideConfig`
+    - Multitenancy
+      - `InputOverrideConfig` -> `MultitenancyOverrideConfig`
+      - `exceptions` export removed from `__init__`, import the `exceptions` module directly
+    - OAuth2Provider
+      - `InputOverrideConfig` -> `OAuth2ProviderOverrideConfig`
+      - `exceptions` export removed from `__init__`, import the `exceptions` module directly
+    - OpenId `InputOverrideConfig` -> `OpenIdOverrideConfig`
+    - Passwordless `InputOverrideConfig` -> `PasswordlessOverrideConfig`
+    - Session
+      - `InputOverrideConfig` -> `SessionOverrideConfig`
+      - `exceptions` export removed from `__init__`, import the `exceptions` module directly
+    - ThirdParty
+      - `InputOverrideConfig` -> `ThirdPartyOverrideConfig`
+      - `exceptions` export removed from `__init__`, import the `exceptions` module directly
+    - TOTP `OverrideConfig` -> `TOTPOverrideConfig`
+    - UserMetadata `InputOverrideConfig` -> `UserMetadataOverrideConfig`
+    - UserRoles `InputOverrideConfig` -> `UserRolesOverrideConfig`
+
 ## [0.30.3] - 2025-08-28
 - Fixes webauthn MFA integration
+- Adds missing `rp_id` field to Webauthn's `SignInOptionResponse`
 
 ## [0.30.2] - 2025-08-14
 - Adds Webauthn user editing support to the Dashboard

@@ -14,8 +14,10 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
+
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 
 from ...types.response import APIResponse, GeneralErrorResponse
 
@@ -26,10 +28,10 @@ if TYPE_CHECKING:
     from supertokens_python.types import User
 
     from ...supertokens import AppInfo
-    from .types import MFARequirementList, MultiFactorAuthConfig
+    from .types import MFARequirementList, NormalisedMultiFactorAuthConfig
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     @abstractmethod
     async def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
         self,
@@ -95,7 +97,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: MultiFactorAuthConfig,
+        config: NormalisedMultiFactorAuthConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         recipe_instance: MultiFactorAuthRecipe,
@@ -109,7 +111,7 @@ class APIOptions:
         self.recipe_instance = recipe_instance
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_resync_session_and_fetch_mfa_info_put = False
 

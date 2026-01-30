@@ -72,7 +72,8 @@ from .interfaces import (
 from .recipe_implementation import RecipeImplementation
 from .utils import (
     ContactConfig,
-    OverrideConfig,
+    PasswordlessConfig,
+    PasswordlessOverrideConfig,
     get_enabled_pwless_factors,
     validate_and_normalise_user_input,
 )
@@ -98,46 +99,22 @@ class PasswordlessRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        contact_config: ContactConfig,
-        flow_type: Literal[
-            "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
-        ],
         ingredients: PasswordlessIngredients,
-        override: Union[OverrideConfig, None] = None,
-        get_custom_user_input_code: Union[
-            Callable[[str, Dict[str, Any]], Awaitable[str]], None
-        ] = None,
-        email_delivery: Union[
-            EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None
-        ] = None,
-        sms_delivery: Union[
-            SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None
-        ] = None,
+        config: PasswordlessConfig,
     ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
-            app_info,
-            contact_config,
-            flow_type,
-            override,
-            get_custom_user_input_code,
-            email_delivery,
-            sms_delivery,
+            app_info=app_info,
+            config=config,
         )
 
         recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
-        self.recipe_implementation: RecipeInterface = (
+        self.recipe_implementation: RecipeInterface = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
         api_implementation = APIImplementation()
-        self.api_implementation = (
-            api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
-        )
+        self.api_implementation = self.config.override.apis(api_implementation)
 
         email_delivery_ingredient = ingredients.email_delivery
         if email_delivery_ingredient is None:
@@ -508,7 +485,7 @@ class PasswordlessRecipe(RecipeModule):
         flow_type: Literal[
             "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
         ],
-        override: Union[OverrideConfig, None] = None,
+        override: Optional[PasswordlessOverrideConfig] = None,
         get_custom_user_input_code: Union[
             Callable[[str, Dict[str, Any]], Awaitable[str]], None
         ] = None,
@@ -519,19 +496,29 @@ class PasswordlessRecipe(RecipeModule):
             SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None
         ] = None,
     ):
-        def func(app_info: AppInfo):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = PasswordlessConfig(
+            contact_config=contact_config,
+            get_custom_user_input_code=get_custom_user_input_code,
+            email_delivery=email_delivery,
+            sms_delivery=sms_delivery,
+            flow_type=flow_type,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if PasswordlessRecipe.__instance is None:
                 ingredients = PasswordlessIngredients(None, None)
                 PasswordlessRecipe.__instance = PasswordlessRecipe(
-                    PasswordlessRecipe.recipe_id,
-                    app_info,
-                    contact_config,
-                    flow_type,
-                    ingredients,
-                    override,
-                    get_custom_user_input_code,
-                    email_delivery,
-                    sms_delivery,
+                    recipe_id=PasswordlessRecipe.recipe_id,
+                    app_info=app_info,
+                    ingredients=ingredients,
+                    config=apply_plugins(
+                        recipe_id=PasswordlessRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return PasswordlessRecipe.__instance
             raise_general_exception(

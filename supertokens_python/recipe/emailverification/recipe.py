@@ -18,6 +18,8 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.querier import Querier
 from supertokens_python.recipe.emailverification.exceptions import (
     EmailVerificationInvalidTokenError,
 )
@@ -27,6 +29,7 @@ from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
     VerificationEmailTemplateVarsUser,
 )
+from supertokens_python.recipe.emailverification.utils import get_email_verify_link
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from ...ingredients.emaildelivery.types import EmailDeliveryConfig
@@ -46,6 +49,9 @@ from ..session.interfaces import (
     SessionClaimValidator,
     SessionContainer,
 )
+from .api import handle_email_verify_api, handle_generate_email_verify_token_api
+from .constants import USER_EMAIL_VERIFY, USER_EMAIL_VERIFY_TOKEN
+from .exceptions import SuperTokensEmailVerificationError
 from .interfaces import (
     APIInterface,
     APIOptions,
@@ -62,6 +68,12 @@ from .interfaces import (
     VerifyEmailUsingTokenOkResult,
 )
 from .recipe_implementation import RecipeImplementation
+from .utils import (
+    MODE_TYPE,
+    EmailVerificationConfig,
+    EmailVerificationOverrideConfig,
+    validate_and_normalise_user_input,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -70,15 +82,6 @@ if TYPE_CHECKING:
     from supertokens_python.types import RecipeUserId
 
     from ...types import MaybeAwaitable, User
-
-from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.querier import Querier
-from supertokens_python.recipe.emailverification.utils import get_email_verify_link
-
-from .api import handle_email_verify_api, handle_generate_email_verify_token_api
-from .constants import USER_EMAIL_VERIFY, USER_EMAIL_VERIFY_TOKEN
-from .exceptions import SuperTokensEmailVerificationError
-from .utils import MODE_TYPE, OverrideConfig, validate_and_normalise_user_input
 
 
 class EmailVerificationRecipe(RecipeModule):
@@ -91,36 +94,24 @@ class EmailVerificationRecipe(RecipeModule):
         recipe_id: str,
         app_info: AppInfo,
         ingredients: EmailVerificationIngredients,
-        mode: MODE_TYPE,
-        email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
-        get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-        override: Union[OverrideConfig, None] = None,
+        config: EmailVerificationConfig,
     ) -> None:
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
-            app_info,
-            mode,
-            email_delivery,
-            get_email_for_recipe_user_id,
-            override,
+            app_info=app_info,
+            config=config,
         )
 
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id),
             self.get_email_for_recipe_user_id,
         )
-        self.recipe_implementation = (
+        self.recipe_implementation = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
         api_implementation = APIImplementation()
-        self.api_implementation = (
-            api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
-        )
+        self.api_implementation = self.config.override.apis(api_implementation)
 
         email_delivery_ingredient = ingredients.email_delivery
         if email_delivery_ingredient is None:
@@ -207,19 +198,31 @@ class EmailVerificationRecipe(RecipeModule):
         mode: MODE_TYPE,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
         get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-        override: Union[OverrideConfig, None] = None,
+        override: Optional[EmailVerificationOverrideConfig] = None,
     ):
-        def func(app_info: AppInfo) -> EmailVerificationRecipe:
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = EmailVerificationConfig(
+            mode=mode,
+            email_delivery=email_delivery,
+            get_email_for_recipe_user_id=get_email_for_recipe_user_id,
+            override=override,
+        )
+
+        def func(
+            app_info: AppInfo, plugins: List[OverrideMap]
+        ) -> EmailVerificationRecipe:
             if EmailVerificationRecipe.__instance is None:
                 ingredients = EmailVerificationIngredients(email_delivery=None)
                 EmailVerificationRecipe.__instance = EmailVerificationRecipe(
                     EmailVerificationRecipe.recipe_id,
                     app_info,
                     ingredients,
-                    mode,
-                    email_delivery,
-                    get_email_for_recipe_user_id,
-                    override,
+                    config=apply_plugins(
+                        recipe_id=EmailVerificationRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
 
                 def callback():

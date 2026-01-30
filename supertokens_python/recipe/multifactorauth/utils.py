@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import math
 import time
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from typing_extensions import Literal
 
@@ -36,28 +36,28 @@ from supertokens_python.recipe.session.exceptions import UnauthorisedError
 from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import log_debug_message
 
-if TYPE_CHECKING:
-    from .types import MultiFactorAuthConfig, OverrideConfig
+from .types import (
+    MultiFactorAuthConfig,
+    NormalisedMultiFactorAuthConfig,
+    NormalisedMultiFactorAuthOverrideConfig,
+)
 
 
 # IMPORTANT: If this function signature is modified, please update all tha places where this function is called.
 # There will be no type errors cause we use importLib to dynamically import if to prevent cyclic import issues.
 def validate_and_normalise_user_input(
-    first_factors: Optional[List[str]],
-    override: Union[OverrideConfig, None] = None,
-) -> MultiFactorAuthConfig:
-    if first_factors is not None and len(first_factors) == 0:
+    config: MultiFactorAuthConfig,
+) -> NormalisedMultiFactorAuthConfig:
+    if config.first_factors is not None and len(config.first_factors) == 0:
         raise ValueError("'first_factors' can be either None or a non-empty list")
 
-    from .types import MultiFactorAuthConfig as MFAC
-    from .types import OverrideConfig as OC
+    override_config = NormalisedMultiFactorAuthOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
-    if override is None:
-        override = OC()
-
-    return MFAC(
-        first_factors=first_factors,
-        override=override,
+    return NormalisedMultiFactorAuthConfig(
+        first_factors=config.first_factors,
+        override=override_config,
     )
 
 

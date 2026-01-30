@@ -21,17 +21,31 @@ from typing_extensions import Literal
 from supertokens_python.recipe.accountlinking.interfaces import (
     RecipeInterface,
 )
-from supertokens_python.types import AccountInfo
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.types import (
+    AccountInfo,
+    LoginMethod,
+    RecipeUserId,
+    User,
+)
+from supertokens_python.types.config import (
+    BaseConfigWithoutAPIOverride,
+    BaseNormalisedConfigWithoutAPIOverride,
+    BaseNormalisedOverrideConfigWithoutAPI,
+    BaseOverrideableConfig,
+    BaseOverrideConfigWithoutAPI,
+)
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
     from supertokens_python.recipe.webauthn.types.base import WebauthnInfo
-    from supertokens_python.types import (
-        LoginMethod,
-        RecipeUserId,
-        User,
-    )
+
+AccountLinkingOverrideConfig = BaseOverrideConfigWithoutAPI[RecipeInterface]
+NormalisedAccountLinkingOverrideConfig = BaseNormalisedOverrideConfigWithoutAPI[
+    RecipeInterface
+]
+InputOverrideConfig = AccountLinkingOverrideConfig
+"""Deprecated, use `AccountLinkingOverrideConfig` instead."""
 
 
 class AccountInfoWithRecipeId(AccountInfo):
@@ -131,29 +145,14 @@ class ShouldAutomaticallyLink:
         self.should_require_verification = should_require_verification
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-    ):
-        self.functions = functions
+class AccountLinkingOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
 
-
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-    ):
-        self.functions = functions
-
-
-class AccountLinkingConfig:
-    def __init__(
-        self,
-        on_account_linked: Callable[
-            [User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]
-        ],
-        should_do_automatic_account_linking: Callable[
+    on_account_linked: Optional[
+        Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]
+    ] = None
+    should_do_automatic_account_linking: Optional[
+        Callable[
             [
                 AccountInfoWithRecipeIdAndUserId,
                 Optional[User],
@@ -162,9 +161,45 @@ class AccountLinkingConfig:
                 Dict[str, Any],
             ],
             Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
+        ]
+    ] = None
+
+
+class AccountLinkingConfig(
+    AccountLinkingOverrideableConfig,
+    BaseConfigWithoutAPIOverride[RecipeInterface, AccountLinkingOverrideableConfig],
+):
+    def to_overrideable_config(self) -> AccountLinkingOverrideableConfig:
+        """Create a `AccountLinkingOverrideableConfig` from the current config."""
+        return AccountLinkingOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: AccountLinkingOverrideableConfig,
+    ) -> "AccountLinkingConfig":
+        """
+        Create a `AccountLinkingConfig` from a `AccountLinkingOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return AccountLinkingConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
+
+
+class NormalisedAccountLinkingConfig(
+    BaseNormalisedConfigWithoutAPIOverride[RecipeInterface]
+):
+    on_account_linked: Callable[
+        [User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]
+    ]
+    should_do_automatic_account_linking: Callable[
+        [
+            AccountInfoWithRecipeIdAndUserId,
+            Optional[User],
+            Optional[SessionContainer],
+            str,
+            Dict[str, Any],
         ],
-        override: OverrideConfig,
-    ):
-        self.on_account_linked = on_account_linked
-        self.should_do_automatic_account_linking = should_do_automatic_account_linking
-        self.override = override
+        Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
+    ]

@@ -13,16 +13,21 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from typing_extensions import Literal
 
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 from supertokens_python.types import RecipeUserId, User
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
+    BaseOverrideConfig,
+)
 
-if TYPE_CHECKING:
-    from .interfaces import APIInterface, RecipeInterface
-
+from .interfaces import APIInterface, RecipeInterface
 
 MFARequirementList = List[
     Union[str, Dict[Union[Literal["oneOf"], Literal["allOfInAnyOrder"]], List[str]]]
@@ -38,35 +43,70 @@ class MFAClaimValue:
         self.v = v
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+MultiFactorAuthOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedMultiFactorAuthOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+OverrideConfig = MultiFactorAuthOverrideConfig
+"""Deprecated, use `MultiFactorAuthOverrideConfig` instead."""
 
 
-class MultiFactorAuthConfig:
-    def __init__(
+class MultiFactorAuthOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
+    first_factors: Optional[List[str]] = None
+
+
+class MultiFactorAuthConfig(
+    MultiFactorAuthOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, MultiFactorAuthOverrideableConfig],
+):
+    def to_overrideable_config(self) -> MultiFactorAuthOverrideableConfig:
+        """Create a `MultiFactorAuthOverrideableConfig` from the current config."""
+        return MultiFactorAuthOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        first_factors: Optional[List[str]],
-        override: OverrideConfig,
-    ):
-        self.first_factors = first_factors
-        self.override = override
+        overrideable_config: MultiFactorAuthOverrideableConfig,
+    ) -> "MultiFactorAuthConfig":
+        """
+        Create a `MultiFactorAuthConfig` from a `MultiFactorAuthOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return MultiFactorAuthConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
+
+
+class NormalisedMultiFactorAuthConfig(
+    BaseNormalisedConfig[RecipeInterface, APIInterface]
+):
+    first_factors: Optional[List[str]]
 
 
 class FactorIds:
-    EMAILPASSWORD: Literal["emailpassword"] = "emailpassword"
-    OTP_EMAIL: Literal["otp-email"] = "otp-email"
-    OTP_PHONE: Literal["otp-phone"] = "otp-phone"
-    LINK_EMAIL: Literal["link-email"] = "link-email"
-    LINK_PHONE: Literal["link-phone"] = "link-phone"
-    THIRDPARTY: Literal["thirdparty"] = "thirdparty"
-    TOTP: Literal["totp"] = "totp"
-    WEBAUTHN: Literal["webauthn"] = "webauthn"
+    EMAILPASSWORD = "emailpassword"
+    OTP_EMAIL = "otp-email"
+    OTP_PHONE = "otp-phone"
+    LINK_EMAIL = "link-email"
+    LINK_PHONE = "link-phone"
+    THIRDPARTY = "thirdparty"
+    TOTP = "totp"
+    WEBAUTHN = "webauthn"
+
+    @staticmethod
+    def get_all_factors():
+        return [
+            FactorIds.EMAILPASSWORD,
+            FactorIds.OTP_EMAIL,
+            FactorIds.OTP_PHONE,
+            FactorIds.LINK_EMAIL,
+            FactorIds.LINK_PHONE,
+            FactorIds.THIRDPARTY,
+            FactorIds.TOTP,
+            FactorIds.WEBAUTHN,
+        ]
 
 
 class FactorIdsAndType:

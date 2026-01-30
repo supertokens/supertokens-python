@@ -24,7 +24,11 @@ from .constants import GET_DISCOVERY_CONFIG_URL
 from .exceptions import SuperTokensOpenIdError
 from .interfaces import APIOptions
 from .recipe_implementation import RecipeImplementation
-from .utils import InputOverrideConfig, validate_and_normalise_user_input
+from .utils import (
+    OpenIdConfig,
+    OpenIdOverrideConfig,
+    validate_and_normalise_user_input,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -44,13 +48,14 @@ class OpenIdRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        issuer: Union[str, None] = None,
-        override: Union[InputOverrideConfig, None] = None,
+        config: OpenIdConfig,
     ):
         from supertokens_python.recipe.jwt import JWTRecipe
 
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(app_info, issuer, override)
+        self.config = validate_and_normalise_user_input(
+            app_info=app_info, config=config
+        )
         self.jwt_recipe = JWTRecipe.get_instance()
 
         recipe_implementation = RecipeImplementation(
@@ -58,17 +63,11 @@ class OpenIdRecipe(RecipeModule):
             self.config,
             app_info,
         )
-        self.recipe_implementation = (
+        self.recipe_implementation = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
         api_implementation = APIImplementation()
-        self.api_implementation = (
-            api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
-        )
+        self.api_implementation = self.config.override.apis(api_implementation)
 
     def get_apis_handled(self) -> List[APIHandled]:
         return [
@@ -129,15 +128,25 @@ class OpenIdRecipe(RecipeModule):
     @staticmethod
     def init(
         issuer: Union[str, None] = None,
-        override: Union[InputOverrideConfig, None] = None,
+        override: Union[OpenIdOverrideConfig, None] = None,
     ):
-        def func(app_info: AppInfo):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = OpenIdConfig(
+            issuer=issuer,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if OpenIdRecipe.__instance is None:
                 OpenIdRecipe.__instance = OpenIdRecipe(
-                    OpenIdRecipe.recipe_id,
-                    app_info,
-                    issuer,
-                    override,
+                    recipe_id=OpenIdRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=OpenIdRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return OpenIdRecipe.__instance
             raise_general_exception(

@@ -13,8 +13,8 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Union
+from abc import abstractmethod
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from typing_extensions import Literal
 
@@ -26,6 +26,7 @@ from supertokens_python.types import (
     User,
 )
 from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from ...supertokens import AppInfo
@@ -37,7 +38,9 @@ from .types import (
     PasswordlessLoginSMSTemplateVars,
     SMSDeliveryIngredient,
 )
-from .utils import PasswordlessConfig
+
+if TYPE_CHECKING:
+    from .utils import NormalisedPasswordlessConfig
 
 
 class CreateCodeOkResult:
@@ -214,7 +217,7 @@ class PhoneNumberChangeNotAllowedError:
         self.reason = reason
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -358,7 +361,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: PasswordlessConfig,
+        config: NormalisedPasswordlessConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         email_delivery: EmailDeliveryIngredient[PasswordlessLoginEmailTemplateVars],
@@ -504,7 +507,7 @@ class SignInUpPostNotAllowedResponse(APIResponse):
         return {"status": self.status, "reason": self.reason}
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_create_code_post = False
         self.disable_resend_code_post = False

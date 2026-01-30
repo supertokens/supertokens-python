@@ -13,42 +13,60 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
+    BaseOverrideConfig,
+)
 
-if TYPE_CHECKING:
-    from typing import Union
+from .interfaces import APIInterface, RecipeInterface
 
-    from .interfaces import APIInterface, RecipeInterface
-
-
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
-
-
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+OAuth2ProviderOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedOAuth2ProviderOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+InputOverrideConfig = OAuth2ProviderOverrideConfig
+"""Deprecated, use `OAuth2ProviderOverrideConfig` instead."""
 
 
-class OAuth2ProviderConfig:
-    def __init__(self, override: Union[OverrideConfig, None] = None):
-        self.override = override
+class OAuth2ProviderOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
+    ...
 
 
-def validate_and_normalise_user_input(
-    override: Union[InputOverrideConfig, None] = None,
+class OAuth2ProviderConfig(
+    OAuth2ProviderOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, OAuth2ProviderOverrideableConfig],
 ):
-    if override is None:
-        return OAuth2ProviderConfig(OverrideConfig())
-    return OAuth2ProviderConfig(OverrideConfig(override.functions, override.apis))
+    def to_overrideable_config(self) -> OAuth2ProviderOverrideableConfig:
+        """Create a `OAuth2ProviderOverrideableConfig` from the current config."""
+        return OAuth2ProviderOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: OAuth2ProviderOverrideableConfig,
+    ) -> "OAuth2ProviderConfig":
+        """
+        Create a `OAuth2ProviderConfig` from a `OAuth2ProviderOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return OAuth2ProviderConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
+
+
+class NormalisedOAuth2ProviderConfig(
+    BaseNormalisedConfig[RecipeInterface, APIInterface]
+): ...
+
+
+def validate_and_normalise_user_input(config: OAuth2ProviderConfig):
+    override_config = NormalisedOAuth2ProviderOverrideConfig.from_input_config(
+        override_config=config.override
+    )
+
+    return NormalisedOAuth2ProviderConfig(override=override_config)

@@ -24,16 +24,21 @@ from supertokens_python.ingredients.emaildelivery.types import (
 from supertokens_python.recipe.emailpassword.emaildelivery.services.backward_compatibility import (
     BackwardCompatibilityService,
 )
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
+    BaseOverrideConfig,
+)
+from supertokens_python.utils import get_filtered_list
 
+from .constants import FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID
 from .interfaces import APIInterface, RecipeInterface
 from .types import EmailTemplateVars, InputFormField, NormalisedFormField
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
-
-from supertokens_python.utils import get_filtered_list
-
-from .constants import FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID
 
 
 async def default_validator(_: str, __: str) -> Union[str, None]:
@@ -213,82 +218,100 @@ def validate_and_normalise_reset_password_using_token_config(
     )
 
 
-class InputOverrideConfig:
-    def __init__(
+EmailPasswordOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedEmailPasswordOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+InputOverrideConfig = EmailPasswordOverrideConfig
+"""Deprecated, use `EmailPasswordOverrideConfig` instead."""
+
+
+class EmailPasswordOverrideableConfig(BaseOverrideableConfig):
+    """Input config properties overrideable using the plugin config overrides"""
+
+    sign_up_feature: Union[InputSignUpFeature, None] = None
+    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
+
+
+class EmailPasswordConfig(
+    EmailPasswordOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, EmailPasswordOverrideableConfig],
+):
+    def to_overrideable_config(self) -> EmailPasswordOverrideableConfig:
+        """Create a `EmailPasswordOverrideableConfig` from the current config."""
+        return EmailPasswordOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+        overrideable_config: EmailPasswordOverrideableConfig,
+    ) -> "EmailPasswordConfig":
+        """
+        Create a `EmailPasswordConfig` from a `EmailPasswordOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        """
+        return EmailPasswordConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
-
-
-class EmailPasswordConfig:
-    def __init__(
-        self,
-        sign_up_feature: SignUpFeature,
-        sign_in_feature: SignInFeature,
-        reset_password_using_token_feature: ResetPasswordUsingTokenFeature,
-        override: OverrideConfig,
-        get_email_delivery_config: Callable[
-            [RecipeInterface], EmailDeliveryConfigWithService[EmailTemplateVars]
-        ],
-    ):
-        self.sign_up_feature = sign_up_feature
-        self.sign_in_feature = sign_in_feature
-        self.reset_password_using_token_feature = reset_password_using_token_feature
-        self.override = override
-        self.get_email_delivery_config = get_email_delivery_config
+class NormalisedEmailPasswordConfig(
+    BaseNormalisedConfig[RecipeInterface, APIInterface]
+):
+    sign_up_feature: SignUpFeature
+    sign_in_feature: SignInFeature
+    reset_password_using_token_feature: ResetPasswordUsingTokenFeature
+    get_email_delivery_config: Callable[
+        [RecipeInterface], EmailDeliveryConfigWithService[EmailTemplateVars]
+    ]
 
 
 def validate_and_normalise_user_input(
     app_info: AppInfo,
-    sign_up_feature: Union[InputSignUpFeature, None] = None,
-    override: Union[InputOverrideConfig, None] = None,
-    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
-) -> EmailPasswordConfig:
+    config: EmailPasswordConfig,
+) -> NormalisedEmailPasswordConfig:
     # NOTE: We don't need to check the instance of sign_up_feature and override
     # as they will always be either None or the specified type.
 
-    if override is None:
-        override = InputOverrideConfig()
+    override_config = NormalisedEmailPasswordOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
+    sign_up_feature = config.sign_up_feature
     if sign_up_feature is None:
         sign_up_feature = InputSignUpFeature()
 
     def get_email_delivery_config(
         ep_recipe: RecipeInterface,
     ) -> EmailDeliveryConfigWithService[EmailTemplateVars]:
-        if email_delivery and email_delivery.service:
+        if config.email_delivery and config.email_delivery.service:
             return EmailDeliveryConfigWithService(
-                service=email_delivery.service, override=email_delivery.override
+                service=config.email_delivery.service,
+                override=config.email_delivery.override,
             )
 
         email_service = BackwardCompatibilityService(
             app_info=app_info,
             recipe_interface_impl=ep_recipe,
         )
-        if email_delivery is not None and email_delivery.override is not None:
-            override = email_delivery.override
+        if (
+            config.email_delivery is not None
+            and config.email_delivery.override is not None
+        ):
+            override = config.email_delivery.override
         else:
             override = None
         return EmailDeliveryConfigWithService(email_service, override=override)
 
-    return EmailPasswordConfig(
-        SignUpFeature(sign_up_feature.form_fields),
-        SignInFeature(normalise_sign_in_form_fields(sign_up_feature.form_fields)),
-        validate_and_normalise_reset_password_using_token_config(sign_up_feature),
-        OverrideConfig(functions=override.functions, apis=override.apis),
+    return NormalisedEmailPasswordConfig(
+        sign_up_feature=SignUpFeature(sign_up_feature.form_fields),
+        sign_in_feature=SignInFeature(
+            normalise_sign_in_form_fields(sign_up_feature.form_fields)
+        ),
+        reset_password_using_token_feature=validate_and_normalise_reset_password_using_token_config(
+            sign_up_feature
+        ),
+        override=override_config,
         get_email_delivery_config=get_email_delivery_config,
     )
 

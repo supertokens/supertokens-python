@@ -11,8 +11,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Union
+from abc import abstractmethod
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.recipe.jwt.interfaces import (
@@ -20,9 +20,11 @@ from supertokens_python.recipe.jwt.interfaces import (
     CreateJwtResultUnsupportedAlgorithm,
     GetJWKSResult,
 )
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
-from .utils import OpenIdConfig
+if TYPE_CHECKING:
+    from .utils import NormalisedOpenIdConfig
 
 
 class GetOpenIdDiscoveryConfigurationResult:
@@ -70,7 +72,7 @@ class GetOpenIdDiscoveryConfigurationResult:
         }
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -101,7 +103,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: OpenIdConfig,
+        config: "NormalisedOpenIdConfig",
         recipe_implementation: RecipeInterface,
     ):
         self.request = request
@@ -159,7 +161,7 @@ class OpenIdDiscoveryConfigurationGetResponse(APIResponse):
         }
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_open_id_discovery_configuration_get = False
 

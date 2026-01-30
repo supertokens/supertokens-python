@@ -13,8 +13,10 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 
 from ...types import RecipeUserId, User
 from ...types.response import APIResponse, GeneralErrorResponse
@@ -27,7 +29,7 @@ if TYPE_CHECKING:
     from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 
     from .types import RawUserInfoFromProvider
-    from .utils import ThirdPartyConfig
+    from .utils import NormalisedThirdPartyConfig
 
 
 class SignInUpOkResult:
@@ -79,7 +81,7 @@ class EmailChangeNotAllowedError:
         self.reason = reason
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -135,7 +137,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: ThirdPartyConfig,
+        config: NormalisedThirdPartyConfig,
         recipe_implementation: RecipeInterface,
         providers: List[ProviderInput],
         app_info: AppInfo,
@@ -143,7 +145,7 @@ class APIOptions:
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
-        self.config: ThirdPartyConfig = config
+        self.config: NormalisedThirdPartyConfig = config
         self.providers: List[ProviderInput] = providers
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info: AppInfo = app_info
@@ -198,7 +200,7 @@ class AuthorisationUrlGetOkResult(APIResponse):
         }
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_sign_in_up_post = False
         self.disable_authorisation_url_get = False
