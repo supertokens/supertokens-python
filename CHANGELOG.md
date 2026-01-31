@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.30.3] - 2026-01-30
+- Fixes webauthn MFA integration
+- Adds missing `rp_id` field to Webauthn's `SignInOptionResponse`
+- Updated phonenumbers dependency
+- Explicitly added missing sniffio dependency
+- Fix the OAuth2Provider `tokenExchange` error message when the refresh token is expired
+
 ## [0.30.2] - 2025-08-14
 - Adds Webauthn user editing support to the Dashboard
 
