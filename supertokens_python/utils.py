@@ -41,6 +41,7 @@ from supertokens_python.env.base import FLAG_tldextract_disable_http
 from supertokens_python.framework.django.framework import DjangoFramework
 from supertokens_python.framework.fastapi.framework import FastapiFramework
 from supertokens_python.framework.flask.framework import FlaskFramework
+from supertokens_python.framework.litestar.framework import LitestarFramework
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.logger import log_debug_message
@@ -64,6 +65,7 @@ FRAMEWORKS = {
     "fastapi": FastapiFramework(),
     "flask": FlaskFramework(),
     "django": DjangoFramework(),
+    "litestar": LitestarFramework(),
 }
 
 

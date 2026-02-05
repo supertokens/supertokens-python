@@ -76,6 +76,7 @@ jobs:
           - fastapi
           - flask
           - flask-nest-asyncio
+          - litestar
 
     steps:
       - name: Setup ENVs
@@ -216,6 +217,19 @@ jobs:
 
           python3 app.py --port 8080 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
           python3 app.py --port 8082 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
+
+      - name: Install dependencies and start servers (litestar)
+        if: matrix.framework == 'litestar'
+        working-directory: supertokens-python
+        run: |
+          source venv/bin/activate
+          make with-litestar
+
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          cd tests/frontendIntegration/litestar-server
+
+          litestar run --host 0.0.0.0 --port 8080 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
+          litestar run --host 0.0.0.0 --port 8082 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
 
       - uses: supertokens/website-testing-action@main
         with:
