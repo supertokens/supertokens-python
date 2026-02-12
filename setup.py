@@ -126,6 +126,7 @@ setup(
         "pydantic>=2.10.6,<3.0.0",
         "pyotp<3",
         "python-dateutil<3",
+        "sniffio>=1.1,<2.0.0",
         "tldextract<6.0.0",
         "twilio<10",
         "typing_extensions>=4.1.1,<5.0.0",
