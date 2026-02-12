@@ -316,8 +316,10 @@ class RecipeImplementation(RecipeInterface):
 
         login_method = next(
             filter(
-                lambda lm: lm.recipe_user_id.get_as_string()
-                == verify_creds_response.recipe_user_id.get_as_string(),
+                lambda lm: (
+                    lm.recipe_user_id.get_as_string()
+                    == verify_creds_response.recipe_user_id.get_as_string()
+                ),
                 verify_creds_response.user.login_methods,
             )
         )

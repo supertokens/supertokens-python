@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "python-build-tools": {
+      "command": "node",
+      "args": ["mcp-server/mcp-tool.mjs"],
+      "env": {
+        "MCP_URL": "http://localhost:3001"
+      }
+    }
+  }
+}

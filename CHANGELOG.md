@@ -2441,7 +2441,7 @@ from supertokens_python.recipe.emailverification.syncio import create_email_veri
 from supertokens_python.recipe.emailverification.interfaces import CreateEmailVerificationTokenOkResult
 
 init(
-    supertokens_config=SupertokensConfig("http://localhost:3567"),
+    supertokens_config=SupertokensConfig("http://localhost:3571"),
     app_info=InputAppInfo(
         app_name="SuperTokens Demo",
         api_domain="https://api.supertokens.io",
@@ -2601,7 +2601,7 @@ from supertokens_python.recipe import userroles
 from supertokens_python.recipe.userroles.asyncio import create_new_role_or_add_permissions, add_role_to_user
 
 init(
-    supertokens_config=SupertokensConfig('http://localhost:3567'),
+    supertokens_config=SupertokensConfig('http://localhost:3571'),
     app_info=InputAppInfo(
         app_name='SuperTokens Demo',
         api_domain='https://api.supertokens.io',
@@ -2688,7 +2688,7 @@ async def send_ev_verification_email(user: TpPlessUser, link: str, user_context:
 
 
 init(
-    supertokens_config=SupertokensConfig('http://localhost:3567'),
+    supertokens_config=SupertokensConfig('http://localhost:3571'),
     app_info=InputAppInfo(
         api_domain="...",
         app_name="...",
@@ -2741,7 +2741,7 @@ class SMSDeliveryService(SMSDeliveryInterface):
         await send_pless_login_sms(input_, user_context)
 
 init(
-    supertokens_config=SupertokensConfig('http://localhost:3567'),
+    supertokens_config=SupertokensConfig('http://localhost:3571'),
     app_info=InputAppInfo(
         app_name="...",
         api_domain="...",

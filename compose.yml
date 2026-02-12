@@ -8,8 +8,8 @@ services:
       "io.supertokens.Main", "/usr/lib/supertokens/", "DEV", "test_mode"
     ]
     ports:
-      # Uses `$SUPERTOKENS_CORE_PORT` when available, else 3567 for local port
-      - ${SUPERTOKENS_CORE_PORT:-3567}:3567
+      # Uses `$SUPERTOKENS_CORE_PORT` when available, else 3571 for local port
+      - ${SUPERTOKENS_CORE_PORT:-3571}:3567
     platform: linux/amd64
     depends_on: [oauth]
     environment:
@@ -29,3 +29,28 @@ services:
   oauth:
     image: supertokens/oauth2-test:latest
     platform: linux/amd64
+
+  mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    ports:
+      - "127.0.0.1:${MCP_PORT:-3001}:3000"
+    environment:
+      MCP_TRANSPORT: sse
+      MCP_PORT: "3000"
+      PYTHON_MCP_WORKSPACE: /workspace
+      SUPERTOKENS_CORE_HOST: core
+      SUPERTOKENS_CORE_PORT: "3567"
+    volumes:
+      - .:/workspace
+      - pip-cache:/root/.cache/pip
+    depends_on:
+      core:
+        condition: service_healthy
+    mem_limit: 8g
+    cpus: 8
+    pids_limit: 4096
+
+volumes:
+  pip-cache:

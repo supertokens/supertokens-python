@@ -418,7 +418,7 @@ def mock_provider_override(oi: Provider) -> Provider:
 
 def get_core_url():
     host = os.environ.get("SUPERTOKENS_CORE_HOST", "localhost")
-    port = os.environ.get("SUPERTOKENS_CORE_PORT", "3567")
+    port = os.environ.get("SUPERTOKENS_CORE_PORT", "3571")
 
     return f"http://{host}:{port}"
 

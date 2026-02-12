@@ -68,8 +68,8 @@ class BaseNormalisedOverrideConfig(
 ):
     """Base class for normalized override config with API overrides."""
 
-    apis: InterfaceOverride[APIInterfaceType] = (
-        lambda original_implementation: original_implementation
+    apis: InterfaceOverride[APIInterfaceType] = lambda original_implementation: (
+        original_implementation
     )
 
     @classmethod

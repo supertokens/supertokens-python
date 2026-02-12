@@ -102,7 +102,7 @@ def default_st_init():
         return "http://localhost:8080"
 
     core_host: str = os.environ.get("SUPERTOKENS_CORE_HOST", "localhost")
-    core_port: str = os.environ.get("SUPERTOKENS_CORE_PORT", "3567")
+    core_port: str = os.environ.get("SUPERTOKENS_CORE_PORT", "3571")
     core_url = f"http://{core_host}:{core_port}"
 
     init(
