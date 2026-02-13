@@ -46,6 +46,7 @@ from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.passwordless import PasswordlessRecipe
 from supertokens_python.recipe.passwordless.asyncio import consume_code, create_code
+from supertokens_python.recipe.saml.recipe import SAMLRecipe
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.thirdparty.asyncio import manually_create_or_update_user
@@ -138,6 +139,7 @@ def reset():
     TOTPRecipe.reset()
     OpenIdRecipe.reset()
     OAuth2ProviderRecipe.reset()
+    SAMLRecipe.reset()
     WebauthnRecipe.reset()
 
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+# Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
 # "License") as published by the Apache Software Foundation.
@@ -11,23 +11,25 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
 from __future__ import annotations
 
-SUPPORTED_CDI_VERSIONS = ["5.3", "5.4"]
-VERSION = "0.31.0"
-TELEMETRY = "/telemetry"
-USER_COUNT = "/users/count"
-USER_DELETE = "/user/remove"
-USERS = "/users"
-TELEMETRY_SUPERTOKENS_API_URL = "https://api.supertokens.com/0/st/telemetry"
-TELEMETRY_SUPERTOKENS_API_VERSION = "3"
-ERROR_MESSAGE_KEY = "message"
-API_KEY_HEADER = "api-key"
-RID_KEY_HEADER = "rid"
-FDI_KEY_HEADER = "fdi-version"
-API_VERSION = "/apiversion"
-API_VERSION_HEADER = "cdi-version"
-DASHBOARD_VERSION = "0.15"
-ONE_YEAR_IN_MS = 31536000000
-RATE_LIMIT_STATUS_CODE = 429
+from typing import TYPE_CHECKING, Union
+
+from .recipe import SAMLRecipe
+from .utils import SAMLOverrideConfig
+
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import RecipeInit
+
+
+def init(
+    override: Union[SAMLOverrideConfig, None] = None,
+) -> RecipeInit:
+    return SAMLRecipe.init(override)
+
+
+__all__ = [
+    "SAMLOverrideConfig",
+    "SAMLRecipe",
+    "init",
+]
