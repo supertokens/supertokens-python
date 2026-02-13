@@ -16,6 +16,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional, Union
 
+from supertokens_python.types.response import GeneralErrorResponse
+
 from ..interfaces import (
     APIInterface,
     APIOptions,
@@ -43,6 +45,7 @@ class APIImplementation(APIInterface):
     ) -> Union[
         CreateLoginRequestOkResult,
         CreateLoginRequestInvalidClientError,
+        GeneralErrorResponse,
     ]:
         # Build the ACS URL from app_info
         acs_url = (
@@ -73,6 +76,7 @@ class APIImplementation(APIInterface):
         VerifySAMLResponseInvalidRelayStateError,
         VerifySAMLResponseInvalidClientError,
         VerifySAMLResponseIDPLoginDisallowedError,
+        GeneralErrorResponse,
     ]:
         return await options.recipe_implementation.verify_saml_response(
             tenant_id=tenant_id,

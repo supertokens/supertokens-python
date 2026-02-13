@@ -15,10 +15,11 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Optional
-from urllib.parse import urlencode
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework import BaseResponse
+from supertokens_python.types.response import GeneralErrorResponse
+from supertokens_python.utils import send_200_response
 
 if TYPE_CHECKING:
     from ..interfaces import (
@@ -62,6 +63,11 @@ async def login(
     if isinstance(response, CreateLoginRequestOkResult):
         return api_options.response.redirect(response.redirect_uri)
 
-    # CreateLoginRequestInvalidClientError
-    error_params = urlencode({"error": "invalid_client_error"})
-    return api_options.response.redirect(f"{redirect_uri}?{error_params}")
+    # Per RFC 6749 §4.1.2.1: when client_id is invalid, the redirect_uri
+    # cannot be validated against registered URIs, so we MUST NOT redirect
+    # to the user-supplied redirect_uri (open redirect risk). Return a
+    # JSON error response instead.
+    if isinstance(response, GeneralErrorResponse):
+        return send_200_response(response.to_json(), api_options.response)
+
+    return send_200_response({"status": response.status}, api_options.response)

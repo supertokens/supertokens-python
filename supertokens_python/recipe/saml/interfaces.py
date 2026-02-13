@@ -17,6 +17,7 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
+from supertokens_python.types.response import GeneralErrorResponse
 
 from .types import (
     CreateLoginRequestInvalidClientError,
@@ -152,6 +153,7 @@ class APIInterface(BaseAPIInterface):
     ) -> Union[
         CreateLoginRequestOkResult,
         CreateLoginRequestInvalidClientError,
+        GeneralErrorResponse,
     ]: ...
 
     @abstractmethod
@@ -168,4 +170,5 @@ class APIInterface(BaseAPIInterface):
         VerifySAMLResponseInvalidRelayStateError,
         VerifySAMLResponseInvalidClientError,
         VerifySAMLResponseIDPLoginDisallowedError,
+        GeneralErrorResponse,
     ]: ...

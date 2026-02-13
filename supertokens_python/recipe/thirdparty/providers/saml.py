@@ -63,10 +63,10 @@ class SAMLProviderImpl(GenericProvider):
     async def exchange_auth_code_for_oauth_tokens(
         self, redirect_uri_info: RedirectUriInfo, user_context: Dict[str, Any]
     ) -> Dict[str, Any]:
-        # For SAML, the "code" in the redirect URI query params IS the access token
-        # No exchange is needed
-        code = redirect_uri_info.redirect_uri_query_params.get("code", "")
-        return {"access_token": code}
+        raise Exception(
+            "SAML providers do not support exchangeAuthCodeForOAuthTokens. "
+            "The thirdparty sign-in-up flow handles SAML token extraction directly."
+        )
 
     async def get_user_info(
         self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
