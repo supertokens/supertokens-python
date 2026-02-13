@@ -27,6 +27,14 @@ RUN grep -v '^\-e' /tmp/dev-requirements.txt | pip install --no-cache-dir -r /de
 # Install ruff (managed by pre-commit, not in dev-requirements.txt)
 RUN pip install --no-cache-dir ruff
 
+# Pre-warm pre-commit hook environments so the first run is fast
+COPY .pre-commit-config.yaml pyproject.toml /tmp/pre-commit-warmup/
+RUN cd /tmp/pre-commit-warmup \
+    && git init \
+    && git add . \
+    && pre-commit install-hooks \
+    && rm -rf /tmp/pre-commit-warmup
+
 # Install core install_requires + framework extras directly
 # (avoids fragile stub-based setup.py install)
 RUN pip install --no-cache-dir \

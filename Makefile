@@ -6,11 +6,20 @@ help:
 	@echo "        \x1b[33;1mhelp: \x1b[0mprints this"
 
 lint:
-	pre-commit run --all-files
-	pre-commit run --all-files --hook-stage manual pyright
+	@if command -v pre-commit >/dev/null 2>&1; then \
+		pre-commit run --all-files; \
+		pre-commit run --all-files --hook-stage manual pyright; \
+	elif docker compose ps --status running mcp 2>/dev/null | grep -q mcp; then \
+		docker compose exec -T -w /workspace mcp pre-commit run --all-files; \
+		docker compose exec -T -w /workspace mcp pre-commit run --all-files --hook-stage manual pyright; \
+	else \
+		echo "ERROR: Cannot run linters. Install pre-commit locally or start the MCP container (docker compose up -d mcp)." >&2; \
+		exit 1; \
+	fi
 
 set-up-hooks:
-	pre-commit install
+	cp hooks/pre-commit-docker.sh .git/hooks/pre-commit
+	chmod +x .git/hooks/pre-commit
 
 test:
 	docker compose up --wait
