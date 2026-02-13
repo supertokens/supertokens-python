@@ -3,7 +3,8 @@
 # Starts linting via the MCP API, streams container logs, polls until completion.
 set -euo pipefail
 
-MCP_URL="${MCP_URL:-http://localhost:3001}"
+source "$(dirname "$0")/../mcp.env" 2>/dev/null || true
+MCP_URL="${MCP_URL:-http://localhost:${MCP_PORT:-3001}}"
 POLL_INTERVAL="${POLL_INTERVAL:-5}"
 CLIENT="node $(dirname "$0")/mcp-client.mjs"
 

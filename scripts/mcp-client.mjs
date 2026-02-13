@@ -3,7 +3,22 @@
 // HTTP client for the MCP build tools stateless API.
 // Usage: node scripts/mcp-client.mjs <command> [options]
 
-const BASE_URL = process.env.MCP_URL || "http://localhost:3001";
+import { readFileSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+function getDefaultPort() {
+  try {
+    const __dirname = dirname(fileURLToPath(import.meta.url));
+    const content = readFileSync(resolve(__dirname, "../mcp.env"), "utf8");
+    const match = content.match(/^MCP_PORT=(\d+)/m);
+    if (match) return match[1];
+  } catch {}
+  return "3001";
+}
+
+const BASE_URL = process.env.MCP_URL
+  || `http://localhost:${process.env.MCP_PORT || getDefaultPort()}`;
 
 function usage() {
   console.log(`

@@ -35,6 +35,7 @@ services:
       context: .
       dockerfile: Dockerfile.mcp
     ports:
+      # Default MCP_PORT defined in mcp.env
       - "127.0.0.1:${MCP_PORT:-3001}:3000"
     environment:
       MCP_TRANSPORT: sse

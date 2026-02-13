@@ -16,8 +16,22 @@
 
 import { stdin, stdout, stderr } from "process";
 import { createInterface } from "readline";
+import { readFileSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const MCP_URL = process.env.MCP_URL || "http://localhost:3001";
+function getDefaultPort() {
+  try {
+    const __dirname = dirname(fileURLToPath(import.meta.url));
+    const content = readFileSync(resolve(__dirname, "mcp.env"), "utf8");
+    const match = content.match(/^MCP_PORT=(\d+)/m);
+    if (match) return match[1];
+  } catch {}
+  return "3001";
+}
+
+const MCP_URL = process.env.MCP_URL
+  || `http://localhost:${process.env.MCP_PORT || getDefaultPort()}`;
 const SSE_URL = `${MCP_URL}/sse`;
 const MESSAGES_URL = `${MCP_URL}/messages`;
 

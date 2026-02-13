@@ -9,7 +9,7 @@
 //     "python-build-tools": {
 //       "command": "node",
 //       "args": ["mcp-server/mcp-tool.mjs"],
-//       "env": { "MCP_URL": "http://localhost:3001" }
+//       "env": { "MCP_PORT": "3001" }
 //     }
 //   }
 // }
@@ -18,8 +18,22 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import http from "node:http";
+import { readFileSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const API_BASE = process.env.MCP_URL || "http://localhost:3001";
+function getDefaultPort() {
+  try {
+    const __dirname = dirname(fileURLToPath(import.meta.url));
+    const content = readFileSync(resolve(__dirname, "../mcp.env"), "utf8");
+    const match = content.match(/^MCP_PORT=(\d+)/m);
+    if (match) return match[1];
+  } catch {}
+  return "3001";
+}
+
+const API_BASE = process.env.MCP_URL
+  || `http://localhost:${process.env.MCP_PORT || getDefaultPort()}`;
 
 function httpPost(path, body) {
   return new Promise((resolve, reject) => {
