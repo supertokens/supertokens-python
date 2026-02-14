@@ -47,6 +47,8 @@ services:
       - .:/workspace
       - pip-cache:/root/.cache/pip
       - pre-commit-cache:/root/.cache/pre-commit
+      - ${BACKEND_SDK_TESTING_PATH:-../backend-sdk-testing}:/cross-sdk-tests
+      - cross-sdk-node-modules:/cross-sdk-tests/node_modules
     depends_on:
       core:
         condition: service_healthy
@@ -57,3 +59,4 @@ services:
 volumes:
   pip-cache:
   pre-commit-cache:
+  cross-sdk-node-modules:

@@ -35,6 +35,9 @@ const MAX_OUTPUT_CHARS =
   parseInt(process.env.PYTHON_MCP_MAX_OUTPUT_CHARS, 10) || 60000;
 const MAX_TEST_RUNS =
   parseInt(process.env.PYTHON_MCP_MAX_TEST_RUNS, 10) || 10;
+const CROSS_SDK_TIMEOUT_MS =
+  (parseInt(process.env.PYTHON_MCP_CROSS_SDK_TIMEOUT_SECS, 10) || 1800) * 1000;
+const CROSS_SDK_DIR = "/cross-sdk-tests";
 const TRANSPORT = process.env.MCP_TRANSPORT || "sse";
 const PORT = parseInt(process.env.MCP_PORT, 10) || 3000;
 
@@ -439,6 +442,20 @@ function formatLintResult(task) {
   return lines.join("\n");
 }
 
+function formatCrossSdkTestResult(task) {
+  const lines = [
+    task.status === "completed"
+      ? "CROSS-SDK TESTS PASSED"
+      : "CROSS-SDK TESTS FAILED",
+  ];
+
+  const combined = [task.stdout, task.stderr].filter(Boolean).join("\n");
+  if (combined.trim()) {
+    lines.push("", "--- Output ---", truncateOutput(combined.trim()));
+  }
+  return lines.join("\n");
+}
+
 function formatTaskStatus(task) {
   if (!task) return "Task not found.";
 
@@ -462,6 +479,8 @@ function formatTaskStatus(task) {
     resultText = formatTestResult(task);
   } else if (task.type === "lint") {
     resultText = formatLintResult(task);
+  } else if (task.type === "cross_sdk_test") {
+    resultText = formatCrossSdkTestResult(task);
   } else {
     resultText = `Status: ${task.status}\n\n${(task.stdout + "\n" + task.stderr).trim()}`;
   }
@@ -650,6 +669,125 @@ server.tool(
         {
           type: "text",
           text: `Lint task started (${lintTool}).\n**Task ID:** ${taskId}\n\nUse \`task_status\` to check progress.`,
+        },
+      ],
+    };
+  }
+);
+
+// --- Tool: cross_sdk_test ---
+const crossSdkTestSchema = {
+  grep: z
+    .string()
+    .optional()
+    .describe("Mocha --grep filter expression"),
+  timeout: z
+    .number()
+    .optional()
+    .describe("Mocha per-test timeout in ms"),
+};
+
+function buildCrossSdkScript(grep, timeout) {
+  const coreHost = process.env.SUPERTOKENS_CORE_HOST || "localhost";
+  const corePort = process.env.SUPERTOKENS_CORE_PORT || "3567";
+  const apiPort = "3030";
+  const mochaArgs = [
+    grep ? `--grep ${JSON.stringify(grep)}` : "",
+    timeout ? `--timeout ${timeout}` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return `
+set -euo pipefail
+
+cleanup() {
+  echo "[cross-sdk] Cleaning up background processes..."
+  kill "$SOCAT_PID" "$SERVER_PID" 2>/dev/null || true
+  wait "$SOCAT_PID" "$SERVER_PID" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+# Editable SDK install (deps already baked into the image)
+echo "[cross-sdk] Installing SDK in editable mode..."
+cd /workspace
+pip install --no-deps -e . 2>&1 | tail -1
+
+# socat bridge: localhost:${corePort} -> core:${corePort}
+SOCAT_PID=0
+if [ "${coreHost}" != "localhost" ] && [ "${coreHost}" != "127.0.0.1" ]; then
+  echo "[cross-sdk] Forwarding localhost:${corePort} -> ${coreHost}:${corePort}"
+  socat TCP-LISTEN:${corePort},fork,reuseaddr TCP:${coreHost}:${corePort} &
+  SOCAT_PID=$!
+fi
+
+# Start the Python test-server in the background
+echo "[cross-sdk] Starting Python test-server on port ${apiPort}..."
+cd /workspace/tests/test-server
+python app.py &
+SERVER_PID=$!
+
+# Wait for the test-server to be ready
+echo "[cross-sdk] Waiting for test-server readiness..."
+for i in $(seq 1 30); do
+  if curl -sf "http://localhost:${apiPort}/test/ping" >/dev/null 2>&1; then
+    echo "[cross-sdk] Test-server is ready."
+    break
+  fi
+  if ! kill -0 "$SERVER_PID" 2>/dev/null; then
+    echo "[cross-sdk] ERROR: Test-server process died." >&2
+    exit 1
+  fi
+  sleep 1
+done
+
+if ! curl -sf "http://localhost:${apiPort}/test/ping" >/dev/null 2>&1; then
+  echo "[cross-sdk] ERROR: Test-server did not become ready in 30s." >&2
+  exit 1
+fi
+
+# Install and build the cross-SDK test suite
+echo "[cross-sdk] Installing cross-SDK test dependencies..."
+cd /cross-sdk-tests
+npm install 2>&1 | tail -3
+npm run build 2>&1 | tail -3
+
+# Run Mocha tests
+echo "[cross-sdk] Running Mocha tests..."
+npx mocha ${mochaArgs}
+`;
+}
+
+server.tool(
+  "cross_sdk_test",
+  "Run cross-SDK Mocha tests against the Python test-server. Returns a task ID to poll for results.",
+  crossSdkTestSchema,
+  async (params) => {
+    if (!existsSync(join(CROSS_SDK_DIR, "package.json"))) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Cross-SDK test directory not found. Ensure the backend-sdk-testing repo is mounted at ${CROSS_SDK_DIR}.\n\nSet BACKEND_SDK_TESTING_PATH in your environment or place the repo at ../backend-sdk-testing relative to this project.`,
+          },
+        ],
+        isError: true,
+      };
+    }
+
+    const script = buildCrossSdkScript(params.grep, params.timeout);
+    const taskId = startProcessTask(
+      "cross_sdk_test",
+      "bash",
+      ["-c", script],
+      CROSS_SDK_TIMEOUT_MS
+    );
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Cross-SDK test task started.\n**Task ID:** ${taskId}\n${params.grep ? `**Grep:** ${params.grep}\n` : ""}${params.timeout ? `**Timeout:** ${params.timeout}ms\n` : ""}\nUse \`task_status\` to check progress.`,
         },
       ],
     };
@@ -944,6 +1082,11 @@ function buildToolSchemas() {
     { name: "test", schema: testSchema, description: "Run pytest tests" },
     { name: "lint", schema: lintSchema, description: "Run linting" },
     {
+      name: "cross_sdk_test",
+      schema: crossSdkTestSchema,
+      description: "Run cross-SDK Mocha tests",
+    },
+    {
       name: "task_status",
       schema: taskStatusSchema,
       description: "Check task status",
@@ -1029,6 +1172,19 @@ const statelessHandlers = {
     const taskId = startProcessTask("lint", cmd, cargs, LINT_TIMEOUT_MS);
     return {
       content: [{ type: "text", text: `Lint task started (${lintTool}${fix ? ", fix" : ""}).\nTask ID: ${taskId}` }],
+    };
+  },
+  cross_sdk_test: async (a) => {
+    if (!existsSync(join(CROSS_SDK_DIR, "package.json"))) {
+      return {
+        content: [{ type: "text", text: `Cross-SDK test directory not found at ${CROSS_SDK_DIR}.` }],
+        isError: true,
+      };
+    }
+    const script = buildCrossSdkScript(a.grep, a.timeout);
+    const taskId = startProcessTask("cross_sdk_test", "bash", ["-c", script], CROSS_SDK_TIMEOUT_MS);
+    return {
+      content: [{ type: "text", text: `Cross-SDK test task started.\nTask ID: ${taskId}` }],
     };
   },
   task_status: async (a) => {

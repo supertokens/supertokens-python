@@ -35,6 +35,10 @@ Commands:
     --tool <name>       all, ruff, or pyright (default: all)
     --fix               Auto-fix lint issues (ruff only)
 
+  cross-sdk-test [options]  Run cross-SDK Mocha tests
+    --grep <expr>       Mocha --grep filter
+    --timeout <ms>      Mocha per-test timeout in ms
+
   status <taskId>       Check task status
   cancel <taskId>       Cancel a running task
   list                  List all tasks
@@ -127,6 +131,13 @@ async function main() {
       result = await callTool("lint", {
         tool: opts.tool || "all",
         fix: opts.fix === true ? true : undefined,
+      });
+      break;
+
+    case "cross-sdk-test":
+      result = await callTool("cross_sdk_test", {
+        grep: opts.grep,
+        timeout: opts.timeout ? parseInt(opts.timeout, 10) : undefined,
       });
       break;
 
