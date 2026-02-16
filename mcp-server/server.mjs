@@ -9,7 +9,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { createServer } from "http";
 import { spawn } from "child_process";
-import { randomBytes } from "crypto";
+import { randomBytes, createHash } from "crypto";
 import {
   readFileSync,
   writeFileSync,
@@ -126,6 +126,7 @@ function archiveTestRun(task) {
   const summary = {
     runId,
     taskId: task.id,
+    taskType: task.type,
     startTime: task.startTime,
     endTime: task.endTime,
     status: task.status,
@@ -292,6 +293,78 @@ function parseFailures(xml) {
 }
 
 // ---------------------------------------------------------------------------
+// Mocha JSON parser (cross-SDK tests)
+// ---------------------------------------------------------------------------
+function parseMochaJson(jsonPath) {
+  if (!existsSync(jsonPath)) return null;
+  try {
+    const data = JSON.parse(readFileSync(jsonPath, "utf-8"));
+    const stats = data.stats || {};
+    const total = stats.tests || 0;
+    const passed = stats.passes || 0;
+    const failed = stats.failures || 0;
+    const skipped = stats.pending || 0;
+
+    const failures = [];
+    for (const t of data.failures || []) {
+      failures.push({
+        className: t.fullTitle || "",
+        testName: t.title || "",
+        message: t.err?.message || "",
+        trace: t.err?.stack || "",
+      });
+    }
+
+    return { total, passed, failed, errors: 0, skipped, failures };
+  } catch {
+    return null;
+  }
+}
+
+function convertMochaToTestOutputs(jsonPath, outputDir) {
+  if (!existsSync(jsonPath)) return;
+  let data;
+  try {
+    data = JSON.parse(readFileSync(jsonPath, "utf-8"));
+  } catch {
+    return;
+  }
+
+  ensureDir(outputDir);
+
+  const allTests = [
+    ...(data.passes || []).map((t) => ({ ...t, _result: "SUCCESS" })),
+    ...(data.failures || []).map((t) => ({ ...t, _result: "FAILURE" })),
+    ...(data.pending || []).map((t) => ({ ...t, _result: "SKIPPED" })),
+  ];
+
+  for (const t of allTests) {
+    const testId = t.fullTitle || t.title || "unknown";
+    const className = t.fullTitle
+      ? t.fullTitle.replace(/ /g, ".").replace(/::/g, ".")
+      : "cross-sdk";
+    const testName = t.title || "unknown";
+
+    const output = {
+      testId,
+      className,
+      testName,
+      stdout: "",
+      stderr: "",
+      resultType: t._result,
+      duration: t.duration || 0,
+      failureMessage: t.err?.message || "",
+      failureTrace: t.err?.stack || "",
+    };
+
+    const hash = createHash("md5").update(testId).digest("hex").slice(0, 8);
+    const safeName = testId.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120);
+    const filename = `${safeName}_${hash}.json`;
+    writeFileSync(join(outputDir, filename), JSON.stringify(output, null, 2));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Async task runner
 // ---------------------------------------------------------------------------
 function startProcessTask(taskType, command, args, timeoutMs) {
@@ -368,6 +441,36 @@ function startProcessTask(taskType, command, args, timeoutMs) {
         const junitPath = join(TEST_RESULTS_DIR, "junit.xml");
         task.testSummary = parseJUnitXml(junitPath);
         task.runId = archiveTestRun(task);
+      } else if (taskType === "cross_sdk_test") {
+        const mochaJsonPath = join(CROSS_SDK_DIR, "test-results.json");
+        const mochaJunitPath = join(CROSS_SDK_DIR, "test-results.xml");
+
+        // Clean previous pytest data so archive only contains cross-SDK results
+        if (existsSync(TEST_RESULTS_DIR)) {
+          rmSync(TEST_RESULTS_DIR, { recursive: true, force: true });
+        }
+        ensureDir(TEST_RESULTS_DIR);
+        if (existsSync(TEST_OUTPUT_DIR)) {
+          rmSync(TEST_OUTPUT_DIR, { recursive: true, force: true });
+        }
+        ensureDir(TEST_OUTPUT_DIR);
+
+        // Copy JUnit XML if present
+        if (existsSync(mochaJunitPath)) {
+          writeFileSync(
+            join(TEST_RESULTS_DIR, "junit.xml"),
+            readFileSync(mochaJunitPath)
+          );
+        }
+
+        // Convert Mocha JSON to per-test output files
+        convertMochaToTestOutputs(mochaJsonPath, TEST_OUTPUT_DIR);
+
+        // Parse summary
+        task.testSummary = parseMochaJson(mochaJsonPath);
+
+        // Archive
+        task.runId = archiveTestRun(task);
       }
     }
   });
@@ -443,16 +546,53 @@ function formatLintResult(task) {
 }
 
 function formatCrossSdkTestResult(task) {
-  const lines = [
-    task.status === "completed"
-      ? "CROSS-SDK TESTS PASSED"
-      : "CROSS-SDK TESTS FAILED",
-  ];
+  const lines = [];
 
-  const combined = [task.stdout, task.stderr].filter(Boolean).join("\n");
-  if (combined.trim()) {
-    lines.push("", "--- Output ---", truncateOutput(combined.trim()));
+  if (task.testSummary) {
+    const s = task.testSummary;
+    const header = task.status === "completed"
+      ? "CROSS-SDK TESTS PASSED"
+      : "CROSS-SDK TESTS FAILED";
+    lines.push(header, "");
+    lines.push("--- Summary ---");
+    lines.push(
+      `Total: ${s.total}  |  Passed: ${s.passed}  |  ` +
+      `Failed: ${s.failed}  |  Skipped: ${s.skipped}`
+    );
+
+    if (s.failures && s.failures.length > 0) {
+      lines.push("", "--- Failure details ---");
+      const cap = 25;
+      for (const f of s.failures.slice(0, cap)) {
+        lines.push(`\n> ${f.className}`);
+        if (f.message) lines.push(`  Message: ${f.message}`);
+        if (f.trace) lines.push(`  ${truncateOutput(f.trace, 2000)}`);
+      }
+      if (s.failures.length > cap) {
+        lines.push(`\n... and ${s.failures.length - cap} more`);
+      }
+    }
+  } else {
+    lines.push(
+      task.status === "completed"
+        ? "CROSS-SDK TESTS PASSED (no structured results found)"
+        : "CROSS-SDK TESTS FAILED"
+    );
+    const combined = [task.stdout, task.stderr].filter(Boolean).join("\n");
+    if (combined.trim()) {
+      lines.push("", "--- Output ---", truncateOutput(combined.trim()));
+    }
   }
+
+  if (task.runId) {
+    lines.push(
+      "",
+      `Archived as: ${task.runId}`,
+      `   Use test_results({ runId: "${task.runId}" }) to browse.`,
+      `   Use test_runs() to see all archived runs.`,
+    );
+  }
+
   return lines.join("\n");
 }
 
@@ -700,11 +840,15 @@ function buildCrossSdkScript(grep, timeout) {
 
   return `
 set -euo pipefail
+export TEST_MODE=testing
 
 cleanup() {
   echo "[cross-sdk] Cleaning up background processes..."
-  kill "$SOCAT_PID" "$SERVER_PID" 2>/dev/null || true
-  wait "$SOCAT_PID" "$SERVER_PID" 2>/dev/null || true
+  kill "$SERVER_PID" 2>/dev/null || true
+  if [ "$SOCAT_PID" -gt 0 ] 2>/dev/null; then
+    kill "$SOCAT_PID" 2>/dev/null || true
+  fi
+  wait 2>/dev/null || true
 }
 trap cleanup EXIT
 
@@ -1059,8 +1203,9 @@ server.tool(
         ? Math.round((r.endTime - r.startTime) / 1000)
         : "?";
       const icon = (s?.failed > 0 || s?.errors > 0) ? "FAIL" : "PASS";
+      const label = r.taskType === "cross_sdk_test" ? " [cross-sdk]" : r.taskType === "test" ? " [pytest]" : "";
 
-      lines.push(`${icon}  ${r.runId}`);
+      lines.push(`${icon}  ${r.runId}${label}`);
       lines.push(`   ${date}  |  ${duration}s  |  ${s?.total || "?"} tests: ${s?.passed || 0} passed, ${s?.failed || 0} failed, ${s?.errors || 0} errors, ${s?.skipped || 0} skipped`);
       lines.push("");
     }
@@ -1304,7 +1449,8 @@ const statelessHandlers = {
       const date = r.startTime ? new Date(r.startTime).toISOString().replace("T", " ").replace(/\.\d+Z$/, "") : "?";
       const duration = r.startTime && r.endTime ? Math.round((r.endTime - r.startTime) / 1000) : "?";
       const icon = (s?.failed > 0 || s?.errors > 0) ? "FAIL" : "PASS";
-      lines.push(`${icon}  ${r.runId}`);
+      const label = r.taskType === "cross_sdk_test" ? " [cross-sdk]" : r.taskType === "test" ? " [pytest]" : "";
+      lines.push(`${icon}  ${r.runId}${label}`);
       lines.push(`   ${date}  |  ${duration}s  |  ${s?.total || "?"} tests: ${s?.passed || 0} passed, ${s?.failed || 0} failed, ${s?.errors || 0} errors, ${s?.skipped || 0} skipped`);
       lines.push("");
     }
