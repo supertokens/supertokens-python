@@ -68,20 +68,11 @@ async function callTool(tool, args = {}) {
   if (!resp.ok) {
     const text = await resp.text();
     console.error(`Error ${resp.status}: ${text}`);
-    process.exit(1);
+    process.exitCode = 1;
+    throw new Error(`HTTP ${resp.status}`);
   }
 
   const result = await resp.json();
-
-  if (result.isError) {
-    if (result.content) {
-      for (const item of result.content) {
-        if (item.type === "text") console.error(item.text);
-      }
-    }
-    process.exit(1);
-  }
-
   return result;
 }
 
@@ -203,10 +194,12 @@ async function main() {
     }
   }
 
-  process.exit(0);
+  // Set exit code without calling process.exit() so stdout flushes fully.
+  // process.exit() can kill the process before console.log data reaches the pipe.
+  process.exitCode = result?.isError ? 1 : 0;
 }
 
 main().catch((err) => {
   console.error("Error:", err.message);
-  process.exit(1);
+  process.exitCode = 1;
 });

@@ -27,8 +27,25 @@ services:
       retries: 5
 
   oauth:
-    image: supertokens/oauth2-test:latest
-    platform: linux/amd64
+    image: oryd/hydra:v2.2.0
+    restart: unless-stopped
+    environment:
+      DSN: memory
+      URLS_SELF_ISSUER: http://oauth:4444
+      URLS_LOGIN: http://localhost:3001/auth/oauth/login
+      URLS_CONSENT: http://localhost:3001/auth/oauth/consent
+      URLS_LOGOUT: http://localhost:3001/auth/oauth/logout
+      SECRETS_SYSTEM: thisIsATestSecretThatIsAtLeast32Chars
+      SECRETS_COOKIE: thisIsATestCookieSecretAtLeast32
+      SERVE_COOKIES_SAME_SITE_MODE: Lax
+    healthcheck:
+      test: ["CMD", "hydra", "health", "--endpoint", "http://127.0.0.1:4445"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    mem_limit: 2g
+    entrypoint: ["sh", "-c"]
+    command: ["hydra migrate sql -e --yes && hydra serve all --dev"]
 
   mcp:
     build:
@@ -43,6 +60,7 @@ services:
       PYTHON_MCP_WORKSPACE: /workspace
       SUPERTOKENS_CORE_HOST: core
       SUPERTOKENS_CORE_PORT: "3567"
+      SUPERTOKENS_ENV: testing
     volumes:
       - .:/workspace
       - pip-cache:/root/.cache/pip

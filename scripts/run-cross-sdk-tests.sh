@@ -85,7 +85,13 @@ echo ""
 while true; do
   sleep "$POLL_INTERVAL"
 
-  STATUS_RESULT=$($CLIENT status "$TASK_ID" 2>/dev/null || echo "poll failed")
+  STATUS_RESULT=$($CLIENT status "$TASK_ID" 2>/dev/null) || true
+
+  # Retry on empty response (connection failure)
+  if [ -z "$STATUS_RESULT" ]; then
+    echo "[$(date '+%H:%M:%S')] Poll failed, retrying..."
+    continue
+  fi
 
   # Check if task is still running
   if echo "$STATUS_RESULT" | grep -q "still running"; then
@@ -96,7 +102,6 @@ while true; do
   # Task is done — stop log streaming
   if [ -n "$LOG_PID" ]; then
     kill "$LOG_PID" 2>/dev/null || true
-    wait "$LOG_PID" 2>/dev/null || true
   fi
 
   echo ""
