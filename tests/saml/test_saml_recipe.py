@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import base64
 from typing import Any, Dict
 
 from supertokens_python import init
@@ -37,6 +38,53 @@ from supertokens_python.recipe.saml.types import (
 )
 
 from tests.utils import get_new_core_app_url, get_st_init_args
+
+# Minimal but structurally valid SAML 2.0 IdP metadata document.
+# Uses a real self-signed certificate — the core needs to parse and
+# recognise this as valid SAML metadata (it does not verify trust chains).
+_TEST_CERT = (
+    "MIIDFTCCAf2gAwIBAgIUMymKnRHG3fOijH34giHubNz0lhUwDQYJKoZIhvcNAQEL"
+    "BQAwGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMB4XDTI2MDIxNjEyMzAzN1oX"
+    "DTI3MDIxNjEyMzAzN1owGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMIIBIjAN"
+    "BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzgEhRVTvyXcCl0GD7OHDu0STlWnf"
+    "CJssTn+kvwECpGTMzidB66/3klCFFd2QMX8YpbAntx0+pJqSmw7qwRBPD6ZU7LeA"
+    "Oj8e4Iobqsbh/5XlBqDvag42wFrqn4jd9s+hURsRHwZWBDKzlcm/KLZ8+LkRBebH"
+    "b5YDvF0mXXc4zel/kuwcwJnN6Wc/RDnuXvGE2RIKxgswln3xkhs30Y9zv1b4e/44"
+    "3fU3WAF7J8Rgu1BMYFJKUMBhlSmPbCA/grImZ16TngyzCbOI8kXxgSzfy2QJXZpS9"
+    "tVtxH55op8uJt7qdyh5avsWnaf6vlr+ucYg0FqNyZyaZe+JKi25ks6X1wIDAQABo1"
+    "MwUTAdBgNVHQ4EFgQUeGBN7LPWpgHUKEm5HwvcIQPR9QwwHwYDVR0jBBgwFoAUeG"
+    "BN7LPWpgHUKEm5HwvcIQPR9QwwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQ"
+    "sFAAOCAQEAEo39E18GKzcjLwhrFcd3dQvacbDfe+iiI2r8x3Wy4W/fXhQpMc+qaV/"
+    "eLvIzhUjKHVnyRw5k7IkFaq/VC0jRApc4PsQNahOndwfgylQ8/x0htyFPcnbPxIa+"
+    "dSrtT8DxPEE7XCG72iEX5W/KM5/IZlbNNuZu6Q5YcvzhAvs7VPDp7QT9gCrc9B8h"
+    "tCSw9/HsQFDSg6P1jT2j8auc/yL3MG3+ABuPme/061ksscjg6ff7Bug1koI+UE6zp"
+    "ib/TlSW2+EmAA47MlOt5eSHxfT/Wn3fbPY8LCSGNgCHHkJ0N0Rsn8Pr6XsGFw82w"
+    "pAtRTUxk+hjLPQBzASkbv+Vdd8qog=="
+)
+
+_VALID_IDP_METADATA_XML_RAW = (
+    '<?xml version="1.0" encoding="UTF-8"?>'
+    '<md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"'
+    '                     entityID="https://idp.example.com/metadata">'
+    '  <md:IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">'
+    '    <md:KeyDescriptor use="signing">'
+    '      <ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">'
+    "        <ds:X509Data>"
+    f"          <ds:X509Certificate>{_TEST_CERT}</ds:X509Certificate>"
+    "        </ds:X509Data>"
+    "      </ds:KeyInfo>"
+    "    </md:KeyDescriptor>"
+    "    <md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</md:NameIDFormat>"
+    '    <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"'
+    '                            Location="https://idp.example.com/sso"/>'
+    "  </md:IDPSSODescriptor>"
+    "</md:EntityDescriptor>"
+)
+
+# The core expects metadataXML to be Base64-encoded (caller responsibility, matching Node SDK).
+VALID_IDP_METADATA_XML = base64.b64encode(
+    _VALID_IDP_METADATA_XML_RAW.encode("utf-8")
+).decode("utf-8")
 
 
 async def test_saml_recipe_init():
@@ -176,26 +224,17 @@ async def test_saml_create_and_list_client():
         create_or_update_client,
     )
 
-    # Create a SAML client
-    # Note: This test requires a running SuperTokens Core with SAML support (CDI 5.4)
-    # The metadata XML would normally be a valid SAML IdP metadata document
+    # Create a SAML client using valid IdP metadata
     create_result = await create_or_update_client(
         tenant_id="public",
         redirect_uris=["http://localhost:3000/callback"],
         default_redirect_uri="http://localhost:3000/callback",
-        metadata_xml="<EntityDescriptor>test</EntityDescriptor>",
+        metadata_xml=VALID_IDP_METADATA_XML,
     )
 
-    # If the core supports SAML, this should succeed or return an error
-    # We accept both OK and error since the metadata XML may not be valid
-    assert isinstance(
-        create_result,
-        (
-            CreateOrUpdateClientOkResult,
-            CreateOrUpdateClientInvalidMetadataXMLError,
-            CreateOrUpdateClientDuplicateIdpEntityError,
-        ),
-    )
+    assert isinstance(create_result, CreateOrUpdateClientOkResult)
+    assert create_result.status == "OK"
+    assert create_result.client.client_id is not None
 
 
 async def test_saml_remove_client():
