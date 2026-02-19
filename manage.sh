@@ -2,7 +2,7 @@
 # Convenience wrapper for MCP build tools Docker environment.
 set -euo pipefail
 
-COMPOSE_FILE="compose.yml"
+COMPOSE_FILE="compose.mcp.yml"
 source "$(dirname "$0")/mcp.env" 2>/dev/null || true
 MCP_PORT="${MCP_PORT:-3001}"
 
