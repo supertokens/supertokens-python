@@ -57,19 +57,22 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> None:
     if data is None:
         return
 
-    # Capture stdout/stderr from the call
+    # Capture stdout/stderr from the call (not part of the CallInfo type stubs,
+    # but may be injected by plugins such as pytest-capture)
     if call.when == "call":
-        if hasattr(call, "stdout") and call.stdout:
-            data["stdout"] += call.stdout
-        if hasattr(call, "stderr") and call.stderr:
-            data["stderr"] += call.stderr
+        stdout = getattr(call, "stdout", None)
+        if stdout:
+            data["stdout"] += str(stdout)
+        stderr = getattr(call, "stderr", None)
+        if stderr:
+            data["stderr"] += str(stderr)
 
     if call.excinfo is not None:
         if call.when in ("call", "setup"):
             data["resultType"] = "FAILURE"
             data["failureMessage"] = str(call.excinfo.value)
             try:
-                data["failureTrace"] = str(call.excinfo.getrepr())
+                data["failureTrace"] = str(call.excinfo.getrepr())  # type: ignore[reportUnknownMemberType]
             except Exception:
                 data["failureTrace"] = str(call.excinfo)
 
