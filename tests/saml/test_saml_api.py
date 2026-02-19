@@ -23,10 +23,12 @@ from supertokens_python.recipe import saml, session
 from supertokens_python.recipe.saml.interfaces import (
     APIInterface,
     APIOptions,
+    RecipeInterface,
 )
 from supertokens_python.recipe.saml.types import (
     CreateLoginRequestInvalidClientError,
     CreateLoginRequestOkResult,
+    ListClientsOkResult,
     VerifySAMLResponseIDPLoginDisallowedError,
     VerifySAMLResponseInvalidClientError,
     VerifySAMLResponseInvalidRelayStateError,
@@ -325,11 +327,13 @@ async def test_recipe_override_is_invoked():
     """Override listClients and verify it's actually called"""
     override_called = False
 
-    def override_functions(original):
+    def override_functions(original: RecipeInterface) -> RecipeInterface:
         nonlocal override_called
         original_list = original.list_clients
 
-        async def custom_list_clients(tenant_id, user_context):
+        async def custom_list_clients(
+            tenant_id: str, user_context: Dict[str, Any]
+        ) -> ListClientsOkResult:
             nonlocal override_called
             override_called = True
             return await original_list(tenant_id, user_context)

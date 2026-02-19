@@ -8,7 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [0.31.0] - 2025-08-21
+## [0.31.0] - 2026-02-20
+- Adds SAML recipe with support for SP-initiated and IdP-initiated login flows
+  - Client management (create, update, list, remove)
+  - Login and callback (ACS) API endpoints
+  - User info retrieval from SAML assertions
+- Adds SAML as a built-in ThirdParty provider
+- Adds CDI `5.4` support
 - Updates FDI support to `4.2`
 - Adds util function to get available first factors
 - Adds API endpoints to list and remove Webauthn credentials

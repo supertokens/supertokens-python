@@ -11,7 +11,6 @@ from supertokens_python.recipe.saml.types import (
     CreateLoginRequestOkResult,
     CreateOrUpdateClientOkResult,
     GetUserInfoOkResult,
-    RemoveClientOkResult,
     VerifySAMLResponseOkResult,
 )
 
@@ -84,14 +83,12 @@ def add_saml_routes(app: Flask):
             user_context=user_context,
         )
 
-        if isinstance(response, RemoveClientOkResult):
-            return jsonify(
-                {
-                    "status": "OK",
-                    "didExist": response.did_exist,
-                }
-            )
-        return jsonify({"status": response.status})
+        return jsonify(
+            {
+                "status": "OK",
+                "didExist": response.did_exist,
+            }
+        )
 
     @app.route("/test/saml/createloginrequest", methods=["POST"])  # type: ignore
     def saml_create_login_request():  # type: ignore
