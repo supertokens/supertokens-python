@@ -9,8 +9,10 @@ import hashlib
 import json
 import os
 import time
+from typing import Any, Dict, Set
 
 import pytest
+from pytest import CallInfo, Item, TestReport
 
 OUTPUT_DIR = os.path.join(os.environ.get("PYTHON_MCP_WORKSPACE", "."), "test-output")
 
@@ -26,11 +28,11 @@ def _safe_filename(test_id: str) -> str:
 
 
 # Storage keyed by nodeid
-_test_data: dict = {}
+_test_data: Dict[str, Dict[str, Any]] = {}
 
 
 @pytest.hookimpl(tryfirst=True)
-def pytest_runtest_setup(item):
+def pytest_runtest_setup(item: Item) -> None:
     """Record test start time."""
     _test_data[item.nodeid] = {
         "testId": item.nodeid,
@@ -49,7 +51,7 @@ def pytest_runtest_setup(item):
     }
 
 
-def pytest_runtest_makereport(item, call):
+def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> None:
     """Capture output and failure info from each test phase."""
     data = _test_data.get(item.nodeid)
     if data is None:
@@ -73,7 +75,7 @@ def pytest_runtest_makereport(item, call):
 
 
 @pytest.hookimpl(trylast=True)
-def pytest_runtest_logreport(report):
+def pytest_runtest_logreport(report: TestReport) -> None:
     """Write per-test JSON after the test completes (on the 'call' or final phase)."""
     data = _test_data.get(report.nodeid)
     if data is None:
@@ -91,8 +93,8 @@ def pytest_runtest_logreport(report):
         if report.longrepr and not data["failureTrace"]:
             data["failureTrace"] = str(report.longrepr)
             # Extract short message
-            if hasattr(report.longrepr, "reprcrash") and report.longrepr.reprcrash:
-                data["failureMessage"] = report.longrepr.reprcrash.message
+            if hasattr(report.longrepr, "reprcrash") and report.longrepr.reprcrash:  # type: ignore[union-attr]
+                data["failureMessage"] = report.longrepr.reprcrash.message  # type: ignore[union-attr]
     elif report.skipped:
         data["resultType"] = "SKIPPED"
         if report.longrepr:
@@ -111,10 +113,10 @@ def pytest_runtest_logreport(report):
 
 
 # Track which tests have been written
-_written: set = set()
+_written: Set[str] = set()
 
 
-def _write_test_output(data: dict):
+def _write_test_output(data: Dict[str, Any]) -> None:
     """Write test output JSON to the output directory."""
     if data["testId"] in _written:
         return
