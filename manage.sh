@@ -55,7 +55,7 @@ cmd_status() {
   docker compose -f "$COMPOSE_FILE" ps
   echo ""
   echo "=== Connection Info ==="
-  echo "  SuperTokens Core:  http://localhost:${SUPERTOKENS_CORE_PORT:-3571}"
+  echo "  SuperTokens Core:  http://localhost:${SUPERTOKENS_CORE_PORT:-3567}"
   echo "  MCP Server:        http://localhost:${MCP_PORT}"
   echo "  MCP Health:        http://localhost:${MCP_PORT}/health"
   echo "  MCP SSE:           http://localhost:${MCP_PORT}/sse"

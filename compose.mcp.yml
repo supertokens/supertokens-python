@@ -8,8 +8,8 @@ services:
       "io.supertokens.Main", "/usr/lib/supertokens/", "DEV", "test_mode"
     ]
     ports:
-      # Uses `$SUPERTOKENS_CORE_PORT` when available, else 3571 for local port
-      - ${SUPERTOKENS_CORE_PORT:-3571}:3567
+      # Uses `$SUPERTOKENS_CORE_PORT` when available, else 3567 for local port
+      - ${SUPERTOKENS_CORE_PORT:-3567}:3567
     platform: linux/amd64
     depends_on:
       oauth:

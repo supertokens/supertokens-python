@@ -60,7 +60,7 @@ echo $SUPERTOKENS_API_KEY > apiPassword
 cp temp/config.yaml .
 # Run the java command in background
 # NOTE: `doUnitTests` cannot do a cleanup of `supertokens-root` now because this command will error out
-java -Djava.security.egd=file:/dev/urandom -classpath "./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV host=localhost port=3571 test_mode &
+java -Djava.security.egd=file:/dev/urandom -classpath "./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV host=localhost port=3567 test_mode &
 
 cd ../project/
 

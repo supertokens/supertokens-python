@@ -70,7 +70,7 @@ partial_init = partial(
     ),
     framework="django",
     supertokens_config=SupertokensConfig(
-        connection_uri="http://localhost:3571",
+        connection_uri="http://localhost:3567",
     ),
 )
 
@@ -339,7 +339,7 @@ def test_st_config_override():
 
     def config_override(config: SupertokensPublicConfig) -> SupertokensPublicConfig:
         config.supertokens_config = SupertokensConfig(
-            connection_uri="http://localhost:3571"
+            connection_uri="http://localhost:3567"
         )
         return config
 
@@ -356,7 +356,7 @@ def test_st_config_override():
 
     assert (
         Supertokens.get_instance().supertokens_config.connection_uri
-        == "http://localhost:3571"
+        == "http://localhost:3567"
     )
 
 

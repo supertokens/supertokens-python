@@ -59,7 +59,7 @@ jobs:
 
     env:
       API_PORT: 3030
-      SUPERTOKENS_CORE_PORT: 3571
+      SUPERTOKENS_CORE_PORT: 3567
       SUPERTOKENS_CORE_HOST: localhost
 
     steps:

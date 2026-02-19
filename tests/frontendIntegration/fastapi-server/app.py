@@ -253,7 +253,7 @@ def config(
 
 
 core_host = os.environ.get("SUPERTOKENS_CORE_HOST", "localhost")
-core_port = os.environ.get("SUPERTOKENS_CORE_PORT", "3571")
+core_port = os.environ.get("SUPERTOKENS_CORE_PORT", "3567")
 config(
     core_url=f"http://{core_host}:{core_port}",
     enable_anti_csrf=True,
