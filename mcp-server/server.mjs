@@ -816,6 +816,7 @@ server.tool(
 );
 
 // --- Tool: cross_sdk_test ---
+const DEFAULT_PARALLEL_JOBS = 4;
 const crossSdkTestSchema = {
   grep: z
     .string()
@@ -825,29 +826,58 @@ const crossSdkTestSchema = {
     .number()
     .optional()
     .describe("Mocha per-test timeout in ms"),
+  parallel: z
+    .boolean()
+    .optional()
+    .describe("Run tests in parallel (Mocha --parallel). Defaults to true"),
+  jobs: z
+    .number()
+    .optional()
+    .describe(
+      `Number of parallel worker processes (Mocha --jobs). Each worker gets its own test-server instance. Defaults to ${DEFAULT_PARALLEL_JOBS}`
+    ),
 };
 
-function buildCrossSdkScript(grep, timeout) {
-  const coreHost = process.env.SUPERTOKENS_CORE_HOST || "localhost";
-  const corePort = process.env.SUPERTOKENS_CORE_PORT || "3567";
-  const apiPort = "3030";
+function buildCrossSdkScript(grep, timeout, parallel, jobs) {
+  const basePort = 3030;
+  const useParallel = parallel !== false; // default true
+  const numJobs = useParallel ? (jobs || DEFAULT_PARALLEL_JOBS) : 1;
+  // In parallel mode, the .mocharc.yml reporters (mocha-multi-reporters,
+  // mocha-junit-reporter) crash because they don't support Mocha's
+  // ParallelBufferedRunner.  Override with the built-in json reporter
+  // and pipe stdout to test-results.json so our archival code can parse it.
+  // The --reporter flag on the CLI takes precedence over .mocharc.yml.
   const mochaArgs = [
     grep ? `--grep ${JSON.stringify(grep)}` : "",
     timeout ? `--timeout ${timeout}` : "",
+    useParallel ? "--parallel" : "",
+    useParallel ? `--jobs ${numJobs}` : "",
+    useParallel ? "--reporter json" : "",
   ]
     .filter(Boolean)
     .join(" ");
+
+  // Build the list of ports: basePort, basePort+1, ..., basePort+numJobs-1
+  const ports = Array.from({ length: numJobs }, (_, i) => basePort + i);
+  const portsCSV = ports.join(",");
 
   return `
 set -euo pipefail
 export TEST_MODE=testing
 
+# Core connection — the entrypoint's socat bridge makes the core
+# reachable at localhost:$SUPERTOKENS_CORE_PORT inside the container.
+# These env vars are inherited from the container; export them explicitly
+# so test-server processes and Mocha tests can discover the core.
+export SUPERTOKENS_CORE_HOST="\${SUPERTOKENS_CORE_HOST:-localhost}"
+export SUPERTOKENS_CORE_PORT="\${SUPERTOKENS_CORE_PORT:-3567}"
+
+SERVER_PIDS=""
 cleanup() {
   echo "[cross-sdk] Cleaning up background processes..."
-  kill "$SERVER_PID" 2>/dev/null || true
-  if [ "$SOCAT_PID" -gt 0 ] 2>/dev/null; then
-    kill "$SOCAT_PID" 2>/dev/null || true
-  fi
+  for pid in $SERVER_PIDS; do
+    kill "$pid" 2>/dev/null || true
+  done
   wait 2>/dev/null || true
 }
 trap cleanup EXIT
@@ -857,38 +887,30 @@ echo "[cross-sdk] Installing SDK in editable mode..."
 cd /workspace
 pip install --no-deps -e . 2>&1 | tail -1
 
-# socat bridge: localhost:${corePort} -> core:${corePort}
-SOCAT_PID=0
-if [ "${coreHost}" != "localhost" ] && [ "${coreHost}" != "127.0.0.1" ]; then
-  echo "[cross-sdk] Forwarding localhost:${corePort} -> ${coreHost}:${corePort}"
-  socat TCP-LISTEN:${corePort},fork,reuseaddr TCP:${coreHost}:${corePort} &
-  SOCAT_PID=$!
-fi
-
-# Start the Python test-server in the background
-echo "[cross-sdk] Starting Python test-server on port ${apiPort}..."
+# Start ${numJobs} Python test-server(s) on ports ${portsCSV}
 cd /workspace/tests/test-server
-python app.py &
-SERVER_PID=$!
+${ports.map(p => `echo "[cross-sdk] Starting test-server on port ${p}..."
+API_PORT=${p} python app.py &
+SERVER_PIDS="$SERVER_PIDS $!"
+`).join("")}
 
-# Wait for the test-server to be ready
+# Wait for all test-servers to be ready
 echo "[cross-sdk] Waiting for test-server readiness..."
-for i in $(seq 1 30); do
-  if curl -sf "http://localhost:${apiPort}/test/ping" >/dev/null 2>&1; then
-    echo "[cross-sdk] Test-server is ready."
-    break
-  fi
-  if ! kill -0 "$SERVER_PID" 2>/dev/null; then
-    echo "[cross-sdk] ERROR: Test-server process died." >&2
+for port in ${portsCSV.replace(/,/g, " ")}; do
+  ready=false
+  for i in $(seq 1 30); do
+    if curl -sf "http://localhost:$port/test/ping" >/dev/null 2>&1; then
+      echo "[cross-sdk] Test-server on port $port is ready."
+      ready=true
+      break
+    fi
+    sleep 1
+  done
+  if [ "$ready" != "true" ]; then
+    echo "[cross-sdk] ERROR: Test-server on port $port did not become ready in 30s." >&2
     exit 1
   fi
-  sleep 1
 done
-
-if ! curl -sf "http://localhost:${apiPort}/test/ping" >/dev/null 2>&1; then
-  echo "[cross-sdk] ERROR: Test-server did not become ready in 30s." >&2
-  exit 1
-fi
 
 # Install and build the cross-SDK test suite
 echo "[cross-sdk] Installing cross-SDK test dependencies..."
@@ -896,9 +918,53 @@ cd /cross-sdk-tests
 npm install 2>&1 | tail -3
 npm run build 2>&1 | tail -3
 
-# Run Mocha tests
-echo "[cross-sdk] Running Mocha tests..."
-npx mocha ${mochaArgs}
+# Run Mocha tests — API_PORTS tells each worker which test-server to use
+echo "[cross-sdk] Running Mocha tests (${numJobs} workers, ports: ${portsCSV})..."
+export API_PORTS="${portsCSV}"
+${useParallel
+    ? `set +e
+npx mocha ${mochaArgs} > test-results-raw.txt 2>&1
+MOCHA_EXIT=$?
+set -e
+
+# Mocha parallel mode mixes worker status lines ("[Worker N] ...") into
+# stdout alongside the JSON blob. Extract the JSON object and write a clean
+# file, then print worker/summary lines for the human-readable log.
+node -e '
+  const fs = require("fs");
+  const raw = fs.readFileSync("test-results-raw.txt", "utf-8");
+  const lines = raw.split("\\n");
+  const nonJson = [];
+  const jsonLines = [];
+  let inJson = false;
+  for (const line of lines) {
+    if (!inJson && line.startsWith("{")) inJson = true;
+    if (inJson) { jsonLines.push(line); }
+    else { nonJson.push(line); }
+  }
+  // Print non-JSON lines (worker status, etc.) so they appear in task output
+  for (const l of nonJson) { if (l.trim()) console.log(l); }
+
+  const jsonStr = jsonLines.join("\\n");
+  fs.writeFileSync("test-results.json", jsonStr);
+
+  try {
+    const d = JSON.parse(jsonStr);
+    const s = d.stats || {};
+    console.log("[cross-sdk] Results: " +
+      s.tests + " tests, " +
+      s.passes + " passing, " +
+      s.failures + " failing, " +
+      s.pending + " pending (" +
+      (s.duration / 1000).toFixed(1) + "s)");
+    for (const f of (d.failures || [])) {
+      console.log("  FAIL: " + f.fullTitle);
+      if (f.err && f.err.message) console.log("        " + f.err.message.split("\\n")[0]);
+    }
+  } catch(e) { console.error("[cross-sdk] Could not parse results:", e.message); }
+'
+exit $MOCHA_EXIT`
+    : `npx mocha ${mochaArgs}`}
 `;
 }
 
@@ -919,7 +985,7 @@ server.tool(
       };
     }
 
-    const script = buildCrossSdkScript(params.grep, params.timeout);
+    const script = buildCrossSdkScript(params.grep, params.timeout, params.parallel, params.jobs);
     const taskId = startProcessTask(
       "cross_sdk_test",
       "bash",
@@ -927,11 +993,13 @@ server.tool(
       CROSS_SDK_TIMEOUT_MS
     );
 
+    const useParallel = params.parallel !== false;
+    const numJobs = useParallel ? (params.jobs || DEFAULT_PARALLEL_JOBS) : 1;
     return {
       content: [
         {
           type: "text",
-          text: `Cross-SDK test task started.\n**Task ID:** ${taskId}\n${params.grep ? `**Grep:** ${params.grep}\n` : ""}${params.timeout ? `**Timeout:** ${params.timeout}ms\n` : ""}\nUse \`task_status\` to check progress.`,
+          text: `Cross-SDK test task started.\n**Task ID:** ${taskId}\n${params.grep ? `**Grep:** ${params.grep}\n` : ""}${params.timeout ? `**Timeout:** ${params.timeout}ms\n` : ""}**Parallel:** ${useParallel} (${numJobs} workers)\n\nUse \`task_status\` to check progress.`,
         },
       ],
     };
@@ -1326,7 +1394,7 @@ const statelessHandlers = {
         isError: true,
       };
     }
-    const script = buildCrossSdkScript(a.grep, a.timeout);
+    const script = buildCrossSdkScript(a.grep, a.timeout, a.parallel, a.jobs);
     const taskId = startProcessTask("cross_sdk_test", "bash", ["-c", script], CROSS_SDK_TIMEOUT_MS);
     return {
       content: [{ type: "text", text: `Cross-SDK test task started.\nTask ID: ${taskId}` }],

@@ -11,7 +11,11 @@ services:
       # Uses `$SUPERTOKENS_CORE_PORT` when available, else 3571 for local port
       - ${SUPERTOKENS_CORE_PORT:-3571}:3567
     platform: linux/amd64
-    depends_on: [oauth]
+    depends_on:
+      oauth:
+        condition: service_started
+      pg:
+        condition: service_healthy
     environment:
       OAUTH_PROVIDER_PUBLIC_SERVICE_URL: http://oauth:4444
       OAUTH_PROVIDER_ADMIN_SERVICE_URL: http://oauth:4445
@@ -20,17 +24,64 @@ services:
       INFO_LOG_PATH: "null"
       ERROR_LOG_PATH: "null"
       LOG_LEVEL: "DEBUG"
+      POSTGRESQL_HOST: "pg"
+      POSTGRESQL_PORT: "5432"
+      POSTGRESQL_USER: "root"
+      POSTGRESQL_PASSWORD: "root"
+      POSTGRESQL_DATABASE_NAME: "postgres"
+      # Passed through from host env or .env file (gitignored)
+      SUPERTOKENS_LICENSE_KEY: ${SUPERTOKENS_LICENSE_KEY:-}
+
     healthcheck:
       test: bash -c 'curl -s "http://127.0.0.1:3567/hello" | grep "Hello"'
       interval: 10s
       timeout: 5s
       retries: 5
 
+# ── PostgreSQL ───────────────────────────────────────────────────────
+  pg:
+    image: percona/percona-distribution-postgresql:13
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB:       postgres
+    #ports:
+      # Expose to host for convenience (e.g. psql / pgAdmin).
+      # The MCP container reaches it via pg:5432 on the Docker network.
+      # - "127.0.0.1:5499:5432"
+    # volumes:
+      # Persistent data — remove if you want a fresh DB every restart
+      # - pg_data:/var/lib/postgresql/data
+      # Drop .sql scripts here to auto-run on first start
+      # - ./dev-tools/initdb/postgres:/docker-entrypoint-initdb.d:ro
+    tmpfs:
+      - /var/lib/postgresql/data:size=4g
+    mem_limit: 4g
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # Tuned for test workloads — aggressive settings, not for production
+    command: >
+      postgres
+        -c max_connections=1000
+        -c fsync=off
+        -c synchronous_commit=off
+        -c full_page_writes=off
+        -c wal_level=minimal
+        -c max_wal_senders=0
+        -c max_wal_size=2GB
+        -c shared_buffers=512MB
+        -c work_mem=64MB
+
   oauth:
     image: oryd/hydra:v2.2.0
     restart: unless-stopped
     environment:
       DSN: memory
+      # DSN: postgres://root:root@pg:5432/postgres?sslmode=disable
       URLS_SELF_ISSUER: http://oauth:4444
       URLS_LOGIN: http://localhost:3001/auth/oauth/login
       URLS_CONSENT: http://localhost:3001/auth/oauth/consent
@@ -39,11 +90,15 @@ services:
       SECRETS_COOKIE: thisIsATestCookieSecretAtLeast32
       SERVE_COOKIES_SAME_SITE_MODE: Lax
     healthcheck:
-      test: ["CMD", "hydra", "health", "--endpoint", "http://127.0.0.1:4445"]
-      interval: 5s
-      timeout: 3s
-      retries: 30
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4445/health/alive"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     mem_limit: 2g
+    depends_on:
+      pg:
+        condition: service_healthy
     entrypoint: ["sh", "-c"]
     command: ["hydra migrate sql -e --yes && hydra serve all --dev"]
 
@@ -61,6 +116,8 @@ services:
       SUPERTOKENS_CORE_HOST: core
       SUPERTOKENS_CORE_PORT: "3567"
       SUPERTOKENS_ENV: testing
+      # Passed through from host env or .env file (gitignored)
+      SUPERTOKENS_LICENSE_KEY: ${SUPERTOKENS_LICENSE_KEY:-}
     volumes:
       - .:/workspace
       - pip-cache:/root/.cache/pip

@@ -38,6 +38,8 @@ Commands:
   cross-sdk-test [options]  Run cross-SDK Mocha tests
     --grep <expr>       Mocha --grep filter
     --timeout <ms>      Mocha per-test timeout in ms
+    --parallel <bool>   Run in parallel (default: true)
+    --jobs <n>          Number of parallel workers
 
   status <taskId>       Check task status
   cancel <taskId>       Cancel a running task
@@ -129,6 +131,8 @@ async function main() {
       result = await callTool("cross_sdk_test", {
         grep: opts.grep,
         timeout: opts.timeout ? parseInt(opts.timeout, 10) : undefined,
+        parallel: opts.parallel !== undefined ? opts.parallel !== "false" : undefined,
+        jobs: opts.jobs ? parseInt(opts.jobs, 10) : undefined,
       });
       break;
 

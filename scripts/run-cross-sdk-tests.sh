@@ -15,6 +15,8 @@ Usage: ./scripts/run-cross-sdk-tests.sh [options]
 Options:
   --grep <expr>       Mocha --grep filter expression
   --timeout <ms>      Mocha per-test timeout in ms
+  --no-parallel       Disable parallel test execution
+  --jobs <n>          Number of parallel workers (default: Mocha default)
   --no-logs           Don't stream container logs
 
 Environment:
@@ -26,15 +28,19 @@ EOF
 # Parse args
 GREP=""
 TIMEOUT=""
+PARALLEL=""
+JOBS=""
 STREAM_LOGS=true
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --grep)     GREP="$2"; shift 2 ;;
-    --timeout)  TIMEOUT="$2"; shift 2 ;;
-    --no-logs)  STREAM_LOGS=false; shift ;;
-    --help|-h)  usage; exit 0 ;;
-    *)          echo "Unknown option: $1"; usage; exit 1 ;;
+    --grep)         GREP="$2"; shift 2 ;;
+    --timeout)      TIMEOUT="$2"; shift 2 ;;
+    --no-parallel)  PARALLEL="false"; shift ;;
+    --jobs)         JOBS="$2"; shift 2 ;;
+    --no-logs)      STREAM_LOGS=false; shift ;;
+    --help|-h)      usage; exit 0 ;;
+    *)              echo "Unknown option: $1"; usage; exit 1 ;;
   esac
 done
 
@@ -56,6 +62,12 @@ fi
 if [ -n "$TIMEOUT" ]; then
   CMD_ARGS="${CMD_ARGS} --timeout ${TIMEOUT}"
 fi
+if [ -n "$PARALLEL" ]; then
+  CMD_ARGS="${CMD_ARGS} --parallel ${PARALLEL}"
+fi
+if [ -n "$JOBS" ]; then
+  CMD_ARGS="${CMD_ARGS} --jobs ${JOBS}"
+fi
 
 # Start cross-SDK tests
 echo ""
@@ -71,6 +83,13 @@ if [ -z "$TASK_ID" ]; then
   exit 1
 fi
 
+# Helper: kill a process and all its children
+kill_tree() {
+  local pid="$1"
+  pkill -P "$pid" 2>/dev/null || true
+  kill "$pid" 2>/dev/null || true
+}
+
 # Stream logs in background
 LOG_PID=""
 if [ "$STREAM_LOGS" = true ]; then
@@ -79,6 +98,9 @@ if [ "$STREAM_LOGS" = true ]; then
   docker compose logs -n 10 -f mcp &
   LOG_PID=$!
 fi
+
+# Ensure log streaming is cleaned up on exit/interrupt
+trap '[ -n "$LOG_PID" ] && kill_tree "$LOG_PID"' EXIT INT TERM
 
 # Poll for completion
 echo ""
@@ -99,9 +121,9 @@ while true; do
     continue
   fi
 
-  # Task is done — stop log streaming
+  # Task is done — stop log streaming (kill child processes first, then parent)
   if [ -n "$LOG_PID" ]; then
-    kill "$LOG_PID" 2>/dev/null || true
+    kill_tree "$LOG_PID"
   fi
 
   echo ""

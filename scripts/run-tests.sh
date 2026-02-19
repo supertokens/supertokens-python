@@ -83,6 +83,13 @@ if [ -z "$TASK_ID" ]; then
   exit 1
 fi
 
+# Helper: kill a process and all its children
+kill_tree() {
+  local pid="$1"
+  pkill -P "$pid" 2>/dev/null || true
+  kill "$pid" 2>/dev/null || true
+}
+
 # Stream logs in background
 LOG_PID=""
 if [ "$STREAM_LOGS" = true ]; then
@@ -91,6 +98,9 @@ if [ "$STREAM_LOGS" = true ]; then
   docker compose logs -n 10 -f mcp &
   LOG_PID=$!
 fi
+
+# Ensure log streaming is cleaned up on exit/interrupt
+trap '[ -n "$LOG_PID" ] && kill_tree "$LOG_PID"' EXIT INT TERM
 
 # Poll for completion
 echo ""
@@ -111,9 +121,9 @@ while true; do
     continue
   fi
 
-  # Task is done — stop log streaming
+  # Task is done — stop log streaming (kill child processes first, then parent)
   if [ -n "$LOG_PID" ]; then
-    kill "$LOG_PID" 2>/dev/null || true
+    kill_tree "$LOG_PID"
   fi
 
   echo ""

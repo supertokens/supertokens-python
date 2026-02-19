@@ -1046,6 +1046,78 @@ def get_func(eval_str: str) -> Callable[..., Any]:
     # if eval_str.startswith("webauthn.init.override.apis"):
     #     pass
 
+    if eval_str.startswith("saml.init.override.apis"):
+        from supertokens_python.recipe.saml.interfaces import (
+            APIInterface as SAMLAPIInterface,
+        )
+        from supertokens_python.types.response import (
+            GeneralErrorResponse as SAMLGeneralErrorResponse,
+        )
+
+        if "void 0" in eval_str:
+            # Disabling an API endpoint
+            def saml_disable_api_override(
+                original_implementation: SAMLAPIInterface,
+            ) -> SAMLAPIInterface:
+                if "loginGET" in eval_str:
+                    original_implementation.disable_login_get = True
+                if "callbackPOST" in eval_str:
+                    original_implementation.disable_callback_post = True
+                return original_implementation
+
+            return saml_disable_api_override
+
+        elif "GENERAL_ERROR" in eval_str:
+            import re as saml_re
+
+            saml_message_match = saml_re.search(r'message:"([^"]*)"', eval_str)
+            saml_error_message = (
+                saml_message_match.group(1) if saml_message_match else "unknown error"
+            )
+
+            def saml_general_error_override(
+                original_implementation: SAMLAPIInterface,
+            ) -> SAMLAPIInterface:
+                if "loginGET" in eval_str:
+
+                    async def login_get_error(*args: Any, **kwargs: Any):
+                        return SAMLGeneralErrorResponse(message=saml_error_message)
+
+                    original_implementation.login_get = login_get_error  # type: ignore
+
+                if "callbackPOST" in eval_str:
+
+                    async def callback_post_error(*args: Any, **kwargs: Any):
+                        return SAMLGeneralErrorResponse(message=saml_error_message)
+
+                    original_implementation.callback_post = callback_post_error  # type: ignore
+
+                return original_implementation
+
+            return saml_general_error_override
+
+        else:
+            # Pass-through override (for logging verification)
+            def saml_passthrough_api_override(
+                original_implementation: SAMLAPIInterface,
+            ) -> SAMLAPIInterface:
+                return original_implementation
+
+            return saml_passthrough_api_override
+
+    elif eval_str.startswith("saml.init.override.functions"):
+        from supertokens_python.recipe.saml.interfaces import (
+            RecipeInterface as SAMLRecipeInterface,
+        )
+
+        # Pass-through override (for logging verification)
+        def saml_passthrough_functions_override(
+            original_implementation: SAMLRecipeInterface,
+        ) -> SAMLRecipeInterface:
+            return original_implementation
+
+        return saml_passthrough_functions_override
+
     raise Exception("Unknown eval string: " + eval_str)
 
 

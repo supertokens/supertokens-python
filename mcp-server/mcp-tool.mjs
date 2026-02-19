@@ -116,6 +116,17 @@ server.tool(
   async (params) => callRemoteTool("lint", params)
 );
 
+// --- cross_sdk_test ---
+server.tool(
+  "cross_sdk_test",
+  "Run cross-SDK Mocha tests against the Python test-server in Docker. Returns a task ID — use task_status to poll for results.",
+  {
+    grep: z.string().optional().describe("Mocha --grep filter expression"),
+    timeout: z.number().optional().describe("Mocha per-test timeout in ms"),
+  },
+  async (params) => callRemoteTool("cross_sdk_test", params)
+);
+
 // --- task_status ---
 server.tool(
   "task_status",
