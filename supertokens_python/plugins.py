@@ -51,6 +51,7 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.oauth2provider.utils import OAuth2ProviderConfig
     from supertokens_python.recipe.openid.utils import OpenIdConfig
     from supertokens_python.recipe.passwordless.utils import PasswordlessConfig
+    from supertokens_python.recipe.saml.utils import SAMLConfig
     from supertokens_python.recipe.session.utils import SessionConfig
     from supertokens_python.recipe.thirdparty.utils import ThirdPartyConfig
     from supertokens_python.recipe.totp.types import TOTPConfig
@@ -76,6 +77,7 @@ RecipeConfigType = TypeVar(
         "ThirdPartyConfig",
         "TOTPConfig",
         "UserMetadataConfig",
+        "SAMLConfig",
         "UserRolesConfig",
         "WebauthnConfig",
     ],

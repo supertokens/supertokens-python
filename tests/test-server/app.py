@@ -15,6 +15,7 @@ from multifactorauth import add_multifactorauth_routes
 from multitenancy import add_multitenancy_routes  # pylint: disable=import-error
 from oauth2provider import add_oauth2provider_routes
 from passwordless import add_passwordless_routes  # pylint: disable=import-error
+from saml import add_saml_routes  # pylint: disable=import-error
 from session import add_session_routes  # pylint: disable=import-error
 from supertokens_python import (
     InputAppInfo,
@@ -37,6 +38,7 @@ from supertokens_python.recipe import (
     multifactorauth,
     oauth2provider,
     passwordless,
+    saml,
     session,
     thirdparty,
     totp,
@@ -52,6 +54,7 @@ from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.oauth2provider.recipe import OAuth2ProviderRecipe
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.passwordless.recipe import PasswordlessRecipe
+from supertokens_python.recipe.saml.recipe import SAMLRecipe
 from supertokens_python.recipe.session import InputErrorHandlers, SessionContainer
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.recipe import SessionRecipe
@@ -245,6 +248,7 @@ def st_reset():
     OAuth2ProviderRecipe.reset()
     OpenIdRecipe.reset()
     WebauthnRecipe.reset()
+    SAMLRecipe.reset()
 
 
 def init_st(config: Dict[str, Any]):
@@ -693,6 +697,22 @@ def init_st(config: Dict[str, Any]):
                     ),
                 )
             )
+        elif recipe_id == "saml":
+            recipe_config_json = json.loads(recipe_config.get("config", "{}"))
+            recipe_list.append(
+                saml.init(
+                    override=saml.SAMLOverrideConfig(
+                        apis=override_builder_with_logging(
+                            "SAML.override.apis",
+                            recipe_config_json.get("override", {}).get("apis"),
+                        ),
+                        functions=override_builder_with_logging(
+                            "SAML.override.functions",
+                            recipe_config_json.get("override", {}).get("functions"),
+                        ),
+                    )
+                )
+            )
 
     interceptor_func = None
     if config.get("supertokens", {}).get("networkInterceptor") is not None:
@@ -918,6 +938,7 @@ add_usermetadata_routes(app)
 add_multifactorauth_routes(app)
 add_oauth2provider_routes(app)
 add_webauthn_routes(app)
+add_saml_routes(app)
 
 if __name__ == "__main__":
     default_st_init()

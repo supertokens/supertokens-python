@@ -44,6 +44,7 @@ class Provider:
     def __init__(self, id: str, config: ProviderConfigForClient):  # pylint: disable=redefined-builtin
         self.id = id
         self.config = config
+        self.provider_type: str = "oauth2"
 
     async def get_config_for_client_type(
         self, client_type: Optional[str], user_context: Dict[str, Any]

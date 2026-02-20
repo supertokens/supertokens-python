@@ -17,4 +17,7 @@ pyvenv.cfg
 sqlite.db
 .mypy_cache/
 test-results/
+test-output/
+.test-runs/
+mcp-server/node_modules/
 .ruff_cache/

@@ -166,9 +166,9 @@ async def test_use_headers_if_get_token_transfer_method_returns_any_and_no_st_au
             recipe_list=[
                 session.init(
                     anti_csrf="VIA_TOKEN",
-                    get_token_transfer_method=lambda _,
-                    __,
-                    ___: "any",  # Always return "any"
+                    get_token_transfer_method=lambda _, __, ___: (
+                        "any"
+                    ),  # Always return "any"
                 )
             ],
         )
@@ -197,9 +197,9 @@ async def test_should_use_cookies_if_get_token_transfer_method_returns_any_and_s
             recipe_list=[
                 session.init(
                     anti_csrf="VIA_TOKEN",
-                    get_token_transfer_method=lambda _,
-                    __,
-                    ___: "any",  # Always returns "any"
+                    get_token_transfer_method=lambda _, __, ___: (
+                        "any"
+                    ),  # Always returns "any"
                 )
             ],
         )
@@ -226,9 +226,9 @@ async def test_use_headers_if_get_token_transfer_method_returns_any_and_st_auth_
             recipe_list=[
                 session.init(
                     anti_csrf="VIA_TOKEN",
-                    get_token_transfer_method=lambda _,
-                    __,
-                    ___: "any",  # Always returns "any"
+                    get_token_transfer_method=lambda _, __, ___: (
+                        "any"
+                    ),  # Always returns "any"
                 )
             ],
         )

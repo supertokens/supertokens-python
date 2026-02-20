@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from typing_extensions import Literal
 
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
+from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
 from supertokens_python.types.config import (
     BaseConfig,
     BaseNormalisedConfig,
@@ -25,7 +26,6 @@ from supertokens_python.types.config import (
     BaseOverrideableConfig,
     BaseOverrideConfig,
 )
-from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest

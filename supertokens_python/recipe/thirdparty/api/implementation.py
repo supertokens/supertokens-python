@@ -97,15 +97,31 @@ class APIImplementation(APIInterface):
 
         oauth_tokens_to_use: Dict[str, Any] = {}
 
-        if redirect_uri_info is not None:
-            oauth_tokens_to_use = await provider.exchange_auth_code_for_oauth_tokens(
-                redirect_uri_info=redirect_uri_info,
-                user_context=user_context,
-            )
-        elif oauth_tokens is not None:
-            oauth_tokens_to_use = oauth_tokens
+        if provider.provider_type == "saml":
+            if redirect_uri_info is not None:
+                oauth_tokens_to_use = {
+                    "access_token": redirect_uri_info.redirect_uri_query_params.get(
+                        "code", ""
+                    ),
+                    "_tenant_id": tenant_id,
+                }
+            elif oauth_tokens is not None:
+                oauth_tokens_to_use = oauth_tokens
+                oauth_tokens_to_use["_tenant_id"] = tenant_id
+            else:
+                raise Exception("should never come here")
         else:
-            raise Exception("should never come here")
+            if redirect_uri_info is not None:
+                oauth_tokens_to_use = (
+                    await provider.exchange_auth_code_for_oauth_tokens(
+                        redirect_uri_info=redirect_uri_info,
+                        user_context=user_context,
+                    )
+                )
+            elif oauth_tokens is not None:
+                oauth_tokens_to_use = oauth_tokens
+            else:
+                raise Exception("should never come here")
 
         user_info = await provider.get_user_info(
             oauth_tokens=oauth_tokens_to_use,
