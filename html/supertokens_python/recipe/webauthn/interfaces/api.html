@@ -40,8 +40,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from abc import ABC, abstractmethod
-from typing import List, Literal, Optional, TypedDict, Union
+from abc import abstractmethod
+from typing import TYPE_CHECKING, List, Literal, Optional, TypedDict, Union
 
 from typing_extensions import NotRequired, Unpack
 
@@ -51,10 +51,12 @@ from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.webauthn.interfaces.recipe import (
     AuthenticationPayload,
+    CredentialNotFoundErrorResponse,
     EmailAlreadyExistsErrorResponse,
     InvalidAuthenticatorErrorResponse,
     InvalidCredentialsErrorResponse,
     InvalidOptionsErrorResponse,
+    ListCredentialsResponse,
     OptionsNotFoundErrorResponse,
     RecipeInterface,
     RecoverAccountTokenInvalidErrorResponse,
@@ -64,16 +66,19 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     SignInOptionsErrorResponse,
     UserVerification,
 )
-from supertokens_python.recipe.webauthn.types.config import NormalisedWebauthnConfig
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.types import RecipeUserId, User
 from supertokens_python.types.base import UserContext
+from supertokens_python.types.recipe import BaseAPIInterface
 from supertokens_python.types.response import (
     CamelCaseBaseModel,
     GeneralErrorResponse,
     OkResponseBaseModel,
     StatusReasonResponseBaseModel,
 )
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.webauthn.types.config import NormalisedWebauthnConfig
 
 
 class SignUpNotAllowedErrorResponse(
@@ -121,7 +126,7 @@ TypeWebauthnEmailDeliveryInput = TypeWebauthnRecoverAccountEmailDeliveryInput
 class APIOptions(CamelCaseBaseModel):
     recipe_implementation: RecipeInterface
     app_info: AppInfo
-    config: NormalisedWebauthnConfig
+    config: &#34;NormalisedWebauthnConfig&#34;
     recipe_id: str
     req: BaseRequest
     res: BaseResponse
@@ -222,6 +227,12 @@ class RecoverAccountPOSTResponse(OkResponseBaseModel):
     email: str
 
 
+ListCredentialsGETResponse = ListCredentialsResponse
+
+
+RemoveCredentialPOSTErrorResponse = CredentialNotFoundErrorResponse
+
+
 class SignUpPOSTResponse(OkResponseBaseModel):
     user: User
     session: SessionContainer
@@ -247,7 +258,7 @@ class RegisterOptionsPOSTKwargsInput(TypedDict):
     email: NotRequired[str]
 
 
-class APIInterface(ABC):
+class APIInterface(BaseAPIInterface):
     disable_register_options_post: bool = False
     disable_sign_in_options_post: bool = False
     disable_sign_up_post: bool = False
@@ -256,6 +267,8 @@ class APIInterface(ABC):
     disable_recover_account_post: bool = False
     disable_register_credential_post: bool = False
     disable_email_exists_get: bool = False
+    disable_list_credentials_get: bool = False
+    disable_remove_credential_post: bool = False
 
     @abstractmethod
     async def register_options_post(
@@ -339,6 +352,15 @@ class APIInterface(ABC):
     ]: ...
 
     @abstractmethod
+    async def list_credentials_get(
+        self,
+        *,
+        options: APIOptions,
+        user_context: UserContext,
+        session: SessionContainer,
+    ) -&gt; Union[ListCredentialsGETResponse, GeneralErrorResponse]: ...
+
+    @abstractmethod
     async def register_credential_post(
         self,
         *,
@@ -350,6 +372,18 @@ class APIInterface(ABC):
         user_context: UserContext,
     ) -&gt; Union[
         OkResponseBaseModel, GeneralErrorResponse, RegisterCredentialPOSTErrorResponse
+    ]: ...
+
+    @abstractmethod
+    async def remove_credential_post(
+        self,
+        *,
+        webauthn_credential_id: str,
+        session: SessionContainer,
+        options: APIOptions,
+        user_context: UserContext,
+    ) -&gt; Union[
+        OkResponseBaseModel, GeneralErrorResponse, RemoveCredentialPOSTErrorResponse
     ]: ...
 
     @abstractmethod
@@ -382,7 +416,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class APIInterface(ABC):
+<pre><code class="python">class APIInterface(BaseAPIInterface):
     disable_register_options_post: bool = False
     disable_sign_in_options_post: bool = False
     disable_sign_up_post: bool = False
@@ -391,6 +425,8 @@ inheritance.</p></div>
     disable_recover_account_post: bool = False
     disable_register_credential_post: bool = False
     disable_email_exists_get: bool = False
+    disable_list_credentials_get: bool = False
+    disable_remove_credential_post: bool = False
 
     @abstractmethod
     async def register_options_post(
@@ -474,6 +510,15 @@ inheritance.</p></div>
     ]: ...
 
     @abstractmethod
+    async def list_credentials_get(
+        self,
+        *,
+        options: APIOptions,
+        user_context: UserContext,
+        session: SessionContainer,
+    ) -&gt; Union[ListCredentialsGETResponse, GeneralErrorResponse]: ...
+
+    @abstractmethod
     async def register_credential_post(
         self,
         *,
@@ -488,6 +533,18 @@ inheritance.</p></div>
     ]: ...
 
     @abstractmethod
+    async def remove_credential_post(
+        self,
+        *,
+        webauthn_credential_id: str,
+        session: SessionContainer,
+        options: APIOptions,
+        user_context: UserContext,
+    ) -&gt; Union[
+        OkResponseBaseModel, GeneralErrorResponse, RemoveCredentialPOSTErrorResponse
+    ]: ...
+
+    @abstractmethod
     async def email_exists_get(
         self,
         *,
@@ -499,6 +556,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseAPIInterface" href="../../../types/recipe.html#supertokens_python.types.recipe.BaseAPIInterface">BaseAPIInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
@@ -509,35 +567,43 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_email_exists_get"><code class="name">var <span class="ident">disable_email_exists_get</span> : bool</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_generate_recover_account_token_post"><code class="name">var <span class="ident">disable_generate_recover_account_token_post</span> : bool</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_list_credentials_get"><code class="name">var <span class="ident">disable_list_credentials_get</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_recover_account_post"><code class="name">var <span class="ident">disable_recover_account_post</span> : bool</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_register_credential_post"><code class="name">var <span class="ident">disable_register_credential_post</span> : bool</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_register_options_post"><code class="name">var <span class="ident">disable_register_options_post</span> : bool</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_remove_credential_post"><code class="name">var <span class="ident">disable_remove_credential_post</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_sign_in_options_post"><code class="name">var <span class="ident">disable_sign_in_options_post</span> : bool</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_sign_in_post"><code class="name">var <span class="ident">disable_sign_in_post</span> : bool</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_sign_up_post"><code class="name">var <span class="ident">disable_sign_up_post</span> : bool</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -550,6 +616,12 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.generate_recover_account_token_post"><code class="name flex">
 <span>async def <span class="ident">generate_recover_account_token_post</span></span>(<span>self, *, email: str, tenant_id: str, options: <a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions" href="#supertokens_python.recipe.webauthn.interfaces.api.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.types.response.OkResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse" href="#supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse">RecoverAccountNotAllowedErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.list_credentials_get"><code class="name flex">
+<span>async def <span class="ident">list_credentials_get</span></span>(<span>self, *, options: <a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions" href="#supertokens_python.recipe.webauthn.interfaces.api.APIOptions">APIOptions</a>, user_context: Dict[str, Any], session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.ListCredentialsResponse" href="recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.ListCredentialsResponse">ListCredentialsResponse</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -568,6 +640,12 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.register_options_post"><code class="name flex">
 <span>async def <span class="ident">register_options_post</span></span>(<span>self, *, tenant_id: str, options: <a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions" href="#supertokens_python.recipe.webauthn.interfaces.api.APIOptions">APIOptions</a>, user_context: Dict[str, Any], **kwargs: Unpack[<a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTKwargsInput" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTKwargsInput">RegisterOptionsPOSTKwargsInput</a>]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse">RegisterOptionsPOSTResponse</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse" href="recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse">RecoverAccountTokenInvalidErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse" href="recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse">InvalidOptionsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidEmailErrorResponse" href="recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidEmailErrorResponse">InvalidEmailErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.remove_credential_post"><code class="name flex">
+<span>async def <span class="ident">remove_credential_post</span></span>(<span>self, *, webauthn_credential_id: str, session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, options: <a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions" href="#supertokens_python.recipe.webauthn.interfaces.api.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.types.response.OkResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.CredentialNotFoundErrorResponse" href="recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.CredentialNotFoundErrorResponse">CredentialNotFoundErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -610,7 +688,7 @@ validated to form a valid model.</p>
 <pre><code class="python">class APIOptions(CamelCaseBaseModel):
     recipe_implementation: RecipeInterface
     app_info: AppInfo
-    config: NormalisedWebauthnConfig
+    config: &#34;NormalisedWebauthnConfig&#34;
     recipe_id: str
     req: BaseRequest
     res: BaseResponse
@@ -627,35 +705,31 @@ validated to form a valid model.</p>
 <dl>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.APIOptions.app_info"><code class="name">var <span class="ident">app_info</span> : <a title="supertokens_python.supertokens.AppInfo" href="../../../supertokens.html#supertokens_python.supertokens.AppInfo">AppInfo</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.APIOptions.config"><code class="name">var <span class="ident">config</span> : <a title="supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig" href="../types/config.html#supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig">NormalisedWebauthnConfig</a></code></dt>
+<dt id="supertokens_python.recipe.webauthn.interfaces.api.APIOptions.config"><code class="name">var <span class="ident">config</span> : NormalisedWebauthnConfig</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.APIOptions.email_delivery"><code class="name">var <span class="ident">email_delivery</span> : <a title="supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient" href="../../../ingredients/emaildelivery/index.html#supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient">EmailDeliveryIngredient</a>[<a title="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput" href="#supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput">TypeWebauthnRecoverAccountEmailDeliveryInput</a>]</code></dt>
 <dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.APIOptions.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.APIOptions.recipe_id"><code class="name">var <span class="ident">recipe_id</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.APIOptions.recipe_implementation"><code class="name">var <span class="ident">recipe_implementation</span> : <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface" href="recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface">RecipeInterface</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.APIOptions.req"><code class="name">var <span class="ident">req</span> : <a title="supertokens_python.framework.request.BaseRequest" href="../../../framework/request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.APIOptions.res"><code class="name">var <span class="ident">res</span> : <a title="supertokens_python.framework.response.BaseResponse" href="../../../framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -663,6 +737,7 @@ validated to form a valid model.</p>
 <li><code><b><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
 <li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -700,11 +775,11 @@ dict(one=1, two=2)</p></div>
 <dl>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.DisplayNameEmailInput.display_name"><code class="name">var <span class="ident">display_name</span> : Optional[str]</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.DisplayNameEmailInput.email"><code class="name">var <span class="ident">email</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -741,11 +816,7 @@ validated to form a valid model.</p>
 <dl>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.EmailExistsGetResponse.exists"><code class="name">var <span class="ident">exists</span> : bool</code></dt>
 <dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.EmailExistsGetResponse.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -753,6 +824,8 @@ validated to form a valid model.</p>
 <li><code><b><a title="supertokens_python.types.response.OkResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.OkResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.OkResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.OkResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
 <li><code><a title="supertokens_python.types.response.OkResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -793,11 +866,11 @@ validated to form a valid model.</p>
 <dl>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['RECOVER_ACCOUNT_NOT_ALLOWED']</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -832,22 +905,14 @@ validated to form a valid model.</p>
 <li>pydantic.main.BaseModel</li>
 <li>typing.Generic</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['RECOVER_ACCOUNT_NOT_ALLOWED']</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.reason" href="../../../types/response.html#supertokens_python.types.response.StatusReasonResponseBaseModel.reason">reason</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
 <li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -887,15 +952,11 @@ validated to form a valid model.</p>
 <dl>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountPOSTResponse.email"><code class="name">var <span class="ident">email</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountPOSTResponse.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountPOSTResponse.user"><code class="name">var <span class="ident">user</span> : <a title="supertokens_python.types.base.User" href="../../../types/base.html#supertokens_python.types.base.User">User</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -903,6 +964,8 @@ validated to form a valid model.</p>
 <li><code><b><a title="supertokens_python.types.response.OkResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.OkResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.OkResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.OkResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
 <li><code><a title="supertokens_python.types.response.OkResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -939,7 +1002,7 @@ dict(one=1, two=2)</p></div>
 <dl>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountTokenInput.recover_account_token"><code class="name">var <span class="ident">recover_account_token</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -976,22 +1039,14 @@ validated to form a valid model.</p>
 <li>pydantic.main.BaseModel</li>
 <li>typing.Generic</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.RegisterCredentialNotAllowedErrorResponse.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.RegisterCredentialNotAllowedErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['REGISTER_CREDENTIAL_NOT_ALLOWED']</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.reason" href="../../../types/response.html#supertokens_python.types.response.StatusReasonResponseBaseModel.reason">reason</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
 <li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -1030,15 +1085,15 @@ dict(one=1, two=2)</p></div>
 <dl>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTKwargsInput.display_name"><code class="name">var <span class="ident">display_name</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTKwargsInput.email"><code class="name">var <span class="ident">email</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTKwargsInput.recover_account_token"><code class="name">var <span class="ident">recover_account_token</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -1133,51 +1188,47 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.attestation"><code class="name">var <span class="ident">attestation</span> : Literal['none', 'indirect', 'direct', 'enterprise']</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.authenticator_selection"><code class="name">var <span class="ident">authenticator_selection</span> : <a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.AuthenticatorSelection" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.AuthenticatorSelection">RegisterOptionsPOSTResponse.AuthenticatorSelection</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.challenge"><code class="name">var <span class="ident">challenge</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.created_at"><code class="name">var <span class="ident">created_at</span> : int</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.exclude_credentials"><code class="name">var <span class="ident">exclude_credentials</span> : List[<a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.ExcludeCredentials" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.ExcludeCredentials">RegisterOptionsPOSTResponse.ExcludeCredentials</a>]</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.expires_at"><code class="name">var <span class="ident">expires_at</span> : int</code></dt>
 <dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.pub_key_cred_params"><code class="name">var <span class="ident">pub_key_cred_params</span> : List[<a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.PubKeyCredParams" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.PubKeyCredParams">RegisterOptionsPOSTResponse.PubKeyCredParams</a>]</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.rp"><code class="name">var <span class="ident">rp</span> : <a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.RelyingParty" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.RelyingParty">RegisterOptionsPOSTResponse.RelyingParty</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.timeout"><code class="name">var <span class="ident">timeout</span> : int</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.user"><code class="name">var <span class="ident">user</span> : <a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.User" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.User">RegisterOptionsPOSTResponse.User</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.webauthn_generated_options_id"><code class="name">var <span class="ident">webauthn_generated_options_id</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -1185,6 +1236,8 @@ inheritance.</p></div>
 <li><code><b><a title="supertokens_python.types.response.OkResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.OkResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.OkResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.OkResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
 <li><code><a title="supertokens_python.types.response.OkResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -1221,22 +1274,14 @@ validated to form a valid model.</p>
 <li>pydantic.main.BaseModel</li>
 <li>typing.Generic</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.SignInNotAllowedErrorResponse.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.SignInNotAllowedErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['SIGN_IN_NOT_ALLOWED']</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.reason" href="../../../types/response.html#supertokens_python.types.response.StatusReasonResponseBaseModel.reason">reason</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
 <li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -1281,35 +1326,31 @@ validated to form a valid model.</p>
 <dl>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.challenge"><code class="name">var <span class="ident">challenge</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.created_at"><code class="name">var <span class="ident">created_at</span> : int</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.expires_at"><code class="name">var <span class="ident">expires_at</span> : int</code></dt>
 <dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.rp_id"><code class="name">var <span class="ident">rp_id</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.timeout"><code class="name">var <span class="ident">timeout</span> : int</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.user_verification"><code class="name">var <span class="ident">user_verification</span> : Literal['required', 'preferred', 'discouraged']</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.webauthn_generated_options_id"><code class="name">var <span class="ident">webauthn_generated_options_id</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -1317,6 +1358,8 @@ validated to form a valid model.</p>
 <li><code><b><a title="supertokens_python.types.response.OkResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.OkResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.OkResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.OkResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
 <li><code><a title="supertokens_python.types.response.OkResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -1354,17 +1397,13 @@ validated to form a valid model.</p>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.SignInPOSTResponse.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.SignInPOSTResponse.session"><code class="name">var <span class="ident">session</span> : <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.SignInPOSTResponse.user"><code class="name">var <span class="ident">user</span> : <a title="supertokens_python.types.base.User" href="../../../types/base.html#supertokens_python.types.base.User">User</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -1372,6 +1411,8 @@ validated to form a valid model.</p>
 <li><code><b><a title="supertokens_python.types.response.OkResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.OkResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.OkResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.OkResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
 <li><code><a title="supertokens_python.types.response.OkResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -1408,22 +1449,14 @@ validated to form a valid model.</p>
 <li>pydantic.main.BaseModel</li>
 <li>typing.Generic</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.SignUpNotAllowedErrorResponse.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.SignUpNotAllowedErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['SIGN_UP_NOT_ALLOWED']</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.reason" href="../../../types/response.html#supertokens_python.types.response.StatusReasonResponseBaseModel.reason">reason</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
 <li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -1461,17 +1494,13 @@ validated to form a valid model.</p>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.SignUpPOSTResponse.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.SignUpPOSTResponse.session"><code class="name">var <span class="ident">session</span> : <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.SignUpPOSTResponse.user"><code class="name">var <span class="ident">user</span> : <a title="supertokens_python.types.base.User" href="../../../types/base.html#supertokens_python.types.base.User">User</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -1479,6 +1508,8 @@ validated to form a valid model.</p>
 <li><code><b><a title="supertokens_python.types.response.OkResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.OkResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.OkResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.OkResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
 <li><code><a title="supertokens_python.types.response.OkResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -1516,23 +1547,23 @@ validated to form a valid model.</p>
 <dl>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.recover_account_link"><code class="name">var <span class="ident">recover_account_link</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.tenant_id"><code class="name">var <span class="ident">tenant_id</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.type"><code class="name">var <span class="ident">type</span> : Literal['RECOVER_ACCOUNT']</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.user"><code class="name">var <span class="ident">user</span> : <a title="supertokens_python.recipe.webauthn.interfaces.api.WebauthnRecoverAccountEmailDeliveryUser" href="#supertokens_python.recipe.webauthn.interfaces.api.WebauthnRecoverAccountEmailDeliveryUser">WebauthnRecoverAccountEmailDeliveryUser</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -1566,25 +1597,21 @@ validated to form a valid model.</p>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.recover_account_link"><code class="name">var <span class="ident">recover_account_link</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.tenant_id"><code class="name">var <span class="ident">tenant_id</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.type"><code class="name">var <span class="ident">type</span> : Literal['RECOVER_ACCOUNT']</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.user"><code class="name">var <span class="ident">user</span> : <a title="supertokens_python.recipe.webauthn.interfaces.api.WebauthnRecoverAccountEmailDeliveryUser" href="#supertokens_python.recipe.webauthn.interfaces.api.WebauthnRecoverAccountEmailDeliveryUser">WebauthnRecoverAccountEmailDeliveryUser</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -1592,6 +1619,7 @@ validated to form a valid model.</p>
 <li><code><b><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
 <li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -1628,19 +1656,15 @@ validated to form a valid model.</p>
 <dl>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.WebauthnRecoverAccountEmailDeliveryUser.email"><code class="name">var <span class="ident">email</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.WebauthnRecoverAccountEmailDeliveryUser.id"><code class="name">var <span class="ident">id</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.webauthn.interfaces.api.WebauthnRecoverAccountEmailDeliveryUser.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.api.WebauthnRecoverAccountEmailDeliveryUser.recipe_user_id"><code class="name">var <span class="ident">recipe_user_id</span> : Optional[<a title="supertokens_python.types.base.RecipeUserId" href="../../../types/base.html#supertokens_python.types.base.RecipeUserId">RecipeUserId</a>]</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -1648,6 +1672,7 @@ validated to form a valid model.</p>
 <li><code><b><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
 <li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -1674,17 +1699,21 @@ validated to form a valid model.</p>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_email_exists_get" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_email_exists_get">disable_email_exists_get</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_generate_recover_account_token_post" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_generate_recover_account_token_post">disable_generate_recover_account_token_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_list_credentials_get" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_list_credentials_get">disable_list_credentials_get</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_recover_account_post" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_recover_account_post">disable_recover_account_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_register_credential_post" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_register_credential_post">disable_register_credential_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_register_options_post" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_register_options_post">disable_register_options_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_remove_credential_post" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_remove_credential_post">disable_remove_credential_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_sign_in_options_post" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_sign_in_options_post">disable_sign_in_options_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_sign_in_post" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_sign_in_post">disable_sign_in_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_sign_up_post" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_sign_up_post">disable_sign_up_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.email_exists_get" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.email_exists_get">email_exists_get</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.generate_recover_account_token_post" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.generate_recover_account_token_post">generate_recover_account_token_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.list_credentials_get" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.list_credentials_get">list_credentials_get</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.recover_account_post" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.recover_account_post">recover_account_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.register_credential_post" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.register_credential_post">register_credential_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.register_options_post" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.register_options_post">register_options_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.remove_credential_post" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.remove_credential_post">remove_credential_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.sign_in_options_post" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.sign_in_options_post">sign_in_options_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.sign_in_post" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.sign_in_post">sign_in_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.sign_up_post" href="#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.sign_up_post">sign_up_post</a></code></li>
@@ -1696,7 +1725,6 @@ validated to form a valid model.</p>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions.app_info" href="#supertokens_python.recipe.webauthn.interfaces.api.APIOptions.app_info">app_info</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions.config" href="#supertokens_python.recipe.webauthn.interfaces.api.APIOptions.config">config</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions.email_delivery" href="#supertokens_python.recipe.webauthn.interfaces.api.APIOptions.email_delivery">email_delivery</a></code></li>
-<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions.model_config" href="#supertokens_python.recipe.webauthn.interfaces.api.APIOptions.model_config">model_config</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions.recipe_id" href="#supertokens_python.recipe.webauthn.interfaces.api.APIOptions.recipe_id">recipe_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions.recipe_implementation" href="#supertokens_python.recipe.webauthn.interfaces.api.APIOptions.recipe_implementation">recipe_implementation</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions.req" href="#supertokens_python.recipe.webauthn.interfaces.api.APIOptions.req">req</a></code></li>
@@ -1714,7 +1742,6 @@ validated to form a valid model.</p>
 <h4><code><a title="supertokens_python.recipe.webauthn.interfaces.api.EmailExistsGetResponse" href="#supertokens_python.recipe.webauthn.interfaces.api.EmailExistsGetResponse">EmailExistsGetResponse</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.EmailExistsGetResponse.exists" href="#supertokens_python.recipe.webauthn.interfaces.api.EmailExistsGetResponse.exists">exists</a></code></li>
-<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.EmailExistsGetResponse.model_config" href="#supertokens_python.recipe.webauthn.interfaces.api.EmailExistsGetResponse.model_config">model_config</a></code></li>
 </ul>
 </li>
 <li>
@@ -1726,16 +1753,11 @@ validated to form a valid model.</p>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse" href="#supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse">RecoverAccountNotAllowedErrorResponse</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse.model_config" href="#supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse.model_config">model_config</a></code></li>
-<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse.status" href="#supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse.status">status</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountPOSTResponse" href="#supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountPOSTResponse">RecoverAccountPOSTResponse</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountPOSTResponse.email" href="#supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountPOSTResponse.email">email</a></code></li>
-<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountPOSTResponse.model_config" href="#supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountPOSTResponse.model_config">model_config</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountPOSTResponse.user" href="#supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountPOSTResponse.user">user</a></code></li>
 </ul>
 </li>
@@ -1747,10 +1769,6 @@ validated to form a valid model.</p>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterCredentialNotAllowedErrorResponse" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterCredentialNotAllowedErrorResponse">RegisterCredentialNotAllowedErrorResponse</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterCredentialNotAllowedErrorResponse.model_config" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterCredentialNotAllowedErrorResponse.model_config">model_config</a></code></li>
-<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterCredentialNotAllowedErrorResponse.status" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterCredentialNotAllowedErrorResponse.status">status</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTKwargsInput" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTKwargsInput">RegisterOptionsPOSTKwargsInput</a></code></h4>
@@ -1774,7 +1792,6 @@ validated to form a valid model.</p>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.created_at" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.created_at">created_at</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.exclude_credentials" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.exclude_credentials">exclude_credentials</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.expires_at" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.expires_at">expires_at</a></code></li>
-<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.model_config" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.model_config">model_config</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.pub_key_cred_params" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.pub_key_cred_params">pub_key_cred_params</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.rp" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.rp">rp</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.timeout" href="#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.timeout">timeout</a></code></li>
@@ -1784,10 +1801,6 @@ validated to form a valid model.</p>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignInNotAllowedErrorResponse" href="#supertokens_python.recipe.webauthn.interfaces.api.SignInNotAllowedErrorResponse">SignInNotAllowedErrorResponse</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignInNotAllowedErrorResponse.model_config" href="#supertokens_python.recipe.webauthn.interfaces.api.SignInNotAllowedErrorResponse.model_config">model_config</a></code></li>
-<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignInNotAllowedErrorResponse.status" href="#supertokens_python.recipe.webauthn.interfaces.api.SignInNotAllowedErrorResponse.status">status</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse" href="#supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse">SignInOptionsPOSTResponse</a></code></h4>
@@ -1795,7 +1808,6 @@ validated to form a valid model.</p>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.challenge" href="#supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.challenge">challenge</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.created_at" href="#supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.created_at">created_at</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.expires_at" href="#supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.expires_at">expires_at</a></code></li>
-<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.model_config" href="#supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.model_config">model_config</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.rp_id" href="#supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.rp_id">rp_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.timeout" href="#supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.timeout">timeout</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.user_verification" href="#supertokens_python.recipe.webauthn.interfaces.api.SignInOptionsPOSTResponse.user_verification">user_verification</a></code></li>
@@ -1805,22 +1817,16 @@ validated to form a valid model.</p>
 <li>
 <h4><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignInPOSTResponse" href="#supertokens_python.recipe.webauthn.interfaces.api.SignInPOSTResponse">SignInPOSTResponse</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignInPOSTResponse.model_config" href="#supertokens_python.recipe.webauthn.interfaces.api.SignInPOSTResponse.model_config">model_config</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignInPOSTResponse.session" href="#supertokens_python.recipe.webauthn.interfaces.api.SignInPOSTResponse.session">session</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignInPOSTResponse.user" href="#supertokens_python.recipe.webauthn.interfaces.api.SignInPOSTResponse.user">user</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignUpNotAllowedErrorResponse" href="#supertokens_python.recipe.webauthn.interfaces.api.SignUpNotAllowedErrorResponse">SignUpNotAllowedErrorResponse</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignUpNotAllowedErrorResponse.model_config" href="#supertokens_python.recipe.webauthn.interfaces.api.SignUpNotAllowedErrorResponse.model_config">model_config</a></code></li>
-<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignUpNotAllowedErrorResponse.status" href="#supertokens_python.recipe.webauthn.interfaces.api.SignUpNotAllowedErrorResponse.status">status</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignUpPOSTResponse" href="#supertokens_python.recipe.webauthn.interfaces.api.SignUpPOSTResponse">SignUpPOSTResponse</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignUpPOSTResponse.model_config" href="#supertokens_python.recipe.webauthn.interfaces.api.SignUpPOSTResponse.model_config">model_config</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignUpPOSTResponse.session" href="#supertokens_python.recipe.webauthn.interfaces.api.SignUpPOSTResponse.session">session</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.SignUpPOSTResponse.user" href="#supertokens_python.recipe.webauthn.interfaces.api.SignUpPOSTResponse.user">user</a></code></li>
 </ul>
@@ -1838,7 +1844,6 @@ validated to form a valid model.</p>
 <li>
 <h4><code><a title="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput" href="#supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput">TypeWebauthnRecoverAccountEmailDeliveryInput</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.model_config" href="#supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.model_config">model_config</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.recover_account_link" href="#supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.recover_account_link">recover_account_link</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.tenant_id" href="#supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.tenant_id">tenant_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.type" href="#supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput.type">type</a></code></li>
@@ -1850,7 +1855,6 @@ validated to form a valid model.</p>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.WebauthnRecoverAccountEmailDeliveryUser.email" href="#supertokens_python.recipe.webauthn.interfaces.api.WebauthnRecoverAccountEmailDeliveryUser.email">email</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.WebauthnRecoverAccountEmailDeliveryUser.id" href="#supertokens_python.recipe.webauthn.interfaces.api.WebauthnRecoverAccountEmailDeliveryUser.id">id</a></code></li>
-<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.WebauthnRecoverAccountEmailDeliveryUser.model_config" href="#supertokens_python.recipe.webauthn.interfaces.api.WebauthnRecoverAccountEmailDeliveryUser.model_config">model_config</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.WebauthnRecoverAccountEmailDeliveryUser.recipe_user_id" href="#supertokens_python.recipe.webauthn.interfaces.api.WebauthnRecoverAccountEmailDeliveryUser.recipe_user_id">recipe_user_id</a></code></li>
 </ul>
 </li>

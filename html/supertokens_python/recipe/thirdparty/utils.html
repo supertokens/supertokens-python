@@ -41,17 +41,24 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set
+
+from jwt import PyJWKClient, decode  # type: ignore
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.thirdparty.provider import ProviderInput
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
+    BaseOverrideConfig,
+)
 
 from .interfaces import APIInterface, RecipeInterface
 
 if TYPE_CHECKING:
     from .provider import ProviderInput
-
-from jwt import PyJWKClient, decode  # type: ignore
 
 
 class SignInAndUpFeature:
@@ -74,54 +81,61 @@ class SignInAndUpFeature:
         self.providers = providers
 
 
-class InputOverrideConfig:
-    def __init__(
+ThirdPartyOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedThirdPartyOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+InputOverrideConfig = ThirdPartyOverrideConfig
+&#34;&#34;&#34;Deprecated: Use `ThirdPartyOverrideConfig` instead.&#34;&#34;&#34;
+
+
+class ThirdPartyOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    sign_in_and_up_feature: SignInAndUpFeature
+
+
+class ThirdPartyConfig(
+    ThirdPartyOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, ThirdPartyOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; ThirdPartyOverrideableConfig:
+        &#34;&#34;&#34;Create a `ThirdPartyOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return ThirdPartyOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+        overrideable_config: ThirdPartyOverrideableConfig,
+    ) -&gt; &#34;ThirdPartyConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `ThirdPartyConfig` from a `ThirdPartyOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return ThirdPartyConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
-
-
-class ThirdPartyConfig:
-    def __init__(
-        self,
-        sign_in_and_up_feature: SignInAndUpFeature,
-        override: OverrideConfig,
-    ):
-        self.sign_in_and_up_feature = sign_in_and_up_feature
-        self.override = override
+class NormalisedThirdPartyConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
+    sign_in_and_up_feature: SignInAndUpFeature
 
 
 def validate_and_normalise_user_input(
-    sign_in_and_up_feature: SignInAndUpFeature,
-    override: Union[InputOverrideConfig, None] = None,
-) -&gt; ThirdPartyConfig:
-    if not isinstance(sign_in_and_up_feature, SignInAndUpFeature):  # type: ignore
+    config: ThirdPartyConfig,
+) -&gt; NormalisedThirdPartyConfig:
+    if not isinstance(config.sign_in_and_up_feature, SignInAndUpFeature):  # type: ignore
         raise ValueError(
             &#34;sign_in_and_up_feature must be an instance of SignInAndUpFeature&#34;
         )
 
-    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
-        raise ValueError(&#34;override must be an instance of InputOverrideConfig or None&#34;)
+    override_config = NormalisedThirdPartyOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
-    if override is None:
-        override = InputOverrideConfig()
-
-    return ThirdPartyConfig(
-        sign_in_and_up_feature,
-        OverrideConfig(functions=override.functions, apis=override.apis),
+    return NormalisedThirdPartyConfig(
+        sign_in_and_up_feature=config.sign_in_and_up_feature,
+        override=override_config,
     )
 
 
@@ -158,7 +172,7 @@ def verify_id_token_from_jwks_endpoint(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>sign_in_and_up_feature: <a title="supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature" href="#supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature">SignInAndUpFeature</a>, override: Union[<a title="supertokens_python.recipe.thirdparty.utils.InputOverrideConfig" href="#supertokens_python.recipe.thirdparty.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None) ‑> <a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig">ThirdPartyConfig</a></span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>config: <a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig">ThirdPartyConfig</a>) ‑> <a title="supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig" href="#supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig">NormalisedThirdPartyConfig</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -174,45 +188,84 @@ def verify_id_token_from_jwks_endpoint(
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="supertokens_python.recipe.thirdparty.utils.InputOverrideConfig"><code class="flex name class">
+<dt id="supertokens_python.recipe.thirdparty.utils.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
 <span>class <span class="ident">InputOverrideConfig</span></span>
-<span>(</span><span>functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis</code></pre>
-</details>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.apis" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig.apis">apis</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.functions" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI.functions">functions</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
-<dt id="supertokens_python.recipe.thirdparty.utils.OverrideConfig"><code class="flex name class">
-<span>class <span class="ident">OverrideConfig</span></span>
-<span>(</span><span>functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None)</span>
+<dt id="supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig"><code class="flex name class">
+<span>class <span class="ident">NormalisedThirdPartyConfig</span></span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Base class for normalized config of a Recipe with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis</code></pre>
+<pre><code class="python">class NormalisedThirdPartyConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
+    sign_in_and_up_feature: SignInAndUpFeature</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></li>
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig">BaseNormalisedConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig.sign_in_and_up_feature"><code class="name">var <span class="ident">sign_in_and_up_feature</span> : <a title="supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature" href="#supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature">SignInAndUpFeature</a></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].override" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig.override">override</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature"><code class="flex name class">
 <span>class <span class="ident">SignInAndUpFeature</span></span>
@@ -246,23 +299,132 @@ def verify_id_token_from_jwks_endpoint(
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig"><code class="flex name class">
 <span>class <span class="ident">ThirdPartyConfig</span></span>
-<span>(</span><span>sign_in_and_up_feature: <a title="supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature" href="#supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature">SignInAndUpFeature</a>, override: <a title="supertokens_python.recipe.thirdparty.utils.OverrideConfig" href="#supertokens_python.recipe.thirdparty.utils.OverrideConfig">OverrideConfig</a>)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ThirdPartyConfig:
-    def __init__(
+<pre><code class="python">class ThirdPartyConfig(
+    ThirdPartyOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, ThirdPartyOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; ThirdPartyOverrideableConfig:
+        &#34;&#34;&#34;Create a `ThirdPartyOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return ThirdPartyOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        sign_in_and_up_feature: SignInAndUpFeature,
-        override: OverrideConfig,
-    ):
-        self.sign_in_and_up_feature = sign_in_and_up_feature
-        self.override = override</code></pre>
+        overrideable_config: ThirdPartyOverrideableConfig,
+    ) -&gt; &#34;ThirdPartyConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `ThirdPartyConfig` from a `ThirdPartyOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return ThirdPartyConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig">ThirdPartyOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li>supertokens_python.types.config.BaseConfig[RecipeInterface, APIInterface, ThirdPartyOverrideableConfig]</li>
+<li><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig.from_overrideable_config"><code class="name flex">
+<span>def <span class="ident">from_overrideable_config</span></span>(<span>self, overrideable_config: <a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig">ThirdPartyOverrideableConfig</a>) ‑> <a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig">ThirdPartyConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig">ThirdPartyConfig</a></code> from a <code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig">ThirdPartyOverrideableConfig</a></code>.
+Not a classmethod since it needs to be used in a dynamic context within plugins.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig.to_overrideable_config"><code class="name flex">
+<span>def <span class="ident">to_overrideable_config</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig">ThirdPartyOverrideableConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig">ThirdPartyOverrideableConfig</a></code> from the current config.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig">ThirdPartyOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.sign_in_and_up_feature" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.sign_in_and_up_feature">sign_in_and_up_feature</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li><code><b><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseConfig.override" href="../../types/config.html#supertokens_python.types.config.BaseConfig.override">override</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig"><code class="flex name class">
+<span>class <span class="ident">ThirdPartyOverrideableConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ThirdPartyOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    sign_in_and_up_feature: SignInAndUpFeature</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig">ThirdPartyConfig</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.sign_in_and_up_feature"><code class="name">var <span class="ident">sign_in_and_up_feature</span> : <a title="supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature" href="#supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature">SignInAndUpFeature</a></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -287,16 +449,29 @@ def verify_id_token_from_jwks_endpoint(
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="supertokens_python.recipe.thirdparty.utils.InputOverrideConfig" href="#supertokens_python.recipe.thirdparty.utils.InputOverrideConfig">InputOverrideConfig</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.thirdparty.utils.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.thirdparty.utils.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.thirdparty.utils.OverrideConfig" href="#supertokens_python.recipe.thirdparty.utils.OverrideConfig">OverrideConfig</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig" href="#supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig">NormalisedThirdPartyConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig.sign_in_and_up_feature" href="#supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig.sign_in_and_up_feature">sign_in_and_up_feature</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature" href="#supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature">SignInAndUpFeature</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig">ThirdPartyConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig.from_overrideable_config" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig.from_overrideable_config">from_overrideable_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig.to_overrideable_config" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig.to_overrideable_config">to_overrideable_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig">ThirdPartyOverrideableConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.sign_in_and_up_feature" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.sign_in_and_up_feature">sign_in_and_up_feature</a></code></li>
+</ul>
 </li>
 </ul>
 </li>

@@ -43,8 +43,10 @@
 from __future__ import annotations
 
 from abc import ABC
+from re import fullmatch
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
 
+from phonenumbers import is_valid_number, parse
 from typing_extensions import Literal
 
 from supertokens_python.ingredients.emaildelivery.types import (
@@ -56,29 +58,31 @@ from supertokens_python.ingredients.smsdelivery.types import (
     SMSDeliveryConfigWithService,
 )
 from supertokens_python.recipe.multifactorauth.types import FactorIds
-from supertokens_python.recipe.passwordless.types import (
-    PasswordlessLoginSMSTemplateVars,
-)
-
-if TYPE_CHECKING:
-    from supertokens_python import AppInfo
-
-    from .interfaces import (
-        APIInterface,
-        PasswordlessLoginEmailTemplateVars,
-        RecipeInterface,
-    )
-
-from re import fullmatch
-
-from phonenumbers import is_valid_number, parse  # type: ignore
-
 from supertokens_python.recipe.passwordless.emaildelivery.services.backward_compatibility import (
     BackwardCompatibilityService,
 )
 from supertokens_python.recipe.passwordless.smsdelivery.services.backward_compatibility import (
     BackwardCompatibilityService as SMSBackwardCompatibilityService,
 )
+from supertokens_python.recipe.passwordless.types import (
+    PasswordlessLoginSMSTemplateVars,
+)
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
+    BaseOverrideConfig,
+)
+
+from .interfaces import (
+    APIInterface,
+    PasswordlessLoginEmailTemplateVars,
+    RecipeInterface,
+)
+
+if TYPE_CHECKING:
+    from supertokens_python import AppInfo
 
 
 async def default_validate_phone_number(value: str, _tenant_id: str):
@@ -96,14 +100,12 @@ async def default_validate_email(value: str, _tenant_id: str):
         return &#34;Email is invalid&#34;
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+PasswordlessOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedPasswordlessOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+InputOverrideConfig = PasswordlessOverrideConfig
+&#34;&#34;&#34;Deprecated, use `PasswordlessOverrideConfig` instead.&#34;&#34;&#34;
 
 
 class ContactConfig(ABC):
@@ -170,64 +172,85 @@ class PhoneOrEmailInput:
         self.email = email
 
 
-class PasswordlessConfig:
-    def __init__(
+class PasswordlessOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    contact_config: ContactConfig
+    flow_type: Literal[
+        &#34;USER_INPUT_CODE&#34;, &#34;MAGIC_LINK&#34;, &#34;USER_INPUT_CODE_AND_MAGIC_LINK&#34;
+    ]
+    get_custom_user_input_code: Union[
+        Callable[[str, Dict[str, Any]], Awaitable[str]], None
+    ] = None
+    email_delivery: Union[
+        EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None
+    ] = None
+    sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = (
+        None
+    )
+
+
+class PasswordlessConfig(
+    PasswordlessOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, PasswordlessOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; PasswordlessOverrideableConfig:
+        &#34;&#34;&#34;Create a `PasswordlessOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return PasswordlessOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        contact_config: ContactConfig,
-        override: OverrideConfig,
-        flow_type: Literal[
-            &#34;USER_INPUT_CODE&#34;, &#34;MAGIC_LINK&#34;, &#34;USER_INPUT_CODE_AND_MAGIC_LINK&#34;
-        ],
-        get_email_delivery_config: Callable[
-            [], EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]
-        ],
-        get_sms_delivery_config: Callable[
-            [], SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]
-        ],
-        get_custom_user_input_code: Union[
-            Callable[[str, Dict[str, Any]], Awaitable[str]], None
-        ] = None,
-    ):
-        self.contact_config = contact_config
-        self.override = override
-        self.flow_type: Literal[
-            &#34;USER_INPUT_CODE&#34;, &#34;MAGIC_LINK&#34;, &#34;USER_INPUT_CODE_AND_MAGIC_LINK&#34;
-        ] = flow_type
-        self.get_custom_user_input_code = get_custom_user_input_code
-        self.get_email_delivery_config = get_email_delivery_config
-        self.get_sms_delivery_config = get_sms_delivery_config
+        overrideable_config: PasswordlessOverrideableConfig,
+    ) -&gt; &#34;PasswordlessConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `PasswordlessConfig` from a `PasswordlessOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return PasswordlessConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
+
+
+class NormalisedPasswordlessConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
+    contact_config: ContactConfig
+    flow_type: Literal[
+        &#34;USER_INPUT_CODE&#34;, &#34;MAGIC_LINK&#34;, &#34;USER_INPUT_CODE_AND_MAGIC_LINK&#34;
+    ]
+    get_email_delivery_config: Callable[
+        [], EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]
+    ]
+    get_sms_delivery_config: Callable[
+        [], SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]
+    ]
+    get_custom_user_input_code: Union[
+        Callable[[str, Dict[str, Any]], Awaitable[str]], None
+    ]
 
 
 def validate_and_normalise_user_input(
     app_info: AppInfo,
-    contact_config: ContactConfig,
-    flow_type: Literal[
-        &#34;USER_INPUT_CODE&#34;, &#34;MAGIC_LINK&#34;, &#34;USER_INPUT_CODE_AND_MAGIC_LINK&#34;
-    ],
-    override: Union[OverrideConfig, None] = None,
-    get_custom_user_input_code: Union[
-        Callable[[str, Dict[str, Any]], Awaitable[str]], None
-    ] = None,
-    email_delivery: Union[
-        EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None
-    ] = None,
-    sms_delivery: Union[
-        SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None
-    ] = None,
-) -&gt; PasswordlessConfig:
-    if override is None:
-        override = OverrideConfig()
+    config: PasswordlessConfig,
+) -&gt; NormalisedPasswordlessConfig:
+    override_config = NormalisedPasswordlessOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
     def get_email_delivery_config() -&gt; EmailDeliveryConfigWithService[
         PasswordlessLoginEmailTemplateVars
     ]:
-        email_service = email_delivery.service if email_delivery is not None else None
+        email_service = (
+            config.email_delivery.service if config.email_delivery is not None else None
+        )
 
         if email_service is None:
             email_service = BackwardCompatibilityService(app_info)
 
-        if email_delivery is not None and email_delivery.override is not None:
-            override = email_delivery.override
+        if (
+            config.email_delivery is not None
+            and config.email_delivery.override is not None
+        ):
+            override = config.email_delivery.override
         else:
             override = None
 
@@ -236,22 +259,24 @@ def validate_and_normalise_user_input(
     def get_sms_delivery_config() -&gt; SMSDeliveryConfigWithService[
         PasswordlessLoginSMSTemplateVars
     ]:
-        sms_service = sms_delivery.service if sms_delivery is not None else None
+        sms_service = (
+            config.sms_delivery.service if config.sms_delivery is not None else None
+        )
 
         if sms_service is None:
             sms_service = SMSBackwardCompatibilityService(app_info)
 
-        if sms_delivery is not None and sms_delivery.override is not None:
-            override = sms_delivery.override
+        if config.sms_delivery is not None and config.sms_delivery.override is not None:
+            override = config.sms_delivery.override
         else:
             override = None
 
         return SMSDeliveryConfigWithService(sms_service, override=override)
 
-    if not isinstance(contact_config, ContactConfig):  # type: ignore user might not have linter enabled
+    if not isinstance(config.contact_config, ContactConfig):  # type: ignore user might not have linter enabled
         raise ValueError(&#34;contact_config must be of type ContactConfig&#34;)
 
-    if flow_type not in [
+    if config.flow_type not in [
         &#34;USER_INPUT_CODE&#34;,
         &#34;MAGIC_LINK&#34;,
         &#34;USER_INPUT_CODE_AND_MAGIC_LINK&#34;,
@@ -260,21 +285,18 @@ def validate_and_normalise_user_input(
             &#34;flow_type must be one of USER_INPUT_CODE, MAGIC_LINK, USER_INPUT_CODE_AND_MAGIC_LINK&#34;
         )
 
-    if not isinstance(override, OverrideConfig):  # type: ignore user might not have linter enabled
-        raise ValueError(&#34;override must be of type OverrideConfig&#34;)
-
-    return PasswordlessConfig(
-        contact_config=contact_config,
-        override=OverrideConfig(functions=override.functions, apis=override.apis),
-        flow_type=flow_type,
+    return NormalisedPasswordlessConfig(
+        contact_config=config.contact_config,
+        override=override_config,
+        flow_type=config.flow_type,
         get_email_delivery_config=get_email_delivery_config,
         get_sms_delivery_config=get_sms_delivery_config,
-        get_custom_user_input_code=get_custom_user_input_code,
+        get_custom_user_input_code=config.get_custom_user_input_code,
     )
 
 
 def get_enabled_pwless_factors(
-    config: PasswordlessConfig,
+    config: NormalisedPasswordlessConfig,
 ) -&gt; List[str]:
     all_factors: List[str] = []
 
@@ -328,13 +350,13 @@ def get_enabled_pwless_factors(
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.utils.get_enabled_pwless_factors"><code class="name flex">
-<span>def <span class="ident">get_enabled_pwless_factors</span></span>(<span>config: <a title="supertokens_python.recipe.passwordless.utils.PasswordlessConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessConfig">PasswordlessConfig</a>) ‑> List[str]</span>
+<span>def <span class="ident">get_enabled_pwless_factors</span></span>(<span>config: <a title="supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig" href="#supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig">NormalisedPasswordlessConfig</a>) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, contact_config: <a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a>, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", override: Union[<a title="supertokens_python.recipe.passwordless.utils.OverrideConfig" href="#supertokens_python.recipe.passwordless.utils.OverrideConfig">OverrideConfig</a>, None] = None, get_custom_user_input_code: Union[Callable[[str, Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None)</span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, config: <a title="supertokens_python.recipe.passwordless.utils.PasswordlessConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessConfig">PasswordlessConfig</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -344,6 +366,39 @@ def get_enabled_pwless_factors(
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="supertokens_python.recipe.passwordless.utils.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
+<span>class <span class="ident">InputOverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.apis" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig.apis">apis</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.functions" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI.functions">functions</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
 <dt id="supertokens_python.recipe.passwordless.utils.ContactConfig"><code class="flex name class">
 <span>class <span class="ident">ContactConfig</span></span>
 <span>(</span><span>contact_method: "Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE']")</span>
@@ -471,63 +526,240 @@ inheritance.</p></div>
 <li>abc.ABC</li>
 </ul>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.utils.OverrideConfig"><code class="flex name class">
-<span>class <span class="ident">OverrideConfig</span></span>
-<span>(</span><span>functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None)</span>
+<dt id="supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig"><code class="flex name class">
+<span>class <span class="ident">NormalisedPasswordlessConfig</span></span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Base class for normalized config of a Recipe with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis</code></pre>
+<pre><code class="python">class NormalisedPasswordlessConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
+    contact_config: ContactConfig
+    flow_type: Literal[
+        &#34;USER_INPUT_CODE&#34;, &#34;MAGIC_LINK&#34;, &#34;USER_INPUT_CODE_AND_MAGIC_LINK&#34;
+    ]
+    get_email_delivery_config: Callable[
+        [], EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]
+    ]
+    get_sms_delivery_config: Callable[
+        [], SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]
+    ]
+    get_custom_user_input_code: Union[
+        Callable[[str, Dict[str, Any]], Awaitable[str]], None
+    ]</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></li>
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig">BaseNormalisedConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig.contact_config"><code class="name">var <span class="ident">contact_config</span> : <a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig.flow_type"><code class="name">var <span class="ident">flow_type</span> : Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig.get_custom_user_input_code"><code class="name">var <span class="ident">get_custom_user_input_code</span> : Optional[Callable[[str, Dict[str, Any]], Awaitable[str]]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig.get_email_delivery_config"><code class="name">var <span class="ident">get_email_delivery_config</span> : Callable[[], <a title="supertokens_python.ingredients.emaildelivery.types.EmailDeliveryConfigWithService" href="../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.EmailDeliveryConfigWithService">EmailDeliveryConfigWithService</a>[<a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig.get_sms_delivery_config"><code class="name">var <span class="ident">get_sms_delivery_config</span> : Callable[[], <a title="supertokens_python.ingredients.smsdelivery.types.SMSDeliveryConfigWithService" href="../../ingredients/smsdelivery/types.html#supertokens_python.ingredients.smsdelivery.types.SMSDeliveryConfigWithService">SMSDeliveryConfigWithService</a>[<a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters" href="types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a>]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].override" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig.override">override</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.utils.PasswordlessConfig"><code class="flex name class">
 <span>class <span class="ident">PasswordlessConfig</span></span>
-<span>(</span><span>contact_config: <a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a>, override: <a title="supertokens_python.recipe.passwordless.utils.OverrideConfig" href="#supertokens_python.recipe.passwordless.utils.OverrideConfig">OverrideConfig</a>, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]], get_sms_delivery_config: Callable[[], SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]], get_custom_user_input_code: Union[Callable[[str, Dict[str, Any]], Awaitable[str]], None] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class PasswordlessConfig:
-    def __init__(
+<pre><code class="python">class PasswordlessConfig(
+    PasswordlessOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, PasswordlessOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; PasswordlessOverrideableConfig:
+        &#34;&#34;&#34;Create a `PasswordlessOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return PasswordlessOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        contact_config: ContactConfig,
-        override: OverrideConfig,
-        flow_type: Literal[
-            &#34;USER_INPUT_CODE&#34;, &#34;MAGIC_LINK&#34;, &#34;USER_INPUT_CODE_AND_MAGIC_LINK&#34;
-        ],
-        get_email_delivery_config: Callable[
-            [], EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]
-        ],
-        get_sms_delivery_config: Callable[
-            [], SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]
-        ],
-        get_custom_user_input_code: Union[
-            Callable[[str, Dict[str, Any]], Awaitable[str]], None
-        ] = None,
-    ):
-        self.contact_config = contact_config
-        self.override = override
-        self.flow_type: Literal[
-            &#34;USER_INPUT_CODE&#34;, &#34;MAGIC_LINK&#34;, &#34;USER_INPUT_CODE_AND_MAGIC_LINK&#34;
-        ] = flow_type
-        self.get_custom_user_input_code = get_custom_user_input_code
-        self.get_email_delivery_config = get_email_delivery_config
-        self.get_sms_delivery_config = get_sms_delivery_config</code></pre>
+        overrideable_config: PasswordlessOverrideableConfig,
+    ) -&gt; &#34;PasswordlessConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `PasswordlessConfig` from a `PasswordlessOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return PasswordlessConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig">PasswordlessOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li>supertokens_python.types.config.BaseConfig[RecipeInterface, APIInterface, PasswordlessOverrideableConfig]</li>
+<li><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.utils.PasswordlessConfig.from_overrideable_config"><code class="name flex">
+<span>def <span class="ident">from_overrideable_config</span></span>(<span>self, overrideable_config: <a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig">PasswordlessOverrideableConfig</a>) ‑> <a title="supertokens_python.recipe.passwordless.utils.PasswordlessConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessConfig">PasswordlessConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessConfig">PasswordlessConfig</a></code> from a <code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig">PasswordlessOverrideableConfig</a></code>.
+Not a classmethod since it needs to be used in a dynamic context within plugins.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.utils.PasswordlessConfig.to_overrideable_config"><code class="name flex">
+<span>def <span class="ident">to_overrideable_config</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig">PasswordlessOverrideableConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig">PasswordlessOverrideableConfig</a></code> from the current config.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig">PasswordlessOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.contact_config" href="#supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.contact_config">contact_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.email_delivery" href="#supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.email_delivery">email_delivery</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.flow_type" href="#supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.flow_type">flow_type</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.get_custom_user_input_code" href="#supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.get_custom_user_input_code">get_custom_user_input_code</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.sms_delivery" href="#supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.sms_delivery">sms_delivery</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li><code><b><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseConfig.override" href="../../types/config.html#supertokens_python.types.config.BaseConfig.override">override</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig"><code class="flex name class">
+<span>class <span class="ident">PasswordlessOverrideableConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PasswordlessOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    contact_config: ContactConfig
+    flow_type: Literal[
+        &#34;USER_INPUT_CODE&#34;, &#34;MAGIC_LINK&#34;, &#34;USER_INPUT_CODE_AND_MAGIC_LINK&#34;
+    ]
+    get_custom_user_input_code: Union[
+        Callable[[str, Dict[str, Any]], Awaitable[str]], None
+    ] = None
+    email_delivery: Union[
+        EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None
+    ] = None
+    sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = (
+        None
+    )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.passwordless.utils.PasswordlessConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessConfig">PasswordlessConfig</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.contact_config"><code class="name">var <span class="ident">contact_config</span> : <a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.email_delivery"><code class="name">var <span class="ident">email_delivery</span> : Optional[<a title="supertokens_python.ingredients.emaildelivery.types.EmailDeliveryConfig" href="../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.EmailDeliveryConfig">EmailDeliveryConfig</a>[<a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.flow_type"><code class="name">var <span class="ident">flow_type</span> : Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.get_custom_user_input_code"><code class="name">var <span class="ident">get_custom_user_input_code</span> : Optional[Callable[[str, Dict[str, Any]], Awaitable[str]]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.sms_delivery"><code class="name">var <span class="ident">sms_delivery</span> : Optional[<a title="supertokens_python.ingredients.smsdelivery.types.SMSDeliveryConfig" href="../../ingredients/smsdelivery/types.html#supertokens_python.ingredients.smsdelivery.types.SMSDeliveryConfig">SMSDeliveryConfig</a>[<a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters" href="types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a>]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput"><code class="flex name class">
 <span>class <span class="ident">PhoneOrEmailInput</span></span>
@@ -570,6 +802,9 @@ inheritance.</p></div>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
+<h4><code><a title="supertokens_python.recipe.passwordless.utils.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.passwordless.utils.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
+</li>
+<li>
 <h4><code><a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a></code></h4>
 </li>
 <li>
@@ -582,10 +817,31 @@ inheritance.</p></div>
 <h4><code><a title="supertokens_python.recipe.passwordless.utils.ContactPhoneOnlyConfig" href="#supertokens_python.recipe.passwordless.utils.ContactPhoneOnlyConfig">ContactPhoneOnlyConfig</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.utils.OverrideConfig" href="#supertokens_python.recipe.passwordless.utils.OverrideConfig">OverrideConfig</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig" href="#supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig">NormalisedPasswordlessConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig.contact_config" href="#supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig.contact_config">contact_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig.flow_type" href="#supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig.flow_type">flow_type</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig.get_custom_user_input_code" href="#supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig.get_custom_user_input_code">get_custom_user_input_code</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig.get_email_delivery_config" href="#supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig.get_email_delivery_config">get_email_delivery_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig.get_sms_delivery_config" href="#supertokens_python.recipe.passwordless.utils.NormalisedPasswordlessConfig.get_sms_delivery_config">get_sms_delivery_config</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessConfig">PasswordlessConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessConfig.from_overrideable_config" href="#supertokens_python.recipe.passwordless.utils.PasswordlessConfig.from_overrideable_config">from_overrideable_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessConfig.to_overrideable_config" href="#supertokens_python.recipe.passwordless.utils.PasswordlessConfig.to_overrideable_config">to_overrideable_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig">PasswordlessOverrideableConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.contact_config" href="#supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.contact_config">contact_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.email_delivery" href="#supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.email_delivery">email_delivery</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.flow_type" href="#supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.flow_type">flow_type</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.get_custom_user_input_code" href="#supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.get_custom_user_input_code">get_custom_user_input_code</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.sms_delivery" href="#supertokens_python.recipe.passwordless.utils.PasswordlessOverrideableConfig.sms_delivery">sms_delivery</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput" href="#supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput">PhoneOrEmailInput</a></code></h4>

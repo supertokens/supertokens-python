@@ -72,7 +72,8 @@ from .api import handle_login_methods_api
 from .constants import LOGIN_METHODS
 from .exceptions import MultitenancyError
 from .utils import (
-    InputOverrideConfig,
+    MultitenancyConfig,
+    MultitenancyOverrideConfig,
     validate_and_normalise_user_input,
 )
 
@@ -82,35 +83,20 @@ class MultitenancyRecipe(RecipeModule):
     __instance = None
 
     def __init__(
-        self,
-        recipe_id: str,
-        app_info: AppInfo,
-        get_allowed_domains_for_tenant_id: Optional[
-            TypeGetAllowedDomainsForTenantId
-        ] = None,
-        override: Union[InputOverrideConfig, None] = None,
+        self, recipe_id: str, app_info: AppInfo, config: MultitenancyConfig
     ) -&gt; None:
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(
-            get_allowed_domains_for_tenant_id,
-            override,
-        )
+        self.config = validate_and_normalise_user_input(config=config)
 
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.config
         )
-        self.recipe_implementation = (
+        self.recipe_implementation = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
         api_implementation = APIImplementation()
-        self.api_implementation = (
-            api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
-        )
+        self.api_implementation = self.config.override.apis(api_implementation)
 
         self.static_third_party_providers: List[ProviderInput] = []
         self.get_allowed_domains_for_tenant_id = (
@@ -178,15 +164,25 @@ class MultitenancyRecipe(RecipeModule):
         get_allowed_domains_for_tenant_id: Union[
             TypeGetAllowedDomainsForTenantId, None
         ] = None,
-        override: Union[InputOverrideConfig, None] = None,
+        override: Union[MultitenancyOverrideConfig, None] = None,
     ):
-        def func(app_info: AppInfo):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = MultitenancyConfig(
+            get_allowed_domains_for_tenant_id=get_allowed_domains_for_tenant_id,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if MultitenancyRecipe.__instance is None:
                 MultitenancyRecipe.__instance = MultitenancyRecipe(
-                    MultitenancyRecipe.recipe_id,
-                    app_info,
-                    get_allowed_domains_for_tenant_id,
-                    override,
+                    recipe_id=MultitenancyRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=MultitenancyRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
 
                 def callback():
@@ -232,8 +228,6 @@ class MultitenancyRecipe(RecipeModule):
 
 class AllowedDomainsClaimClass(PrimitiveArrayClaim[List[str]]):
     def __init__(self):
-        default_max_age_in_sec = 60 * 60
-
         async def fetch_value(
             _user_id: str,
             _recipe_user_id: RecipeUserId,
@@ -251,7 +245,7 @@ class AllowedDomainsClaimClass(PrimitiveArrayClaim[List[str]]):
                 tenant_id, user_context
             )
 
-        super().__init__(&#34;st-t-dmns&#34;, fetch_value, default_max_age_in_sec)
+        super().__init__(&#34;st-t-dmns&#34;, fetch_value)
 
 
 AllowedDomainsClaim = AllowedDomainsClaimClass()</code></pre>
@@ -288,8 +282,6 @@ don't want to add the claim to the session automatically</dd>
 </summary>
 <pre><code class="python">class AllowedDomainsClaimClass(PrimitiveArrayClaim[List[str]]):
     def __init__(self):
-        default_max_age_in_sec = 60 * 60
-
         async def fetch_value(
             _user_id: str,
             _recipe_user_id: RecipeUserId,
@@ -307,7 +299,7 @@ don't want to add the claim to the session automatically</dd>
                 tenant_id, user_context
             )
 
-        super().__init__(&#34;st-t-dmns&#34;, fetch_value, default_max_age_in_sec)</code></pre>
+        super().__init__(&#34;st-t-dmns&#34;, fetch_value)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -330,7 +322,7 @@ don't want to add the claim to the session automatically</dd>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe.MultitenancyRecipe"><code class="flex name class">
 <span>class <span class="ident">MultitenancyRecipe</span></span>
-<span>(</span><span>recipe_id: str, app_info: AppInfo, get_allowed_domains_for_tenant_id: Optional[TypeGetAllowedDomainsForTenantId] = None, override: Union[InputOverrideConfig, None] = None)</span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, config: MultitenancyConfig)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -344,35 +336,20 @@ inheritance.</p></div>
     __instance = None
 
     def __init__(
-        self,
-        recipe_id: str,
-        app_info: AppInfo,
-        get_allowed_domains_for_tenant_id: Optional[
-            TypeGetAllowedDomainsForTenantId
-        ] = None,
-        override: Union[InputOverrideConfig, None] = None,
+        self, recipe_id: str, app_info: AppInfo, config: MultitenancyConfig
     ) -&gt; None:
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(
-            get_allowed_domains_for_tenant_id,
-            override,
-        )
+        self.config = validate_and_normalise_user_input(config=config)
 
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.config
         )
-        self.recipe_implementation = (
+        self.recipe_implementation = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
         api_implementation = APIImplementation()
-        self.api_implementation = (
-            api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
-        )
+        self.api_implementation = self.config.override.apis(api_implementation)
 
         self.static_third_party_providers: List[ProviderInput] = []
         self.get_allowed_domains_for_tenant_id = (
@@ -440,15 +417,25 @@ inheritance.</p></div>
         get_allowed_domains_for_tenant_id: Union[
             TypeGetAllowedDomainsForTenantId, None
         ] = None,
-        override: Union[InputOverrideConfig, None] = None,
+        override: Union[MultitenancyOverrideConfig, None] = None,
     ):
-        def func(app_info: AppInfo):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = MultitenancyConfig(
+            get_allowed_domains_for_tenant_id=get_allowed_domains_for_tenant_id,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if MultitenancyRecipe.__instance is None:
                 MultitenancyRecipe.__instance = MultitenancyRecipe(
-                    MultitenancyRecipe.recipe_id,
-                    app_info,
-                    get_allowed_domains_for_tenant_id,
-                    override,
+                    recipe_id=MultitenancyRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=MultitenancyRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
 
                 def callback():
@@ -500,7 +487,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.multitenancy.recipe.MultitenancyRecipe.recipe_id"><code class="name">var <span class="ident">recipe_id</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Static methods</h3>
@@ -518,7 +505,7 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.recipe.MultitenancyRecipe.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>get_allowed_domains_for_tenant_id: Union[TypeGetAllowedDomainsForTenantId, None] = None, override: Union[InputOverrideConfig, None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>get_allowed_domains_for_tenant_id: Union[TypeGetAllowedDomainsForTenantId, None] = None, override: Union[MultitenancyOverrideConfig, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -563,6 +550,14 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe_module.RecipeModule" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe_module.RecipeModule.get_tenant_id" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule.get_tenant_id">get_tenant_id</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>

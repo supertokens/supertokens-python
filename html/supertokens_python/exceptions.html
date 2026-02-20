@@ -67,6 +67,10 @@ class GeneralError(SuperTokensError):
 
 
 class BadInputError(SuperTokensError):
+    pass
+
+
+class PluginError(SuperTokensError):
     pass</code></pre>
 </details>
 </section>
@@ -134,6 +138,26 @@ class BadInputError(SuperTokensError):
 <li>builtins.BaseException</li>
 </ul>
 </dd>
+<dt id="supertokens_python.exceptions.PluginError"><code class="flex name class">
+<span>class <span class="ident">PluginError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Common base class for all non-exit exceptions.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PluginError(SuperTokensError):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.exceptions.SuperTokensError" href="#supertokens_python.exceptions.SuperTokensError">SuperTokensError</a></li>
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
 <dt id="supertokens_python.exceptions.SuperTokensError"><code class="flex name class">
 <span>class <span class="ident">SuperTokensError</span></span>
 <span>(</span><span>*args, **kwargs)</span>
@@ -156,6 +180,7 @@ class BadInputError(SuperTokensError):
 <ul class="hlist">
 <li><a title="supertokens_python.exceptions.BadInputError" href="#supertokens_python.exceptions.BadInputError">BadInputError</a></li>
 <li><a title="supertokens_python.exceptions.GeneralError" href="#supertokens_python.exceptions.GeneralError">GeneralError</a></li>
+<li><a title="supertokens_python.exceptions.PluginError" href="#supertokens_python.exceptions.PluginError">PluginError</a></li>
 <li><a title="supertokens_python.recipe.dashboard.exceptions.SuperTokensDashboardError" href="recipe/dashboard/exceptions.html#supertokens_python.recipe.dashboard.exceptions.SuperTokensDashboardError">SuperTokensDashboardError</a></li>
 <li><a title="supertokens_python.recipe.emailpassword.exceptions.SuperTokensEmailPasswordError" href="recipe/emailpassword/exceptions.html#supertokens_python.recipe.emailpassword.exceptions.SuperTokensEmailPasswordError">SuperTokensEmailPasswordError</a></li>
 <li><a title="supertokens_python.recipe.emailverification.exceptions.SuperTokensEmailVerificationError" href="recipe/emailverification/exceptions.html#supertokens_python.recipe.emailverification.exceptions.SuperTokensEmailVerificationError">SuperTokensEmailVerificationError</a></li>
@@ -164,6 +189,7 @@ class BadInputError(SuperTokensError):
 <li><a title="supertokens_python.recipe.oauth2provider.exceptions.OAuth2ProviderError" href="recipe/oauth2provider/exceptions.html#supertokens_python.recipe.oauth2provider.exceptions.OAuth2ProviderError">OAuth2ProviderError</a></li>
 <li><a title="supertokens_python.recipe.openid.exceptions.SuperTokensOpenIdError" href="recipe/openid/exceptions.html#supertokens_python.recipe.openid.exceptions.SuperTokensOpenIdError">SuperTokensOpenIdError</a></li>
 <li><a title="supertokens_python.recipe.passwordless.exceptions.SuperTokensPasswordlessError" href="recipe/passwordless/exceptions.html#supertokens_python.recipe.passwordless.exceptions.SuperTokensPasswordlessError">SuperTokensPasswordlessError</a></li>
+<li><a title="supertokens_python.recipe.saml.exceptions.SAMLError" href="recipe/saml/exceptions.html#supertokens_python.recipe.saml.exceptions.SAMLError">SAMLError</a></li>
 <li><a title="supertokens_python.recipe.session.exceptions.SuperTokensSessionError" href="recipe/session/exceptions.html#supertokens_python.recipe.session.exceptions.SuperTokensSessionError">SuperTokensSessionError</a></li>
 <li><a title="supertokens_python.recipe.thirdparty.exceptions.ClientTypeNotFoundError" href="recipe/thirdparty/exceptions.html#supertokens_python.recipe.thirdparty.exceptions.ClientTypeNotFoundError">ClientTypeNotFoundError</a></li>
 <li><a title="supertokens_python.recipe.thirdparty.exceptions.SuperTokensThirdPartyError" href="recipe/thirdparty/exceptions.html#supertokens_python.recipe.thirdparty.exceptions.SuperTokensThirdPartyError">SuperTokensThirdPartyError</a></li>
@@ -199,6 +225,9 @@ class BadInputError(SuperTokensError):
 </li>
 <li>
 <h4><code><a title="supertokens_python.exceptions.GeneralError" href="#supertokens_python.exceptions.GeneralError">GeneralError</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.exceptions.PluginError" href="#supertokens_python.exceptions.PluginError">PluginError</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.exceptions.SuperTokensError" href="#supertokens_python.exceptions.SuperTokensError">SuperTokensError</a></code></h4>

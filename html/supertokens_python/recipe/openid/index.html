@@ -41,22 +41,28 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Union
 
 from .recipe import OpenIdRecipe
-from .utils import InputOverrideConfig
+from .utils import InputOverrideConfig, OpenIdOverrideConfig
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo
-
-    from ...recipe_module import RecipeModule
+    from supertokens_python.supertokens import RecipeInit
 
 
 def init(
     issuer: Union[str, None] = None,
-    override: Union[InputOverrideConfig, None] = None,
-) -&gt; Callable[[AppInfo], RecipeModule]:
-    return OpenIdRecipe.init(issuer, override)</code></pre>
+    override: Union[OpenIdOverrideConfig, None] = None,
+) -&gt; RecipeInit:
+    return OpenIdRecipe.init(issuer, override)
+
+
+__all__ = [
+    &#34;InputOverrideConfig&#34;,  # deprecated, use OpenIdOverrideConfig instead
+    &#34;OpenIdOverrideConfig&#34;,
+    &#34;OpenIdRecipe&#34;,
+    &#34;init&#34;,
+]</code></pre>
 </details>
 </section>
 <section>
@@ -106,7 +112,7 @@ def init(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.openid.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>issuer: Union[str, None] = None, override: Union[InputOverrideConfig, None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>issuer: Union[str, None] = None, override: Union[<a title="supertokens_python.recipe.openid.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.openid.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a>, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -114,6 +120,300 @@ def init(
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.recipe.openid.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
+<span>class <span class="ident">InputOverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.openid.BaseOverrideConfig[RecipeInterface, APIInterface].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.openid.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
+<span>class <span class="ident">OpenIdOverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.apis" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig.apis">apis</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.functions" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI.functions">functions</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.openid.OpenIdRecipe"><code class="flex name class">
+<span>class <span class="ident">OpenIdRecipe</span></span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, config: OpenIdConfig)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class OpenIdRecipe(RecipeModule):
+    recipe_id = &#34;openid&#34;
+    __instance = None
+
+    def __init__(
+        self,
+        recipe_id: str,
+        app_info: AppInfo,
+        config: OpenIdConfig,
+    ):
+        from supertokens_python.recipe.jwt import JWTRecipe
+
+        super().__init__(recipe_id, app_info)
+        self.config = validate_and_normalise_user_input(
+            app_info=app_info, config=config
+        )
+        self.jwt_recipe = JWTRecipe.get_instance()
+
+        recipe_implementation = RecipeImplementation(
+            Querier.get_instance(recipe_id),
+            self.config,
+            app_info,
+        )
+        self.recipe_implementation = self.config.override.functions(
+            recipe_implementation
+        )
+        api_implementation = APIImplementation()
+        self.api_implementation = self.config.override.apis(api_implementation)
+
+    def get_apis_handled(self) -&gt; List[APIHandled]:
+        return [
+            APIHandled(
+                method=&#34;get&#34;,
+                path_without_api_base_path=NormalisedURLPath(GET_DISCOVERY_CONFIG_URL),
+                request_id=GET_DISCOVERY_CONFIG_URL,
+                disabled=self.api_implementation.disable_open_id_discovery_configuration_get,
+            )
+        ] + self.jwt_recipe.get_apis_handled()
+
+    async def handle_api_request(
+        self,
+        request_id: str,
+        tenant_id: str,
+        request: BaseRequest,
+        path: NormalisedURLPath,
+        method: str,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
+    ):
+        options = APIOptions(
+            request,
+            response,
+            self.get_recipe_id(),
+            self.config,
+            self.recipe_implementation,
+        )
+
+        if request_id == GET_DISCOVERY_CONFIG_URL:
+            return await open_id_discovery_configuration_get(
+                self.api_implementation, options, user_context
+            )
+        return await self.jwt_recipe.handle_api_request(
+            request_id, tenant_id, request, path, method, response, user_context
+        )
+
+    async def handle_error(
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
+    ):
+        if isinstance(err, SuperTokensOpenIdError):
+            raise err
+        return await self.jwt_recipe.handle_error(request, err, response, user_context)
+
+    def get_all_cors_headers(self) -&gt; List[str]:
+        return self.jwt_recipe.get_all_cors_headers()
+
+    def is_error_from_this_recipe_based_on_instance(self, err: Exception) -&gt; bool:
+        return isinstance(err, SuperTokensError) and (
+            isinstance(err, SuperTokensOpenIdError)
+            or self.jwt_recipe.is_error_from_this_recipe_based_on_instance(err)
+        )
+
+    @staticmethod
+    def init(
+        issuer: Union[str, None] = None,
+        override: Union[OpenIdOverrideConfig, None] = None,
+    ):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = OpenIdConfig(
+            issuer=issuer,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
+            if OpenIdRecipe.__instance is None:
+                OpenIdRecipe.__instance = OpenIdRecipe(
+                    recipe_id=OpenIdRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=OpenIdRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
+                )
+                return OpenIdRecipe.__instance
+            raise_general_exception(
+                &#34;OpenId recipe has already been initialised. Please check your code for bugs.&#34;
+            )
+
+        return func
+
+    @staticmethod
+    def get_instance() -&gt; OpenIdRecipe:
+        if OpenIdRecipe.__instance is not None:
+            return OpenIdRecipe.__instance
+        raise_general_exception(
+            &#34;Initialisation not done. Did you forget to call the SuperTokens.init function?&#34;
+        )
+
+    @staticmethod
+    def reset():
+        if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
+            environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
+        ):
+            raise_general_exception(&#34;calling testing function in non testing env&#34;)
+        OpenIdRecipe.__instance = None
+
+    @staticmethod
+    async def get_issuer(user_context: Dict[str, Any]) -&gt; str:
+        open_id_config = await OpenIdRecipe.get_instance().recipe_implementation.get_open_id_discovery_configuration(
+            user_context
+        )
+        return open_id_config.issuer</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe_module.RecipeModule" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.openid.OpenIdRecipe.recipe_id"><code class="name">var <span class="ident">recipe_id</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.openid.OpenIdRecipe.get_instance"><code class="name flex">
+<span>def <span class="ident">get_instance</span></span>(<span>) ‑> <a title="supertokens_python.recipe.openid.recipe.OpenIdRecipe" href="recipe.html#supertokens_python.recipe.openid.recipe.OpenIdRecipe">OpenIdRecipe</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.openid.OpenIdRecipe.get_issuer"><code class="name flex">
+<span>async def <span class="ident">get_issuer</span></span>(<span>user_context: Dict[str, Any]) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.openid.OpenIdRecipe.init"><code class="name flex">
+<span>def <span class="ident">init</span></span>(<span>issuer: Union[str, None] = None, override: Union[<a title="supertokens_python.recipe.openid.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.openid.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a>, None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.openid.OpenIdRecipe.reset"><code class="name flex">
+<span>def <span class="ident">reset</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.openid.OpenIdRecipe.get_all_cors_headers"><code class="name flex">
+<span>def <span class="ident">get_all_cors_headers</span></span>(<span>self) ‑> List[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.openid.OpenIdRecipe.get_apis_handled"><code class="name flex">
+<span>def <span class="ident">get_apis_handled</span></span>(<span>self) ‑> List[<a title="supertokens_python.recipe_module.APIHandled" href="../../recipe_module.html#supertokens_python.recipe_module.APIHandled">APIHandled</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.openid.OpenIdRecipe.handle_api_request"><code class="name flex">
+<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.openid.OpenIdRecipe.handle_error"><code class="name flex">
+<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.openid.OpenIdRecipe.is_error_from_this_recipe_based_on_instance"><code class="name flex">
+<span>def <span class="ident">is_error_from_this_recipe_based_on_instance</span></span>(<span>self, err: Exception) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe_module.RecipeModule" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe_module.RecipeModule.get_tenant_id" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule.get_tenant_id">get_tenant_id</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -143,6 +443,34 @@ def init(
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.openid.init" href="#supertokens_python.recipe.openid.init">init</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.openid.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.openid.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.openid.BaseOverrideConfig[RecipeInterface, APIInterface].model_config" href="#supertokens_python.recipe.openid.BaseOverrideConfig[RecipeInterface, APIInterface].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.openid.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.openid.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.openid.OpenIdRecipe" href="#supertokens_python.recipe.openid.OpenIdRecipe">OpenIdRecipe</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.openid.OpenIdRecipe.get_all_cors_headers" href="#supertokens_python.recipe.openid.OpenIdRecipe.get_all_cors_headers">get_all_cors_headers</a></code></li>
+<li><code><a title="supertokens_python.recipe.openid.OpenIdRecipe.get_apis_handled" href="#supertokens_python.recipe.openid.OpenIdRecipe.get_apis_handled">get_apis_handled</a></code></li>
+<li><code><a title="supertokens_python.recipe.openid.OpenIdRecipe.get_instance" href="#supertokens_python.recipe.openid.OpenIdRecipe.get_instance">get_instance</a></code></li>
+<li><code><a title="supertokens_python.recipe.openid.OpenIdRecipe.get_issuer" href="#supertokens_python.recipe.openid.OpenIdRecipe.get_issuer">get_issuer</a></code></li>
+<li><code><a title="supertokens_python.recipe.openid.OpenIdRecipe.handle_api_request" href="#supertokens_python.recipe.openid.OpenIdRecipe.handle_api_request">handle_api_request</a></code></li>
+<li><code><a title="supertokens_python.recipe.openid.OpenIdRecipe.handle_error" href="#supertokens_python.recipe.openid.OpenIdRecipe.handle_error">handle_error</a></code></li>
+<li><code><a title="supertokens_python.recipe.openid.OpenIdRecipe.init" href="#supertokens_python.recipe.openid.OpenIdRecipe.init">init</a></code></li>
+<li><code><a title="supertokens_python.recipe.openid.OpenIdRecipe.is_error_from_this_recipe_based_on_instance" href="#supertokens_python.recipe.openid.OpenIdRecipe.is_error_from_this_recipe_based_on_instance">is_error_from_this_recipe_based_on_instance</a></code></li>
+<li><code><a title="supertokens_python.recipe.openid.OpenIdRecipe.recipe_id" href="#supertokens_python.recipe.openid.OpenIdRecipe.recipe_id">recipe_id</a></code></li>
+<li><code><a title="supertokens_python.recipe.openid.OpenIdRecipe.reset" href="#supertokens_python.recipe.openid.OpenIdRecipe.reset">reset</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

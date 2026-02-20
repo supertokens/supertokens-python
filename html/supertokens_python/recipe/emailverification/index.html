@@ -41,42 +41,45 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
-from ...ingredients.emaildelivery.types import EmailDeliveryConfig
-from . import exceptions as ex
-from . import recipe, types, utils
-from .emaildelivery import services as emaildelivery_services
+from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
+
+from .emaildelivery.services import SMTPService
 from .interfaces import TypeGetEmailForUserIdFunction
-from .recipe import EmailVerificationRecipe
-from .types import EmailTemplateVars
-from .utils import MODE_TYPE, OverrideConfig
-
-InputOverrideConfig = utils.OverrideConfig
-exception = ex
-SMTPService = emaildelivery_services.SMTPService
-EmailVerificationClaim = recipe.EmailVerificationClaim
-EmailDeliveryInterface = types.EmailDeliveryInterface
-
+from .recipe import EmailVerificationClaim, EmailVerificationRecipe
+from .types import EmailDeliveryInterface, EmailTemplateVars
+from .utils import MODE_TYPE, EmailVerificationOverrideConfig, InputOverrideConfig
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo
-
-    from ...recipe_module import RecipeModule
+    from supertokens_python.supertokens import RecipeInit
 
 
 def init(
     mode: MODE_TYPE,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-    override: Union[OverrideConfig, None] = None,
-) -&gt; Callable[[AppInfo], RecipeModule]:
+    override: Union[EmailVerificationOverrideConfig, None] = None,
+) -&gt; RecipeInit:
     return EmailVerificationRecipe.init(
         mode,
         email_delivery,
         get_email_for_recipe_user_id,
         override,
-    )</code></pre>
+    )
+
+
+__all__ = [
+    &#34;EmailDeliveryInterface&#34;,
+    &#34;EmailTemplateVars&#34;,
+    &#34;EmailVerificationClaim&#34;,
+    &#34;EmailVerificationOverrideConfig&#34;,
+    &#34;EmailVerificationRecipe&#34;,
+    &#34;InputOverrideConfig&#34;,  # deprecated, use EmailVerificationOverrideConfig instead
+    &#34;SMTPService&#34;,
+    &#34;TypeGetEmailForUserIdFunction&#34;,
+    &#34;init&#34;,
+]</code></pre>
 </details>
 </section>
 <section>
@@ -134,7 +137,7 @@ def init(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>mode: MODE_TYPE, email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None, get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None, override: Union[OverrideConfig, None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>mode: MODE_TYPE, email_delivery: Union[EmailDeliveryConfig[<a title="supertokens_python.recipe.emailverification.VerificationEmailTemplateVars" href="#supertokens_python.recipe.emailverification.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>], None] = None, get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None, override: Union[<a title="supertokens_python.recipe.emailverification.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.emailverification.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a>, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -142,6 +145,672 @@ def init(
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.recipe.emailverification.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
+<span>class <span class="ident">EmailVerificationOverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.emailverification.BaseOverrideConfig[RecipeInterface, APIInterface].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
+<span>class <span class="ident">InputOverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.apis" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig.apis">apis</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.functions" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI.functions">functions</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.EmailDeliveryInterface"><code class="flex name class">
+<span>class <span class="ident">EmailDeliveryInterface</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EmailDeliveryInterface(ABC, Generic[_T]):
+    @abstractmethod
+    async def send_email(self, template_vars: _T, user_context: Dict[str, Any]) -&gt; None:
+        pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.emailpassword.emaildelivery.services.backward_compatibility.BackwardCompatibilityService" href="../emailpassword/emaildelivery/services/backward_compatibility/index.html#supertokens_python.recipe.emailpassword.emaildelivery.services.backward_compatibility.BackwardCompatibilityService">BackwardCompatibilityService</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.SMTPService" href="../emailpassword/emaildelivery/services/smtp/index.html#supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.SMTPService">SMTPService</a></li>
+<li><a title="supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility.BackwardCompatibilityService" href="emaildelivery/services/backward_compatibility/index.html#supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility.BackwardCompatibilityService">BackwardCompatibilityService</a></li>
+<li><a title="supertokens_python.recipe.emailverification.emaildelivery.services.smtp.SMTPService" href="emaildelivery/services/smtp/index.html#supertokens_python.recipe.emailverification.emaildelivery.services.smtp.SMTPService">SMTPService</a></li>
+<li><a title="supertokens_python.recipe.passwordless.emaildelivery.services.backward_compatibility.BackwardCompatibilityService" href="../passwordless/emaildelivery/services/backward_compatibility/index.html#supertokens_python.recipe.passwordless.emaildelivery.services.backward_compatibility.BackwardCompatibilityService">BackwardCompatibilityService</a></li>
+<li><a title="supertokens_python.recipe.passwordless.emaildelivery.services.smtp.SMTPService" href="../passwordless/emaildelivery/services/smtp/index.html#supertokens_python.recipe.passwordless.emaildelivery.services.smtp.SMTPService">SMTPService</a></li>
+<li><a title="supertokens_python.recipe.webauthn.emaildelivery.services.backward_compatibility.base.BackwardCompatibilityService" href="../webauthn/emaildelivery/services/backward_compatibility/base.html#supertokens_python.recipe.webauthn.emaildelivery.services.backward_compatibility.base.BackwardCompatibilityService">BackwardCompatibilityService</a></li>
+<li><a title="supertokens_python.recipe.webauthn.emaildelivery.services.smtp.base.SMTPService" href="../webauthn/emaildelivery/services/smtp/base.html#supertokens_python.recipe.webauthn.emaildelivery.services.smtp.base.SMTPService">SMTPService</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.emailverification.EmailDeliveryInterface.send_email"><code class="name flex">
+<span>async def <span class="ident">send_email</span></span>(<span>self, template_vars: _T, user_context: Dict[str, Any]) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.EmailVerificationRecipe"><code class="flex name class">
+<span>class <span class="ident">EmailVerificationRecipe</span></span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, ingredients: EmailVerificationIngredients, config: EmailVerificationConfig)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EmailVerificationRecipe(RecipeModule):
+    recipe_id = &#34;emailverification&#34;
+    __instance = None
+    email_delivery: EmailDeliveryIngredient[VerificationEmailTemplateVars]
+
+    def __init__(
+        self,
+        recipe_id: str,
+        app_info: AppInfo,
+        ingredients: EmailVerificationIngredients,
+        config: EmailVerificationConfig,
+    ) -&gt; None:
+        super().__init__(recipe_id, app_info)
+        self.config = validate_and_normalise_user_input(
+            app_info=app_info,
+            config=config,
+        )
+
+        recipe_implementation = RecipeImplementation(
+            Querier.get_instance(recipe_id),
+            self.get_email_for_recipe_user_id,
+        )
+        self.recipe_implementation = self.config.override.functions(
+            recipe_implementation
+        )
+
+        api_implementation = APIImplementation()
+        self.api_implementation = self.config.override.apis(api_implementation)
+
+        email_delivery_ingredient = ingredients.email_delivery
+        if email_delivery_ingredient is None:
+            self.email_delivery = EmailDeliveryIngredient(
+                self.config.get_email_delivery_config()
+            )
+        else:
+            self.email_delivery = email_delivery_ingredient
+
+    def is_error_from_this_recipe_based_on_instance(self, err: Exception) -&gt; bool:
+        return isinstance(err, SuperTokensError) and isinstance(
+            err, SuperTokensEmailVerificationError
+        )
+
+    def get_apis_handled(self) -&gt; List[APIHandled]:
+        return [
+            APIHandled(
+                NormalisedURLPath(USER_EMAIL_VERIFY_TOKEN),
+                &#34;post&#34;,
+                USER_EMAIL_VERIFY_TOKEN,
+                self.api_implementation.disable_generate_email_verify_token_post,
+            ),
+            APIHandled(
+                NormalisedURLPath(USER_EMAIL_VERIFY),
+                &#34;post&#34;,
+                USER_EMAIL_VERIFY,
+                self.api_implementation.disable_email_verify_post,
+            ),
+            APIHandled(
+                NormalisedURLPath(USER_EMAIL_VERIFY),
+                &#34;get&#34;,
+                USER_EMAIL_VERIFY,
+                self.api_implementation.disable_is_email_verified_get,
+            ),
+        ]
+
+    async def handle_api_request(
+        self,
+        request_id: str,
+        tenant_id: str,
+        request: BaseRequest,
+        path: NormalisedURLPath,
+        method: str,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[BaseResponse, None]:
+        api_options = APIOptions(
+            request,
+            response,
+            self.recipe_id,
+            self.config,
+            self.recipe_implementation,
+            self.get_app_info(),
+            self.email_delivery,
+        )
+        if request_id == USER_EMAIL_VERIFY_TOKEN:
+            return await handle_generate_email_verify_token_api(
+                self.api_implementation, api_options, user_context
+            )
+        return await handle_email_verify_api(
+            self.api_implementation, tenant_id, api_options, user_context
+        )
+
+    async def handle_error(
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
+    ) -&gt; BaseResponse:
+        if isinstance(err, EmailVerificationInvalidTokenError):
+            response.set_json_content(
+                {&#34;status&#34;: &#34;EMAIL_VERIFICATION_INVALID_TOKEN_ERROR&#34;}
+            )
+            return response
+        response.set_json_content({&#34;status&#34;: &#34;EMAIL_ALREADY_VERIFIED_ERROR&#34;})
+        return response
+
+    def get_all_cors_headers(self) -&gt; List[str]:
+        return []
+
+    @staticmethod
+    def init(
+        mode: MODE_TYPE,
+        email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
+        get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
+        override: Optional[EmailVerificationOverrideConfig] = None,
+    ):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = EmailVerificationConfig(
+            mode=mode,
+            email_delivery=email_delivery,
+            get_email_for_recipe_user_id=get_email_for_recipe_user_id,
+            override=override,
+        )
+
+        def func(
+            app_info: AppInfo, plugins: List[OverrideMap]
+        ) -&gt; EmailVerificationRecipe:
+            if EmailVerificationRecipe.__instance is None:
+                ingredients = EmailVerificationIngredients(email_delivery=None)
+                EmailVerificationRecipe.__instance = EmailVerificationRecipe(
+                    EmailVerificationRecipe.recipe_id,
+                    app_info,
+                    ingredients,
+                    config=apply_plugins(
+                        recipe_id=EmailVerificationRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
+                )
+
+                def callback():
+                    SessionRecipe.get_instance().add_claim_from_other_recipe(
+                        EmailVerificationClaim
+                    )
+                    if mode == &#34;REQUIRED&#34;:
+                        SessionRecipe.get_instance().add_claim_validator_from_other_recipe(
+                            EmailVerificationClaim.validators.is_verified()
+                        )
+
+                    from supertokens_python.recipe.accountlinking.recipe import (
+                        AccountLinkingRecipe,
+                    )
+
+                    assert EmailVerificationRecipe.__instance is not None
+                    AccountLinkingRecipe.get_instance().register_email_verification_recipe(
+                        EmailVerificationRecipe.__instance
+                    )
+
+                PostSTInitCallbacks.add_post_init_callback(callback)
+
+                return EmailVerificationRecipe.__instance
+            raise_general_exception(
+                &#34;Emailverification recipe has already been initialised. Please check your code for bugs.&#34;
+            )
+
+        return func
+
+    @staticmethod
+    def get_instance_or_throw() -&gt; EmailVerificationRecipe:
+        if EmailVerificationRecipe.__instance is not None:
+            return EmailVerificationRecipe.__instance
+        raise_general_exception(
+            &#34;Initialisation not done. Did you forget to call the SuperTokens.init function?&#34;
+        )
+
+    @staticmethod
+    def get_instance_optional() -&gt; Optional[EmailVerificationRecipe]:
+        return EmailVerificationRecipe.__instance
+
+    @staticmethod
+    def reset():
+        if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
+            environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
+        ):
+            raise_general_exception(&#34;calling testing function in non testing env&#34;)
+        EmailVerificationRecipe.__instance = None
+
+    async def get_email_for_recipe_user_id(
+        self,
+        user: Optional[User],
+        recipe_user_id: RecipeUserId,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[GetEmailForUserIdOkResult, EmailDoesNotExistError, UnknownUserIdError]:
+        if self.config.get_email_for_recipe_user_id is not None:
+            user_res = await self.config.get_email_for_recipe_user_id(
+                recipe_user_id, user_context
+            )
+            if not isinstance(user_res, UnknownUserIdError):
+                return user_res
+
+        if user is None:
+            from supertokens_python.recipe.accountlinking.recipe import (
+                AccountLinkingRecipe,
+            )
+
+            user = await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
+                recipe_user_id.get_as_string(), user_context
+            )
+
+            if user is None:
+                return UnknownUserIdError()
+
+        for login_method in user.login_methods:
+            if (
+                login_method.recipe_user_id.get_as_string()
+                == recipe_user_id.get_as_string()
+            ):
+                if login_method.email is not None:
+                    return GetEmailForUserIdOkResult(email=login_method.email)
+                else:
+                    return EmailDoesNotExistError()
+
+        return UnknownUserIdError()
+
+    async def get_primary_user_id_for_recipe_user(
+        self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any]
+    ) -&gt; str:
+        # We extract this into its own function like this cause we want to make sure that
+        # this recipe does not get the email of the user ID from the getUser function.
+        # In fact, there is a test &#34;email verification recipe uses getUser function only in getEmailForRecipeUserId&#34;
+        # which makes sure that this function is only called in 3 places in this recipe:
+        # - this function
+        # - getEmailForRecipeUserId function (above)
+        # - after verification to get the updated user in verifyEmailUsingToken
+        # We want to isolate the result of calling this function as much as possible
+        # so that the consumer of the getUser function does not read the email
+        # from the primaryUser. Hence, this function only returns the string ID
+        # and nothing else from the primaryUser.
+        from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
+
+        primary_user = (
+            await AccountLinkingRecipe.get_instance().recipe_implementation.get_user(
+                recipe_user_id.get_as_string(), user_context
+            )
+        )
+        if primary_user is None:
+            # This can come here if the user is using session + email verification
+            # recipe with a user ID that is not known to supertokens. In this case,
+            # we do not allow linking for such users.
+            return recipe_user_id.get_as_string()
+        return primary_user.id
+
+    async def update_session_if_required_post_email_verification(
+        self,
+        req: BaseRequest,
+        session: Optional[SessionContainer],
+        recipe_user_id_whose_email_got_verified: RecipeUserId,
+        user_context: Dict[str, Any],
+    ) -&gt; Optional[SessionContainer]:
+        primary_user_id = await self.get_primary_user_id_for_recipe_user(
+            recipe_user_id_whose_email_got_verified, user_context
+        )
+
+        # if a session exists in the API, then we can update the session
+        # claim related to email verification
+        if session is not None:
+            log_debug_message(
+                &#34;updateSessionIfRequiredPostEmailVerification got session&#34;
+            )
+            # Due to linking, we will have to correct the current
+            # session&#39;s user ID. There are four cases here:
+            # --&gt; (Case 1) User signed up and did email verification and the new account
+            # became a primary user (user ID no change)
+            # --&gt; (Case 2) User signed up and did email verification and the new account got linked
+            # to another primary user (user ID change)
+            # --&gt; (Case 3) This is post login account linking, in which the account that got verified
+            # got linked to the session&#39;s account (user ID of account has changed to the session&#39;s user ID)
+            # --&gt;  (Case 4) This is post login account linking, in which the account that got verified
+            # got linked to ANOTHER primary account (user ID of account has changed to a different user ID != session.getUserId, but
+            # we should ignore this since it will result in the user&#39;s session changing.)
+
+            if (
+                session.get_recipe_user_id(user_context).get_as_string()
+                == recipe_user_id_whose_email_got_verified.get_as_string()
+            ):
+                log_debug_message(
+                    &#34;updateSessionIfRequiredPostEmailVerification the session belongs to the verified user&#34;
+                )
+                # this means that the session&#39;s login method&#39;s account is the
+                # one that just got verified and that we are NOT doing post login
+                # account linking. So this is only for (Case 1) and (Case 2)
+
+                if session.get_user_id() == primary_user_id:
+                    log_debug_message(
+                        &#34;updateSessionIfRequiredPostEmailVerification the session userId matches the primary user id, so we are only refreshing the claim&#34;
+                    )
+                    # if the session&#39;s primary user ID is equal to the
+                    # primary user ID that the account was linked to, then
+                    # this means that the new account became a primary user (Case 1)
+                    # We also have the sub cases here that the account that just
+                    # got verified was already linked to the session&#39;s primary user ID,
+                    # but either way, we don&#39;t need to change any user ID.
+
+                    # In this case, all we do is to update the emailverification claim
+                    try:
+                        # EmailVerificationClaim will be based on the recipeUserId
+                        # and not the primary user ID.
+                        await session.fetch_and_set_claim(
+                            EmailVerificationClaim, user_context
+                        )
+                    except Exception as err:
+                        # This should never happen, since we&#39;ve just set the status above.
+                        if str(err) == &#34;UNKNOWN_USER_ID&#34;:
+                            raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)
+                        raise err
+
+                    return None
+                else:
+                    log_debug_message(
+                        &#34;updateSessionIfRequiredPostEmailVerification the session user id doesn&#39;t match the primary user id, so we are revoking all sessions and creating a new one&#34;
+                    )
+                    # if the session&#39;s primary user ID is NOT equal to the
+                    # primary user ID that the account that it was linked to, then
+                    # this means that the new account got linked to another primary user (Case 2)
+
+                    # In this case, we need to update the session&#39;s user ID by creating
+                    # a new session
+
+                    # Revoke all session belonging to session.getRecipeUserId()
+                    # We do not really need to do this, but we do it anyway.. no harm.
+                    await revoke_all_sessions_for_user(
+                        recipe_user_id_whose_email_got_verified.get_as_string(),
+                        False,
+                        None,
+                        user_context,
+                    )
+
+                    # create a new session and return that..
+                    return await create_new_session(
+                        req,
+                        session.get_tenant_id(),
+                        session.get_recipe_user_id(user_context),
+                        {},
+                        {},
+                        user_context,
+                    )
+            else:
+                log_debug_message(
+                    &#34;updateSessionIfRequiredPostEmailVerification the verified user doesn&#39;t match the session&#34;
+                )
+                # this means that the session&#39;s login method&#39;s account was NOT the
+                # one that just got verified and that we ARE doing post login
+                # account linking. So this is only for (Case 3) and (Case 4)
+
+                # In both case 3 and case 4, we do not want to change anything in the
+                # current session in terms of user ID or email verification claim (since
+                # both of these refer to the current logged in user and not the newly
+                # linked user&#39;s account).
+
+                return None
+        else:
+            log_debug_message(
+                &#34;updateSessionIfRequiredPostEmailVerification got no session&#34;
+            )
+            # the session is updated when the is email verification GET API is called
+            # so we don&#39;t do anything in this API.
+            return None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe_module.RecipeModule" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.emailverification.EmailVerificationRecipe.email_delivery"><code class="name">var <span class="ident">email_delivery</span> : <a title="supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient" href="../../ingredients/emaildelivery/index.html#supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient">EmailDeliveryIngredient</a>[<a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.EmailVerificationRecipe.recipe_id"><code class="name">var <span class="ident">recipe_id</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_instance_optional"><code class="name flex">
+<span>def <span class="ident">get_instance_optional</span></span>(<span>) ‑> Optional[<a title="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe" href="recipe.html#supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe">EmailVerificationRecipe</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_instance_or_throw"><code class="name flex">
+<span>def <span class="ident">get_instance_or_throw</span></span>(<span>) ‑> <a title="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe" href="recipe.html#supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe">EmailVerificationRecipe</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.EmailVerificationRecipe.init"><code class="name flex">
+<span>def <span class="ident">init</span></span>(<span>mode: MODE_TYPE, email_delivery: Union[EmailDeliveryConfig[<a title="supertokens_python.recipe.emailverification.VerificationEmailTemplateVars" href="#supertokens_python.recipe.emailverification.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>], None] = None, get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None, override: Optional[<a title="supertokens_python.recipe.emailverification.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.emailverification.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a>] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.EmailVerificationRecipe.reset"><code class="name flex">
+<span>def <span class="ident">reset</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_all_cors_headers"><code class="name flex">
+<span>def <span class="ident">get_all_cors_headers</span></span>(<span>self) ‑> List[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_apis_handled"><code class="name flex">
+<span>def <span class="ident">get_apis_handled</span></span>(<span>self) ‑> List[<a title="supertokens_python.recipe_module.APIHandled" href="../../recipe_module.html#supertokens_python.recipe_module.APIHandled">APIHandled</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_email_for_recipe_user_id"><code class="name flex">
+<span>async def <span class="ident">get_email_for_recipe_user_id</span></span>(<span>self, user: Optional[User], recipe_user_id: RecipeUserId, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_primary_user_id_for_recipe_user"><code class="name flex">
+<span>async def <span class="ident">get_primary_user_id_for_recipe_user</span></span>(<span>self, recipe_user_id: RecipeUserId, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.EmailVerificationRecipe.handle_api_request"><code class="name flex">
+<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.EmailVerificationRecipe.handle_error"><code class="name flex">
+<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.EmailVerificationRecipe.is_error_from_this_recipe_based_on_instance"><code class="name flex">
+<span>def <span class="ident">is_error_from_this_recipe_based_on_instance</span></span>(<span>self, err: Exception) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.EmailVerificationRecipe.update_session_if_required_post_email_verification"><code class="name flex">
+<span>async def <span class="ident">update_session_if_required_post_email_verification</span></span>(<span>self, req: BaseRequest, session: Optional[SessionContainer], recipe_user_id_whose_email_got_verified: RecipeUserId, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe_module.RecipeModule" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe_module.RecipeModule.get_tenant_id" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule.get_tenant_id">get_tenant_id</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.SMTPService"><code class="flex name class">
+<span>class <span class="ident">SMTPService</span></span>
+<span>(</span><span>smtp_settings: <a title="supertokens_python.ingredients.emaildelivery.types.SMTPSettings" href="../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPSettings">SMTPSettings</a>, override: Optional[Callable[[<a title="supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface" href="../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface">SMTPServiceInterface</a>[<a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>]], <a title="supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface" href="../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface">SMTPServiceInterface</a>[<a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>]]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SMTPService(EmailDeliveryInterface[VerificationEmailTemplateVars]):
+    service_implementation: SMTPServiceInterface[VerificationEmailTemplateVars]
+
+    def __init__(
+        self,
+        smtp_settings: SMTPSettings,
+        override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None,
+    ) -&gt; None:
+        transporter = Transporter(smtp_settings)
+        oi = ServiceImplementation(transporter)
+        self.service_implementation = oi if override is None else override(oi)
+
+    async def send_email(
+        self,
+        template_vars: VerificationEmailTemplateVars,
+        user_context: Dict[str, Any],
+    ) -&gt; None:
+        content = await self.service_implementation.get_content(
+            template_vars, user_context
+        )
+        await self.service_implementation.send_raw_email(content, user_context)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.ingredients.emaildelivery.types.EmailDeliveryInterface" href="../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.EmailDeliveryInterface">EmailDeliveryInterface</a></li>
+<li>abc.ABC</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.emailverification.SMTPService.service_implementation"><code class="name">var <span class="ident">service_implementation</span> : <a title="supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface" href="../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface">SMTPServiceInterface</a>[<a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.emailverification.SMTPService.send_email"><code class="name flex">
+<span>async def <span class="ident">send_email</span></span>(<span>self, template_vars: <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>, user_context: Dict[str, Any]) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.VerificationEmailTemplateVars"><code class="flex name class">
+<span>class <span class="ident">EmailTemplateVars</span></span>
+<span>(</span><span>user: VerificationEmailTemplateVarsUser, email_verify_link: str, tenant_id: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class VerificationEmailTemplateVars:
+    def __init__(
+        self,
+        user: VerificationEmailTemplateVarsUser,
+        email_verify_link: str,
+        tenant_id: str,
+    ) -&gt; None:
+        self.user = user
+        self.email_verify_link = email_verify_link
+        self.tenant_id = tenant_id</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -173,6 +842,54 @@ def init(
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.emailverification.init" href="#supertokens_python.recipe.emailverification.init">init</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.emailverification.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.emailverification.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.emailverification.BaseOverrideConfig[RecipeInterface, APIInterface].model_config" href="#supertokens_python.recipe.emailverification.BaseOverrideConfig[RecipeInterface, APIInterface].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.emailverification.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.emailverification.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.emailverification.EmailDeliveryInterface" href="#supertokens_python.recipe.emailverification.EmailDeliveryInterface">EmailDeliveryInterface</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.emailverification.EmailDeliveryInterface.send_email" href="#supertokens_python.recipe.emailverification.EmailDeliveryInterface.send_email">send_email</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.emailverification.EmailVerificationRecipe" href="#supertokens_python.recipe.emailverification.EmailVerificationRecipe">EmailVerificationRecipe</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.emailverification.EmailVerificationRecipe.email_delivery" href="#supertokens_python.recipe.emailverification.EmailVerificationRecipe.email_delivery">email_delivery</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_all_cors_headers" href="#supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_all_cors_headers">get_all_cors_headers</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_apis_handled" href="#supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_apis_handled">get_apis_handled</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_email_for_recipe_user_id" href="#supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_email_for_recipe_user_id">get_email_for_recipe_user_id</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_instance_optional" href="#supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_instance_optional">get_instance_optional</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_instance_or_throw" href="#supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_instance_or_throw">get_instance_or_throw</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_primary_user_id_for_recipe_user" href="#supertokens_python.recipe.emailverification.EmailVerificationRecipe.get_primary_user_id_for_recipe_user">get_primary_user_id_for_recipe_user</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.EmailVerificationRecipe.handle_api_request" href="#supertokens_python.recipe.emailverification.EmailVerificationRecipe.handle_api_request">handle_api_request</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.EmailVerificationRecipe.handle_error" href="#supertokens_python.recipe.emailverification.EmailVerificationRecipe.handle_error">handle_error</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.EmailVerificationRecipe.init" href="#supertokens_python.recipe.emailverification.EmailVerificationRecipe.init">init</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.EmailVerificationRecipe.is_error_from_this_recipe_based_on_instance" href="#supertokens_python.recipe.emailverification.EmailVerificationRecipe.is_error_from_this_recipe_based_on_instance">is_error_from_this_recipe_based_on_instance</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.EmailVerificationRecipe.recipe_id" href="#supertokens_python.recipe.emailverification.EmailVerificationRecipe.recipe_id">recipe_id</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.EmailVerificationRecipe.reset" href="#supertokens_python.recipe.emailverification.EmailVerificationRecipe.reset">reset</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.EmailVerificationRecipe.update_session_if_required_post_email_verification" href="#supertokens_python.recipe.emailverification.EmailVerificationRecipe.update_session_if_required_post_email_verification">update_session_if_required_post_email_verification</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.emailverification.SMTPService" href="#supertokens_python.recipe.emailverification.SMTPService">SMTPService</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.emailverification.SMTPService.send_email" href="#supertokens_python.recipe.emailverification.SMTPService.send_email">send_email</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.SMTPService.service_implementation" href="#supertokens_python.recipe.emailverification.SMTPService.service_implementation">service_implementation</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.emailverification.VerificationEmailTemplateVars" href="#supertokens_python.recipe.emailverification.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a></code></h4>
+</li>
 </ul>
 </li>
 </ul>

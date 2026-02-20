@@ -42,6 +42,7 @@
 from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python import Supertokens
+from supertokens_python.exceptions import BadInputError
 from supertokens_python.interfaces import (
     CreateUserIdMappingOkResult,
     DeleteUserIdMappingOkResult,
@@ -54,8 +55,9 @@ from supertokens_python.interfaces import (
 )
 from supertokens_python.recipe.accountlinking.interfaces import GetUsersResult
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
+from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.types import User
-from supertokens_python.types.base import AccountInfoInput
+from supertokens_python.types.base import AccountInfoInput, UserContext
 
 
 async def get_users_oldest_first(
@@ -199,7 +201,35 @@ async def list_users_by_account_info(
         account_info,
         do_union_of_account_info,
         user_context,
-    )</code></pre>
+    )
+
+
+async def get_available_first_factors(
+    tenant_id: str,
+    session: Optional[SessionContainer],
+    user_context: Optional[UserContext],
+):
+    from supertokens_python.auth_utils import (
+        filter_out_invalid_first_factors_or_throw_if_all_are_invalid,
+    )
+    from supertokens_python.recipe.multifactorauth.types import FactorIds
+
+    available_first_factors: List[str] = []
+
+    try:
+        available_first_factors = (
+            await filter_out_invalid_first_factors_or_throw_if_all_are_invalid(
+                factor_ids=FactorIds.get_all_factors(),
+                tenant_id=tenant_id,
+                has_session=session is not None,
+                user_context=user_context if user_context is not None else {},
+            )
+        )
+    except BadInputError:
+        # All the factors were invalid, so we let it pass through and return the empty list
+        pass
+
+    return available_first_factors</code></pre>
 </details>
 </section>
 <section>
@@ -223,6 +253,12 @@ async def list_users_by_account_info(
 </dd>
 <dt id="supertokens_python.asyncio.delete_user_id_mapping"><code class="name flex">
 <span>async def <span class="ident">delete_user_id_mapping</span></span>(<span>user_id: str, user_id_type: Optional[Literal['SUPERTOKENS', 'EXTERNAL', 'ANY']] = None, force: Optional[bool] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.interfaces.DeleteUserIdMappingOkResult" href="../interfaces.html#supertokens_python.interfaces.DeleteUserIdMappingOkResult">DeleteUserIdMappingOkResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.asyncio.get_available_first_factors"><code class="name flex">
+<span>async def <span class="ident">get_available_first_factors</span></span>(<span>tenant_id: str, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], user_context: Optional[Dict[str, Any]])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -290,6 +326,7 @@ async def list_users_by_account_info(
 <li><code><a title="supertokens_python.asyncio.create_user_id_mapping" href="#supertokens_python.asyncio.create_user_id_mapping">create_user_id_mapping</a></code></li>
 <li><code><a title="supertokens_python.asyncio.delete_user" href="#supertokens_python.asyncio.delete_user">delete_user</a></code></li>
 <li><code><a title="supertokens_python.asyncio.delete_user_id_mapping" href="#supertokens_python.asyncio.delete_user_id_mapping">delete_user_id_mapping</a></code></li>
+<li><code><a title="supertokens_python.asyncio.get_available_first_factors" href="#supertokens_python.asyncio.get_available_first_factors">get_available_first_factors</a></code></li>
 <li><code><a title="supertokens_python.asyncio.get_user" href="#supertokens_python.asyncio.get_user">get_user</a></code></li>
 <li><code><a title="supertokens_python.asyncio.get_user_count" href="#supertokens_python.asyncio.get_user_count">get_user_count</a></code></li>
 <li><code><a title="supertokens_python.asyncio.get_user_id_mapping" href="#supertokens_python.asyncio.get_user_id_mapping">get_user_id_mapping</a></code></li>

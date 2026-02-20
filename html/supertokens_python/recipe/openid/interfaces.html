@@ -39,8 +39,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Union
+from abc import abstractmethod
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.recipe.jwt.interfaces import (
@@ -48,9 +48,11 @@ from supertokens_python.recipe.jwt.interfaces import (
     CreateJwtResultUnsupportedAlgorithm,
     GetJWKSResult,
 )
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
-from .utils import OpenIdConfig
+if TYPE_CHECKING:
+    from .utils import NormalisedOpenIdConfig
 
 
 class GetOpenIdDiscoveryConfigurationResult:
@@ -98,7 +100,7 @@ class GetOpenIdDiscoveryConfigurationResult:
         }
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -129,7 +131,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: OpenIdConfig,
+        config: &#34;NormalisedOpenIdConfig&#34;,
         recipe_implementation: RecipeInterface,
     ):
         self.request = request
@@ -187,7 +189,7 @@ class OpenIdDiscoveryConfigurationGetResponse(APIResponse):
         }
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_open_id_discovery_configuration_get = False
 
@@ -211,12 +213,13 @@ class APIInterface:
 <span>class <span class="ident">APIInterface</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class APIInterface:
+<pre><code class="python">class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_open_id_discovery_configuration_get = False
 
@@ -226,6 +229,11 @@ class APIInterface:
     ) -&gt; Union[OpenIdDiscoveryConfigurationGetResponse, GeneralErrorResponse]:
         pass</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseAPIInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseAPIInterface">BaseAPIInterface</a></li>
+<li>abc.ABC</li>
+</ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.openid.api.implementation.APIImplementation" href="api/implementation.html#supertokens_python.recipe.openid.api.implementation.APIImplementation">APIImplementation</a></li>
@@ -242,7 +250,7 @@ class APIInterface:
 </dd>
 <dt id="supertokens_python.recipe.openid.interfaces.APIOptions"><code class="flex name class">
 <span>class <span class="ident">APIOptions</span></span>
-<span>(</span><span>request: <a title="supertokens_python.framework.request.BaseRequest" href="../../framework/request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>, response: <a title="supertokens_python.framework.response.BaseResponse" href="../../framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a>, recipe_id: str, config: <a title="supertokens_python.recipe.openid.utils.OpenIdConfig" href="utils.html#supertokens_python.recipe.openid.utils.OpenIdConfig">OpenIdConfig</a>, recipe_implementation: <a title="supertokens_python.recipe.openid.interfaces.RecipeInterface" href="#supertokens_python.recipe.openid.interfaces.RecipeInterface">RecipeInterface</a>)</span>
+<span>(</span><span>request: <a title="supertokens_python.framework.request.BaseRequest" href="../../framework/request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>, response: <a title="supertokens_python.framework.response.BaseResponse" href="../../framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a>, recipe_id: str, config: NormalisedOpenIdConfig, recipe_implementation: <a title="supertokens_python.recipe.openid.interfaces.RecipeInterface" href="#supertokens_python.recipe.openid.interfaces.RecipeInterface">RecipeInterface</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -256,7 +264,7 @@ class APIInterface:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: OpenIdConfig,
+        config: &#34;NormalisedOpenIdConfig&#34;,
         recipe_implementation: RecipeInterface,
     ):
         self.request = request
@@ -397,7 +405,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -420,7 +428,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RecipeInterface(ABC):
+<pre><code class="python">class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -446,6 +454,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseRecipeInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>

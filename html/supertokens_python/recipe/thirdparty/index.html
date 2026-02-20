@@ -42,32 +42,35 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
-from . import exceptions as ex
-from . import provider, utils
+from .provider import ProviderClientConfig, ProviderConfig, ProviderInput
 from .recipe import ThirdPartyRecipe
-
-InputOverrideConfig = utils.InputOverrideConfig
-SignInAndUpFeature = utils.SignInAndUpFeature
-ProviderInput = provider.ProviderInput
-ProviderConfig = provider.ProviderConfig
-ProviderClientConfig = provider.ProviderClientConfig
-exceptions = ex
+from .utils import InputOverrideConfig, SignInAndUpFeature, ThirdPartyOverrideConfig
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo
-
-    from ...recipe_module import RecipeModule
+    from supertokens_python.supertokens import RecipeInit
 
 
 def init(
     sign_in_and_up_feature: Optional[SignInAndUpFeature] = None,
-    override: Union[InputOverrideConfig, None] = None,
-) -&gt; Callable[[AppInfo], RecipeModule]:
+    override: Union[ThirdPartyOverrideConfig, None] = None,
+) -&gt; RecipeInit:
     if sign_in_and_up_feature is None:
         sign_in_and_up_feature = SignInAndUpFeature()
-    return ThirdPartyRecipe.init(sign_in_and_up_feature, override)</code></pre>
+    return ThirdPartyRecipe.init(sign_in_and_up_feature, override)
+
+
+__all__ = [
+    &#34;InputOverrideConfig&#34;,  # deprecated, use `ThirdPartyOverrideConfig` instead
+    &#34;ProviderClientConfig&#34;,
+    &#34;ProviderConfig&#34;,
+    &#34;ProviderInput&#34;,
+    &#34;SignInAndUpFeature&#34;,
+    &#34;ThirdPartyOverrideConfig&#34;,
+    &#34;ThirdPartyRecipe&#34;,
+    &#34;init&#34;,
+]</code></pre>
 </details>
 </section>
 <section>
@@ -129,7 +132,7 @@ def init(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>sign_in_and_up_feature: Optional[SignInAndUpFeature] = None, override: Union[InputOverrideConfig, None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>sign_in_and_up_feature: Optional[<a title="supertokens_python.recipe.thirdparty.SignInAndUpFeature" href="#supertokens_python.recipe.thirdparty.SignInAndUpFeature">SignInAndUpFeature</a>] = None, override: Union[<a title="supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a>, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -137,6 +140,565 @@ def init(
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
+<span>class <span class="ident">InputOverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
+<span>class <span class="ident">ThirdPartyOverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.apis" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig.apis">apis</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.functions" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI.functions">functions</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.ProviderClientConfig"><code class="flex name class">
+<span>class <span class="ident">ProviderClientConfig</span></span>
+<span>(</span><span>client_id: str, client_secret: Optional[str] = None, client_type: Optional[str] = None, scope: Optional[List[str]] = None, force_pkce: Optional[bool] = None, additional_config: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ProviderClientConfig:
+    def __init__(
+        self,
+        client_id: str,
+        client_secret: Optional[str] = None,
+        client_type: Optional[str] = None,
+        scope: Optional[List[str]] = None,
+        force_pkce: Optional[bool] = None,
+        additional_config: Optional[Dict[str, Any]] = None,
+    ):
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.client_type = client_type
+        self.scope = scope
+        self.force_pkce = force_pkce
+        self.additional_config = additional_config
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        res = {
+            &#34;clientId&#34;: self.client_id,
+            &#34;clientSecret&#34;: self.client_secret,
+            &#34;clientType&#34;: self.client_type,
+            &#34;scope&#34;: self.scope,
+            &#34;forcePKCE&#34;: self.force_pkce,
+            &#34;additionalConfig&#34;: self.additional_config,
+        }
+
+        return {k: v for k, v in res.items() if v is not None}
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -&gt; ProviderClientConfig:
+        return ProviderClientConfig(
+            client_id=json.get(&#34;clientId&#34;, &#34;&#34;),
+            client_secret=json.get(&#34;clientSecret&#34;, None),
+            client_type=json.get(&#34;clientType&#34;, None),
+            scope=json.get(&#34;scope&#34;, None),
+            force_pkce=json.get(&#34;forcePKCE&#34;, None),
+            additional_config=json.get(&#34;additionalConfig&#34;, None),
+        )</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a></li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.ProviderClientConfig.from_json"><code class="name flex">
+<span>def <span class="ident">from_json</span></span>(<span>json: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.provider.ProviderClientConfig" href="provider.html#supertokens_python.recipe.thirdparty.provider.ProviderClientConfig">ProviderClientConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.ProviderClientConfig.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.ProviderConfig"><code class="flex name class">
+<span>class <span class="ident">ProviderConfig</span></span>
+<span>(</span><span>third_party_id: str, name: Optional[str] = None, clients: Optional[List[<a title="supertokens_python.recipe.thirdparty.ProviderClientConfig" href="#supertokens_python.recipe.thirdparty.ProviderClientConfig">ProviderClientConfig</a>]] = None, authorization_endpoint: Optional[str] = None, authorization_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None, token_endpoint: Optional[str] = None, token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint: Optional[str] = None, user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None, user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None, jwks_uri: Optional[str] = None, oidc_discovery_endpoint: Optional[str] = None, user_info_map: Optional[UserInfoMap] = None, require_email: Optional[bool] = None, validate_id_token_payload: Optional[Callable[[Dict[str, Any], ProviderConfigForClient, Dict[str, Any]], Awaitable[None]]] = None, generate_fake_email: Optional[Callable[[str, str, Dict[str, Any]], Awaitable[str]]] = None, validate_access_token: Optional[Callable[[str, ProviderConfigForClient, Dict[str, Any]], Awaitable[None]]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ProviderConfig(CommonProviderConfig):
+    def __init__(
+        self,
+        third_party_id: str,
+        name: Optional[str] = None,
+        clients: Optional[List[ProviderClientConfig]] = None,
+        authorization_endpoint: Optional[str] = None,
+        authorization_endpoint_query_params: Optional[
+            Dict[str, Union[str, None]]
+        ] = None,
+        token_endpoint: Optional[str] = None,
+        token_endpoint_body_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint: Optional[str] = None,
+        user_info_endpoint_query_params: Optional[Dict[str, Union[str, None]]] = None,
+        user_info_endpoint_headers: Optional[Dict[str, Union[str, None]]] = None,
+        jwks_uri: Optional[str] = None,
+        oidc_discovery_endpoint: Optional[str] = None,
+        user_info_map: Optional[UserInfoMap] = None,
+        require_email: Optional[bool] = None,
+        validate_id_token_payload: Optional[
+            Callable[
+                [Dict[str, Any], ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
+        generate_fake_email: Optional[
+            Callable[[str, str, Dict[str, Any]], Awaitable[str]]
+        ] = None,
+        validate_access_token: Optional[
+            Callable[
+                [str, ProviderConfigForClient, Dict[str, Any]],
+                Awaitable[None],
+            ]
+        ] = None,
+    ):
+        super().__init__(
+            third_party_id,
+            name,
+            authorization_endpoint,
+            authorization_endpoint_query_params,
+            token_endpoint,
+            token_endpoint_body_params,
+            user_info_endpoint,
+            user_info_endpoint_query_params,
+            user_info_endpoint_headers,
+            jwks_uri,
+            oidc_discovery_endpoint,
+            user_info_map,
+            require_email,
+            validate_id_token_payload,
+            generate_fake_email,
+            validate_access_token,
+        )
+        self.clients = clients
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        d = CommonProviderConfig.to_json(self)
+
+        if self.clients is not None:
+            d[&#34;clients&#34;] = [c.to_json() for c in self.clients]
+
+        return d
+
+    @staticmethod
+    def from_json(json: Dict[str, Any]) -&gt; ProviderConfig:
+        return ProviderConfig(
+            third_party_id=json.get(&#34;thirdPartyId&#34;, &#34;&#34;),
+            name=json.get(&#34;name&#34;, None),
+            clients=[
+                ProviderClientConfig.from_json(c) for c in json.get(&#34;clients&#34;, [])
+            ],
+            authorization_endpoint=json.get(&#34;authorizationEndpoint&#34;, None),
+            authorization_endpoint_query_params=json.get(
+                &#34;authorizationEndpointQueryParams&#34;, None
+            ),
+            token_endpoint=json.get(&#34;tokenEndpoint&#34;, None),
+            token_endpoint_body_params=json.get(&#34;tokenEndpointBodyParams&#34;, None),
+            user_info_endpoint=json.get(&#34;userInfoEndpoint&#34;, None),
+            user_info_endpoint_query_params=json.get(
+                &#34;userInfoEndpointQueryParams&#34;, None
+            ),
+            user_info_endpoint_headers=json.get(&#34;userInfoEndpointHeaders&#34;, None),
+            jwks_uri=json.get(&#34;jwksURI&#34;, None),
+            oidc_discovery_endpoint=json.get(&#34;oidcDiscoveryEndpoint&#34;, None),
+            user_info_map=UserInfoMap.from_json(json.get(&#34;userInfoMap&#34;, None)),
+            require_email=json.get(&#34;requireEmail&#34;, None),
+            validate_id_token_payload=None,
+            generate_fake_email=None,
+            validate_access_token=None,
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.thirdparty.provider.CommonProviderConfig" href="provider.html#supertokens_python.recipe.thirdparty.provider.CommonProviderConfig">CommonProviderConfig</a></li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.ProviderConfig.from_json"><code class="name flex">
+<span>def <span class="ident">from_json</span></span>(<span>json: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfig" href="provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfig">ProviderConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.ProviderConfig.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.ProviderInput"><code class="flex name class">
+<span>class <span class="ident">ProviderInput</span></span>
+<span>(</span><span>config: <a title="supertokens_python.recipe.thirdparty.ProviderConfig" href="#supertokens_python.recipe.thirdparty.ProviderConfig">ProviderConfig</a>, include_in_non_public_tenants_by_default: bool = False, override: Optional[Callable[[Provider], Provider]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ProviderInput:
+    def __init__(
+        self,
+        config: ProviderConfig,
+        include_in_non_public_tenants_by_default: bool = False,
+        override: Optional[Callable[[Provider], Provider]] = None,
+    ):
+        self.config = config
+        self.include_in_non_public_tenants_by_default = (
+            include_in_non_public_tenants_by_default
+        )
+        self.override = override</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.SignInAndUpFeature"><code class="flex name class">
+<span>class <span class="ident">SignInAndUpFeature</span></span>
+<span>(</span><span>providers: Optional[List[<a title="supertokens_python.recipe.thirdparty.ProviderInput" href="#supertokens_python.recipe.thirdparty.ProviderInput">ProviderInput</a>]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SignInAndUpFeature:
+    def __init__(self, providers: Optional[List[ProviderInput]] = None):
+        if providers is None:
+            providers = []
+
+        third_party_id_set: Set[str] = set()
+
+        for provider in providers:
+            third_party_id = provider.config.third_party_id
+
+            if third_party_id in third_party_id_set:
+                raise_bad_input_exception(
+                    &#34;The providers array has multiple entries for the same third party provider.&#34;
+                )
+
+            third_party_id_set.add(third_party_id)
+
+        self.providers = providers</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.ThirdPartyRecipe"><code class="flex name class">
+<span>class <span class="ident">ThirdPartyRecipe</span></span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, config: ThirdPartyConfig, _ingredients: ThirdPartyIngredients)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ThirdPartyRecipe(RecipeModule):
+    recipe_id = &#34;thirdparty&#34;
+    __instance = None
+
+    def __init__(
+        self,
+        recipe_id: str,
+        app_info: AppInfo,
+        config: ThirdPartyConfig,
+        _ingredients: ThirdPartyIngredients,
+    ):
+        super().__init__(recipe_id, app_info)
+        self.config = validate_and_normalise_user_input(config=config)
+        self.providers = self.config.sign_in_and_up_feature.providers
+        recipe_implementation = RecipeImplementation(
+            Querier.get_instance(recipe_id), self.providers
+        )
+        self.recipe_implementation: RecipeInterface = self.config.override.functions(
+            recipe_implementation
+        )
+        api_implementation = APIImplementation()
+        self.api_implementation: APIInterface = self.config.override.apis(
+            api_implementation
+        )
+
+        def callback():
+            mt_recipe = MultitenancyRecipe.get_instance_optional()
+            if mt_recipe:
+                mt_recipe.static_third_party_providers = self.providers
+                mt_recipe.all_available_first_factors.append(&#34;thirdparty&#34;)
+
+        PostSTInitCallbacks.add_post_init_callback(callback)
+
+    def is_error_from_this_recipe_based_on_instance(self, err: Exception) -&gt; bool:
+        return isinstance(err, SuperTokensError) and (
+            isinstance(err, SuperTokensThirdPartyError)
+        )
+
+    def get_apis_handled(self) -&gt; List[APIHandled]:
+        return [
+            APIHandled(
+                NormalisedURLPath(SIGNINUP),
+                &#34;post&#34;,
+                SIGNINUP,
+                self.api_implementation.disable_sign_in_up_post,
+            ),
+            APIHandled(
+                NormalisedURLPath(AUTHORISATIONURL),
+                &#34;get&#34;,
+                AUTHORISATIONURL,
+                self.api_implementation.disable_authorisation_url_get,
+            ),
+            APIHandled(
+                NormalisedURLPath(APPLE_REDIRECT_HANDLER),
+                &#34;post&#34;,
+                APPLE_REDIRECT_HANDLER,
+                self.api_implementation.disable_apple_redirect_handler_post,
+            ),
+        ]
+
+    async def handle_api_request(
+        self,
+        request_id: str,
+        tenant_id: str,
+        request: BaseRequest,
+        path: NormalisedURLPath,
+        method: str,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
+    ):
+        api_options = APIOptions(
+            request,
+            response,
+            self.recipe_id,
+            self.config,
+            self.recipe_implementation,
+            self.providers,
+            self.app_info,
+        )
+
+        if request_id == SIGNINUP:
+            return await handle_sign_in_up_api(
+                self.api_implementation, tenant_id, api_options, user_context
+            )
+        if request_id == AUTHORISATIONURL:
+            return await handle_authorisation_url_api(
+                self.api_implementation, tenant_id, api_options, user_context
+            )
+        if request_id == APPLE_REDIRECT_HANDLER:
+            return await handle_apple_redirect_api(
+                self.api_implementation, api_options, user_context
+            )
+
+        return None
+
+    async def handle_error(
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
+    ) -&gt; BaseResponse:  # type: ignore
+        if isinstance(err, SuperTokensThirdPartyError):
+            raise err
+
+    def get_all_cors_headers(self) -&gt; List[str]:
+        return []
+
+    @staticmethod
+    def init(
+        sign_in_and_up_feature: SignInAndUpFeature,
+        override: Union[ThirdPartyOverrideConfig, None] = None,
+    ):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = ThirdPartyConfig(
+            sign_in_and_up_feature=sign_in_and_up_feature,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
+            if ThirdPartyRecipe.__instance is None:
+                ingredients = ThirdPartyIngredients()
+                ThirdPartyRecipe.__instance = ThirdPartyRecipe(
+                    recipe_id=ThirdPartyRecipe.recipe_id,
+                    app_info=app_info,
+                    _ingredients=ingredients,
+                    config=apply_plugins(
+                        recipe_id=ThirdPartyRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
+                )
+                return ThirdPartyRecipe.__instance
+            raise_general_exception(
+                &#34;ThirdParty recipe has already been initialised. Please check your code for bugs.&#34;
+            )
+
+        return func
+
+    @staticmethod
+    def get_instance() -&gt; ThirdPartyRecipe:
+        if ThirdPartyRecipe.__instance is not None:
+            return ThirdPartyRecipe.__instance
+        raise_general_exception(
+            &#34;Initialisation not done. Did you forget to call the SuperTokens.init function?&#34;
+        )
+
+    @staticmethod
+    def reset():
+        if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
+            environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
+        ):
+            raise_general_exception(&#34;calling testing function in non testing env&#34;)
+        ThirdPartyRecipe.__instance = None
+
+    # instance functions below...............</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe_module.RecipeModule" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.recipe_id"><code class="name">var <span class="ident">recipe_id</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.get_instance"><code class="name flex">
+<span>def <span class="ident">get_instance</span></span>(<span>) ‑> <a title="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe" href="recipe.html#supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe">ThirdPartyRecipe</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.init"><code class="name flex">
+<span>def <span class="ident">init</span></span>(<span>sign_in_and_up_feature: <a title="supertokens_python.recipe.thirdparty.SignInAndUpFeature" href="#supertokens_python.recipe.thirdparty.SignInAndUpFeature">SignInAndUpFeature</a>, override: Union[<a title="supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a>, None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.reset"><code class="name flex">
+<span>def <span class="ident">reset</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.get_all_cors_headers"><code class="name flex">
+<span>def <span class="ident">get_all_cors_headers</span></span>(<span>self) ‑> List[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.get_apis_handled"><code class="name flex">
+<span>def <span class="ident">get_apis_handled</span></span>(<span>self) ‑> List[<a title="supertokens_python.recipe_module.APIHandled" href="../../recipe_module.html#supertokens_python.recipe_module.APIHandled">APIHandled</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.handle_api_request"><code class="name flex">
+<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.handle_error"><code class="name flex">
+<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.is_error_from_this_recipe_based_on_instance"><code class="name flex">
+<span>def <span class="ident">is_error_from_this_recipe_based_on_instance</span></span>(<span>self, err: Exception) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe_module.RecipeModule" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe_module.RecipeModule.get_tenant_id" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule.get_tenant_id">get_tenant_id</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -169,6 +731,53 @@ def init(
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.thirdparty.init" href="#supertokens_python.recipe.thirdparty.init">init</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface].model_config" href="#supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.ProviderClientConfig" href="#supertokens_python.recipe.thirdparty.ProviderClientConfig">ProviderClientConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.ProviderClientConfig.from_json" href="#supertokens_python.recipe.thirdparty.ProviderClientConfig.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.ProviderClientConfig.to_json" href="#supertokens_python.recipe.thirdparty.ProviderClientConfig.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.ProviderConfig" href="#supertokens_python.recipe.thirdparty.ProviderConfig">ProviderConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.ProviderConfig.from_json" href="#supertokens_python.recipe.thirdparty.ProviderConfig.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.ProviderConfig.to_json" href="#supertokens_python.recipe.thirdparty.ProviderConfig.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.ProviderInput" href="#supertokens_python.recipe.thirdparty.ProviderInput">ProviderInput</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.SignInAndUpFeature" href="#supertokens_python.recipe.thirdparty.SignInAndUpFeature">SignInAndUpFeature</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.ThirdPartyRecipe" href="#supertokens_python.recipe.thirdparty.ThirdPartyRecipe">ThirdPartyRecipe</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.get_all_cors_headers" href="#supertokens_python.recipe.thirdparty.ThirdPartyRecipe.get_all_cors_headers">get_all_cors_headers</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.get_apis_handled" href="#supertokens_python.recipe.thirdparty.ThirdPartyRecipe.get_apis_handled">get_apis_handled</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.get_instance" href="#supertokens_python.recipe.thirdparty.ThirdPartyRecipe.get_instance">get_instance</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.handle_api_request" href="#supertokens_python.recipe.thirdparty.ThirdPartyRecipe.handle_api_request">handle_api_request</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.handle_error" href="#supertokens_python.recipe.thirdparty.ThirdPartyRecipe.handle_error">handle_error</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.init" href="#supertokens_python.recipe.thirdparty.ThirdPartyRecipe.init">init</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.is_error_from_this_recipe_based_on_instance" href="#supertokens_python.recipe.thirdparty.ThirdPartyRecipe.is_error_from_this_recipe_based_on_instance">is_error_from_this_recipe_based_on_instance</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.recipe_id" href="#supertokens_python.recipe.thirdparty.ThirdPartyRecipe.recipe_id">recipe_id</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.reset" href="#supertokens_python.recipe.thirdparty.ThirdPartyRecipe.reset">reset</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

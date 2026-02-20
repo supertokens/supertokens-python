@@ -100,7 +100,8 @@ from .interfaces import (
 from .recipe_implementation import RecipeImplementation
 from .utils import (
     ContactConfig,
-    OverrideConfig,
+    PasswordlessConfig,
+    PasswordlessOverrideConfig,
     get_enabled_pwless_factors,
     validate_and_normalise_user_input,
 )
@@ -126,46 +127,22 @@ class PasswordlessRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        contact_config: ContactConfig,
-        flow_type: Literal[
-            &#34;USER_INPUT_CODE&#34;, &#34;MAGIC_LINK&#34;, &#34;USER_INPUT_CODE_AND_MAGIC_LINK&#34;
-        ],
         ingredients: PasswordlessIngredients,
-        override: Union[OverrideConfig, None] = None,
-        get_custom_user_input_code: Union[
-            Callable[[str, Dict[str, Any]], Awaitable[str]], None
-        ] = None,
-        email_delivery: Union[
-            EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None
-        ] = None,
-        sms_delivery: Union[
-            SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None
-        ] = None,
+        config: PasswordlessConfig,
     ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
-            app_info,
-            contact_config,
-            flow_type,
-            override,
-            get_custom_user_input_code,
-            email_delivery,
-            sms_delivery,
+            app_info=app_info,
+            config=config,
         )
 
         recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
-        self.recipe_implementation: RecipeInterface = (
+        self.recipe_implementation: RecipeInterface = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
         api_implementation = APIImplementation()
-        self.api_implementation = (
-            api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
-        )
+        self.api_implementation = self.config.override.apis(api_implementation)
 
         email_delivery_ingredient = ingredients.email_delivery
         if email_delivery_ingredient is None:
@@ -536,7 +513,7 @@ class PasswordlessRecipe(RecipeModule):
         flow_type: Literal[
             &#34;USER_INPUT_CODE&#34;, &#34;MAGIC_LINK&#34;, &#34;USER_INPUT_CODE_AND_MAGIC_LINK&#34;
         ],
-        override: Union[OverrideConfig, None] = None,
+        override: Optional[PasswordlessOverrideConfig] = None,
         get_custom_user_input_code: Union[
             Callable[[str, Dict[str, Any]], Awaitable[str]], None
         ] = None,
@@ -547,19 +524,29 @@ class PasswordlessRecipe(RecipeModule):
             SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None
         ] = None,
     ):
-        def func(app_info: AppInfo):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = PasswordlessConfig(
+            contact_config=contact_config,
+            get_custom_user_input_code=get_custom_user_input_code,
+            email_delivery=email_delivery,
+            sms_delivery=sms_delivery,
+            flow_type=flow_type,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if PasswordlessRecipe.__instance is None:
                 ingredients = PasswordlessIngredients(None, None)
                 PasswordlessRecipe.__instance = PasswordlessRecipe(
-                    PasswordlessRecipe.recipe_id,
-                    app_info,
-                    contact_config,
-                    flow_type,
-                    ingredients,
-                    override,
-                    get_custom_user_input_code,
-                    email_delivery,
-                    sms_delivery,
+                    recipe_id=PasswordlessRecipe.recipe_id,
+                    app_info=app_info,
+                    ingredients=ingredients,
+                    config=apply_plugins(
+                        recipe_id=PasswordlessRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return PasswordlessRecipe.__instance
             raise_general_exception(
@@ -666,7 +653,7 @@ class PasswordlessRecipe(RecipeModule):
 <dl>
 <dt id="supertokens_python.recipe.passwordless.recipe.PasswordlessRecipe"><code class="flex name class">
 <span>class <span class="ident">PasswordlessRecipe</span></span>
-<span>(</span><span>recipe_id: str, app_info: AppInfo, contact_config: ContactConfig, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", ingredients: PasswordlessIngredients, override: Union[OverrideConfig, None] = None, get_custom_user_input_code: Union[Callable[[str, Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None)</span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, ingredients: PasswordlessIngredients, config: PasswordlessConfig)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -685,46 +672,22 @@ inheritance.</p></div>
         self,
         recipe_id: str,
         app_info: AppInfo,
-        contact_config: ContactConfig,
-        flow_type: Literal[
-            &#34;USER_INPUT_CODE&#34;, &#34;MAGIC_LINK&#34;, &#34;USER_INPUT_CODE_AND_MAGIC_LINK&#34;
-        ],
         ingredients: PasswordlessIngredients,
-        override: Union[OverrideConfig, None] = None,
-        get_custom_user_input_code: Union[
-            Callable[[str, Dict[str, Any]], Awaitable[str]], None
-        ] = None,
-        email_delivery: Union[
-            EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None
-        ] = None,
-        sms_delivery: Union[
-            SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None
-        ] = None,
+        config: PasswordlessConfig,
     ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
-            app_info,
-            contact_config,
-            flow_type,
-            override,
-            get_custom_user_input_code,
-            email_delivery,
-            sms_delivery,
+            app_info=app_info,
+            config=config,
         )
 
         recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
-        self.recipe_implementation: RecipeInterface = (
+        self.recipe_implementation: RecipeInterface = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
         api_implementation = APIImplementation()
-        self.api_implementation = (
-            api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
-        )
+        self.api_implementation = self.config.override.apis(api_implementation)
 
         email_delivery_ingredient = ingredients.email_delivery
         if email_delivery_ingredient is None:
@@ -1095,7 +1058,7 @@ inheritance.</p></div>
         flow_type: Literal[
             &#34;USER_INPUT_CODE&#34;, &#34;MAGIC_LINK&#34;, &#34;USER_INPUT_CODE_AND_MAGIC_LINK&#34;
         ],
-        override: Union[OverrideConfig, None] = None,
+        override: Optional[PasswordlessOverrideConfig] = None,
         get_custom_user_input_code: Union[
             Callable[[str, Dict[str, Any]], Awaitable[str]], None
         ] = None,
@@ -1106,19 +1069,29 @@ inheritance.</p></div>
             SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None
         ] = None,
     ):
-        def func(app_info: AppInfo):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = PasswordlessConfig(
+            contact_config=contact_config,
+            get_custom_user_input_code=get_custom_user_input_code,
+            email_delivery=email_delivery,
+            sms_delivery=sms_delivery,
+            flow_type=flow_type,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if PasswordlessRecipe.__instance is None:
                 ingredients = PasswordlessIngredients(None, None)
                 PasswordlessRecipe.__instance = PasswordlessRecipe(
-                    PasswordlessRecipe.recipe_id,
-                    app_info,
-                    contact_config,
-                    flow_type,
-                    ingredients,
-                    override,
-                    get_custom_user_input_code,
-                    email_delivery,
-                    sms_delivery,
+                    recipe_id=PasswordlessRecipe.recipe_id,
+                    app_info=app_info,
+                    ingredients=ingredients,
+                    config=apply_plugins(
+                        recipe_id=PasswordlessRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return PasswordlessRecipe.__instance
             raise_general_exception(
@@ -1222,15 +1195,15 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.recipe.PasswordlessRecipe.email_delivery"><code class="name">var <span class="ident">email_delivery</span> : <a title="supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient" href="../../ingredients/emaildelivery/index.html#supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient">EmailDeliveryIngredient</a>[<a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>]</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe.PasswordlessRecipe.recipe_id"><code class="name">var <span class="ident">recipe_id</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe.PasswordlessRecipe.sms_delivery"><code class="name">var <span class="ident">sms_delivery</span> : <a title="supertokens_python.ingredients.smsdelivery.SMSDeliveryIngredient" href="../../ingredients/smsdelivery/index.html#supertokens_python.ingredients.smsdelivery.SMSDeliveryIngredient">SMSDeliveryIngredient</a>[<a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters" href="types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a>]</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Static methods</h3>
@@ -1242,7 +1215,7 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe.PasswordlessRecipe.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>contact_config: ContactConfig, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", override: Union[OverrideConfig, None] = None, get_custom_user_input_code: Union[Callable[[str, Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>contact_config: ContactConfig, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", override: Optional[PasswordlessOverrideConfig] = None, get_custom_user_input_code: Union[Callable[[str, Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1299,6 +1272,14 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe_module.RecipeModule" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe_module.RecipeModule.get_tenant_id" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule.get_tenant_id">get_tenant_id</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>

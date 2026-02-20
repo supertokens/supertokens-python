@@ -75,12 +75,11 @@ from supertokens_python.recipe.session.jwt import (
     parse_jwt_without_signature_verification,
 )
 from supertokens_python.recipe.session.utils import (
-    SessionConfig,
+    NormalisedSessionConfig,
     TokenTransferMethod,
     get_auth_mode_from_header,
     get_required_claim_validators,
 )
-from supertokens_python.supertokens import Supertokens
 from supertokens_python.types import MaybeAwaitable, RecipeUserId
 from supertokens_python.utils import (
     FRAMEWORKS,
@@ -103,7 +102,7 @@ LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = &#34;sIdRefreshToken&#34;
 
 async def get_session_from_request(
     request: Any,
-    config: SessionConfig,
+    config: NormalisedSessionConfig,
     recipe_interface_impl: SessionRecipeInterface,
     session_required: Optional[bool] = None,
     anti_csrf_check: Optional[bool] = None,
@@ -116,6 +115,8 @@ async def get_session_from_request(
     ] = None,
     user_context: Optional[Dict[str, Any]] = None,
 ) -&gt; Optional[SessionContainer]:
+    from supertokens_python.supertokens import Supertokens
+
     log_debug_message(&#34;getSession: Started&#34;)
 
     if not hasattr(request, &#34;wrapper_used&#34;) or not request.wrapper_used:
@@ -268,11 +269,13 @@ async def create_new_session_in_request(
     access_token_payload: Dict[str, Any],
     user_id: str,
     recipe_user_id: RecipeUserId,
-    config: SessionConfig,
+    config: NormalisedSessionConfig,
     app_info: AppInfo,
     session_data_in_database: Dict[str, Any],
     tenant_id: str,
 ) -&gt; SessionContainer:
+    from supertokens_python.supertokens import Supertokens
+
     log_debug_message(&#34;createNewSession: Started&#34;)
 
     # Handling framework specific request/response wrapping
@@ -381,9 +384,11 @@ async def create_new_session_in_request(
 async def refresh_session_in_request(
     request: Any,
     user_context: Dict[str, Any],
-    config: SessionConfig,
+    config: NormalisedSessionConfig,
     recipe_interface_impl: SessionRecipeInterface,
 ) -&gt; SessionContainer:
+    from supertokens_python.supertokens import Supertokens
+
     log_debug_message(&#34;refreshSession: Started&#34;)
 
     response_mutators: List[ResponseMutator] = []
@@ -573,19 +578,19 @@ async def refresh_session_in_request(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.session_request_functions.create_new_session_in_request"><code class="name flex">
-<span>async def <span class="ident">create_new_session_in_request</span></span>(<span>request: Any, user_context: Dict[str, Any], recipe_instance: SessionRecipe, access_token_payload: Dict[str, Any], user_id: str, recipe_user_id: RecipeUserId, config: SessionConfig, app_info: AppInfo, session_data_in_database: Dict[str, Any], tenant_id: str)</span>
+<span>async def <span class="ident">create_new_session_in_request</span></span>(<span>request: Any, user_context: Dict[str, Any], recipe_instance: SessionRecipe, access_token_payload: Dict[str, Any], user_id: str, recipe_user_id: RecipeUserId, config: NormalisedSessionConfig, app_info: AppInfo, session_data_in_database: Dict[str, Any], tenant_id: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.session.session_request_functions.get_session_from_request"><code class="name flex">
-<span>async def <span class="ident">get_session_from_request</span></span>(<span>request: Any, config: SessionConfig, recipe_interface_impl: SessionRecipeInterface, session_required: Optional[bool] = None, anti_csrf_check: Optional[bool] = None, check_database: Optional[bool] = None, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], SessionContainer, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
+<span>async def <span class="ident">get_session_from_request</span></span>(<span>request: Any, config: NormalisedSessionConfig, recipe_interface_impl: SessionRecipeInterface, session_required: Optional[bool] = None, anti_csrf_check: Optional[bool] = None, check_database: Optional[bool] = None, override_global_claim_validators: Optional[Callable[[List[SessionClaimValidator], SessionContainer, Dict[str, Any]], MaybeAwaitable[List[SessionClaimValidator]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.session.session_request_functions.refresh_session_in_request"><code class="name flex">
-<span>async def <span class="ident">refresh_session_in_request</span></span>(<span>request: Any, user_context: Dict[str, Any], config: SessionConfig, recipe_interface_impl: SessionRecipeInterface) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
+<span>async def <span class="ident">refresh_session_in_request</span></span>(<span>request: Any, user_context: Dict[str, Any], config: NormalisedSessionConfig, recipe_interface_impl: SessionRecipeInterface) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>

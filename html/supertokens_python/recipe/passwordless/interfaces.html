@@ -41,8 +41,8 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Union
+from abc import abstractmethod
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from typing_extensions import Literal
 
@@ -54,6 +54,7 @@ from supertokens_python.types import (
     User,
 )
 from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from ...supertokens import AppInfo
@@ -65,7 +66,9 @@ from .types import (
     PasswordlessLoginSMSTemplateVars,
     SMSDeliveryIngredient,
 )
-from .utils import PasswordlessConfig
+
+if TYPE_CHECKING:
+    from .utils import NormalisedPasswordlessConfig
 
 
 class CreateCodeOkResult:
@@ -242,7 +245,7 @@ class PhoneNumberChangeNotAllowedError:
         self.reason = reason
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -386,7 +389,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: PasswordlessConfig,
+        config: NormalisedPasswordlessConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         email_delivery: EmailDeliveryIngredient[PasswordlessLoginEmailTemplateVars],
@@ -532,7 +535,7 @@ class SignInUpPostNotAllowedResponse(APIResponse):
         return {&#34;status&#34;: self.status, &#34;reason&#34;: self.reason}
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_create_code_post = False
         self.disable_resend_code_post = False
@@ -626,12 +629,13 @@ class APIInterface:
 <span>class <span class="ident">APIInterface</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class APIInterface:
+<pre><code class="python">class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_create_code_post = False
         self.disable_resend_code_post = False
@@ -711,6 +715,11 @@ class APIInterface:
     ) -&gt; Union[PhoneNumberExistsGetOkResult, GeneralErrorResponse]:
         pass</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseAPIInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseAPIInterface">BaseAPIInterface</a></li>
+<li>abc.ABC</li>
+</ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.passwordless.api.implementation.APIImplementation" href="api/implementation.html#supertokens_python.recipe.passwordless.api.implementation.APIImplementation">APIImplementation</a></li>
@@ -751,7 +760,7 @@ class APIInterface:
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.APIOptions"><code class="flex name class">
 <span>class <span class="ident">APIOptions</span></span>
-<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: PasswordlessConfig, recipe_implementation: <a title="supertokens_python.recipe.passwordless.interfaces.RecipeInterface" href="#supertokens_python.recipe.passwordless.interfaces.RecipeInterface">RecipeInterface</a>, app_info: AppInfo, email_delivery: EmailDeliveryIngredient[PasswordlessLoginEmailTemplateVars], sms_delivery: SMSDeliveryIngredient[PasswordlessLoginSMSTemplateVars])</span>
+<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: NormalisedPasswordlessConfig, recipe_implementation: <a title="supertokens_python.recipe.passwordless.interfaces.RecipeInterface" href="#supertokens_python.recipe.passwordless.interfaces.RecipeInterface">RecipeInterface</a>, app_info: AppInfo, email_delivery: EmailDeliveryIngredient[PasswordlessLoginEmailTemplateVars], sms_delivery: SMSDeliveryIngredient[PasswordlessLoginSMSTemplateVars])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -765,7 +774,7 @@ class APIInterface:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: PasswordlessConfig,
+        config: NormalisedPasswordlessConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         email_delivery: EmailDeliveryIngredient[PasswordlessLoginEmailTemplateVars],
@@ -969,7 +978,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1018,7 +1027,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1071,7 +1080,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1109,7 +1118,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1274,7 +1283,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1387,7 +1396,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1444,7 +1453,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1467,7 +1476,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RecipeInterface(ABC):
+<pre><code class="python">class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -1606,6 +1615,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseRecipeInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
@@ -1719,7 +1729,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1757,7 +1767,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1825,7 +1835,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.interfaces.SignInUpPostNotAllowedResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>

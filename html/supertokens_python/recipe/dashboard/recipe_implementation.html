@@ -55,7 +55,7 @@ from supertokens_python.utils import log_debug_message, normalise_http_method
 
 from .exceptions import DashboardOperationNotAllowedError
 from .interfaces import RecipeInterface
-from .utils import DashboardConfig, validate_api_key
+from .utils import NormalisedDashboardConfig, validate_api_key
 
 
 class RecipeImplementation(RecipeInterface):
@@ -65,7 +65,7 @@ class RecipeImplementation(RecipeInterface):
     async def should_allow_access(
         self,
         request: BaseRequest,
-        config: DashboardConfig,
+        config: NormalisedDashboardConfig,
         user_context: Dict[str, Any],
     ) -&gt; bool:
         # For cases where we&#39;re not using the API key, the JWT is being used; we allow their access by default
@@ -152,7 +152,7 @@ inheritance.</p></div>
     async def should_allow_access(
         self,
         request: BaseRequest,
-        config: DashboardConfig,
+        config: NormalisedDashboardConfig,
         user_context: Dict[str, Any],
     ) -&gt; bool:
         # For cases where we&#39;re not using the API key, the JWT is being used; we allow their access by default
@@ -215,6 +215,7 @@ inheritance.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.dashboard.interfaces.RecipeInterface" href="interfaces.html#supertokens_python.recipe.dashboard.interfaces.RecipeInterface">RecipeInterface</a></li>
+<li><a title="supertokens_python.types.recipe.BaseRecipeInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Methods</h3>
@@ -226,7 +227,7 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.recipe_implementation.RecipeImplementation.should_allow_access"><code class="name flex">
-<span>async def <span class="ident">should_allow_access</span></span>(<span>self, request: BaseRequest, config: DashboardConfig, user_context: Dict[str, Any]) ‑> bool</span>
+<span>async def <span class="ident">should_allow_access</span></span>(<span>self, request: BaseRequest, config: NormalisedDashboardConfig, user_context: Dict[str, Any]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

@@ -57,20 +57,19 @@ from typing import (
 from typing_extensions import TypedDict
 
 from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.types import (
     MaybeAwaitable,
     RecipeUserId,
 )
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from ...utils import resolve
 from .exceptions import ClaimValidationError
-from .utils import SessionConfig, TokenTransferMethod
 
 if TYPE_CHECKING:
-    from supertokens_python.framework import BaseRequest
-
-from supertokens_python.framework import BaseResponse
+    from .utils import NormalisedSessionConfig, TokenTransferMethod
 
 
 class SessionObj:
@@ -215,7 +214,7 @@ class GetSessionTokensDangerouslyDict(TypedDict):
     antiCsrfToken: Optional[str]
 
 
-class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
+class RecipeInterface(BaseRecipeInterface):  # pylint: disable=too-many-public-methods
     def __init__(self):
         pass
 
@@ -401,7 +400,7 @@ class APIOptions:
         request: BaseRequest,
         response: Optional[BaseResponse],
         recipe_id: str,
-        config: SessionConfig,
+        config: NormalisedSessionConfig,
         recipe_implementation: RecipeInterface,
     ):
         self.request = request
@@ -411,7 +410,7 @@ class APIOptions:
         self.recipe_implementation = recipe_implementation
 
 
-class APIInterface(ABC):
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_refresh_post = False
         self.disable_signout_post = False
@@ -474,7 +473,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def __init__(
         self,
         recipe_implementation: RecipeInterface,
-        config: SessionConfig,
+        config: NormalisedSessionConfig,
         access_token: str,
         front_token: str,
         refresh_token: Optional[TokenInfo],
@@ -814,7 +813,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class APIInterface(ABC):
+<pre><code class="python">class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_refresh_post = False
         self.disable_signout_post = False
@@ -857,6 +856,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseAPIInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseAPIInterface">BaseAPIInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
@@ -887,7 +887,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.APIOptions"><code class="flex name class">
 <span>class <span class="ident">APIOptions</span></span>
-<span>(</span><span>request: BaseRequest, response: Optional[BaseResponse], recipe_id: str, config: SessionConfig, recipe_implementation: <a title="supertokens_python.recipe.session.interfaces.RecipeInterface" href="#supertokens_python.recipe.session.interfaces.RecipeInterface">RecipeInterface</a>)</span>
+<span>(</span><span>request: BaseRequest, response: Optional[BaseResponse], recipe_id: str, config: NormalisedSessionConfig, recipe_implementation: <a title="supertokens_python.recipe.session.interfaces.RecipeInterface" href="#supertokens_python.recipe.session.interfaces.RecipeInterface">RecipeInterface</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -901,7 +901,7 @@ inheritance.</p></div>
         request: BaseRequest,
         response: Optional[BaseResponse],
         recipe_id: str,
-        config: SessionConfig,
+        config: NormalisedSessionConfig,
         recipe_implementation: RecipeInterface,
     ):
         self.request = request
@@ -1067,23 +1067,23 @@ dict(one=1, two=2)</p></div>
 <dl>
 <dt id="supertokens_python.recipe.session.interfaces.GetSessionTokensDangerouslyDict.accessAndFrontTokenUpdated"><code class="name">var <span class="ident">accessAndFrontTokenUpdated</span> : bool</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.GetSessionTokensDangerouslyDict.accessToken"><code class="name">var <span class="ident">accessToken</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.GetSessionTokensDangerouslyDict.antiCsrfToken"><code class="name">var <span class="ident">antiCsrfToken</span> : Optional[str]</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.GetSessionTokensDangerouslyDict.frontToken"><code class="name">var <span class="ident">frontToken</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.GetSessionTokensDangerouslyDict.refreshToken"><code class="name">var <span class="ident">refreshToken</span> : Optional[str]</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -1097,7 +1097,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
+<pre><code class="python">class RecipeInterface(BaseRecipeInterface):  # pylint: disable=too-many-public-methods
     def __init__(self):
         pass
 
@@ -1270,6 +1270,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseRecipeInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
@@ -1628,7 +1629,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer"><code class="flex name class">
 <span>class <span class="ident">SessionContainer</span></span>
-<span>(</span><span>recipe_implementation: <a title="supertokens_python.recipe.session.interfaces.RecipeInterface" href="#supertokens_python.recipe.session.interfaces.RecipeInterface">RecipeInterface</a>, config: SessionConfig, access_token: str, front_token: str, refresh_token: Optional[<a title="supertokens_python.recipe.session.interfaces.TokenInfo" href="#supertokens_python.recipe.session.interfaces.TokenInfo">TokenInfo</a>], anti_csrf_token: Optional[str], session_handle: str, user_id: str, recipe_user_id: RecipeUserId, user_data_in_access_token: Optional[Dict[str, Any]], req_res_info: Optional[<a title="supertokens_python.recipe.session.interfaces.ReqResInfo" href="#supertokens_python.recipe.session.interfaces.ReqResInfo">ReqResInfo</a>], access_token_updated: bool, tenant_id: str)</span>
+<span>(</span><span>recipe_implementation: <a title="supertokens_python.recipe.session.interfaces.RecipeInterface" href="#supertokens_python.recipe.session.interfaces.RecipeInterface">RecipeInterface</a>, config: NormalisedSessionConfig, access_token: str, front_token: str, refresh_token: Optional[<a title="supertokens_python.recipe.session.interfaces.TokenInfo" href="#supertokens_python.recipe.session.interfaces.TokenInfo">TokenInfo</a>], anti_csrf_token: Optional[str], session_handle: str, user_id: str, recipe_user_id: RecipeUserId, user_data_in_access_token: Optional[Dict[str, Any]], req_res_info: Optional[<a title="supertokens_python.recipe.session.interfaces.ReqResInfo" href="#supertokens_python.recipe.session.interfaces.ReqResInfo">ReqResInfo</a>], access_token_updated: bool, tenant_id: str)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -1641,7 +1642,7 @@ inheritance.</p></div>
     def __init__(
         self,
         recipe_implementation: RecipeInterface,
-        config: SessionConfig,
+        config: NormalisedSessionConfig,
         access_token: str,
         front_token: str,
         refresh_token: Optional[TokenInfo],

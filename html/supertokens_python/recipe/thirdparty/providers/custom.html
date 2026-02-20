@@ -26,7 +26,7 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import Any, Callable, Dict, List, Optional, Union
+<pre><code class="python">from typing import Any, Callable, Dict, List, Optional, Union, cast
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import pkce
@@ -95,7 +95,7 @@ def access_field(obj: Any, key: str) -&gt; Any:
     key_parts = key.split(&#34;.&#34;)
     for part in key_parts:
         if isinstance(obj, dict):
-            obj = obj.get(part)  # type: ignore
+            obj = cast(Dict[str, Any], obj).get(part)
         else:
             return None
 
@@ -804,6 +804,7 @@ def NewProvider(
 <li><a title="supertokens_python.recipe.thirdparty.providers.google.GoogleImpl" href="google.html#supertokens_python.recipe.thirdparty.providers.google.GoogleImpl">GoogleImpl</a></li>
 <li><a title="supertokens_python.recipe.thirdparty.providers.linkedin.LinkedinImpl" href="linkedin.html#supertokens_python.recipe.thirdparty.providers.linkedin.LinkedinImpl">LinkedinImpl</a></li>
 <li><a title="supertokens_python.recipe.thirdparty.providers.okta.OktaImpl" href="okta.html#supertokens_python.recipe.thirdparty.providers.okta.OktaImpl">OktaImpl</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.providers.saml.SAMLProviderImpl" href="saml.html#supertokens_python.recipe.thirdparty.providers.saml.SAMLProviderImpl">SAMLProviderImpl</a></li>
 <li><a title="supertokens_python.recipe.thirdparty.providers.twitter.TwitterImpl" href="twitter.html#supertokens_python.recipe.thirdparty.providers.twitter.TwitterImpl">TwitterImpl</a></li>
 </ul>
 <h3>Methods</h3>

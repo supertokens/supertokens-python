@@ -57,8 +57,8 @@ from .types import (
     InvalidTOTPError,
     LimitReachedError,
     ListDevicesOkResult,
+    NormalisedTOTPConfig,
     RemoveDeviceOkResult,
-    TOTPNormalisedConfig,
     UnknownDeviceError,
     UnknownUserIdError,
     UpdateDeviceOkResult,
@@ -76,7 +76,7 @@ class RecipeImplementation(RecipeInterface):
     def __init__(
         self,
         querier: Querier,
-        config: TOTPNormalisedConfig,
+        config: NormalisedTOTPConfig,
     ):
         super().__init__()
         self.querier = querier
@@ -316,7 +316,7 @@ class RecipeImplementation(RecipeInterface):
 <dl>
 <dt id="supertokens_python.recipe.totp.recipe_implementation.RecipeImplementation"><code class="flex name class">
 <span>class <span class="ident">RecipeImplementation</span></span>
-<span>(</span><span>querier: Querier, config: TOTPNormalisedConfig)</span>
+<span>(</span><span>querier: Querier, config: NormalisedTOTPConfig)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -329,7 +329,7 @@ inheritance.</p></div>
     def __init__(
         self,
         querier: Querier,
-        config: TOTPNormalisedConfig,
+        config: NormalisedTOTPConfig,
     ):
         super().__init__()
         self.querier = querier
@@ -560,6 +560,7 @@ inheritance.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.totp.interfaces.RecipeInterface" href="interfaces.html#supertokens_python.recipe.totp.interfaces.RecipeInterface">RecipeInterface</a></li>
+<li><a title="supertokens_python.types.recipe.BaseRecipeInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Methods</h3>

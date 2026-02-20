@@ -63,7 +63,7 @@ from supertokens_python.recipe_module import APIHandled, RecipeModule
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
-from .utils import InputOverrideConfig
+from .utils import UserMetadataConfig, UserMetadataOverrideConfig
 
 
 class UserMetadataRecipe(RecipeModule):
@@ -74,15 +74,15 @@ class UserMetadataRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        override: Union[InputOverrideConfig, None] = None,
+        config: UserMetadataConfig,
     ):
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(self, app_info, override)
+        self.config = validate_and_normalise_user_input(
+            _recipe=self, _app_info=app_info, input_config=config
+        )
         recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
-        self.recipe_implementation = (
+        self.recipe_implementation = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -&gt; bool:
@@ -118,11 +118,21 @@ class UserMetadataRecipe(RecipeModule):
         return []
 
     @staticmethod
-    def init(override: Union[InputOverrideConfig, None] = None):
-        def func(app_info: AppInfo):
+    def init(override: Union[UserMetadataOverrideConfig, None] = None):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = UserMetadataConfig(override=override)
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if UserMetadataRecipe.__instance is None:
                 UserMetadataRecipe.__instance = UserMetadataRecipe(
-                    UserMetadataRecipe.recipe_id, app_info, override
+                    recipe_id=UserMetadataRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=UserMetadataRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return UserMetadataRecipe.__instance
             raise Exception(
@@ -160,7 +170,7 @@ class UserMetadataRecipe(RecipeModule):
 <dl>
 <dt id="supertokens_python.recipe.usermetadata.recipe.UserMetadataRecipe"><code class="flex name class">
 <span>class <span class="ident">UserMetadataRecipe</span></span>
-<span>(</span><span>recipe_id: str, app_info: AppInfo, override: Union[InputOverrideConfig, None] = None)</span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, config: UserMetadataConfig)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -177,15 +187,15 @@ inheritance.</p></div>
         self,
         recipe_id: str,
         app_info: AppInfo,
-        override: Union[InputOverrideConfig, None] = None,
+        config: UserMetadataConfig,
     ):
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(self, app_info, override)
+        self.config = validate_and_normalise_user_input(
+            _recipe=self, _app_info=app_info, input_config=config
+        )
         recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
-        self.recipe_implementation = (
+        self.recipe_implementation = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -&gt; bool:
@@ -221,11 +231,21 @@ inheritance.</p></div>
         return []
 
     @staticmethod
-    def init(override: Union[InputOverrideConfig, None] = None):
-        def func(app_info: AppInfo):
+    def init(override: Union[UserMetadataOverrideConfig, None] = None):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = UserMetadataConfig(override=override)
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if UserMetadataRecipe.__instance is None:
                 UserMetadataRecipe.__instance = UserMetadataRecipe(
-                    UserMetadataRecipe.recipe_id, app_info, override
+                    recipe_id=UserMetadataRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=UserMetadataRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return UserMetadataRecipe.__instance
             raise Exception(
@@ -260,7 +280,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.usermetadata.recipe.UserMetadataRecipe.recipe_id"><code class="name">var <span class="ident">recipe_id</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Static methods</h3>
@@ -272,7 +292,7 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.usermetadata.recipe.UserMetadataRecipe.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>override: Union[InputOverrideConfig, None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>override: Union[UserMetadataOverrideConfig, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -317,6 +337,14 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe_module.RecipeModule" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe_module.RecipeModule.get_tenant_id" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule.get_tenant_id">get_tenant_id</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>

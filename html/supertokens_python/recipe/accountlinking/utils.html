@@ -41,22 +41,22 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+
+from supertokens_python.recipe.accountlinking.types import (
+    AccountInfoWithRecipeIdAndUserId,
+    AccountLinkingConfig,
+    NormalisedAccountLinkingConfig,
+    NormalisedAccountLinkingOverrideConfig,
+    RecipeLevelUser,
+    ShouldAutomaticallyLink,
+    ShouldNotAutomaticallyLink,
+)
 
 if TYPE_CHECKING:
-    from .types import (
-        AccountInfoWithRecipeIdAndUserId,
-        AccountLinkingConfig,
-        InputOverrideConfig,
-        RecipeLevelUser,
-        SessionContainer,
-        ShouldAutomaticallyLink,
-        ShouldNotAutomaticallyLink,
-        User,
-    )
-
-if TYPE_CHECKING:
+    from supertokens_python.recipe.session.interfaces import SessionContainer
     from supertokens_python.supertokens import AppInfo
+    from supertokens_python.types.base import User
 
 
 async def default_on_account_linked(_: User, __: RecipeLevelUser, ___: Dict[str, Any]):
@@ -86,52 +86,29 @@ def recipe_init_defined_should_do_automatic_account_linking() -&gt; bool:
 
 def validate_and_normalise_user_input(
     _: AppInfo,
-    on_account_linked: Optional[
-        Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]
-    ] = None,
-    should_do_automatic_account_linking: Optional[
-        Callable[
-            [
-                AccountInfoWithRecipeIdAndUserId,
-                Optional[User],
-                Optional[SessionContainer],
-                str,
-                Dict[str, Any],
-            ],
-            Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
-        ]
-    ] = None,
-    override: Union[InputOverrideConfig, None] = None,
-) -&gt; AccountLinkingConfig:
-    from .types import (
-        AccountLinkingConfig as ALC,
-    )
-    from .types import (
-        InputOverrideConfig as IOC,
-    )
-    from .types import (
-        OverrideConfig,
-    )
-
+    config: AccountLinkingConfig,
+) -&gt; NormalisedAccountLinkingConfig:
     global _did_use_default_should_do_automatic_account_linking
-    if override is None:
-        override = IOC()
+
+    override_config = NormalisedAccountLinkingOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
     _did_use_default_should_do_automatic_account_linking = (
-        should_do_automatic_account_linking is None
+        config.should_do_automatic_account_linking is None
     )
 
-    return ALC(
-        override=OverrideConfig(functions=override.functions),
+    return NormalisedAccountLinkingConfig(
+        override=override_config,
         on_account_linked=(
             default_on_account_linked
-            if on_account_linked is None
-            else on_account_linked
+            if config.on_account_linked is None
+            else config.on_account_linked
         ),
         should_do_automatic_account_linking=(
             default_should_do_automatic_account_linking
-            if should_do_automatic_account_linking is None
-            else should_do_automatic_account_linking
+            if config.should_do_automatic_account_linking is None
+            else config.should_do_automatic_account_linking
         ),
     )</code></pre>
 </details>
@@ -162,7 +139,7 @@ def validate_and_normalise_user_input(
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>_: AppInfo, on_account_linked: Optional[Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]] = None, should_do_automatic_account_linking: Optional[Callable[[AccountInfoWithRecipeIdAndUserId, Optional[User], Optional[SessionContainer], str, Dict[str, Any]], Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]]]] = None, override: Union[InputOverrideConfig, None] = None)</span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>_: AppInfo, config: AccountLinkingConfig)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

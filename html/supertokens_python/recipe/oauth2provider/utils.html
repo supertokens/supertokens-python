@@ -41,45 +41,63 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
+    BaseOverrideConfig,
+)
 
-if TYPE_CHECKING:
-    from typing import Union
+from .interfaces import APIInterface, RecipeInterface
 
-    from .interfaces import APIInterface, RecipeInterface
-
-
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
-
-
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+OAuth2ProviderOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedOAuth2ProviderOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+InputOverrideConfig = OAuth2ProviderOverrideConfig
+&#34;&#34;&#34;Deprecated, use `OAuth2ProviderOverrideConfig` instead.&#34;&#34;&#34;
 
 
-class OAuth2ProviderConfig:
-    def __init__(self, override: Union[OverrideConfig, None] = None):
-        self.override = override
+class OAuth2ProviderOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    ...
 
 
-def validate_and_normalise_user_input(
-    override: Union[InputOverrideConfig, None] = None,
+class OAuth2ProviderConfig(
+    OAuth2ProviderOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, OAuth2ProviderOverrideableConfig],
 ):
-    if override is None:
-        return OAuth2ProviderConfig(OverrideConfig())
-    return OAuth2ProviderConfig(OverrideConfig(override.functions, override.apis))</code></pre>
+    def to_overrideable_config(self) -&gt; OAuth2ProviderOverrideableConfig:
+        &#34;&#34;&#34;Create a `OAuth2ProviderOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return OAuth2ProviderOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: OAuth2ProviderOverrideableConfig,
+    ) -&gt; &#34;OAuth2ProviderConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `OAuth2ProviderConfig` from a `OAuth2ProviderOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return OAuth2ProviderConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
+
+
+class NormalisedOAuth2ProviderConfig(
+    BaseNormalisedConfig[RecipeInterface, APIInterface]
+): ...
+
+
+def validate_and_normalise_user_input(config: OAuth2ProviderConfig):
+    override_config = NormalisedOAuth2ProviderOverrideConfig.from_input_config(
+        override_config=config.override
+    )
+
+    return NormalisedOAuth2ProviderConfig(override=override_config)</code></pre>
 </details>
 </section>
 <section>
@@ -90,7 +108,7 @@ def validate_and_normalise_user_input(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.oauth2provider.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>override: Union[<a title="supertokens_python.recipe.oauth2provider.utils.InputOverrideConfig" href="#supertokens_python.recipe.oauth2provider.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None)</span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>config: <a title="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderConfig" href="#supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderConfig">OAuth2ProviderConfig</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -100,60 +118,199 @@ def validate_and_normalise_user_input(
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="supertokens_python.recipe.oauth2provider.utils.InputOverrideConfig"><code class="flex name class">
+<dt id="supertokens_python.recipe.oauth2provider.utils.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
 <span>class <span class="ident">InputOverrideConfig</span></span>
-<span>(</span><span>functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.apis" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig.apis">apis</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.functions" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI.functions">functions</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.utils.NormalisedOAuth2ProviderConfig"><code class="flex name class">
+<span>class <span class="ident">NormalisedOAuth2ProviderConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for normalized config of a Recipe with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis</code></pre>
+<pre><code class="python">class NormalisedOAuth2ProviderConfig(
+    BaseNormalisedConfig[RecipeInterface, APIInterface]
+): ...</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></li>
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig">BaseNormalisedConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].override" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig.override">override</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderConfig"><code class="flex name class">
 <span>class <span class="ident">OAuth2ProviderConfig</span></span>
-<span>(</span><span>override: Union[<a title="supertokens_python.recipe.oauth2provider.utils.OverrideConfig" href="#supertokens_python.recipe.oauth2provider.utils.OverrideConfig">OverrideConfig</a>, None] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class OAuth2ProviderConfig:
-    def __init__(self, override: Union[OverrideConfig, None] = None):
-        self.override = override</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.oauth2provider.utils.OverrideConfig"><code class="flex name class">
-<span>class <span class="ident">OverrideConfig</span></span>
-<span>(</span><span>functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class OverrideConfig:
-    def __init__(
+<pre><code class="python">class OAuth2ProviderConfig(
+    OAuth2ProviderOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, OAuth2ProviderOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; OAuth2ProviderOverrideableConfig:
+        &#34;&#34;&#34;Create a `OAuth2ProviderOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return OAuth2ProviderOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis</code></pre>
+        overrideable_config: OAuth2ProviderOverrideableConfig,
+    ) -&gt; &#34;OAuth2ProviderConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `OAuth2ProviderConfig` from a `OAuth2ProviderOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return OAuth2ProviderConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig" href="#supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig">OAuth2ProviderOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li>supertokens_python.types.config.BaseConfig[RecipeInterface, APIInterface, OAuth2ProviderOverrideableConfig]</li>
+<li><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderConfig.from_overrideable_config"><code class="name flex">
+<span>def <span class="ident">from_overrideable_config</span></span>(<span>self, overrideable_config: <a title="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig" href="#supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig">OAuth2ProviderOverrideableConfig</a>) ‑> <a title="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderConfig" href="#supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderConfig">OAuth2ProviderConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderConfig" href="#supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderConfig">OAuth2ProviderConfig</a></code> from a <code><a title="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig" href="#supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig">OAuth2ProviderOverrideableConfig</a></code>.
+Not a classmethod since it needs to be used in a dynamic context within plugins.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderConfig.to_overrideable_config"><code class="name flex">
+<span>def <span class="ident">to_overrideable_config</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig" href="#supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig">OAuth2ProviderOverrideableConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig" href="#supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig">OAuth2ProviderOverrideableConfig</a></code> from the current config.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig" href="#supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig">OAuth2ProviderOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li><code><b><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseConfig.override" href="../../types/config.html#supertokens_python.types.config.BaseConfig.override">override</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig"><code class="flex name class">
+<span>class <span class="ident">OAuth2ProviderOverrideableConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class OAuth2ProviderOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    ...</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderConfig" href="#supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderConfig">OAuth2ProviderConfig</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -177,13 +334,20 @@ def validate_and_normalise_user_input(
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="supertokens_python.recipe.oauth2provider.utils.InputOverrideConfig" href="#supertokens_python.recipe.oauth2provider.utils.InputOverrideConfig">InputOverrideConfig</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.oauth2provider.utils.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.oauth2provider.utils.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.oauth2provider.utils.NormalisedOAuth2ProviderConfig" href="#supertokens_python.recipe.oauth2provider.utils.NormalisedOAuth2ProviderConfig">NormalisedOAuth2ProviderConfig</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderConfig" href="#supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderConfig">OAuth2ProviderConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderConfig.from_overrideable_config" href="#supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderConfig.from_overrideable_config">from_overrideable_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderConfig.to_overrideable_config" href="#supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderConfig.to_overrideable_config">to_overrideable_config</a></code></li>
+</ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.oauth2provider.utils.OverrideConfig" href="#supertokens_python.recipe.oauth2provider.utils.OverrideConfig">OverrideConfig</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig" href="#supertokens_python.recipe.oauth2provider.utils.OAuth2ProviderOverrideableConfig">OAuth2ProviderOverrideableConfig</a></code></h4>
 </li>
 </ul>
 </li>

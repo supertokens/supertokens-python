@@ -42,8 +42,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, Protocol, TypeVar, Union, runtime_checkable
+from typing import Optional, Protocol, TypeVar, Union, runtime_checkable
 
 from supertokens_python.framework import BaseRequest
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
@@ -51,14 +50,20 @@ from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
     EmailDeliveryConfigWithService,
 )
+from supertokens_python.recipe.webauthn.interfaces.api import (
+    APIInterface,
+    TypeWebauthnEmailDeliveryInput,
+)
+from supertokens_python.recipe.webauthn.interfaces.recipe import RecipeInterface
 from supertokens_python.types.base import UserContext
-
-if TYPE_CHECKING:
-    from supertokens_python.recipe.webauthn.interfaces.api import (
-        APIInterface,
-        TypeWebauthnEmailDeliveryInput,
-    )
-    from supertokens_python.recipe.webauthn.interfaces.recipe import RecipeInterface
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
+    BaseOverrideConfig,
+)
+from supertokens_python.types.response import CamelCaseBaseModel
 
 InterfaceType = TypeVar(&#34;InterfaceType&#34;)
 &#34;&#34;&#34;Generic Type for use in `InterfaceOverride`&#34;&#34;&#34;
@@ -207,39 +212,53 @@ class InterfaceOverride(Protocol[InterfaceType]):
     ) -&gt; InterfaceType: ...
 
 
-# NOTE: Using dataclasses for these classes since validation is not required
-@dataclass
-class OverrideConfig:
-    &#34;&#34;&#34;
-    `WebauthnConfig.override`
-    &#34;&#34;&#34;
-
-    functions: Optional[InterfaceOverride[RecipeInterface]] = None
-    apis: Optional[InterfaceOverride[APIInterface]] = None
+WebauthnOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedWebauthnOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
 
 
-@dataclass
-class WebauthnConfig:
+class WebauthnOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
     get_relying_party_id: Optional[Union[str, GetRelyingPartyId]] = None
     get_relying_party_name: Optional[Union[str, GetRelyingPartyName]] = None
     get_origin: Optional[GetOrigin] = None
     email_delivery: Optional[EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]] = None
     validate_email_address: Optional[ValidateEmailAddress] = None
-    override: Optional[OverrideConfig] = None
 
 
-@dataclass
-class NormalisedWebauthnConfig:
+class WebauthnConfig(
+    WebauthnOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, WebauthnOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; WebauthnOverrideableConfig:
+        &#34;&#34;&#34;Create a `WebauthnOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return WebauthnOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: WebauthnOverrideableConfig,
+    ) -&gt; &#34;WebauthnConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `WebauthnConfig` from a `WebauthnOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return WebauthnConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
+
+
+class NormalisedWebauthnConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
     get_relying_party_id: NormalisedGetRelyingPartyId
     get_relying_party_name: NormalisedGetRelyingPartyName
     get_origin: NormalisedGetOrigin
     get_email_delivery_config: NormalisedGetEmailDeliveryConfig
     validate_email_address: NormalisedValidateEmailAddress
-    override: OverrideConfig
 
 
-@dataclass
-class WebauthnIngredients:
+class WebauthnIngredients(CamelCaseBaseModel):
     email_delivery: Optional[
         EmailDeliveryIngredient[TypeWebauthnEmailDeliveryInput]
     ] = None</code></pre>
@@ -290,7 +309,7 @@ class GetEmailDeliveryConfig(Protocol):
 <span>(</span><span>*args, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Callable signature for <code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_origin" href="#supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_origin">WebauthnConfig.get_origin</a></code>.</p></div>
+<div class="desc"><p>Callable signature for <code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_origin" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_origin">WebauthnConfig.get_origin</a></code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -320,7 +339,7 @@ class GetOrigin(Protocol):
 <span>(</span><span>*args, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Callable signature for <code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_relying_party_id" href="#supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_relying_party_id">WebauthnConfig.get_relying_party_id</a></code>.</p></div>
+<div class="desc"><p>Callable signature for <code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_relying_party_id" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_relying_party_id">WebauthnConfig.get_relying_party_id</a></code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -350,7 +369,7 @@ class GetRelyingPartyId(Protocol):
 <span>(</span><span>*args, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Callable signature for <code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_relying_party_name" href="#supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_relying_party_name">WebauthnConfig.get_relying_party_name</a></code>.</p></div>
+<div class="desc"><p>Callable signature for <code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_relying_party_name" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_relying_party_name">WebauthnConfig.get_relying_party_name</a></code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -545,88 +564,76 @@ class NormalisedValidateEmailAddress(Protocol):
 </dd>
 <dt id="supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig"><code class="flex name class">
 <span>class <span class="ident">NormalisedWebauthnConfig</span></span>
-<span>(</span><span>get_relying_party_id: <a title="supertokens_python.recipe.webauthn.types.config.NormalisedGetRelyingPartyId" href="#supertokens_python.recipe.webauthn.types.config.NormalisedGetRelyingPartyId">NormalisedGetRelyingPartyId</a>, get_relying_party_name: <a title="supertokens_python.recipe.webauthn.types.config.NormalisedGetRelyingPartyName" href="#supertokens_python.recipe.webauthn.types.config.NormalisedGetRelyingPartyName">NormalisedGetRelyingPartyName</a>, get_origin: <a title="supertokens_python.recipe.webauthn.types.config.NormalisedGetOrigin" href="#supertokens_python.recipe.webauthn.types.config.NormalisedGetOrigin">NormalisedGetOrigin</a>, get_email_delivery_config: <a title="supertokens_python.recipe.webauthn.types.config.NormalisedGetEmailDeliveryConfig" href="#supertokens_python.recipe.webauthn.types.config.NormalisedGetEmailDeliveryConfig">NormalisedGetEmailDeliveryConfig</a>, validate_email_address: <a title="supertokens_python.recipe.webauthn.types.config.NormalisedValidateEmailAddress" href="#supertokens_python.recipe.webauthn.types.config.NormalisedValidateEmailAddress">NormalisedValidateEmailAddress</a>, override: <a title="supertokens_python.recipe.webauthn.types.config.OverrideConfig" href="#supertokens_python.recipe.webauthn.types.config.OverrideConfig">OverrideConfig</a>)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>NormalisedWebauthnConfig(get_relying_party_id: 'NormalisedGetRelyingPartyId', get_relying_party_name: 'NormalisedGetRelyingPartyName', get_origin: 'NormalisedGetOrigin', get_email_delivery_config: 'NormalisedGetEmailDeliveryConfig', validate_email_address: 'NormalisedValidateEmailAddress', override: 'OverrideConfig')</p></div>
+<div class="desc"><p>Base class for normalized config of a Recipe with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class NormalisedWebauthnConfig:
+<pre><code class="python">class NormalisedWebauthnConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
     get_relying_party_id: NormalisedGetRelyingPartyId
     get_relying_party_name: NormalisedGetRelyingPartyName
     get_origin: NormalisedGetOrigin
     get_email_delivery_config: NormalisedGetEmailDeliveryConfig
-    validate_email_address: NormalisedValidateEmailAddress
-    override: OverrideConfig</code></pre>
+    validate_email_address: NormalisedValidateEmailAddress</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></li>
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig" href="../../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig">BaseNormalisedConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig.get_email_delivery_config"><code class="name">var <span class="ident">get_email_delivery_config</span> : <a title="supertokens_python.recipe.webauthn.types.config.NormalisedGetEmailDeliveryConfig" href="#supertokens_python.recipe.webauthn.types.config.NormalisedGetEmailDeliveryConfig">NormalisedGetEmailDeliveryConfig</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig.get_origin"><code class="name">var <span class="ident">get_origin</span> : <a title="supertokens_python.recipe.webauthn.types.config.NormalisedGetOrigin" href="#supertokens_python.recipe.webauthn.types.config.NormalisedGetOrigin">NormalisedGetOrigin</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig.get_relying_party_id"><code class="name">var <span class="ident">get_relying_party_id</span> : <a title="supertokens_python.recipe.webauthn.types.config.NormalisedGetRelyingPartyId" href="#supertokens_python.recipe.webauthn.types.config.NormalisedGetRelyingPartyId">NormalisedGetRelyingPartyId</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig.get_relying_party_name"><code class="name">var <span class="ident">get_relying_party_name</span> : <a title="supertokens_python.recipe.webauthn.types.config.NormalisedGetRelyingPartyName" href="#supertokens_python.recipe.webauthn.types.config.NormalisedGetRelyingPartyName">NormalisedGetRelyingPartyName</a></code></dt>
 <dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig.override"><code class="name">var <span class="ident">override</span> : <a title="supertokens_python.recipe.webauthn.types.config.OverrideConfig" href="#supertokens_python.recipe.webauthn.types.config.OverrideConfig">OverrideConfig</a></code></dt>
-<dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig.validate_email_address"><code class="name">var <span class="ident">validate_email_address</span> : <a title="supertokens_python.recipe.webauthn.types.config.NormalisedValidateEmailAddress" href="#supertokens_python.recipe.webauthn.types.config.NormalisedValidateEmailAddress">NormalisedValidateEmailAddress</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
-</dd>
-<dt id="supertokens_python.recipe.webauthn.types.config.OverrideConfig"><code class="flex name class">
-<span>class <span class="ident">OverrideConfig</span></span>
-<span>(</span><span>functions: Optional[<a title="supertokens_python.recipe.webauthn.types.config.InterfaceOverride" href="#supertokens_python.recipe.webauthn.types.config.InterfaceOverride">InterfaceOverride</a>[RecipeInterface]] = None, apis: Optional[<a title="supertokens_python.recipe.webauthn.types.config.InterfaceOverride" href="#supertokens_python.recipe.webauthn.types.config.InterfaceOverride">InterfaceOverride</a>[APIInterface]] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.override" href="#supertokens_python.recipe.webauthn.types.config.WebauthnConfig.override">WebauthnConfig.override</a></code></p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@dataclass
-class OverrideConfig:
-    &#34;&#34;&#34;
-    `WebauthnConfig.override`
-    &#34;&#34;&#34;
-
-    functions: Optional[InterfaceOverride[RecipeInterface]] = None
-    apis: Optional[InterfaceOverride[APIInterface]] = None</code></pre>
-</details>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.recipe.webauthn.types.config.OverrideConfig.apis"><code class="name">var <span class="ident">apis</span> : Optional[<a title="supertokens_python.recipe.webauthn.types.config.InterfaceOverride" href="#supertokens_python.recipe.webauthn.types.config.InterfaceOverride">InterfaceOverride</a>[APIInterface]]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.webauthn.types.config.OverrideConfig.functions"><code class="name">var <span class="ident">functions</span> : Optional[<a title="supertokens_python.recipe.webauthn.types.config.InterfaceOverride" href="#supertokens_python.recipe.webauthn.types.config.InterfaceOverride">InterfaceOverride</a>[RecipeInterface]]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].override" href="../../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig.override">override</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.types.config.ValidateEmailAddress"><code class="flex name class">
 <span>class <span class="ident">ValidateEmailAddress</span></span>
 <span>(</span><span>*args, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Callable signature for <code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.validate_email_address" href="#supertokens_python.recipe.webauthn.types.config.WebauthnConfig.validate_email_address">WebauthnConfig.validate_email_address</a></code>.</p></div>
+<div class="desc"><p>Callable signature for <code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.validate_email_address" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.validate_email_address">WebauthnConfig.validate_email_address</a></code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -649,74 +656,201 @@ class ValidateEmailAddress(Protocol):
 </dd>
 <dt id="supertokens_python.recipe.webauthn.types.config.WebauthnConfig"><code class="flex name class">
 <span>class <span class="ident">WebauthnConfig</span></span>
-<span>(</span><span>get_relying_party_id: Optional[Union[str, <a title="supertokens_python.recipe.webauthn.types.config.GetRelyingPartyId" href="#supertokens_python.recipe.webauthn.types.config.GetRelyingPartyId">GetRelyingPartyId</a>]] = None, get_relying_party_name: Optional[Union[str, <a title="supertokens_python.recipe.webauthn.types.config.GetRelyingPartyName" href="#supertokens_python.recipe.webauthn.types.config.GetRelyingPartyName">GetRelyingPartyName</a>]] = None, get_origin: Optional[<a title="supertokens_python.recipe.webauthn.types.config.GetOrigin" href="#supertokens_python.recipe.webauthn.types.config.GetOrigin">GetOrigin</a>] = None, email_delivery: Optional[EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]] = None, validate_email_address: Optional[<a title="supertokens_python.recipe.webauthn.types.config.ValidateEmailAddress" href="#supertokens_python.recipe.webauthn.types.config.ValidateEmailAddress">ValidateEmailAddress</a>] = None, override: Optional[<a title="supertokens_python.recipe.webauthn.types.config.OverrideConfig" href="#supertokens_python.recipe.webauthn.types.config.OverrideConfig">OverrideConfig</a>] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>WebauthnConfig(get_relying_party_id: 'Optional[Union[str, GetRelyingPartyId]]' = None, get_relying_party_name: 'Optional[Union[str, GetRelyingPartyName]]' = None, get_origin: 'Optional[GetOrigin]' = None, email_delivery: 'Optional[EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]]' = None, validate_email_address: 'Optional[ValidateEmailAddress]' = None, override: 'Optional[OverrideConfig]' = None)</p></div>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class WebauthnConfig:
-    get_relying_party_id: Optional[Union[str, GetRelyingPartyId]] = None
-    get_relying_party_name: Optional[Union[str, GetRelyingPartyName]] = None
-    get_origin: Optional[GetOrigin] = None
-    email_delivery: Optional[EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]] = None
-    validate_email_address: Optional[ValidateEmailAddress] = None
-    override: Optional[OverrideConfig] = None</code></pre>
+<pre><code class="python">class WebauthnConfig(
+    WebauthnOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, WebauthnOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; WebauthnOverrideableConfig:
+        &#34;&#34;&#34;Create a `WebauthnOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return WebauthnOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: WebauthnOverrideableConfig,
+    ) -&gt; &#34;WebauthnConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `WebauthnConfig` from a `WebauthnOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return WebauthnConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )</code></pre>
 </details>
-<h3>Class variables</h3>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig">WebauthnOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li>supertokens_python.types.config.BaseConfig[RecipeInterface, APIInterface, WebauthnOverrideableConfig]</li>
+<li><a title="supertokens_python.types.config.BaseConfig" href="../../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.email_delivery"><code class="name">var <span class="ident">email_delivery</span> : Optional[EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]]</code></dt>
+<dt id="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.from_overrideable_config"><code class="name flex">
+<span>def <span class="ident">from_overrideable_config</span></span>(<span>self, overrideable_config: <a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig">WebauthnOverrideableConfig</a>) ‑> <a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig" href="#supertokens_python.recipe.webauthn.types.config.WebauthnConfig">WebauthnConfig</a></span>
+</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig" href="#supertokens_python.recipe.webauthn.types.config.WebauthnConfig">WebauthnConfig</a></code> from a <code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig">WebauthnOverrideableConfig</a></code>.
+Not a classmethod since it needs to be used in a dynamic context within plugins.</p></div>
 </dd>
-<dt id="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_origin"><code class="name">var <span class="ident">get_origin</span> : Optional[<a title="supertokens_python.recipe.webauthn.types.config.GetOrigin" href="#supertokens_python.recipe.webauthn.types.config.GetOrigin">GetOrigin</a>]</code></dt>
+<dt id="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.to_overrideable_config"><code class="name flex">
+<span>def <span class="ident">to_overrideable_config</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig">WebauthnOverrideableConfig</a></span>
+</code></dt>
 <dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_relying_party_id"><code class="name">var <span class="ident">get_relying_party_id</span> : Optional[Union[str, <a title="supertokens_python.recipe.webauthn.types.config.GetRelyingPartyId" href="#supertokens_python.recipe.webauthn.types.config.GetRelyingPartyId">GetRelyingPartyId</a>]]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_relying_party_name"><code class="name">var <span class="ident">get_relying_party_name</span> : Optional[Union[str, <a title="supertokens_python.recipe.webauthn.types.config.GetRelyingPartyName" href="#supertokens_python.recipe.webauthn.types.config.GetRelyingPartyName">GetRelyingPartyName</a>]]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.override"><code class="name">var <span class="ident">override</span> : Optional[<a title="supertokens_python.recipe.webauthn.types.config.OverrideConfig" href="#supertokens_python.recipe.webauthn.types.config.OverrideConfig">OverrideConfig</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.validate_email_address"><code class="name">var <span class="ident">validate_email_address</span> : Optional[<a title="supertokens_python.recipe.webauthn.types.config.ValidateEmailAddress" href="#supertokens_python.recipe.webauthn.types.config.ValidateEmailAddress">ValidateEmailAddress</a>]</code></dt>
-<dd>
-<div class="desc"></div>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig">WebauthnOverrideableConfig</a></code> from the current config.</p></div>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig">WebauthnOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.email_delivery" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.email_delivery">email_delivery</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_origin" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_origin">get_origin</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_relying_party_id" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_relying_party_id">get_relying_party_id</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_relying_party_name" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_relying_party_name">get_relying_party_name</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.validate_email_address" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.validate_email_address">validate_email_address</a></code></li>
+</ul>
+</li>
+<li><code><b><a title="supertokens_python.types.config.BaseConfig" href="../../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseConfig.override" href="../../../types/config.html#supertokens_python.types.config.BaseConfig.override">override</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.types.config.WebauthnIngredients"><code class="flex name class">
 <span>class <span class="ident">WebauthnIngredients</span></span>
-<span>(</span><span>email_delivery: Optional[EmailDeliveryIngredient[TypeWebauthnEmailDeliveryInput]] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>WebauthnIngredients(email_delivery: 'Optional[EmailDeliveryIngredient[TypeWebauthnEmailDeliveryInput]]' = None)</p></div>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class WebauthnIngredients:
+<pre><code class="python">class WebauthnIngredients(CamelCaseBaseModel):
     email_delivery: Optional[
         EmailDeliveryIngredient[TypeWebauthnEmailDeliveryInput]
     ] = None</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.webauthn.types.config.WebauthnIngredients.email_delivery"><code class="name">var <span class="ident">email_delivery</span> : Optional[EmailDeliveryIngredient[TypeWebauthnEmailDeliveryInput]]</code></dt>
+<dt id="supertokens_python.recipe.webauthn.types.config.WebauthnIngredients.email_delivery"><code class="name">var <span class="ident">email_delivery</span> : Optional[<a title="supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient" href="../../../ingredients/emaildelivery/index.html#supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient">EmailDeliveryIngredient</a>[<a title="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput">TypeWebauthnRecoverAccountEmailDeliveryInput</a>]]</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig"><code class="flex name class">
+<span>class <span class="ident">WebauthnOverrideableConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class WebauthnOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    get_relying_party_id: Optional[Union[str, GetRelyingPartyId]] = None
+    get_relying_party_name: Optional[Union[str, GetRelyingPartyName]] = None
+    get_origin: Optional[GetOrigin] = None
+    email_delivery: Optional[EmailDeliveryConfig[TypeWebauthnEmailDeliveryInput]] = None
+    validate_email_address: Optional[ValidateEmailAddress] = None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig" href="#supertokens_python.recipe.webauthn.types.config.WebauthnConfig">WebauthnConfig</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.email_delivery"><code class="name">var <span class="ident">email_delivery</span> : Optional[<a title="supertokens_python.ingredients.emaildelivery.types.EmailDeliveryConfig" href="../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.EmailDeliveryConfig">EmailDeliveryConfig</a>[<a title="supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.TypeWebauthnRecoverAccountEmailDeliveryInput">TypeWebauthnRecoverAccountEmailDeliveryInput</a>]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_origin"><code class="name">var <span class="ident">get_origin</span> : Optional[<a title="supertokens_python.recipe.webauthn.types.config.GetOrigin" href="#supertokens_python.recipe.webauthn.types.config.GetOrigin">GetOrigin</a>]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_relying_party_id"><code class="name">var <span class="ident">get_relying_party_id</span> : Union[str, <a title="supertokens_python.recipe.webauthn.types.config.GetRelyingPartyId" href="#supertokens_python.recipe.webauthn.types.config.GetRelyingPartyId">GetRelyingPartyId</a>, ForwardRef(None)]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_relying_party_name"><code class="name">var <span class="ident">get_relying_party_name</span> : Union[str, <a title="supertokens_python.recipe.webauthn.types.config.GetRelyingPartyName" href="#supertokens_python.recipe.webauthn.types.config.GetRelyingPartyName">GetRelyingPartyName</a>, ForwardRef(None)]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.validate_email_address"><code class="name">var <span class="ident">validate_email_address</span> : Optional[<a title="supertokens_python.recipe.webauthn.types.config.ValidateEmailAddress" href="#supertokens_python.recipe.webauthn.types.config.ValidateEmailAddress">ValidateEmailAddress</a>]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -776,15 +910,7 @@ class WebauthnIngredients:
 <li><code><a title="supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig.get_origin" href="#supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig.get_origin">get_origin</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig.get_relying_party_id" href="#supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig.get_relying_party_id">get_relying_party_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig.get_relying_party_name" href="#supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig.get_relying_party_name">get_relying_party_name</a></code></li>
-<li><code><a title="supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig.override" href="#supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig.override">override</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig.validate_email_address" href="#supertokens_python.recipe.webauthn.types.config.NormalisedWebauthnConfig.validate_email_address">validate_email_address</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.webauthn.types.config.OverrideConfig" href="#supertokens_python.recipe.webauthn.types.config.OverrideConfig">OverrideConfig</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.webauthn.types.config.OverrideConfig.apis" href="#supertokens_python.recipe.webauthn.types.config.OverrideConfig.apis">apis</a></code></li>
-<li><code><a title="supertokens_python.recipe.webauthn.types.config.OverrideConfig.functions" href="#supertokens_python.recipe.webauthn.types.config.OverrideConfig.functions">functions</a></code></li>
 </ul>
 </li>
 <li>
@@ -793,18 +919,24 @@ class WebauthnIngredients:
 <li>
 <h4><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig" href="#supertokens_python.recipe.webauthn.types.config.WebauthnConfig">WebauthnConfig</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.email_delivery" href="#supertokens_python.recipe.webauthn.types.config.WebauthnConfig.email_delivery">email_delivery</a></code></li>
-<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_origin" href="#supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_origin">get_origin</a></code></li>
-<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_relying_party_id" href="#supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_relying_party_id">get_relying_party_id</a></code></li>
-<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_relying_party_name" href="#supertokens_python.recipe.webauthn.types.config.WebauthnConfig.get_relying_party_name">get_relying_party_name</a></code></li>
-<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.override" href="#supertokens_python.recipe.webauthn.types.config.WebauthnConfig.override">override</a></code></li>
-<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.validate_email_address" href="#supertokens_python.recipe.webauthn.types.config.WebauthnConfig.validate_email_address">validate_email_address</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.from_overrideable_config" href="#supertokens_python.recipe.webauthn.types.config.WebauthnConfig.from_overrideable_config">from_overrideable_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnConfig.to_overrideable_config" href="#supertokens_python.recipe.webauthn.types.config.WebauthnConfig.to_overrideable_config">to_overrideable_config</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnIngredients" href="#supertokens_python.recipe.webauthn.types.config.WebauthnIngredients">WebauthnIngredients</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnIngredients.email_delivery" href="#supertokens_python.recipe.webauthn.types.config.WebauthnIngredients.email_delivery">email_delivery</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig">WebauthnOverrideableConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.email_delivery" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.email_delivery">email_delivery</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_origin" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_origin">get_origin</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_relying_party_id" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_relying_party_id">get_relying_party_id</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_relying_party_name" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.get_relying_party_name">get_relying_party_name</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.validate_email_address" href="#supertokens_python.recipe.webauthn.types.config.WebauthnOverrideableConfig.validate_email_address">validate_email_address</a></code></li>
 </ul>
 </li>
 </ul>

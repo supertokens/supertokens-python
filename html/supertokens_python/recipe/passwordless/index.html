@@ -53,31 +53,27 @@ from supertokens_python.recipe.passwordless.types import (
     SMSTemplateVars,
 )
 
-from . import types, utils
-from .emaildelivery import services as emaildelivery_services
+from .emaildelivery.services import SMTPService
 from .recipe import PasswordlessRecipe
-from .smsdelivery import services as smsdelivery_services
+from .smsdelivery.services import SuperTokensSMSService, TwilioService
+from .types import (
+    CreateAndSendCustomEmailParameters,
+    CreateAndSendCustomTextMessageParameters,
+    EmailDeliveryInterface,
+    SMSDeliveryInterface,
+)
+from .utils import (
+    ContactConfig,
+    ContactEmailOnlyConfig,
+    ContactEmailOrPhoneConfig,
+    ContactPhoneOnlyConfig,
+    InputOverrideConfig,
+    PasswordlessOverrideConfig,
+    PhoneOrEmailInput,
+)
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo
-
-    from ...recipe_module import RecipeModule
-
-InputOverrideConfig = utils.OverrideConfig
-ContactEmailOnlyConfig = utils.ContactEmailOnlyConfig
-ContactConfig = utils.ContactConfig
-PhoneOrEmailInput = utils.PhoneOrEmailInput
-CreateAndSendCustomTextMessageParameters = (
-    types.CreateAndSendCustomTextMessageParameters
-)
-CreateAndSendCustomEmailParameters = types.CreateAndSendCustomEmailParameters
-ContactPhoneOnlyConfig = utils.ContactPhoneOnlyConfig
-ContactEmailOrPhoneConfig = utils.ContactEmailOrPhoneConfig
-SMTPService = emaildelivery_services.SMTPService
-TwilioService = smsdelivery_services.TwilioService
-SuperTokensSMSService = smsdelivery_services.SuperTokensSMSService
-EmailDeliveryInterface = types.EmailDeliveryInterface
-SMSDeliveryInterface = types.SMSDeliveryInterface
+    from supertokens_python.supertokens import RecipeInit
 
 
 def init(
@@ -85,13 +81,13 @@ def init(
     flow_type: Literal[
         &#34;USER_INPUT_CODE&#34;, &#34;MAGIC_LINK&#34;, &#34;USER_INPUT_CODE_AND_MAGIC_LINK&#34;
     ],
-    override: Union[InputOverrideConfig, None] = None,
+    override: Union[PasswordlessOverrideConfig, None] = None,
     get_custom_user_input_code: Union[
         Callable[[str, Dict[str, Any]], Awaitable[str]], None
     ] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None,
-) -&gt; Callable[[AppInfo], RecipeModule]:
+) -&gt; RecipeInit:
     return PasswordlessRecipe.init(
         contact_config,
         flow_type,
@@ -99,7 +95,26 @@ def init(
         get_custom_user_input_code,
         email_delivery,
         sms_delivery,
-    )</code></pre>
+    )
+
+
+__all__ = [
+    &#34;ContactConfig&#34;,
+    &#34;ContactEmailOnlyConfig&#34;,
+    &#34;ContactEmailOrPhoneConfig&#34;,
+    &#34;ContactPhoneOnlyConfig&#34;,
+    &#34;CreateAndSendCustomEmailParameters&#34;,
+    &#34;CreateAndSendCustomTextMessageParameters&#34;,
+    &#34;EmailDeliveryInterface&#34;,
+    &#34;InputOverrideConfig&#34;,  # deprecated, use PasswordlessOverrideConfig instead
+    &#34;PasswordlessOverrideConfig&#34;,
+    &#34;PhoneOrEmailInput&#34;,
+    &#34;SMSDeliveryInterface&#34;,
+    &#34;SMTPService&#34;,
+    &#34;SuperTokensSMSService&#34;,
+    &#34;TwilioService&#34;,
+    &#34;init&#34;,
+]</code></pre>
 </details>
 </section>
 <section>
@@ -161,7 +176,7 @@ def init(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>contact_config: ContactConfig, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", override: Union[InputOverrideConfig, None] = None, get_custom_user_input_code: Union[Callable[[str, Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>contact_config: <a title="supertokens_python.recipe.passwordless.ContactConfig" href="#supertokens_python.recipe.passwordless.ContactConfig">ContactConfig</a>, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", override: Union[<a title="supertokens_python.recipe.passwordless.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.passwordless.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a>, None] = None, get_custom_user_input_code: Union[Callable[[str, Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -169,6 +184,537 @@ def init(
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
+<span>class <span class="ident">InputOverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.BaseOverrideConfig[RecipeInterface, APIInterface].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
+<span>class <span class="ident">PasswordlessOverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.apis" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig.apis">apis</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.functions" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI.functions">functions</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.ContactConfig"><code class="flex name class">
+<span>class <span class="ident">ContactConfig</span></span>
+<span>(</span><span>contact_method: "Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE']")</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ContactConfig(ABC):
+    def __init__(self, contact_method: Literal[&#34;PHONE&#34;, &#34;EMAIL&#34;, &#34;EMAIL_OR_PHONE&#34;]):
+        self.contact_method = contact_method</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.passwordless.utils.ContactEmailOnlyConfig" href="utils.html#supertokens_python.recipe.passwordless.utils.ContactEmailOnlyConfig">ContactEmailOnlyConfig</a></li>
+<li><a title="supertokens_python.recipe.passwordless.utils.ContactEmailOrPhoneConfig" href="utils.html#supertokens_python.recipe.passwordless.utils.ContactEmailOrPhoneConfig">ContactEmailOrPhoneConfig</a></li>
+<li><a title="supertokens_python.recipe.passwordless.utils.ContactPhoneOnlyConfig" href="utils.html#supertokens_python.recipe.passwordless.utils.ContactPhoneOnlyConfig">ContactPhoneOnlyConfig</a></li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.ContactEmailOnlyConfig"><code class="flex name class">
+<span>class <span class="ident">ContactEmailOnlyConfig</span></span>
+<span>(</span><span>validate_email_address: Union[Callable[[str, str], Awaitable[Union[str, None]]], None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ContactEmailOnlyConfig(ContactConfig):
+    def __init__(
+        self,
+        validate_email_address: Union[
+            Callable[[str, str], Awaitable[Union[str, None]]], None
+        ] = None,
+    ):
+        super().__init__(&#34;EMAIL&#34;)
+
+        if validate_email_address is None:
+            self.validate_email_address = default_validate_email
+        else:
+            self.validate_email_address = validate_email_address</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="utils.html#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a></li>
+<li>abc.ABC</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.ContactEmailOrPhoneConfig"><code class="flex name class">
+<span>class <span class="ident">ContactEmailOrPhoneConfig</span></span>
+<span>(</span><span>validate_email_address: Union[Callable[[str, str], Awaitable[Union[str, None]]], None] = None, validate_phone_number: Union[Callable[[str, str], Awaitable[Union[str, None]]], None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ContactEmailOrPhoneConfig(ContactConfig):
+    def __init__(
+        self,
+        validate_email_address: Union[
+            Callable[[str, str], Awaitable[Union[str, None]]], None
+        ] = None,
+        validate_phone_number: Union[
+            Callable[[str, str], Awaitable[Union[str, None]]], None
+        ] = None,
+    ):
+        super().__init__(&#34;EMAIL_OR_PHONE&#34;)
+
+        if validate_email_address is None:
+            self.validate_email_address = default_validate_email
+        else:
+            self.validate_email_address = validate_email_address
+
+        if validate_phone_number is None:
+            self.validate_phone_number = default_validate_phone_number
+        else:
+            self.validate_phone_number = validate_phone_number</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="utils.html#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a></li>
+<li>abc.ABC</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.ContactPhoneOnlyConfig"><code class="flex name class">
+<span>class <span class="ident">ContactPhoneOnlyConfig</span></span>
+<span>(</span><span>validate_phone_number: Union[Callable[[str, str], Awaitable[Union[str, None]]], None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ContactPhoneOnlyConfig(ContactConfig):
+    def __init__(
+        self,
+        validate_phone_number: Union[
+            Callable[[str, str], Awaitable[Union[str, None]]], None
+        ] = None,
+    ):
+        super().__init__(&#34;PHONE&#34;)
+
+        if validate_phone_number is None:
+            self.validate_phone_number = default_validate_phone_number
+        else:
+            self.validate_phone_number = validate_phone_number</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="utils.html#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a></li>
+<li>abc.ABC</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.CreateAndSendCustomEmailParameters"><code class="flex name class">
+<span>class <span class="ident">CreateAndSendCustomEmailParameters</span></span>
+<span>(</span><span>tenant_id: str, code_life_time: int, pre_auth_session_id: str, email: str, is_first_factor: bool, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class CreateAndSendCustomEmailParameters:
+    def __init__(
+        self,
+        tenant_id: str,
+        code_life_time: int,
+        pre_auth_session_id: str,
+        email: str,
+        is_first_factor: bool,
+        user_input_code: Union[str, None] = None,
+        url_with_link_code: Union[str, None] = None,
+    ):
+        self.email = email
+        self.code_life_time = code_life_time
+        self.pre_auth_session_id = pre_auth_session_id
+        self.user_input_code = user_input_code
+        self.url_with_link_code = url_with_link_code
+        self.tenant_id = tenant_id
+        self.is_first_factor = is_first_factor</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.CreateAndSendCustomTextMessageParameters"><code class="flex name class">
+<span>class <span class="ident">CreateAndSendCustomTextMessageParameters</span></span>
+<span>(</span><span>tenant_id: str, code_life_time: int, pre_auth_session_id: str, phone_number: str, is_first_factor: bool, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class CreateAndSendCustomTextMessageParameters:
+    def __init__(
+        self,
+        tenant_id: str,
+        code_life_time: int,
+        pre_auth_session_id: str,
+        phone_number: str,
+        is_first_factor: bool,
+        user_input_code: Union[str, None] = None,
+        url_with_link_code: Union[str, None] = None,
+    ):
+        self.code_life_time = code_life_time
+        self.pre_auth_session_id = pre_auth_session_id
+        self.phone_number = phone_number
+        self.user_input_code = user_input_code
+        self.url_with_link_code = url_with_link_code
+        self.tenant_id = tenant_id
+        self.is_first_factor = is_first_factor</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.EmailDeliveryInterface"><code class="flex name class">
+<span>class <span class="ident">EmailDeliveryInterface</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EmailDeliveryInterface(ABC, Generic[_T]):
+    @abstractmethod
+    async def send_email(self, template_vars: _T, user_context: Dict[str, Any]) -&gt; None:
+        pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.emailpassword.emaildelivery.services.backward_compatibility.BackwardCompatibilityService" href="../emailpassword/emaildelivery/services/backward_compatibility/index.html#supertokens_python.recipe.emailpassword.emaildelivery.services.backward_compatibility.BackwardCompatibilityService">BackwardCompatibilityService</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.SMTPService" href="../emailpassword/emaildelivery/services/smtp/index.html#supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.SMTPService">SMTPService</a></li>
+<li><a title="supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility.BackwardCompatibilityService" href="../emailverification/emaildelivery/services/backward_compatibility/index.html#supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility.BackwardCompatibilityService">BackwardCompatibilityService</a></li>
+<li><a title="supertokens_python.recipe.emailverification.emaildelivery.services.smtp.SMTPService" href="../emailverification/emaildelivery/services/smtp/index.html#supertokens_python.recipe.emailverification.emaildelivery.services.smtp.SMTPService">SMTPService</a></li>
+<li><a title="supertokens_python.recipe.passwordless.emaildelivery.services.backward_compatibility.BackwardCompatibilityService" href="emaildelivery/services/backward_compatibility/index.html#supertokens_python.recipe.passwordless.emaildelivery.services.backward_compatibility.BackwardCompatibilityService">BackwardCompatibilityService</a></li>
+<li><a title="supertokens_python.recipe.passwordless.emaildelivery.services.smtp.SMTPService" href="emaildelivery/services/smtp/index.html#supertokens_python.recipe.passwordless.emaildelivery.services.smtp.SMTPService">SMTPService</a></li>
+<li><a title="supertokens_python.recipe.webauthn.emaildelivery.services.backward_compatibility.base.BackwardCompatibilityService" href="../webauthn/emaildelivery/services/backward_compatibility/base.html#supertokens_python.recipe.webauthn.emaildelivery.services.backward_compatibility.base.BackwardCompatibilityService">BackwardCompatibilityService</a></li>
+<li><a title="supertokens_python.recipe.webauthn.emaildelivery.services.smtp.base.SMTPService" href="../webauthn/emaildelivery/services/smtp/base.html#supertokens_python.recipe.webauthn.emaildelivery.services.smtp.base.SMTPService">SMTPService</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.EmailDeliveryInterface.send_email"><code class="name flex">
+<span>async def <span class="ident">send_email</span></span>(<span>self, template_vars: _T, user_context: Dict[str, Any]) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.PhoneOrEmailInput"><code class="flex name class">
+<span>class <span class="ident">PhoneOrEmailInput</span></span>
+<span>(</span><span>phone_number: Union[str, None], email: Union[str, None])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PhoneOrEmailInput:
+    def __init__(self, phone_number: Union[str, None], email: Union[str, None]):
+        self.phone_number = phone_number
+        self.email = email</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.SMSDeliveryInterface"><code class="flex name class">
+<span>class <span class="ident">SMSDeliveryInterface</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SMSDeliveryInterface(ABC, Generic[_T]):
+    @abstractmethod
+    async def send_sms(self, template_vars: _T, user_context: Dict[str, Any]) -&gt; None:
+        pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.passwordless.smsdelivery.services.backward_compatibility.BackwardCompatibilityService" href="smsdelivery/services/backward_compatibility/index.html#supertokens_python.recipe.passwordless.smsdelivery.services.backward_compatibility.BackwardCompatibilityService">BackwardCompatibilityService</a></li>
+<li><a title="supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensSMSService" href="smsdelivery/services/supertokens/index.html#supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensSMSService">SuperTokensSMSService</a></li>
+<li><a title="supertokens_python.recipe.passwordless.smsdelivery.services.twilio.TwilioService" href="smsdelivery/services/twilio/index.html#supertokens_python.recipe.passwordless.smsdelivery.services.twilio.TwilioService">TwilioService</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.SMSDeliveryInterface.send_sms"><code class="name flex">
+<span>async def <span class="ident">send_sms</span></span>(<span>self, template_vars: ~_T, user_context: Dict[str, Any]) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.SMTPService"><code class="flex name class">
+<span>class <span class="ident">SMTPService</span></span>
+<span>(</span><span>smtp_settings: SMTPSettings, override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SMTPService(EmailDeliveryInterface[PasswordlessLoginEmailTemplateVars]):
+    service_implementation: SMTPServiceInterface[PasswordlessLoginEmailTemplateVars]
+
+    def __init__(
+        self,
+        smtp_settings: SMTPSettings,
+        override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None,
+    ) -&gt; None:
+        self.transporter = Transporter(smtp_settings)
+        oi = ServiceImplementation(self.transporter)
+        self.service_implementation = oi if override is None else override(oi)
+
+    async def send_email(
+        self,
+        template_vars: PasswordlessLoginEmailTemplateVars,
+        user_context: Dict[str, Any],
+    ) -&gt; None:
+        content = await self.service_implementation.get_content(
+            template_vars, user_context
+        )
+        await self.service_implementation.send_raw_email(content, user_context)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.ingredients.emaildelivery.types.EmailDeliveryInterface" href="../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.EmailDeliveryInterface">EmailDeliveryInterface</a></li>
+<li>abc.ABC</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.SMTPService.service_implementation"><code class="name">var <span class="ident">service_implementation</span> : <a title="supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface" href="../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface">SMTPServiceInterface</a>[<a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.SMTPService.send_email"><code class="name flex">
+<span>async def <span class="ident">send_email</span></span>(<span>self, template_vars: PasswordlessLoginEmailTemplateVars, user_context: Dict[str, Any]) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.SuperTokensSMSService"><code class="flex name class">
+<span>class <span class="ident">SuperTokensSMSService</span></span>
+<span>(</span><span>api_key: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SuperTokensSMSService(SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]):
+    def __init__(self, api_key: str) -&gt; None:
+        self.api_key = api_key
+
+    async def send_sms(
+        self,
+        template_vars: PasswordlessLoginSMSTemplateVars,
+        user_context: Dict[str, Any],
+    ) -&gt; None:
+        supertokens = Supertokens.get_instance()
+        app_name = supertokens.app_info.app_name
+
+        sms_input = {
+            &#34;type&#34;: &#34;PASSWORDLESS_LOGIN&#34;,
+            &#34;phoneNumber&#34;: template_vars.phone_number,
+            &#34;codeLifetime&#34;: template_vars.code_life_time,
+            &#34;appName&#34;: app_name,
+        }
+        if template_vars.url_with_link_code:
+            sms_input[&#34;urlWithLinkCode&#34;] = template_vars.url_with_link_code
+        if template_vars.user_input_code:
+            sms_input[&#34;userInputCode&#34;] = template_vars.user_input_code
+        try:
+            async with AsyncClient(timeout=30.0) as client:
+                await client.post(  # type: ignore
+                    SUPERTOKENS_SMS_SERVICE_URL,
+                    json={
+                        &#34;apiKey&#34;: self.api_key,
+                        &#34;smsInput&#34;: sms_input,
+                    },
+                    headers={&#34;api-version&#34;: &#34;0&#34;},
+                )
+        except Exception as e:
+            log_debug_message(&#34;Error sending passwordless login SMS&#34;)
+            handle_httpx_client_exceptions(e, sms_input)
+            raise e</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.ingredients.smsdelivery.types.SMSDeliveryInterface" href="../../ingredients/smsdelivery/types.html#supertokens_python.ingredients.smsdelivery.types.SMSDeliveryInterface">SMSDeliveryInterface</a></li>
+<li>abc.ABC</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.SuperTokensSMSService.send_sms"><code class="name flex">
+<span>async def <span class="ident">send_sms</span></span>(<span>self, template_vars: <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters" href="types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a>, user_context: Dict[str, Any]) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.TwilioService"><code class="flex name class">
+<span>class <span class="ident">TwilioService</span></span>
+<span>(</span><span>twilio_settings: TwilioSettings, override: Union[Callable[[TwilioServiceInterface[_T]], TwilioServiceInterface[_T]], None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TwilioService(SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]):
+    service_implementation: TwilioServiceInterface[PasswordlessLoginSMSTemplateVars]
+
+    def __init__(
+        self,
+        twilio_settings: TwilioSettings,
+        override: Union[
+            Callable[[TwilioServiceInterface[_T]], TwilioServiceInterface[_T]], None
+        ] = None,
+    ) -&gt; None:
+        self.config = normalize_twilio_settings(twilio_settings)
+        otps = twilio_settings.opts if twilio_settings.opts else {}
+        self.twilio_client = Client(  # type: ignore
+            twilio_settings.account_sid, twilio_settings.auth_token, **otps
+        )
+        oi = ServiceImplementation(self.twilio_client)  # type: ignore
+        self.service_implementation = oi if override is None else override(oi)  # type: ignore
+
+    async def send_sms(
+        self,
+        template_vars: PasswordlessLoginSMSTemplateVars,
+        user_context: Dict[str, Any],
+    ) -&gt; None:
+        content = await self.service_implementation.get_content(
+            template_vars, user_context
+        )
+        await self.service_implementation.send_raw_sms(
+            content,
+            user_context,
+            from_=self.config.from_,
+            messaging_service_sid=self.config.messaging_service_sid,
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.ingredients.smsdelivery.types.SMSDeliveryInterface" href="../../ingredients/smsdelivery/types.html#supertokens_python.ingredients.smsdelivery.types.SMSDeliveryInterface">SMSDeliveryInterface</a></li>
+<li>abc.ABC</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.TwilioService.service_implementation"><code class="name">var <span class="ident">service_implementation</span> : <a title="supertokens_python.ingredients.smsdelivery.types.TwilioServiceInterface" href="../../ingredients/smsdelivery/types.html#supertokens_python.ingredients.smsdelivery.types.TwilioServiceInterface">TwilioServiceInterface</a>[<a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters" href="types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a>]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.TwilioService.send_sms"><code class="name flex">
+<span>async def <span class="ident">send_sms</span></span>(<span>self, template_vars: PasswordlessLoginSMSTemplateVars, user_context: Dict[str, Any]) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -201,6 +747,72 @@ def init(
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.passwordless.init" href="#supertokens_python.recipe.passwordless.init">init</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.passwordless.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.passwordless.BaseOverrideConfig[RecipeInterface, APIInterface].model_config" href="#supertokens_python.recipe.passwordless.BaseOverrideConfig[RecipeInterface, APIInterface].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.passwordless.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.ContactConfig" href="#supertokens_python.recipe.passwordless.ContactConfig">ContactConfig</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.ContactEmailOnlyConfig" href="#supertokens_python.recipe.passwordless.ContactEmailOnlyConfig">ContactEmailOnlyConfig</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.ContactEmailOrPhoneConfig" href="#supertokens_python.recipe.passwordless.ContactEmailOrPhoneConfig">ContactEmailOrPhoneConfig</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.ContactPhoneOnlyConfig" href="#supertokens_python.recipe.passwordless.ContactPhoneOnlyConfig">ContactPhoneOnlyConfig</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.CreateAndSendCustomEmailParameters" href="#supertokens_python.recipe.passwordless.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.CreateAndSendCustomTextMessageParameters" href="#supertokens_python.recipe.passwordless.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.EmailDeliveryInterface" href="#supertokens_python.recipe.passwordless.EmailDeliveryInterface">EmailDeliveryInterface</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.passwordless.EmailDeliveryInterface.send_email" href="#supertokens_python.recipe.passwordless.EmailDeliveryInterface.send_email">send_email</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.PhoneOrEmailInput" href="#supertokens_python.recipe.passwordless.PhoneOrEmailInput">PhoneOrEmailInput</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.SMSDeliveryInterface" href="#supertokens_python.recipe.passwordless.SMSDeliveryInterface">SMSDeliveryInterface</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.passwordless.SMSDeliveryInterface.send_sms" href="#supertokens_python.recipe.passwordless.SMSDeliveryInterface.send_sms">send_sms</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.SMTPService" href="#supertokens_python.recipe.passwordless.SMTPService">SMTPService</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.passwordless.SMTPService.send_email" href="#supertokens_python.recipe.passwordless.SMTPService.send_email">send_email</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.SMTPService.service_implementation" href="#supertokens_python.recipe.passwordless.SMTPService.service_implementation">service_implementation</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.SuperTokensSMSService" href="#supertokens_python.recipe.passwordless.SuperTokensSMSService">SuperTokensSMSService</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.passwordless.SuperTokensSMSService.send_sms" href="#supertokens_python.recipe.passwordless.SuperTokensSMSService.send_sms">send_sms</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.TwilioService" href="#supertokens_python.recipe.passwordless.TwilioService">TwilioService</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.passwordless.TwilioService.send_sms" href="#supertokens_python.recipe.passwordless.TwilioService.send_sms">send_sms</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.TwilioService.service_implementation" href="#supertokens_python.recipe.passwordless.TwilioService.service_implementation">service_implementation</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

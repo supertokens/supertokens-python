@@ -125,15 +125,31 @@ class APIImplementation(APIInterface):
 
         oauth_tokens_to_use: Dict[str, Any] = {}
 
-        if redirect_uri_info is not None:
-            oauth_tokens_to_use = await provider.exchange_auth_code_for_oauth_tokens(
-                redirect_uri_info=redirect_uri_info,
-                user_context=user_context,
-            )
-        elif oauth_tokens is not None:
-            oauth_tokens_to_use = oauth_tokens
+        if provider.provider_type == &#34;saml&#34;:
+            if redirect_uri_info is not None:
+                oauth_tokens_to_use = {
+                    &#34;access_token&#34;: redirect_uri_info.redirect_uri_query_params.get(
+                        &#34;code&#34;, &#34;&#34;
+                    ),
+                    &#34;_tenant_id&#34;: tenant_id,
+                }
+            elif oauth_tokens is not None:
+                oauth_tokens_to_use = oauth_tokens
+                oauth_tokens_to_use[&#34;_tenant_id&#34;] = tenant_id
+            else:
+                raise Exception(&#34;should never come here&#34;)
         else:
-            raise Exception(&#34;should never come here&#34;)
+            if redirect_uri_info is not None:
+                oauth_tokens_to_use = (
+                    await provider.exchange_auth_code_for_oauth_tokens(
+                        redirect_uri_info=redirect_uri_info,
+                        user_context=user_context,
+                    )
+                )
+            elif oauth_tokens is not None:
+                oauth_tokens_to_use = oauth_tokens
+            else:
+                raise Exception(&#34;should never come here&#34;)
 
         user_info = await provider.get_user_info(
             oauth_tokens=oauth_tokens_to_use,
@@ -324,7 +340,8 @@ class APIImplementation(APIInterface):
 <span>class <span class="ident">APIImplementation</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -386,15 +403,31 @@ class APIImplementation(APIInterface):
 
         oauth_tokens_to_use: Dict[str, Any] = {}
 
-        if redirect_uri_info is not None:
-            oauth_tokens_to_use = await provider.exchange_auth_code_for_oauth_tokens(
-                redirect_uri_info=redirect_uri_info,
-                user_context=user_context,
-            )
-        elif oauth_tokens is not None:
-            oauth_tokens_to_use = oauth_tokens
+        if provider.provider_type == &#34;saml&#34;:
+            if redirect_uri_info is not None:
+                oauth_tokens_to_use = {
+                    &#34;access_token&#34;: redirect_uri_info.redirect_uri_query_params.get(
+                        &#34;code&#34;, &#34;&#34;
+                    ),
+                    &#34;_tenant_id&#34;: tenant_id,
+                }
+            elif oauth_tokens is not None:
+                oauth_tokens_to_use = oauth_tokens
+                oauth_tokens_to_use[&#34;_tenant_id&#34;] = tenant_id
+            else:
+                raise Exception(&#34;should never come here&#34;)
         else:
-            raise Exception(&#34;should never come here&#34;)
+            if redirect_uri_info is not None:
+                oauth_tokens_to_use = (
+                    await provider.exchange_auth_code_for_oauth_tokens(
+                        redirect_uri_info=redirect_uri_info,
+                        user_context=user_context,
+                    )
+                )
+            elif oauth_tokens is not None:
+                oauth_tokens_to_use = oauth_tokens
+            else:
+                raise Exception(&#34;should never come here&#34;)
 
         user_info = await provider.get_user_info(
             oauth_tokens=oauth_tokens_to_use,
@@ -574,6 +607,8 @@ class APIImplementation(APIInterface):
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.thirdparty.interfaces.APIInterface" href="../interfaces.html#supertokens_python.recipe.thirdparty.interfaces.APIInterface">APIInterface</a></li>
+<li><a title="supertokens_python.types.recipe.BaseAPIInterface" href="../../../types/recipe.html#supertokens_python.types.recipe.BaseAPIInterface">BaseAPIInterface</a></li>
+<li>abc.ABC</li>
 </ul>
 <h3>Methods</h3>
 <dl>

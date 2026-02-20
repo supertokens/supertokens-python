@@ -283,7 +283,7 @@ class RecipeImplementation(RecipeInterface):
 
             raise Exception(f&#34;Unknown Error: {response}&#34;)
 
-        return SignInOptionsResponse.from_json(response)
+        return SignInOptionsResponse.from_json({**response, &#34;rpId&#34;: relying_party_id})
 
     async def sign_up(
         self,
@@ -344,8 +344,10 @@ class RecipeImplementation(RecipeInterface):
 
         login_method = next(
             filter(
-                lambda lm: lm.recipe_user_id.get_as_string()
-                == verify_creds_response.recipe_user_id.get_as_string(),
+                lambda lm: (
+                    lm.recipe_user_id.get_as_string()
+                    == verify_creds_response.recipe_user_id.get_as_string()
+                ),
                 verify_creds_response.user.login_methods,
             )
         )
@@ -909,7 +911,7 @@ inheritance.</p></div>
 
             raise Exception(f&#34;Unknown Error: {response}&#34;)
 
-        return SignInOptionsResponse.from_json(response)
+        return SignInOptionsResponse.from_json({**response, &#34;rpId&#34;: relying_party_id})
 
     async def sign_up(
         self,
@@ -970,8 +972,10 @@ inheritance.</p></div>
 
         login_method = next(
             filter(
-                lambda lm: lm.recipe_user_id.get_as_string()
-                == verify_creds_response.recipe_user_id.get_as_string(),
+                lambda lm: (
+                    lm.recipe_user_id.get_as_string()
+                    == verify_creds_response.recipe_user_id.get_as_string()
+                ),
                 verify_creds_response.user.login_methods,
             )
         )
@@ -1338,6 +1342,7 @@ inheritance.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface">RecipeInterface</a></li>
+<li><a title="supertokens_python.types.recipe.BaseRecipeInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Methods</h3>

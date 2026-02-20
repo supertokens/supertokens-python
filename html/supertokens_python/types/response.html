@@ -351,6 +351,15 @@ validated to form a valid model.</p>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.plugins.LoadPluginsResponse" href="../plugins.html#supertokens_python.plugins.LoadPluginsResponse">LoadPluginsResponse</a></li>
+<li><a title="supertokens_python.plugins.PluginDependenciesErrorResponse" href="../plugins.html#supertokens_python.plugins.PluginDependenciesErrorResponse">PluginDependenciesErrorResponse</a></li>
+<li><a title="supertokens_python.plugins.PluginDependenciesOkResponse" href="../plugins.html#supertokens_python.plugins.PluginDependenciesOkResponse">PluginDependenciesOkResponse</a></li>
+<li><a title="supertokens_python.plugins.PluginRouteHandler" href="../plugins.html#supertokens_python.plugins.PluginRouteHandler">PluginRouteHandler</a></li>
+<li><a title="supertokens_python.plugins.PluginRouteHandlerFunctionErrorResponse" href="../plugins.html#supertokens_python.plugins.PluginRouteHandlerFunctionErrorResponse">PluginRouteHandlerFunctionErrorResponse</a></li>
+<li><a title="supertokens_python.plugins.PluginRouteHandlerFunctionOkResponse" href="../plugins.html#supertokens_python.plugins.PluginRouteHandlerFunctionOkResponse">PluginRouteHandlerFunctionOkResponse</a></li>
+<li><a title="supertokens_python.plugins.PluginRouteHandlerResponse" href="../plugins.html#supertokens_python.plugins.PluginRouteHandlerResponse">PluginRouteHandlerResponse</a></li>
+<li><a title="supertokens_python.plugins.SuperTokensPluginBase" href="../plugins.html#supertokens_python.plugins.SuperTokensPluginBase">SuperTokensPluginBase</a></li>
+<li><a title="supertokens_python.plugins.VerifySessionOptions" href="../plugins.html#supertokens_python.plugins.VerifySessionOptions">VerifySessionOptions</a></li>
 <li><a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions" href="../recipe/webauthn/interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIOptions">APIOptions</a></li>
 <li><a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.AuthenticatorSelection" href="../recipe/webauthn/interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.AuthenticatorSelection">RegisterOptionsPOSTResponse.AuthenticatorSelection</a></li>
 <li><a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.ExcludeCredentials" href="../recipe/webauthn/interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse.ExcludeCredentials">RegisterOptionsPOSTResponse.ExcludeCredentials</a></li>
@@ -371,13 +380,23 @@ validated to form a valid model.</p>
 <li><a title="supertokens_python.recipe.webauthn.interfaces.recipe.RegisterOptionsResponse.User" href="../recipe/webauthn/interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RegisterOptionsResponse.User">RegisterOptionsResponse.User</a></li>
 <li><a title="supertokens_python.recipe.webauthn.types.base.WebauthnInfo" href="../recipe/webauthn/types/base.html#supertokens_python.recipe.webauthn.types.base.WebauthnInfo">WebauthnInfo</a></li>
 <li><a title="supertokens_python.recipe.webauthn.types.base.WebauthnInfoInput" href="../recipe/webauthn/types/base.html#supertokens_python.recipe.webauthn.types.base.WebauthnInfoInput">WebauthnInfoInput</a></li>
+<li><a title="supertokens_python.recipe.webauthn.types.config.WebauthnIngredients" href="../recipe/webauthn/types/config.html#supertokens_python.recipe.webauthn.types.config.WebauthnIngredients">WebauthnIngredients</a></li>
+<li><a title="supertokens_python.supertokens.SupertokensExperimentalConfig" href="../supertokens.html#supertokens_python.supertokens.SupertokensExperimentalConfig">SupertokensExperimentalConfig</a></li>
+<li>supertokens_python.supertokens._BaseSupertokensPublicConfig</li>
+<li><a title="supertokens_python.types.config.BaseConfig" href="config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseConfigWithoutAPIOverride" href="config.html#supertokens_python.types.config.BaseConfigWithoutAPIOverride">BaseConfigWithoutAPIOverride</a></li>
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig" href="config.html#supertokens_python.types.config.BaseNormalisedConfig">BaseNormalisedConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseNormalisedConfigWithoutAPIOverride" href="config.html#supertokens_python.types.config.BaseNormalisedConfigWithoutAPIOverride">BaseNormalisedConfigWithoutAPIOverride</a></li>
+<li><a title="supertokens_python.types.config.BaseNormalisedOverrideConfigWithoutAPI" href="config.html#supertokens_python.types.config.BaseNormalisedOverrideConfigWithoutAPI">BaseNormalisedOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 </ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="supertokens_python.types.response.CamelCaseBaseModel.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Static methods</h3>
@@ -481,7 +500,7 @@ class HasErr(Protocol[Status]):
 <dl>
 <dt id="supertokens_python.types.response.HasErr.err"><code class="name">var <span class="ident">err</span> : ~Status</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -533,7 +552,7 @@ class HasReason(Protocol[Status]):
 <dl>
 <dt id="supertokens_python.types.response.HasReason.reason"><code class="name">var <span class="ident">reason</span> : ~Status</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -585,7 +604,7 @@ class HasStatus(Protocol[Status]):
 <dl>
 <dt id="supertokens_python.types.response.HasStatus.status"><code class="name">var <span class="ident">status</span> : ~Status</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -639,22 +658,13 @@ validated to form a valid model.</p>
 <li><a title="supertokens_python.recipe.webauthn.interfaces.recipe.SignUpReponse" href="../recipe/webauthn/interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.SignUpReponse">SignUpReponse</a></li>
 <li><a title="supertokens_python.recipe.webauthn.interfaces.recipe.VerifyCredentialsResponse" href="../recipe/webauthn/interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.VerifyCredentialsResponse">VerifyCredentialsResponse</a></li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.types.response.OkResponseBaseModel.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.types.response.OkResponseBaseModel.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']]">StatusResponseBaseModel[Literal['OK']]</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']].from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']].model_config" href="#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']].status" href="#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
 <li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']].to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -695,11 +705,7 @@ validated to form a valid model.</p>
 <dl>
 <dt id="supertokens_python.types.response.StatusErrResponseBaseModel.err"><code class="name">var <span class="ident">err</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
-</dd>
-<dt id="supertokens_python.types.response.StatusErrResponseBaseModel.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -707,6 +713,8 @@ validated to form a valid model.</p>
 <li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.model_config" href="#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.status" href="#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
 <li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -752,13 +760,9 @@ validated to form a valid model.</p>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.types.response.StatusReasonResponseBaseModel.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt id="supertokens_python.types.response.StatusReasonResponseBaseModel.reason"><code class="name">var <span class="ident">reason</span> : ~Reason</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -766,6 +770,8 @@ validated to form a valid model.</p>
 <li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.model_config" href="#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.status" href="#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
 <li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -796,18 +802,14 @@ validated to form a valid model.</p>
 <ul class="hlist">
 <li><a title="supertokens_python.types.auth_utils.LinkingToSessionUserFailedError" href="auth_utils.html#supertokens_python.types.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a></li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['LINKING_TO_SESSION_USER_FAILED'], Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER']].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.model_config" href="#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.reason" href="#supertokens_python.types.response.StatusReasonResponseBaseModel.reason">reason</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.status" href="#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
 <li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -854,13 +856,9 @@ validated to form a valid model.</p>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.types.response.StatusResponseBaseModel.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt id="supertokens_python.types.response.StatusResponseBaseModel.status"><code class="name">var <span class="ident">status</span> : ~Status</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -868,6 +866,7 @@ validated to form a valid model.</p>
 <li><code><b><a title="supertokens_python.types.response.CamelCaseBaseModel" href="#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.model_config" href="#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
 <li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -897,18 +896,13 @@ validated to form a valid model.</p>
 <ul class="hlist">
 <li><a title="supertokens_python.types.response.OkResponseBaseModel" href="#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a></li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.model_config" href="#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.status" href="#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
 <li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
@@ -970,43 +964,30 @@ validated to form a valid model.</p>
 </li>
 <li>
 <h4><code><a title="supertokens_python.types.response.OkResponseBaseModel" href="#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.types.response.OkResponseBaseModel.model_config" href="#supertokens_python.types.response.OkResponseBaseModel.model_config">model_config</a></code></li>
-<li><code><a title="supertokens_python.types.response.OkResponseBaseModel.status" href="#supertokens_python.types.response.OkResponseBaseModel.status">status</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.types.response.StatusErrResponseBaseModel" href="#supertokens_python.types.response.StatusErrResponseBaseModel">StatusErrResponseBaseModel</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.types.response.StatusErrResponseBaseModel.err" href="#supertokens_python.types.response.StatusErrResponseBaseModel.err">err</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusErrResponseBaseModel.model_config" href="#supertokens_python.types.response.StatusErrResponseBaseModel.model_config">model_config</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.model_config" href="#supertokens_python.types.response.StatusReasonResponseBaseModel.model_config">model_config</a></code></li>
 <li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.reason" href="#supertokens_python.types.response.StatusReasonResponseBaseModel.reason">reason</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['LINKING_TO_SESSION_USER_FAILED'], Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER']]" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['LINKING_TO_SESSION_USER_FAILED'], Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER']]">StatusReasonResponseBaseModel[Literal['LINKING_TO_SESSION_USER_FAILED'], Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER']]</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['LINKING_TO_SESSION_USER_FAILED'], Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER']].model_config" href="#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['LINKING_TO_SESSION_USER_FAILED'], Literal['EMAIL_VERIFICATION_REQUIRED', 'RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR', 'INPUT_USER_IS_NOT_A_PRIMARY_USER']].model_config">model_config</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.types.response.StatusResponseBaseModel" href="#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.model_config" href="#supertokens_python.types.response.StatusResponseBaseModel.model_config">model_config</a></code></li>
 <li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.status" href="#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']]" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']]">StatusResponseBaseModel[Literal['OK']]</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']].model_config" href="#supertokens_python.types.response.StatusResponseBaseModel[Literal['OK']].model_config">model_config</a></code></li>
-</ul>
 </li>
 </ul>
 </li>

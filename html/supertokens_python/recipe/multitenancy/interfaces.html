@@ -41,10 +41,11 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from supertokens_python.types import RecipeUserId
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 if TYPE_CHECKING:
@@ -54,7 +55,7 @@ if TYPE_CHECKING:
         ProviderInput,
     )
 
-    from .utils import MultitenancyConfig
+    from .utils import NormalisedMultitenancyConfig
 
 
 class TenantConfig:
@@ -220,7 +221,7 @@ class DisassociateUserFromTenantOkResult:
         self.was_associated = was_associated
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -310,7 +311,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: MultitenancyConfig,
+        config: NormalisedMultitenancyConfig,
         recipe_implementation: RecipeInterface,
         static_third_party_providers: List[ProviderInput],
         all_available_first_factors: List[str],
@@ -407,7 +408,7 @@ class LoginMethodsGetOkResult(APIResponse):
         }
 
 
-class APIInterface(ABC):
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_login_methods_get = False
 
@@ -446,7 +447,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class APIInterface(ABC):
+<pre><code class="python">class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_login_methods_get = False
 
@@ -462,6 +463,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseAPIInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseAPIInterface">BaseAPIInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
@@ -480,7 +482,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.APIOptions"><code class="flex name class">
 <span>class <span class="ident">APIOptions</span></span>
-<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: MultitenancyConfig, recipe_implementation: <a title="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface" href="#supertokens_python.recipe.multitenancy.interfaces.RecipeInterface">RecipeInterface</a>, static_third_party_providers: List[ProviderInput], all_available_first_factors: List[str], static_first_factors: Optional[List[str]])</span>
+<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: NormalisedMultitenancyConfig, recipe_implementation: <a title="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface" href="#supertokens_python.recipe.multitenancy.interfaces.RecipeInterface">RecipeInterface</a>, static_third_party_providers: List[ProviderInput], all_available_first_factors: List[str], static_first_factors: Optional[List[str]])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -494,7 +496,7 @@ inheritance.</p></div>
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: MultitenancyConfig,
+        config: NormalisedMultitenancyConfig,
         recipe_implementation: RecipeInterface,
         static_third_party_providers: List[ProviderInput],
         all_available_first_factors: List[str],
@@ -526,7 +528,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantEmailAlreadyExistsError.status"><code class="name">var <span class="ident">status</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -551,7 +553,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantNotAllowedError.status"><code class="name">var <span class="ident">status</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -575,7 +577,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantOkResult.status"><code class="name">var <span class="ident">status</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -595,7 +597,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantPhoneNumberAlreadyExistsError.status"><code class="name">var <span class="ident">status</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -615,7 +617,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantThirdPartyUserAlreadyExistsError.status"><code class="name">var <span class="ident">status</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -635,7 +637,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.AssociateUserToTenantUnknownUserIdError.status"><code class="name">var <span class="ident">status</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -659,7 +661,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateTenantOkResult.status"><code class="name">var <span class="ident">status</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -683,7 +685,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.CreateOrUpdateThirdPartyConfigOkResult.status"><code class="name">var <span class="ident">status</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -707,7 +709,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.DeleteTenantOkResult.status"><code class="name">var <span class="ident">status</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -731,7 +733,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.DeleteThirdPartyConfigOkResult.status"><code class="name">var <span class="ident">status</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -755,7 +757,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.DisassociateUserFromTenantOkResult.status"><code class="name">var <span class="ident">status</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -779,7 +781,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.multitenancy.interfaces.ListAllTenantsOkResult.status"><code class="name">var <span class="ident">status</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -963,7 +965,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RecipeInterface(ABC):
+<pre><code class="python">class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -1048,6 +1050,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseRecipeInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>

@@ -41,13 +41,14 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Union
 
 from typing_extensions import Literal
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.types import RecipeUserId
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from ...supertokens import AppInfo
@@ -57,7 +58,7 @@ if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
 
     from .types import EmailVerificationUser, VerificationEmailTemplateVars
-    from .utils import EmailVerificationConfig
+    from .utils import NormalisedEmailVerificationConfig
 
 
 class CreateEmailVerificationTokenOkResult:
@@ -112,7 +113,7 @@ class UnverifyEmailOkResult:
     pass
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -168,7 +169,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: EmailVerificationConfig,
+        config: NormalisedEmailVerificationConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         email_delivery: EmailDeliveryIngredient[VerificationEmailTemplateVars],
@@ -229,7 +230,7 @@ class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError(APIResponse):
         return {&#34;status&#34;: self.status}
 
 
-class APIInterface(ABC):
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_email_verify_post = False
         self.disable_is_email_verified_get = False
@@ -311,7 +312,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class APIInterface(ABC):
+<pre><code class="python">class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_email_verify_post = False
         self.disable_is_email_verified_get = False
@@ -354,6 +355,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseAPIInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseAPIInterface">BaseAPIInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
@@ -384,7 +386,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.interfaces.APIOptions"><code class="flex name class">
 <span>class <span class="ident">APIOptions</span></span>
-<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: EmailVerificationConfig, recipe_implementation: <a title="supertokens_python.recipe.emailverification.interfaces.RecipeInterface" href="#supertokens_python.recipe.emailverification.interfaces.RecipeInterface">RecipeInterface</a>, app_info: AppInfo, email_delivery: EmailDeliveryIngredient[VerificationEmailTemplateVars])</span>
+<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: NormalisedEmailVerificationConfig, recipe_implementation: <a title="supertokens_python.recipe.emailverification.interfaces.RecipeInterface" href="#supertokens_python.recipe.emailverification.interfaces.RecipeInterface">RecipeInterface</a>, app_info: AppInfo, email_delivery: EmailDeliveryIngredient[VerificationEmailTemplateVars])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -398,7 +400,7 @@ inheritance.</p></div>
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: EmailVerificationConfig,
+        config: NormalisedEmailVerificationConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         email_delivery: EmailDeliveryIngredient[VerificationEmailTemplateVars],
@@ -428,7 +430,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationLinkEmailAlreadyVerifiedError.status"><code class="name">var <span class="ident">status</span> : Literal['EMAIL_ALREADY_VERIFIED_ERROR']</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -452,7 +454,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationLinkOkResult.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -472,7 +474,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationTokenEmailAlreadyVerifiedError.status"><code class="name">var <span class="ident">status</span> : Literal['EMAIL_ALREADY_VERIFIED_ERROR']</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -496,7 +498,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.interfaces.CreateEmailVerificationTokenOkResult.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -714,7 +716,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RecipeInterface(ABC):
+<pre><code class="python">class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -765,6 +767,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseRecipeInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
@@ -834,7 +837,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.interfaces.SendEmailVerificationEmailAlreadyVerifiedError.status"><code class="name">var <span class="ident">status</span> : Literal['EMAIL_ALREADY_VERIFIED_ERROR']</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -854,7 +857,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.interfaces.SendEmailVerificationEmailOkResult.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -926,7 +929,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.interfaces.VerifyEmailUsingTokenOkResult.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>

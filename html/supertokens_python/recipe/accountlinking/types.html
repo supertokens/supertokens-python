@@ -49,17 +49,31 @@ from typing_extensions import Literal
 from supertokens_python.recipe.accountlinking.interfaces import (
     RecipeInterface,
 )
-from supertokens_python.types import AccountInfo
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.types import (
+    AccountInfo,
+    LoginMethod,
+    RecipeUserId,
+    User,
+)
+from supertokens_python.types.config import (
+    BaseConfigWithoutAPIOverride,
+    BaseNormalisedConfigWithoutAPIOverride,
+    BaseNormalisedOverrideConfigWithoutAPI,
+    BaseOverrideableConfig,
+    BaseOverrideConfigWithoutAPI,
+)
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
     from supertokens_python.recipe.webauthn.types.base import WebauthnInfo
-    from supertokens_python.types import (
-        LoginMethod,
-        RecipeUserId,
-        User,
-    )
+
+AccountLinkingOverrideConfig = BaseOverrideConfigWithoutAPI[RecipeInterface]
+NormalisedAccountLinkingOverrideConfig = BaseNormalisedOverrideConfigWithoutAPI[
+    RecipeInterface
+]
+InputOverrideConfig = AccountLinkingOverrideConfig
+&#34;&#34;&#34;Deprecated, use `AccountLinkingOverrideConfig` instead.&#34;&#34;&#34;
 
 
 class AccountInfoWithRecipeId(AccountInfo):
@@ -159,29 +173,14 @@ class ShouldAutomaticallyLink:
         self.should_require_verification = should_require_verification
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-    ):
-        self.functions = functions
+class AccountLinkingOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
 
-
-class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-    ):
-        self.functions = functions
-
-
-class AccountLinkingConfig:
-    def __init__(
-        self,
-        on_account_linked: Callable[
-            [User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]
-        ],
-        should_do_automatic_account_linking: Callable[
+    on_account_linked: Optional[
+        Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]
+    ] = None
+    should_do_automatic_account_linking: Optional[
+        Callable[
             [
                 AccountInfoWithRecipeIdAndUserId,
                 Optional[User],
@@ -190,12 +189,48 @@ class AccountLinkingConfig:
                 Dict[str, Any],
             ],
             Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
+        ]
+    ] = None
+
+
+class AccountLinkingConfig(
+    AccountLinkingOverrideableConfig,
+    BaseConfigWithoutAPIOverride[RecipeInterface, AccountLinkingOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; AccountLinkingOverrideableConfig:
+        &#34;&#34;&#34;Create a `AccountLinkingOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return AccountLinkingOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
+        self,
+        overrideable_config: AccountLinkingOverrideableConfig,
+    ) -&gt; &#34;AccountLinkingConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `AccountLinkingConfig` from a `AccountLinkingOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return AccountLinkingConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
+
+
+class NormalisedAccountLinkingConfig(
+    BaseNormalisedConfigWithoutAPIOverride[RecipeInterface]
+):
+    on_account_linked: Callable[
+        [User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]
+    ]
+    should_do_automatic_account_linking: Callable[
+        [
+            AccountInfoWithRecipeIdAndUserId,
+            Optional[User],
+            Optional[SessionContainer],
+            str,
+            Dict[str, Any],
         ],
-        override: OverrideConfig,
-    ):
-        self.on_account_linked = on_account_linked
-        self.should_do_automatic_account_linking = should_do_automatic_account_linking
-        self.override = override</code></pre>
+        Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
+    ]</code></pre>
 </details>
 </section>
 <section>
@@ -306,7 +341,7 @@ class AccountLinkingConfig:
 <h3>Static methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeIdAndUserId.from_account_info_or_login_method"><code class="name flex">
-<span>def <span class="ident">from_account_info_or_login_method</span></span>(<span>account_info: Union[<a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId" href="#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId">AccountInfoWithRecipeId</a>, LoginMethod])</span>
+<span>def <span class="ident">from_account_info_or_login_method</span></span>(<span>account_info: Union[<a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId" href="#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId">AccountInfoWithRecipeId</a>, LoginMethod]) ‑> <a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeIdAndUserId" href="#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeIdAndUserId">AccountInfoWithRecipeIdAndUserId</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -315,21 +350,107 @@ class AccountLinkingConfig:
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.types.AccountLinkingConfig"><code class="flex name class">
 <span>class <span class="ident">AccountLinkingConfig</span></span>
-<span>(</span><span>on_account_linked: Callable[[User, <a title="supertokens_python.recipe.accountlinking.types.RecipeLevelUser" href="#supertokens_python.recipe.accountlinking.types.RecipeLevelUser">RecipeLevelUser</a>, Dict[str, Any]], Awaitable[None]], should_do_automatic_account_linking: Callable[[<a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeIdAndUserId" href="#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeIdAndUserId">AccountInfoWithRecipeIdAndUserId</a>, Optional[User], Optional[SessionContainer], str, Dict[str, Any]], Awaitable[Union[<a title="supertokens_python.recipe.accountlinking.types.ShouldNotAutomaticallyLink" href="#supertokens_python.recipe.accountlinking.types.ShouldNotAutomaticallyLink">ShouldNotAutomaticallyLink</a>, <a title="supertokens_python.recipe.accountlinking.types.ShouldAutomaticallyLink" href="#supertokens_python.recipe.accountlinking.types.ShouldAutomaticallyLink">ShouldAutomaticallyLink</a>]]], override: <a title="supertokens_python.recipe.accountlinking.types.OverrideConfig" href="#supertokens_python.recipe.accountlinking.types.OverrideConfig">OverrideConfig</a>)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class AccountLinkingConfig:
-    def __init__(
+<pre><code class="python">class AccountLinkingConfig(
+    AccountLinkingOverrideableConfig,
+    BaseConfigWithoutAPIOverride[RecipeInterface, AccountLinkingOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; AccountLinkingOverrideableConfig:
+        &#34;&#34;&#34;Create a `AccountLinkingOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return AccountLinkingOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        on_account_linked: Callable[
-            [User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]
-        ],
-        should_do_automatic_account_linking: Callable[
+        overrideable_config: AccountLinkingOverrideableConfig,
+    ) -&gt; &#34;AccountLinkingConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `AccountLinkingConfig` from a `AccountLinkingOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return AccountLinkingConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig" href="#supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig">AccountLinkingOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li>supertokens_python.types.config.BaseConfigWithoutAPIOverride[RecipeInterface, AccountLinkingOverrideableConfig]</li>
+<li><a title="supertokens_python.types.config.BaseConfigWithoutAPIOverride" href="../../types/config.html#supertokens_python.types.config.BaseConfigWithoutAPIOverride">BaseConfigWithoutAPIOverride</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.accountlinking.types.AccountLinkingConfig.from_overrideable_config"><code class="name flex">
+<span>def <span class="ident">from_overrideable_config</span></span>(<span>self, overrideable_config: <a title="supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig" href="#supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig">AccountLinkingOverrideableConfig</a>) ‑> <a title="supertokens_python.recipe.accountlinking.types.AccountLinkingConfig" href="#supertokens_python.recipe.accountlinking.types.AccountLinkingConfig">AccountLinkingConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.accountlinking.types.AccountLinkingConfig" href="#supertokens_python.recipe.accountlinking.types.AccountLinkingConfig">AccountLinkingConfig</a></code> from a <code><a title="supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig" href="#supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig">AccountLinkingOverrideableConfig</a></code>.
+Not a classmethod since it needs to be used in a dynamic context within plugins.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.types.AccountLinkingConfig.to_overrideable_config"><code class="name flex">
+<span>def <span class="ident">to_overrideable_config</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig" href="#supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig">AccountLinkingOverrideableConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig" href="#supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig">AccountLinkingOverrideableConfig</a></code> from the current config.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig" href="#supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig">AccountLinkingOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig.on_account_linked" href="#supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig.on_account_linked">on_account_linked</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig.should_do_automatic_account_linking" href="#supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig.should_do_automatic_account_linking">should_do_automatic_account_linking</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li><code><b><a title="supertokens_python.types.config.BaseConfigWithoutAPIOverride" href="../../types/config.html#supertokens_python.types.config.BaseConfigWithoutAPIOverride">BaseConfigWithoutAPIOverride</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseConfigWithoutAPIOverride.override" href="../../types/config.html#supertokens_python.types.config.BaseConfigWithoutAPIOverride.override">override</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig"><code class="flex name class">
+<span>class <span class="ident">AccountLinkingOverrideableConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AccountLinkingOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    on_account_linked: Optional[
+        Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]
+    ] = None
+    should_do_automatic_account_linking: Optional[
+        Callable[
             [
                 AccountInfoWithRecipeIdAndUserId,
                 Optional[User],
@@ -338,49 +459,137 @@ class AccountLinkingConfig:
                 Dict[str, Any],
             ],
             Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
-        ],
-        override: OverrideConfig,
-    ):
-        self.on_account_linked = on_account_linked
-        self.should_do_automatic_account_linking = should_do_automatic_account_linking
-        self.override = override</code></pre>
+        ]
+    ] = None</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.accountlinking.types.AccountLinkingConfig" href="#supertokens_python.recipe.accountlinking.types.AccountLinkingConfig">AccountLinkingConfig</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig.on_account_linked"><code class="name">var <span class="ident">on_account_linked</span> : Optional[Callable[[<a title="supertokens_python.types.base.User" href="../../types/base.html#supertokens_python.types.base.User">User</a>, <a title="supertokens_python.recipe.accountlinking.types.RecipeLevelUser" href="#supertokens_python.recipe.accountlinking.types.RecipeLevelUser">RecipeLevelUser</a>, Dict[str, Any]], Awaitable[None]]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="supertokens_python.recipe.accountlinking.types.InputOverrideConfig"><code class="flex name class">
+<dt id="supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig.should_do_automatic_account_linking"><code class="name">var <span class="ident">should_do_automatic_account_linking</span> : Optional[Callable[[<a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeIdAndUserId" href="#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeIdAndUserId">AccountInfoWithRecipeIdAndUserId</a>, Optional[<a title="supertokens_python.types.base.User" href="../../types/base.html#supertokens_python.types.base.User">User</a>], Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], str, Dict[str, Any]], Awaitable[Union[<a title="supertokens_python.recipe.accountlinking.types.ShouldNotAutomaticallyLink" href="#supertokens_python.recipe.accountlinking.types.ShouldNotAutomaticallyLink">ShouldNotAutomaticallyLink</a>, <a title="supertokens_python.recipe.accountlinking.types.ShouldAutomaticallyLink" href="#supertokens_python.recipe.accountlinking.types.ShouldAutomaticallyLink">ShouldAutomaticallyLink</a>]]]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.types.BaseOverrideConfigWithoutAPI[RecipeInterface]"><code class="flex name class">
 <span>class <span class="ident">InputOverrideConfig</span></span>
-<span>(</span><span>functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-    ):
-        self.functions = functions</code></pre>
-</details>
+<div class="desc"><p>Base class for input override config without API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI.functions" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI.functions">functions</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
-<dt id="supertokens_python.recipe.accountlinking.types.OverrideConfig"><code class="flex name class">
-<span>class <span class="ident">OverrideConfig</span></span>
-<span>(</span><span>functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None)</span>
+<dt id="supertokens_python.recipe.accountlinking.types.NormalisedAccountLinkingConfig"><code class="flex name class">
+<span>class <span class="ident">NormalisedAccountLinkingConfig</span></span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Base class for normalized config of a Recipe without API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-    ):
-        self.functions = functions</code></pre>
+<pre><code class="python">class NormalisedAccountLinkingConfig(
+    BaseNormalisedConfigWithoutAPIOverride[RecipeInterface]
+):
+    on_account_linked: Callable[
+        [User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]
+    ]
+    should_do_automatic_account_linking: Callable[
+        [
+            AccountInfoWithRecipeIdAndUserId,
+            Optional[User],
+            Optional[SessionContainer],
+            str,
+            Dict[str, Any],
+        ],
+        Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
+    ]</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>supertokens_python.types.config.BaseNormalisedConfigWithoutAPIOverride[RecipeInterface]</li>
+<li><a title="supertokens_python.types.config.BaseNormalisedConfigWithoutAPIOverride" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfigWithoutAPIOverride">BaseNormalisedConfigWithoutAPIOverride</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.accountlinking.types.NormalisedAccountLinkingConfig.on_account_linked"><code class="name">var <span class="ident">on_account_linked</span> : Callable[[<a title="supertokens_python.types.base.User" href="../../types/base.html#supertokens_python.types.base.User">User</a>, <a title="supertokens_python.recipe.accountlinking.types.RecipeLevelUser" href="#supertokens_python.recipe.accountlinking.types.RecipeLevelUser">RecipeLevelUser</a>, Dict[str, Any]], Awaitable[None]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.types.NormalisedAccountLinkingConfig.should_do_automatic_account_linking"><code class="name">var <span class="ident">should_do_automatic_account_linking</span> : Callable[[<a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeIdAndUserId" href="#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeIdAndUserId">AccountInfoWithRecipeIdAndUserId</a>, Optional[<a title="supertokens_python.types.base.User" href="../../types/base.html#supertokens_python.types.base.User">User</a>], Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], str, Dict[str, Any]], Awaitable[Union[<a title="supertokens_python.recipe.accountlinking.types.ShouldNotAutomaticallyLink" href="#supertokens_python.recipe.accountlinking.types.ShouldNotAutomaticallyLink">ShouldNotAutomaticallyLink</a>, <a title="supertokens_python.recipe.accountlinking.types.ShouldAutomaticallyLink" href="#supertokens_python.recipe.accountlinking.types.ShouldAutomaticallyLink">ShouldAutomaticallyLink</a>]]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseNormalisedConfigWithoutAPIOverride" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfigWithoutAPIOverride">BaseNormalisedConfigWithoutAPIOverride</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfigWithoutAPIOverride.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfigWithoutAPIOverride.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfigWithoutAPIOverride.override" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfigWithoutAPIOverride.override">override</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfigWithoutAPIOverride.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.types.RecipeLevelUser"><code class="flex name class">
 <span>class <span class="ident">RecipeLevelUser</span></span>
@@ -432,7 +641,7 @@ class AccountLinkingConfig:
 <h3>Static methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.accountlinking.types.RecipeLevelUser.from_login_method"><code class="name flex">
-<span>def <span class="ident">from_login_method</span></span>(<span>login_method: LoginMethod)</span>
+<span>def <span class="ident">from_login_method</span></span>(<span>login_method: LoginMethod) ‑> <a title="supertokens_python.recipe.accountlinking.types.RecipeLevelUser" href="#supertokens_python.recipe.accountlinking.types.RecipeLevelUser">RecipeLevelUser</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -498,12 +707,27 @@ class AccountLinkingConfig:
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.accountlinking.types.AccountLinkingConfig" href="#supertokens_python.recipe.accountlinking.types.AccountLinkingConfig">AccountLinkingConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.accountlinking.types.AccountLinkingConfig.from_overrideable_config" href="#supertokens_python.recipe.accountlinking.types.AccountLinkingConfig.from_overrideable_config">from_overrideable_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.types.AccountLinkingConfig.to_overrideable_config" href="#supertokens_python.recipe.accountlinking.types.AccountLinkingConfig.to_overrideable_config">to_overrideable_config</a></code></li>
+</ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.accountlinking.types.InputOverrideConfig" href="#supertokens_python.recipe.accountlinking.types.InputOverrideConfig">InputOverrideConfig</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig" href="#supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig">AccountLinkingOverrideableConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig.on_account_linked" href="#supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig.on_account_linked">on_account_linked</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig.should_do_automatic_account_linking" href="#supertokens_python.recipe.accountlinking.types.AccountLinkingOverrideableConfig.should_do_automatic_account_linking">should_do_automatic_account_linking</a></code></li>
+</ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.accountlinking.types.OverrideConfig" href="#supertokens_python.recipe.accountlinking.types.OverrideConfig">OverrideConfig</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.accountlinking.types.BaseOverrideConfigWithoutAPI[RecipeInterface]" href="#supertokens_python.recipe.accountlinking.types.BaseOverrideConfigWithoutAPI[RecipeInterface]">BaseOverrideConfigWithoutAPI[RecipeInterface]</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.accountlinking.types.NormalisedAccountLinkingConfig" href="#supertokens_python.recipe.accountlinking.types.NormalisedAccountLinkingConfig">NormalisedAccountLinkingConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.accountlinking.types.NormalisedAccountLinkingConfig.on_account_linked" href="#supertokens_python.recipe.accountlinking.types.NormalisedAccountLinkingConfig.on_account_linked">on_account_linked</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.types.NormalisedAccountLinkingConfig.should_do_automatic_account_linking" href="#supertokens_python.recipe.accountlinking.types.NormalisedAccountLinkingConfig.should_do_automatic_account_linking">should_do_automatic_account_linking</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.accountlinking.types.RecipeLevelUser" href="#supertokens_python.recipe.accountlinking.types.RecipeLevelUser">RecipeLevelUser</a></code></h4>

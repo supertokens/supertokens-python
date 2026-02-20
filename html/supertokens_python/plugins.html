@@ -1,0 +1,1856 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.11.0" />
+<title>supertokens_python.plugins API documentation</title>
+<meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>supertokens_python.plugins</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from collections import deque
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Set,
+    TypeVar,
+    Union,
+    cast,
+    runtime_checkable,
+)
+
+from packaging.specifiers import SpecifierSet
+from packaging.version import Version
+from typing_extensions import Protocol
+
+from supertokens_python.constants import VERSION
+from supertokens_python.framework.request import BaseRequest
+from supertokens_python.framework.response import BaseResponse
+from supertokens_python.logger import log_debug_message
+from supertokens_python.post_init_callbacks import PostSTInitCallbacks
+from supertokens_python.recipe.session.interfaces import (
+    SessionClaimValidator,
+    SessionContainer,
+)
+from supertokens_python.types import MaybeAwaitable
+from supertokens_python.types.base import UserContext
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseConfigWithoutAPIOverride,
+    BaseOverrideConfig,
+    BaseOverrideConfigWithoutAPI,
+)
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
+from supertokens_python.types.response import CamelCaseBaseModel
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.accountlinking.types import AccountLinkingConfig
+    from supertokens_python.recipe.dashboard.utils import DashboardConfig
+    from supertokens_python.recipe.emailpassword.utils import EmailPasswordConfig
+    from supertokens_python.recipe.emailverification.utils import (
+        EmailVerificationConfig,
+    )
+    from supertokens_python.recipe.jwt.utils import JWTConfig
+    from supertokens_python.recipe.multifactorauth.types import MultiFactorAuthConfig
+    from supertokens_python.recipe.multitenancy.utils import MultitenancyConfig
+    from supertokens_python.recipe.oauth2provider.utils import OAuth2ProviderConfig
+    from supertokens_python.recipe.openid.utils import OpenIdConfig
+    from supertokens_python.recipe.passwordless.utils import PasswordlessConfig
+    from supertokens_python.recipe.saml.utils import SAMLConfig
+    from supertokens_python.recipe.session.utils import SessionConfig
+    from supertokens_python.recipe.thirdparty.utils import ThirdPartyConfig
+    from supertokens_python.recipe.totp.types import TOTPConfig
+    from supertokens_python.recipe.usermetadata.utils import UserMetadataConfig
+    from supertokens_python.recipe.userroles.utils import UserRolesConfig
+    from supertokens_python.recipe.webauthn.types.config import WebauthnConfig
+    from supertokens_python.supertokens import SupertokensPublicConfig
+
+RecipeConfigType = TypeVar(
+    &#34;RecipeConfigType&#34;,
+    bound=Union[
+        &#34;AccountLinkingConfig&#34;,
+        &#34;DashboardConfig&#34;,
+        &#34;EmailPasswordConfig&#34;,
+        &#34;EmailVerificationConfig&#34;,
+        &#34;JWTConfig&#34;,
+        &#34;MultiFactorAuthConfig&#34;,
+        &#34;MultitenancyConfig&#34;,
+        &#34;OAuth2ProviderConfig&#34;,
+        &#34;OpenIdConfig&#34;,
+        &#34;PasswordlessConfig&#34;,
+        &#34;SessionConfig&#34;,
+        &#34;ThirdPartyConfig&#34;,
+        &#34;TOTPConfig&#34;,
+        &#34;UserMetadataConfig&#34;,
+        &#34;SAMLConfig&#34;,
+        &#34;UserRolesConfig&#34;,
+        &#34;WebauthnConfig&#34;,
+    ],
+)
+
+
+RecipeInterfaceType = TypeVar(&#34;RecipeInterfaceType&#34;, bound=BaseRecipeInterface)
+APIInterfaceType = TypeVar(&#34;APIInterfaceType&#34;, bound=BaseAPIInterface)
+
+
+class RecipeInitRequiredFunction(Protocol):
+    def __call__(self, sdk_version: str) -&gt; bool: ...
+
+
+class RecipePluginOverride:
+    functions: Optional[Callable[[BaseRecipeInterface], BaseRecipeInterface]] = None
+    apis: Optional[Callable[[BaseAPIInterface], BaseAPIInterface]] = None
+    config: Optional[Callable[[Any], Any]] = None
+    recipe_init_required: Optional[Union[bool, RecipeInitRequiredFunction]] = None
+
+
+class PluginRouteHandlerResponse(CamelCaseBaseModel):
+    status: int
+    body: Any
+
+
+@runtime_checkable
+class PluginRouteHandlerHandlerFunction(Protocol):
+    async def __call__(
+        self,
+        request: BaseRequest,
+        response: BaseResponse,
+        session: Optional[&#34;SessionContainer&#34;],
+        user_context: UserContext,
+    ) -&gt; BaseResponse: ...
+
+
+@runtime_checkable
+class OverrideGlobalClaimValidatorsFunction(Protocol):
+    def __call__(
+        self,
+        global_claim_validators: List[&#34;SessionClaimValidator&#34;],
+        session: &#34;SessionContainer&#34;,
+        user_context: UserContext,
+    ) -&gt; MaybeAwaitable[List[&#34;SessionClaimValidator&#34;]]: ...
+
+
+class VerifySessionOptions(CamelCaseBaseModel):
+    session_required: bool
+    anti_csrf_check: Optional[bool] = None
+    check_database: bool
+    override_global_claim_validators: Optional[
+        OverrideGlobalClaimValidatorsFunction
+    ] = None
+
+
+class PluginRouteHandler(CamelCaseBaseModel):
+    method: str
+    path: str
+    handler: PluginRouteHandlerHandlerFunction
+    verify_session_options: Optional[VerifySessionOptions]
+
+
+class PluginRouteHandlerWithPluginId(PluginRouteHandler):
+    plugin_id: str
+    &#34;&#34;&#34;
+    This is useful when multiple plugins handle the same route.
+    &#34;&#34;&#34;
+
+    @classmethod
+    def from_route_handler(
+        cls,
+        route_handler: PluginRouteHandler,
+        plugin_id: str,
+    ):
+        return cls(
+            **route_handler.model_dump(),
+            plugin_id=plugin_id,
+        )
+
+
+@runtime_checkable
+class SuperTokensPluginInit(Protocol):
+    def __call__(
+        self,
+        config: &#34;SupertokensPublicConfig&#34;,
+        all_plugins: List[&#34;SuperTokensPublicPlugin&#34;],
+        sdk_version: str,
+    ) -&gt; None: ...
+
+
+class PluginDependenciesOkResponse(CamelCaseBaseModel):
+    status: Literal[&#34;OK&#34;] = &#34;OK&#34;
+    plugins_to_add: List[&#34;SuperTokensPlugin&#34;]
+
+
+class PluginDependenciesErrorResponse(CamelCaseBaseModel):
+    status: Literal[&#34;ERROR&#34;] = &#34;ERROR&#34;
+    message: str
+
+
+@runtime_checkable
+class SuperTokensPluginDependencies(Protocol):
+    def __call__(
+        self,
+        config: &#34;SupertokensPublicConfig&#34;,
+        plugins_above: List[&#34;SuperTokensPublicPlugin&#34;],
+        sdk_version: str,
+    ) -&gt; Union[PluginDependenciesOkResponse, PluginDependenciesErrorResponse]: ...
+
+
+class PluginRouteHandlerFunctionOkResponse(CamelCaseBaseModel):
+    status: Literal[&#34;OK&#34;] = &#34;OK&#34;
+    route_handlers: List[PluginRouteHandler]
+
+
+class PluginRouteHandlerFunctionErrorResponse(CamelCaseBaseModel):
+    status: Literal[&#34;ERROR&#34;] = &#34;ERROR&#34;
+    message: str
+
+
+@runtime_checkable
+class PluginRouteHandlerFunction(Protocol):
+    def __call__(
+        self,
+        config: &#34;SupertokensPublicConfig&#34;,
+        all_plugins: List[&#34;SuperTokensPublicPlugin&#34;],
+        sdk_version: str,
+    ) -&gt; Union[
+        PluginRouteHandlerFunctionOkResponse, PluginRouteHandlerFunctionErrorResponse
+    ]: ...
+
+
+@runtime_checkable
+class PluginConfig(Protocol):
+    def __call__(
+        self, config: &#34;SupertokensPublicConfig&#34;
+    ) -&gt; &#34;SupertokensPublicConfig&#34;: ...
+
+
+class SuperTokensPluginBase(CamelCaseBaseModel):
+    id: str
+    version: Optional[str] = None
+    compatible_sdk_versions: Union[str, List[str]]
+    exports: Optional[Dict[str, Any]] = None
+
+
+OverrideMap = Dict[str, RecipePluginOverride]
+
+
+class SuperTokensPlugin(SuperTokensPluginBase):
+    init: Optional[SuperTokensPluginInit] = None
+    dependencies: Optional[SuperTokensPluginDependencies] = None
+    override_map: Optional[OverrideMap] = None
+    route_handlers: Optional[
+        Union[List[PluginRouteHandler], PluginRouteHandlerFunction]
+    ] = None
+    config: Optional[PluginConfig] = None
+
+    def get_dependencies(
+        self,
+        public_config: &#34;SupertokensPublicConfig&#34;,
+        plugins_above: List[&#34;SuperTokensPlugin&#34;],
+        sdk_version: str,
+    ):
+        &#34;&#34;&#34;
+        Pre-order DFS traversal to get all dependencies of a plugin.
+        &#34;&#34;&#34;
+
+        def recurse_deps(
+            plugin: SuperTokensPlugin,
+            deps: Optional[List[SuperTokensPlugin]] = None,
+            visited: Optional[Set[str]] = None,
+        ) -&gt; List[SuperTokensPlugin]:
+            if deps is None:
+                deps = []
+
+            if visited is None:
+                visited = set()
+
+            if plugin.id in visited:
+                return deps
+            visited.add(plugin.id)
+
+            if plugin.dependencies is not None:
+                # Get all dependencies of the plugin
+                dep_result = plugin.dependencies(
+                    config=public_config,
+                    plugins_above=[
+                        SuperTokensPublicPlugin.from_plugin(plugin)
+                        for plugin in plugins_above
+                    ],
+                    sdk_version=sdk_version,
+                )
+
+                # Errors fall through
+                if isinstance(dep_result, PluginDependenciesErrorResponse):
+                    raise Exception(dep_result.message)
+
+                # Recurse through all dependencies and add the resultant plugins to the list
+                # Pre-order DFS traversal
+                for dep_plugin in dep_result.plugins_to_add:
+                    recurse_deps(dep_plugin, deps)
+
+            # Add the current plugin and mark it as visited
+            deps.append(plugin)
+
+            return deps
+
+        return recurse_deps(self)
+
+
+class SuperTokensPublicPlugin(SuperTokensPluginBase):
+    initialized: bool
+
+    @classmethod
+    def from_plugin(cls, plugin: SuperTokensPlugin) -&gt; &#34;SuperTokensPublicPlugin&#34;:
+        return cls(
+            id=plugin.id,
+            initialized=plugin.init is None,
+            version=plugin.version,
+            exports=plugin.exports,
+            compatible_sdk_versions=plugin.compatible_sdk_versions,
+        )
+
+
+def apply_plugins(
+    recipe_id: str,
+    config: RecipeConfigType,
+    plugins: List[OverrideMap],
+) -&gt; RecipeConfigType:
+    if not isinstance(config, (BaseConfig, BaseConfigWithoutAPIOverride)):  # type: ignore
+        raise TypeError(
+            f&#34;Expected config to be an instance of BaseConfig or BaseConfigWithoutAPIOverride. {recipe_id=} {config=}&#34;
+        )
+
+    def default_fn_override(
+        original_implementation: RecipeInterfaceType,
+    ) -&gt; RecipeInterfaceType:
+        return original_implementation
+
+    def default_api_override(
+        original_implementation: APIInterfaceType,
+    ) -&gt; APIInterfaceType:
+        return original_implementation
+
+    if config.override is None:
+        if isinstance(config, BaseConfigWithoutAPIOverride):
+            config.override = BaseOverrideConfigWithoutAPI()
+        else:
+            config.override = BaseOverrideConfig()  # type: ignore - generic type invariance
+
+    function_overrides = getattr(config.override, &#34;functions&#34;, default_fn_override)
+    api_overrides = getattr(config.override, &#34;apis&#34;, default_api_override)
+
+    function_layers: deque[Any] = deque()
+    api_layers: deque[Any] = deque()
+
+    # If we have plugins like 4-&gt;3-&gt;(2, 1) along with a recipe override,
+    # we want to load/init them as: override, 2, 1, 3, 4
+    # and call them as: override, 4, 3, 2, 1, original
+    # Order of 1/2 does not matter since they are independent from each other.
+
+    for plugin in plugins:
+        overrides = plugin.get(recipe_id)
+        if overrides is not None:
+            if overrides.config is not None:
+                overrideable_config = config.to_overrideable_config()
+                overridden_config = overrides.config(overrideable_config)
+
+                config = config.from_overrideable_config(
+                    overrideable_config=overridden_config,
+                )  # type: ignore - various config types used, but will never pass config from a different recipe
+
+            if overrides.functions is not None:
+                function_layers.append(overrides.functions)
+            if overrides.apis is not None:
+                api_layers.append(overrides.apis)
+
+    if function_overrides is not None:
+        function_layers.append(function_overrides)
+    if api_overrides is not None:
+        api_layers.append(api_overrides)
+
+    # Apply overrides in reverse order of definition
+    # Plugins: [plugin1, plugin2] would be applied as [override, plugin2, plugin1, original]
+    if len(function_layers) &gt; 0:
+
+        def fn_override(
+            original_implementation: RecipeInterfaceType,
+        ) -&gt; RecipeInterfaceType:
+            # The layers will get called in reversed order
+            for function_layer in function_layers:
+                original_implementation = function_layer(original_implementation)
+            return original_implementation
+
+        config.override.functions = fn_override  # type: ignore
+
+    if (
+        len(api_layers) &gt; 0
+        # AccountLinking recipe does not have an API implementation, uses `BaseConfigWithoutAPIOverride` as base
+        and recipe_id != &#34;accountlinking&#34;
+        # `BaseConfig` is the base class for all configs with an API override.
+        and isinstance(config, BaseConfig)
+    ):
+
+        def api_override(original_implementation: APIInterfaceType) -&gt; APIInterfaceType:
+            for api_layer in api_layers:
+                original_implementation = api_layer(original_implementation)
+            return original_implementation
+
+        config.override.apis = api_override  # type: ignore
+
+    return config
+
+
+class LoadPluginsResponse(CamelCaseBaseModel):
+    public_config: &#34;SupertokensPublicConfig&#34;
+    processed_plugins: List[SuperTokensPublicPlugin]
+    plugin_route_handlers: List[PluginRouteHandlerWithPluginId]
+    override_maps: List[OverrideMap]
+
+
+def load_plugins(
+    plugins: List[SuperTokensPlugin],
+    public_config: &#34;SupertokensPublicConfig&#34;,
+) -&gt; LoadPluginsResponse:
+    input_plugin_seen_list: Set[str] = set()
+    final_plugin_list: List[SuperTokensPlugin] = []
+    plugin_route_handlers: List[PluginRouteHandlerWithPluginId] = []
+
+    for plugin in plugins:
+        if plugin.id in input_plugin_seen_list:
+            log_debug_message(f&#34;Skipping {plugin.id=} as it has already been added&#34;)
+            continue
+
+        if isinstance(plugin.compatible_sdk_versions, list):
+            version_constraints = &#34;,&#34;.join(plugin.compatible_sdk_versions)
+        else:
+            version_constraints = plugin.compatible_sdk_versions
+
+        if not SpecifierSet(version_constraints).contains(Version(VERSION)):
+            raise Exception(
+                f&#34;Incompatible SDK version for plugin {plugin.id}. &#34;
+                f&#34;Version {VERSION} not found in compatible versions {version_constraints}&#34;
+            )
+
+        # TODO: Overkill, but could topologically sort the plugins based on dependencies
+        dependencies = plugin.get_dependencies(
+            public_config=public_config,
+            plugins_above=final_plugin_list,
+            sdk_version=VERSION,
+        )
+        final_plugin_list.extend(dependencies)
+        input_plugin_seen_list.update({dep.id for dep in dependencies})
+
+    # Secondary check to ensure no duplicate plugins
+    # Should ideally be handled in the dependency resolution above.
+    unique_plugins: Set[str] = set()
+    duplicate_plugins: List[str] = []
+    for plugin in final_plugin_list:
+        if plugin.id in unique_plugins:
+            duplicate_plugins.append(plugin.id)
+        unique_plugins.add(plugin.id)
+
+    if len(duplicate_plugins) &gt; 0:
+        raise Exception(f&#34;Duplicate plugins found: {&#39;, &#39;.join(duplicate_plugins)}&#34;)
+
+    processed_plugin_list = [
+        SuperTokensPublicPlugin.from_plugin(plugin) for plugin in final_plugin_list
+    ]
+
+    for plugin_idx, plugin in enumerate(final_plugin_list):
+        # Override the public supertokens config using the config override defined in the plugin
+        if plugin.config is not None:
+            public_config = plugin.config(public_config)
+
+        if plugin.route_handlers is not None:
+            handlers: List[PluginRouteHandler] = []
+
+            if callable(plugin.route_handlers):
+                handler_result = plugin.route_handlers(
+                    config=public_config,
+                    all_plugins=processed_plugin_list,
+                    sdk_version=VERSION,
+                )
+                if isinstance(handler_result, PluginRouteHandlerFunctionErrorResponse):
+                    raise Exception(handler_result.message)
+
+                handlers = handler_result.route_handlers
+            else:
+                handlers = plugin.route_handlers
+
+            plugin_route_handlers.extend(
+                [
+                    PluginRouteHandlerWithPluginId.from_route_handler(
+                        handler, plugin.id
+                    )
+                    for handler in handlers
+                ]
+            )
+
+        if plugin.init is not None:
+
+            def callback_factory():
+                # This has to be part of the factory to ensure we pick up the correct plugin
+                init_fn = cast(SuperTokensPluginInit, plugin.init)
+                idx = plugin_idx
+
+                def callback():
+                    init_fn(
+                        config=public_config,
+                        all_plugins=processed_plugin_list,
+                        sdk_version=VERSION,
+                    )
+                    processed_plugin_list[idx].initialized = True
+
+                return callback
+
+            PostSTInitCallbacks.add_post_init_callback(callback_factory())
+
+    override_maps = [
+        plugin.override_map
+        for plugin in final_plugin_list
+        if plugin.override_map is not None
+    ]
+
+    return LoadPluginsResponse(
+        public_config=public_config,
+        processed_plugins=processed_plugin_list,
+        plugin_route_handlers=plugin_route_handlers,
+        override_maps=override_maps,
+    )</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="supertokens_python.plugins.apply_plugins"><code class="name flex">
+<span>def <span class="ident">apply_plugins</span></span>(<span>recipe_id: str, config: ~RecipeConfigType, plugins: List[Dict[str, <a title="supertokens_python.plugins.RecipePluginOverride" href="#supertokens_python.plugins.RecipePluginOverride">RecipePluginOverride</a>]]) ‑> ~RecipeConfigType</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.plugins.load_plugins"><code class="name flex">
+<span>def <span class="ident">load_plugins</span></span>(<span>plugins: List[<a title="supertokens_python.plugins.SuperTokensPlugin" href="#supertokens_python.plugins.SuperTokensPlugin">SuperTokensPlugin</a>], public_config: SupertokensPublicConfig)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.plugins.LoadPluginsResponse"><code class="flex name class">
+<span>class <span class="ident">LoadPluginsResponse</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LoadPluginsResponse(CamelCaseBaseModel):
+    public_config: &#34;SupertokensPublicConfig&#34;
+    processed_plugins: List[SuperTokensPublicPlugin]
+    plugin_route_handlers: List[PluginRouteHandlerWithPluginId]
+    override_maps: List[OverrideMap]</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.plugins.LoadPluginsResponse.override_maps"><code class="name">var <span class="ident">override_maps</span> : List[Dict[str, <a title="supertokens_python.plugins.RecipePluginOverride" href="#supertokens_python.plugins.RecipePluginOverride">RecipePluginOverride</a>]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.LoadPluginsResponse.plugin_route_handlers"><code class="name">var <span class="ident">plugin_route_handlers</span> : List[<a title="supertokens_python.plugins.PluginRouteHandlerWithPluginId" href="#supertokens_python.plugins.PluginRouteHandlerWithPluginId">PluginRouteHandlerWithPluginId</a>]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.LoadPluginsResponse.processed_plugins"><code class="name">var <span class="ident">processed_plugins</span> : List[<a title="supertokens_python.plugins.SuperTokensPublicPlugin" href="#supertokens_python.plugins.SuperTokensPublicPlugin">SuperTokensPublicPlugin</a>]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.LoadPluginsResponse.public_config"><code class="name">var <span class="ident">public_config</span> : SupertokensPublicConfig</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.from_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.model_config" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.to_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.OverrideGlobalClaimValidatorsFunction"><code class="flex name class">
+<span>class <span class="ident">OverrideGlobalClaimValidatorsFunction</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for protocol classes.</p>
+<p>Protocol classes are defined as::</p>
+<pre><code>class Proto(Protocol):
+    def meth(self) -&gt; int:
+        ...
+</code></pre>
+<p>Such classes are primarily used with static type checkers that recognize
+structural subtyping (static duck-typing).</p>
+<p>For example::</p>
+<pre><code>class C:
+    def meth(self) -&gt; int:
+        return 0
+
+def func(x: Proto) -&gt; int:
+    return x.meth()
+
+func(C())  # Passes static type check
+</code></pre>
+<p>See PEP 544 for details. Protocol classes decorated with
+@typing.runtime_checkable act as simple-minded runtime protocols that check
+only the presence of given attributes, ignoring their type signatures.
+Protocol classes can be generic, they are defined as::</p>
+<pre><code>class GenProto[T](Protocol):
+    def meth(self) -&gt; T:
+        ...
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@runtime_checkable
+class OverrideGlobalClaimValidatorsFunction(Protocol):
+    def __call__(
+        self,
+        global_claim_validators: List[&#34;SessionClaimValidator&#34;],
+        session: &#34;SessionContainer&#34;,
+        user_context: UserContext,
+    ) -&gt; MaybeAwaitable[List[&#34;SessionClaimValidator&#34;]]: ...</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.PluginConfig"><code class="flex name class">
+<span>class <span class="ident">PluginConfig</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for protocol classes.</p>
+<p>Protocol classes are defined as::</p>
+<pre><code>class Proto(Protocol):
+    def meth(self) -&gt; int:
+        ...
+</code></pre>
+<p>Such classes are primarily used with static type checkers that recognize
+structural subtyping (static duck-typing).</p>
+<p>For example::</p>
+<pre><code>class C:
+    def meth(self) -&gt; int:
+        return 0
+
+def func(x: Proto) -&gt; int:
+    return x.meth()
+
+func(C())  # Passes static type check
+</code></pre>
+<p>See PEP 544 for details. Protocol classes decorated with
+@typing.runtime_checkable act as simple-minded runtime protocols that check
+only the presence of given attributes, ignoring their type signatures.
+Protocol classes can be generic, they are defined as::</p>
+<pre><code>class GenProto[T](Protocol):
+    def meth(self) -&gt; T:
+        ...
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@runtime_checkable
+class PluginConfig(Protocol):
+    def __call__(
+        self, config: &#34;SupertokensPublicConfig&#34;
+    ) -&gt; &#34;SupertokensPublicConfig&#34;: ...</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.PluginDependenciesErrorResponse"><code class="flex name class">
+<span>class <span class="ident">PluginDependenciesErrorResponse</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PluginDependenciesErrorResponse(CamelCaseBaseModel):
+    status: Literal[&#34;ERROR&#34;] = &#34;ERROR&#34;
+    message: str</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.plugins.PluginDependenciesErrorResponse.message"><code class="name">var <span class="ident">message</span> : str</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.PluginDependenciesErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['ERROR']</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.from_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.model_config" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.to_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.PluginDependenciesOkResponse"><code class="flex name class">
+<span>class <span class="ident">PluginDependenciesOkResponse</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PluginDependenciesOkResponse(CamelCaseBaseModel):
+    status: Literal[&#34;OK&#34;] = &#34;OK&#34;
+    plugins_to_add: List[&#34;SuperTokensPlugin&#34;]</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.plugins.PluginDependenciesOkResponse.plugins_to_add"><code class="name">var <span class="ident">plugins_to_add</span> : List[<a title="supertokens_python.plugins.SuperTokensPlugin" href="#supertokens_python.plugins.SuperTokensPlugin">SuperTokensPlugin</a>]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.PluginDependenciesOkResponse.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.from_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.model_config" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.to_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.PluginRouteHandler"><code class="flex name class">
+<span>class <span class="ident">PluginRouteHandler</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PluginRouteHandler(CamelCaseBaseModel):
+    method: str
+    path: str
+    handler: PluginRouteHandlerHandlerFunction
+    verify_session_options: Optional[VerifySessionOptions]</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.plugins.PluginRouteHandlerWithPluginId" href="#supertokens_python.plugins.PluginRouteHandlerWithPluginId">PluginRouteHandlerWithPluginId</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.plugins.PluginRouteHandler.handler"><code class="name">var <span class="ident">handler</span> : <a title="supertokens_python.plugins.PluginRouteHandlerHandlerFunction" href="#supertokens_python.plugins.PluginRouteHandlerHandlerFunction">PluginRouteHandlerHandlerFunction</a></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.PluginRouteHandler.method"><code class="name">var <span class="ident">method</span> : str</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.PluginRouteHandler.path"><code class="name">var <span class="ident">path</span> : str</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.PluginRouteHandler.verify_session_options"><code class="name">var <span class="ident">verify_session_options</span> : Optional[<a title="supertokens_python.plugins.VerifySessionOptions" href="#supertokens_python.plugins.VerifySessionOptions">VerifySessionOptions</a>]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.from_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.model_config" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.to_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.PluginRouteHandlerFunction"><code class="flex name class">
+<span>class <span class="ident">PluginRouteHandlerFunction</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for protocol classes.</p>
+<p>Protocol classes are defined as::</p>
+<pre><code>class Proto(Protocol):
+    def meth(self) -&gt; int:
+        ...
+</code></pre>
+<p>Such classes are primarily used with static type checkers that recognize
+structural subtyping (static duck-typing).</p>
+<p>For example::</p>
+<pre><code>class C:
+    def meth(self) -&gt; int:
+        return 0
+
+def func(x: Proto) -&gt; int:
+    return x.meth()
+
+func(C())  # Passes static type check
+</code></pre>
+<p>See PEP 544 for details. Protocol classes decorated with
+@typing.runtime_checkable act as simple-minded runtime protocols that check
+only the presence of given attributes, ignoring their type signatures.
+Protocol classes can be generic, they are defined as::</p>
+<pre><code>class GenProto[T](Protocol):
+    def meth(self) -&gt; T:
+        ...
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@runtime_checkable
+class PluginRouteHandlerFunction(Protocol):
+    def __call__(
+        self,
+        config: &#34;SupertokensPublicConfig&#34;,
+        all_plugins: List[&#34;SuperTokensPublicPlugin&#34;],
+        sdk_version: str,
+    ) -&gt; Union[
+        PluginRouteHandlerFunctionOkResponse, PluginRouteHandlerFunctionErrorResponse
+    ]: ...</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.PluginRouteHandlerFunctionErrorResponse"><code class="flex name class">
+<span>class <span class="ident">PluginRouteHandlerFunctionErrorResponse</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PluginRouteHandlerFunctionErrorResponse(CamelCaseBaseModel):
+    status: Literal[&#34;ERROR&#34;] = &#34;ERROR&#34;
+    message: str</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.plugins.PluginRouteHandlerFunctionErrorResponse.message"><code class="name">var <span class="ident">message</span> : str</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.PluginRouteHandlerFunctionErrorResponse.status"><code class="name">var <span class="ident">status</span> : Literal['ERROR']</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.from_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.model_config" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.to_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.PluginRouteHandlerFunctionOkResponse"><code class="flex name class">
+<span>class <span class="ident">PluginRouteHandlerFunctionOkResponse</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PluginRouteHandlerFunctionOkResponse(CamelCaseBaseModel):
+    status: Literal[&#34;OK&#34;] = &#34;OK&#34;
+    route_handlers: List[PluginRouteHandler]</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.plugins.PluginRouteHandlerFunctionOkResponse.route_handlers"><code class="name">var <span class="ident">route_handlers</span> : List[<a title="supertokens_python.plugins.PluginRouteHandler" href="#supertokens_python.plugins.PluginRouteHandler">PluginRouteHandler</a>]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.PluginRouteHandlerFunctionOkResponse.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.from_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.model_config" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.to_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.PluginRouteHandlerHandlerFunction"><code class="flex name class">
+<span>class <span class="ident">PluginRouteHandlerHandlerFunction</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for protocol classes.</p>
+<p>Protocol classes are defined as::</p>
+<pre><code>class Proto(Protocol):
+    def meth(self) -&gt; int:
+        ...
+</code></pre>
+<p>Such classes are primarily used with static type checkers that recognize
+structural subtyping (static duck-typing).</p>
+<p>For example::</p>
+<pre><code>class C:
+    def meth(self) -&gt; int:
+        return 0
+
+def func(x: Proto) -&gt; int:
+    return x.meth()
+
+func(C())  # Passes static type check
+</code></pre>
+<p>See PEP 544 for details. Protocol classes decorated with
+@typing.runtime_checkable act as simple-minded runtime protocols that check
+only the presence of given attributes, ignoring their type signatures.
+Protocol classes can be generic, they are defined as::</p>
+<pre><code>class GenProto[T](Protocol):
+    def meth(self) -&gt; T:
+        ...
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@runtime_checkable
+class PluginRouteHandlerHandlerFunction(Protocol):
+    async def __call__(
+        self,
+        request: BaseRequest,
+        response: BaseResponse,
+        session: Optional[&#34;SessionContainer&#34;],
+        user_context: UserContext,
+    ) -&gt; BaseResponse: ...</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.PluginRouteHandlerResponse"><code class="flex name class">
+<span>class <span class="ident">PluginRouteHandlerResponse</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PluginRouteHandlerResponse(CamelCaseBaseModel):
+    status: int
+    body: Any</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.plugins.PluginRouteHandlerResponse.body"><code class="name">var <span class="ident">body</span> : Any</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.PluginRouteHandlerResponse.status"><code class="name">var <span class="ident">status</span> : int</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.from_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.model_config" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.to_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.PluginRouteHandlerWithPluginId"><code class="flex name class">
+<span>class <span class="ident">PluginRouteHandlerWithPluginId</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PluginRouteHandlerWithPluginId(PluginRouteHandler):
+    plugin_id: str
+    &#34;&#34;&#34;
+    This is useful when multiple plugins handle the same route.
+    &#34;&#34;&#34;
+
+    @classmethod
+    def from_route_handler(
+        cls,
+        route_handler: PluginRouteHandler,
+        plugin_id: str,
+    ):
+        return cls(
+            **route_handler.model_dump(),
+            plugin_id=plugin_id,
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.plugins.PluginRouteHandler" href="#supertokens_python.plugins.PluginRouteHandler">PluginRouteHandler</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.plugins.PluginRouteHandlerWithPluginId.plugin_id"><code class="name">var <span class="ident">plugin_id</span> : str</code></dt>
+<dd>
+<div class="desc"><p>This is useful when multiple plugins handle the same route.</p></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="supertokens_python.plugins.PluginRouteHandlerWithPluginId.from_route_handler"><code class="name flex">
+<span>def <span class="ident">from_route_handler</span></span>(<span>route_handler: <a title="supertokens_python.plugins.PluginRouteHandler" href="#supertokens_python.plugins.PluginRouteHandler">PluginRouteHandler</a>, plugin_id: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.plugins.PluginRouteHandler" href="#supertokens_python.plugins.PluginRouteHandler">PluginRouteHandler</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.plugins.PluginRouteHandler.from_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.plugins.PluginRouteHandler.handler" href="#supertokens_python.plugins.PluginRouteHandler.handler">handler</a></code></li>
+<li><code><a title="supertokens_python.plugins.PluginRouteHandler.method" href="#supertokens_python.plugins.PluginRouteHandler.method">method</a></code></li>
+<li><code><a title="supertokens_python.plugins.PluginRouteHandler.model_config" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.plugins.PluginRouteHandler.path" href="#supertokens_python.plugins.PluginRouteHandler.path">path</a></code></li>
+<li><code><a title="supertokens_python.plugins.PluginRouteHandler.to_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.plugins.PluginRouteHandler.verify_session_options" href="#supertokens_python.plugins.PluginRouteHandler.verify_session_options">verify_session_options</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.RecipeInitRequiredFunction"><code class="flex name class">
+<span>class <span class="ident">RecipeInitRequiredFunction</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for protocol classes.</p>
+<p>Protocol classes are defined as::</p>
+<pre><code>class Proto(Protocol):
+    def meth(self) -&gt; int:
+        ...
+</code></pre>
+<p>Such classes are primarily used with static type checkers that recognize
+structural subtyping (static duck-typing).</p>
+<p>For example::</p>
+<pre><code>class C:
+    def meth(self) -&gt; int:
+        return 0
+
+def func(x: Proto) -&gt; int:
+    return x.meth()
+
+func(C())  # Passes static type check
+</code></pre>
+<p>See PEP 544 for details. Protocol classes decorated with
+@typing.runtime_checkable act as simple-minded runtime protocols that check
+only the presence of given attributes, ignoring their type signatures.
+Protocol classes can be generic, they are defined as::</p>
+<pre><code>class GenProto[T](Protocol):
+    def meth(self) -&gt; T:
+        ...
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RecipeInitRequiredFunction(Protocol):
+    def __call__(self, sdk_version: str) -&gt; bool: ...</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.RecipePluginOverride"><code class="flex name class">
+<span>class <span class="ident">RecipePluginOverride</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RecipePluginOverride:
+    functions: Optional[Callable[[BaseRecipeInterface], BaseRecipeInterface]] = None
+    apis: Optional[Callable[[BaseAPIInterface], BaseAPIInterface]] = None
+    config: Optional[Callable[[Any], Any]] = None
+    recipe_init_required: Optional[Union[bool, RecipeInitRequiredFunction]] = None</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.plugins.RecipePluginOverride.apis"><code class="name">var <span class="ident">apis</span> : Optional[Callable[[<a title="supertokens_python.types.recipe.BaseAPIInterface" href="types/recipe.html#supertokens_python.types.recipe.BaseAPIInterface">BaseAPIInterface</a>], <a title="supertokens_python.types.recipe.BaseAPIInterface" href="types/recipe.html#supertokens_python.types.recipe.BaseAPIInterface">BaseAPIInterface</a>]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.RecipePluginOverride.config"><code class="name">var <span class="ident">config</span> : Optional[Callable[[Any], Any]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.RecipePluginOverride.functions"><code class="name">var <span class="ident">functions</span> : Optional[Callable[[<a title="supertokens_python.types.recipe.BaseRecipeInterface" href="types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a>], <a title="supertokens_python.types.recipe.BaseRecipeInterface" href="types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a>]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.RecipePluginOverride.recipe_init_required"><code class="name">var <span class="ident">recipe_init_required</span> : Union[bool, <a title="supertokens_python.plugins.RecipeInitRequiredFunction" href="#supertokens_python.plugins.RecipeInitRequiredFunction">RecipeInitRequiredFunction</a>, ForwardRef(None)]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.plugins.SuperTokensPlugin"><code class="flex name class">
+<span>class <span class="ident">SuperTokensPlugin</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SuperTokensPlugin(SuperTokensPluginBase):
+    init: Optional[SuperTokensPluginInit] = None
+    dependencies: Optional[SuperTokensPluginDependencies] = None
+    override_map: Optional[OverrideMap] = None
+    route_handlers: Optional[
+        Union[List[PluginRouteHandler], PluginRouteHandlerFunction]
+    ] = None
+    config: Optional[PluginConfig] = None
+
+    def get_dependencies(
+        self,
+        public_config: &#34;SupertokensPublicConfig&#34;,
+        plugins_above: List[&#34;SuperTokensPlugin&#34;],
+        sdk_version: str,
+    ):
+        &#34;&#34;&#34;
+        Pre-order DFS traversal to get all dependencies of a plugin.
+        &#34;&#34;&#34;
+
+        def recurse_deps(
+            plugin: SuperTokensPlugin,
+            deps: Optional[List[SuperTokensPlugin]] = None,
+            visited: Optional[Set[str]] = None,
+        ) -&gt; List[SuperTokensPlugin]:
+            if deps is None:
+                deps = []
+
+            if visited is None:
+                visited = set()
+
+            if plugin.id in visited:
+                return deps
+            visited.add(plugin.id)
+
+            if plugin.dependencies is not None:
+                # Get all dependencies of the plugin
+                dep_result = plugin.dependencies(
+                    config=public_config,
+                    plugins_above=[
+                        SuperTokensPublicPlugin.from_plugin(plugin)
+                        for plugin in plugins_above
+                    ],
+                    sdk_version=sdk_version,
+                )
+
+                # Errors fall through
+                if isinstance(dep_result, PluginDependenciesErrorResponse):
+                    raise Exception(dep_result.message)
+
+                # Recurse through all dependencies and add the resultant plugins to the list
+                # Pre-order DFS traversal
+                for dep_plugin in dep_result.plugins_to_add:
+                    recurse_deps(dep_plugin, deps)
+
+            # Add the current plugin and mark it as visited
+            deps.append(plugin)
+
+            return deps
+
+        return recurse_deps(self)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.plugins.SuperTokensPluginBase" href="#supertokens_python.plugins.SuperTokensPluginBase">SuperTokensPluginBase</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.plugins.SuperTokensPlugin.config"><code class="name">var <span class="ident">config</span> : Optional[<a title="supertokens_python.plugins.PluginConfig" href="#supertokens_python.plugins.PluginConfig">PluginConfig</a>]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.SuperTokensPlugin.dependencies"><code class="name">var <span class="ident">dependencies</span> : Optional[<a title="supertokens_python.plugins.SuperTokensPluginDependencies" href="#supertokens_python.plugins.SuperTokensPluginDependencies">SuperTokensPluginDependencies</a>]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.SuperTokensPlugin.init"><code class="name">var <span class="ident">init</span> : Optional[<a title="supertokens_python.plugins.SuperTokensPluginInit" href="#supertokens_python.plugins.SuperTokensPluginInit">SuperTokensPluginInit</a>]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.SuperTokensPlugin.override_map"><code class="name">var <span class="ident">override_map</span> : Optional[Dict[str, <a title="supertokens_python.plugins.RecipePluginOverride" href="#supertokens_python.plugins.RecipePluginOverride">RecipePluginOverride</a>]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.SuperTokensPlugin.route_handlers"><code class="name">var <span class="ident">route_handlers</span> : Union[List[<a title="supertokens_python.plugins.PluginRouteHandler" href="#supertokens_python.plugins.PluginRouteHandler">PluginRouteHandler</a>], <a title="supertokens_python.plugins.PluginRouteHandlerFunction" href="#supertokens_python.plugins.PluginRouteHandlerFunction">PluginRouteHandlerFunction</a>, ForwardRef(None)]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.plugins.SuperTokensPlugin.get_dependencies"><code class="name flex">
+<span>def <span class="ident">get_dependencies</span></span>(<span>self, public_config: SupertokensPublicConfig, plugins_above: List[ForwardRef('<a title="supertokens_python.plugins.SuperTokensPlugin" href="#supertokens_python.plugins.SuperTokensPlugin">SuperTokensPlugin</a>')], sdk_version: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Pre-order DFS traversal to get all dependencies of a plugin.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.plugins.SuperTokensPluginBase" href="#supertokens_python.plugins.SuperTokensPluginBase">SuperTokensPluginBase</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.compatible_sdk_versions" href="#supertokens_python.plugins.SuperTokensPluginBase.compatible_sdk_versions">compatible_sdk_versions</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.exports" href="#supertokens_python.plugins.SuperTokensPluginBase.exports">exports</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.from_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.id" href="#supertokens_python.plugins.SuperTokensPluginBase.id">id</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.model_config" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.to_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.version" href="#supertokens_python.plugins.SuperTokensPluginBase.version">version</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.SuperTokensPluginBase"><code class="flex name class">
+<span>class <span class="ident">SuperTokensPluginBase</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SuperTokensPluginBase(CamelCaseBaseModel):
+    id: str
+    version: Optional[str] = None
+    compatible_sdk_versions: Union[str, List[str]]
+    exports: Optional[Dict[str, Any]] = None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.plugins.SuperTokensPlugin" href="#supertokens_python.plugins.SuperTokensPlugin">SuperTokensPlugin</a></li>
+<li><a title="supertokens_python.plugins.SuperTokensPublicPlugin" href="#supertokens_python.plugins.SuperTokensPublicPlugin">SuperTokensPublicPlugin</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.plugins.SuperTokensPluginBase.compatible_sdk_versions"><code class="name">var <span class="ident">compatible_sdk_versions</span> : Union[str, List[str]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.SuperTokensPluginBase.exports"><code class="name">var <span class="ident">exports</span> : Optional[Dict[str, Any]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.SuperTokensPluginBase.id"><code class="name">var <span class="ident">id</span> : str</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.SuperTokensPluginBase.version"><code class="name">var <span class="ident">version</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.from_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.model_config" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.to_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.SuperTokensPluginDependencies"><code class="flex name class">
+<span>class <span class="ident">SuperTokensPluginDependencies</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for protocol classes.</p>
+<p>Protocol classes are defined as::</p>
+<pre><code>class Proto(Protocol):
+    def meth(self) -&gt; int:
+        ...
+</code></pre>
+<p>Such classes are primarily used with static type checkers that recognize
+structural subtyping (static duck-typing).</p>
+<p>For example::</p>
+<pre><code>class C:
+    def meth(self) -&gt; int:
+        return 0
+
+def func(x: Proto) -&gt; int:
+    return x.meth()
+
+func(C())  # Passes static type check
+</code></pre>
+<p>See PEP 544 for details. Protocol classes decorated with
+@typing.runtime_checkable act as simple-minded runtime protocols that check
+only the presence of given attributes, ignoring their type signatures.
+Protocol classes can be generic, they are defined as::</p>
+<pre><code>class GenProto[T](Protocol):
+    def meth(self) -&gt; T:
+        ...
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@runtime_checkable
+class SuperTokensPluginDependencies(Protocol):
+    def __call__(
+        self,
+        config: &#34;SupertokensPublicConfig&#34;,
+        plugins_above: List[&#34;SuperTokensPublicPlugin&#34;],
+        sdk_version: str,
+    ) -&gt; Union[PluginDependenciesOkResponse, PluginDependenciesErrorResponse]: ...</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.SuperTokensPluginInit"><code class="flex name class">
+<span>class <span class="ident">SuperTokensPluginInit</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for protocol classes.</p>
+<p>Protocol classes are defined as::</p>
+<pre><code>class Proto(Protocol):
+    def meth(self) -&gt; int:
+        ...
+</code></pre>
+<p>Such classes are primarily used with static type checkers that recognize
+structural subtyping (static duck-typing).</p>
+<p>For example::</p>
+<pre><code>class C:
+    def meth(self) -&gt; int:
+        return 0
+
+def func(x: Proto) -&gt; int:
+    return x.meth()
+
+func(C())  # Passes static type check
+</code></pre>
+<p>See PEP 544 for details. Protocol classes decorated with
+@typing.runtime_checkable act as simple-minded runtime protocols that check
+only the presence of given attributes, ignoring their type signatures.
+Protocol classes can be generic, they are defined as::</p>
+<pre><code>class GenProto[T](Protocol):
+    def meth(self) -&gt; T:
+        ...
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@runtime_checkable
+class SuperTokensPluginInit(Protocol):
+    def __call__(
+        self,
+        config: &#34;SupertokensPublicConfig&#34;,
+        all_plugins: List[&#34;SuperTokensPublicPlugin&#34;],
+        sdk_version: str,
+    ) -&gt; None: ...</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.SuperTokensPublicPlugin"><code class="flex name class">
+<span>class <span class="ident">SuperTokensPublicPlugin</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SuperTokensPublicPlugin(SuperTokensPluginBase):
+    initialized: bool
+
+    @classmethod
+    def from_plugin(cls, plugin: SuperTokensPlugin) -&gt; &#34;SuperTokensPublicPlugin&#34;:
+        return cls(
+            id=plugin.id,
+            initialized=plugin.init is None,
+            version=plugin.version,
+            exports=plugin.exports,
+            compatible_sdk_versions=plugin.compatible_sdk_versions,
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.plugins.SuperTokensPluginBase" href="#supertokens_python.plugins.SuperTokensPluginBase">SuperTokensPluginBase</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.plugins.SuperTokensPublicPlugin.initialized"><code class="name">var <span class="ident">initialized</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="supertokens_python.plugins.SuperTokensPublicPlugin.from_plugin"><code class="name flex">
+<span>def <span class="ident">from_plugin</span></span>(<span>plugin: <a title="supertokens_python.plugins.SuperTokensPlugin" href="#supertokens_python.plugins.SuperTokensPlugin">SuperTokensPlugin</a>) ‑> <a title="supertokens_python.plugins.SuperTokensPublicPlugin" href="#supertokens_python.plugins.SuperTokensPublicPlugin">SuperTokensPublicPlugin</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.plugins.SuperTokensPluginBase" href="#supertokens_python.plugins.SuperTokensPluginBase">SuperTokensPluginBase</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.compatible_sdk_versions" href="#supertokens_python.plugins.SuperTokensPluginBase.compatible_sdk_versions">compatible_sdk_versions</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.exports" href="#supertokens_python.plugins.SuperTokensPluginBase.exports">exports</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.from_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.id" href="#supertokens_python.plugins.SuperTokensPluginBase.id">id</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.model_config" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.to_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.version" href="#supertokens_python.plugins.SuperTokensPluginBase.version">version</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.plugins.VerifySessionOptions"><code class="flex name class">
+<span>class <span class="ident">VerifySessionOptions</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class VerifySessionOptions(CamelCaseBaseModel):
+    session_required: bool
+    anti_csrf_check: Optional[bool] = None
+    check_database: bool
+    override_global_claim_validators: Optional[
+        OverrideGlobalClaimValidatorsFunction
+    ] = None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.plugins.VerifySessionOptions.anti_csrf_check"><code class="name">var <span class="ident">anti_csrf_check</span> : Optional[bool]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.VerifySessionOptions.check_database"><code class="name">var <span class="ident">check_database</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.VerifySessionOptions.override_global_claim_validators"><code class="name">var <span class="ident">override_global_claim_validators</span> : Optional[<a title="supertokens_python.plugins.OverrideGlobalClaimValidatorsFunction" href="#supertokens_python.plugins.OverrideGlobalClaimValidatorsFunction">OverrideGlobalClaimValidatorsFunction</a>]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.plugins.VerifySessionOptions.session_required"><code class="name">var <span class="ident">session_required</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.response.CamelCaseBaseModel" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.from_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.model_config" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.CamelCaseBaseModel.to_json" href="types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h2>Index</h2>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="supertokens_python" href="index.html">supertokens_python</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="supertokens_python.plugins.apply_plugins" href="#supertokens_python.plugins.apply_plugins">apply_plugins</a></code></li>
+<li><code><a title="supertokens_python.plugins.load_plugins" href="#supertokens_python.plugins.load_plugins">load_plugins</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.plugins.LoadPluginsResponse" href="#supertokens_python.plugins.LoadPluginsResponse">LoadPluginsResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.plugins.LoadPluginsResponse.override_maps" href="#supertokens_python.plugins.LoadPluginsResponse.override_maps">override_maps</a></code></li>
+<li><code><a title="supertokens_python.plugins.LoadPluginsResponse.plugin_route_handlers" href="#supertokens_python.plugins.LoadPluginsResponse.plugin_route_handlers">plugin_route_handlers</a></code></li>
+<li><code><a title="supertokens_python.plugins.LoadPluginsResponse.processed_plugins" href="#supertokens_python.plugins.LoadPluginsResponse.processed_plugins">processed_plugins</a></code></li>
+<li><code><a title="supertokens_python.plugins.LoadPluginsResponse.public_config" href="#supertokens_python.plugins.LoadPluginsResponse.public_config">public_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.OverrideGlobalClaimValidatorsFunction" href="#supertokens_python.plugins.OverrideGlobalClaimValidatorsFunction">OverrideGlobalClaimValidatorsFunction</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.PluginConfig" href="#supertokens_python.plugins.PluginConfig">PluginConfig</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.PluginDependenciesErrorResponse" href="#supertokens_python.plugins.PluginDependenciesErrorResponse">PluginDependenciesErrorResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.plugins.PluginDependenciesErrorResponse.message" href="#supertokens_python.plugins.PluginDependenciesErrorResponse.message">message</a></code></li>
+<li><code><a title="supertokens_python.plugins.PluginDependenciesErrorResponse.status" href="#supertokens_python.plugins.PluginDependenciesErrorResponse.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.PluginDependenciesOkResponse" href="#supertokens_python.plugins.PluginDependenciesOkResponse">PluginDependenciesOkResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.plugins.PluginDependenciesOkResponse.plugins_to_add" href="#supertokens_python.plugins.PluginDependenciesOkResponse.plugins_to_add">plugins_to_add</a></code></li>
+<li><code><a title="supertokens_python.plugins.PluginDependenciesOkResponse.status" href="#supertokens_python.plugins.PluginDependenciesOkResponse.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.PluginRouteHandler" href="#supertokens_python.plugins.PluginRouteHandler">PluginRouteHandler</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.plugins.PluginRouteHandler.handler" href="#supertokens_python.plugins.PluginRouteHandler.handler">handler</a></code></li>
+<li><code><a title="supertokens_python.plugins.PluginRouteHandler.method" href="#supertokens_python.plugins.PluginRouteHandler.method">method</a></code></li>
+<li><code><a title="supertokens_python.plugins.PluginRouteHandler.path" href="#supertokens_python.plugins.PluginRouteHandler.path">path</a></code></li>
+<li><code><a title="supertokens_python.plugins.PluginRouteHandler.verify_session_options" href="#supertokens_python.plugins.PluginRouteHandler.verify_session_options">verify_session_options</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.PluginRouteHandlerFunction" href="#supertokens_python.plugins.PluginRouteHandlerFunction">PluginRouteHandlerFunction</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.PluginRouteHandlerFunctionErrorResponse" href="#supertokens_python.plugins.PluginRouteHandlerFunctionErrorResponse">PluginRouteHandlerFunctionErrorResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.plugins.PluginRouteHandlerFunctionErrorResponse.message" href="#supertokens_python.plugins.PluginRouteHandlerFunctionErrorResponse.message">message</a></code></li>
+<li><code><a title="supertokens_python.plugins.PluginRouteHandlerFunctionErrorResponse.status" href="#supertokens_python.plugins.PluginRouteHandlerFunctionErrorResponse.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.PluginRouteHandlerFunctionOkResponse" href="#supertokens_python.plugins.PluginRouteHandlerFunctionOkResponse">PluginRouteHandlerFunctionOkResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.plugins.PluginRouteHandlerFunctionOkResponse.route_handlers" href="#supertokens_python.plugins.PluginRouteHandlerFunctionOkResponse.route_handlers">route_handlers</a></code></li>
+<li><code><a title="supertokens_python.plugins.PluginRouteHandlerFunctionOkResponse.status" href="#supertokens_python.plugins.PluginRouteHandlerFunctionOkResponse.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.PluginRouteHandlerHandlerFunction" href="#supertokens_python.plugins.PluginRouteHandlerHandlerFunction">PluginRouteHandlerHandlerFunction</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.PluginRouteHandlerResponse" href="#supertokens_python.plugins.PluginRouteHandlerResponse">PluginRouteHandlerResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.plugins.PluginRouteHandlerResponse.body" href="#supertokens_python.plugins.PluginRouteHandlerResponse.body">body</a></code></li>
+<li><code><a title="supertokens_python.plugins.PluginRouteHandlerResponse.status" href="#supertokens_python.plugins.PluginRouteHandlerResponse.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.PluginRouteHandlerWithPluginId" href="#supertokens_python.plugins.PluginRouteHandlerWithPluginId">PluginRouteHandlerWithPluginId</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.plugins.PluginRouteHandlerWithPluginId.from_route_handler" href="#supertokens_python.plugins.PluginRouteHandlerWithPluginId.from_route_handler">from_route_handler</a></code></li>
+<li><code><a title="supertokens_python.plugins.PluginRouteHandlerWithPluginId.plugin_id" href="#supertokens_python.plugins.PluginRouteHandlerWithPluginId.plugin_id">plugin_id</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.RecipeInitRequiredFunction" href="#supertokens_python.plugins.RecipeInitRequiredFunction">RecipeInitRequiredFunction</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.RecipePluginOverride" href="#supertokens_python.plugins.RecipePluginOverride">RecipePluginOverride</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.plugins.RecipePluginOverride.apis" href="#supertokens_python.plugins.RecipePluginOverride.apis">apis</a></code></li>
+<li><code><a title="supertokens_python.plugins.RecipePluginOverride.config" href="#supertokens_python.plugins.RecipePluginOverride.config">config</a></code></li>
+<li><code><a title="supertokens_python.plugins.RecipePluginOverride.functions" href="#supertokens_python.plugins.RecipePluginOverride.functions">functions</a></code></li>
+<li><code><a title="supertokens_python.plugins.RecipePluginOverride.recipe_init_required" href="#supertokens_python.plugins.RecipePluginOverride.recipe_init_required">recipe_init_required</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.SuperTokensPlugin" href="#supertokens_python.plugins.SuperTokensPlugin">SuperTokensPlugin</a></code></h4>
+<ul class="two-column">
+<li><code><a title="supertokens_python.plugins.SuperTokensPlugin.config" href="#supertokens_python.plugins.SuperTokensPlugin.config">config</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPlugin.dependencies" href="#supertokens_python.plugins.SuperTokensPlugin.dependencies">dependencies</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPlugin.get_dependencies" href="#supertokens_python.plugins.SuperTokensPlugin.get_dependencies">get_dependencies</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPlugin.init" href="#supertokens_python.plugins.SuperTokensPlugin.init">init</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPlugin.override_map" href="#supertokens_python.plugins.SuperTokensPlugin.override_map">override_map</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPlugin.route_handlers" href="#supertokens_python.plugins.SuperTokensPlugin.route_handlers">route_handlers</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.SuperTokensPluginBase" href="#supertokens_python.plugins.SuperTokensPluginBase">SuperTokensPluginBase</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.compatible_sdk_versions" href="#supertokens_python.plugins.SuperTokensPluginBase.compatible_sdk_versions">compatible_sdk_versions</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.exports" href="#supertokens_python.plugins.SuperTokensPluginBase.exports">exports</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.id" href="#supertokens_python.plugins.SuperTokensPluginBase.id">id</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPluginBase.version" href="#supertokens_python.plugins.SuperTokensPluginBase.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.SuperTokensPluginDependencies" href="#supertokens_python.plugins.SuperTokensPluginDependencies">SuperTokensPluginDependencies</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.SuperTokensPluginInit" href="#supertokens_python.plugins.SuperTokensPluginInit">SuperTokensPluginInit</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.SuperTokensPublicPlugin" href="#supertokens_python.plugins.SuperTokensPublicPlugin">SuperTokensPublicPlugin</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.plugins.SuperTokensPublicPlugin.from_plugin" href="#supertokens_python.plugins.SuperTokensPublicPlugin.from_plugin">from_plugin</a></code></li>
+<li><code><a title="supertokens_python.plugins.SuperTokensPublicPlugin.initialized" href="#supertokens_python.plugins.SuperTokensPublicPlugin.initialized">initialized</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.plugins.VerifySessionOptions" href="#supertokens_python.plugins.VerifySessionOptions">VerifySessionOptions</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.plugins.VerifySessionOptions.anti_csrf_check" href="#supertokens_python.plugins.VerifySessionOptions.anti_csrf_check">anti_csrf_check</a></code></li>
+<li><code><a title="supertokens_python.plugins.VerifySessionOptions.check_database" href="#supertokens_python.plugins.VerifySessionOptions.check_database">check_database</a></code></li>
+<li><code><a title="supertokens_python.plugins.VerifySessionOptions.override_global_claim_validators" href="#supertokens_python.plugins.VerifySessionOptions.override_global_claim_validators">override_global_claim_validators</a></code></li>
+<li><code><a title="supertokens_python.plugins.VerifySessionOptions.session_required" href="#supertokens_python.plugins.VerifySessionOptions.session_required">session_required</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
+</footer>
+</body>
+</html>

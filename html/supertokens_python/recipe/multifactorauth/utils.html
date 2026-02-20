@@ -43,7 +43,7 @@ from __future__ import annotations
 
 import math
 import time
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from typing_extensions import Literal
 
@@ -64,28 +64,28 @@ from supertokens_python.recipe.session.exceptions import UnauthorisedError
 from supertokens_python.types import RecipeUserId
 from supertokens_python.utils import log_debug_message
 
-if TYPE_CHECKING:
-    from .types import MultiFactorAuthConfig, OverrideConfig
+from .types import (
+    MultiFactorAuthConfig,
+    NormalisedMultiFactorAuthConfig,
+    NormalisedMultiFactorAuthOverrideConfig,
+)
 
 
 # IMPORTANT: If this function signature is modified, please update all tha places where this function is called.
 # There will be no type errors cause we use importLib to dynamically import if to prevent cyclic import issues.
 def validate_and_normalise_user_input(
-    first_factors: Optional[List[str]],
-    override: Union[OverrideConfig, None] = None,
-) -&gt; MultiFactorAuthConfig:
-    if first_factors is not None and len(first_factors) == 0:
+    config: MultiFactorAuthConfig,
+) -&gt; NormalisedMultiFactorAuthConfig:
+    if config.first_factors is not None and len(config.first_factors) == 0:
         raise ValueError(&#34;&#39;first_factors&#39; can be either None or a non-empty list&#34;)
 
-    from .types import MultiFactorAuthConfig as MFAC
-    from .types import OverrideConfig as OC
+    override_config = NormalisedMultiFactorAuthOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
-    if override is None:
-        override = OC()
-
-    return MFAC(
-        first_factors=first_factors,
-        override=override,
+    return NormalisedMultiFactorAuthConfig(
+        first_factors=config.first_factors,
+        override=override_config,
     )
 
 
@@ -371,7 +371,7 @@ def is_factor_configured_for_tenant(
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>first_factors: Optional[List[str]], override: Union[OverrideConfig, None] = None)</span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>config: MultiFactorAuthConfig) ‑> <a title="supertokens_python.recipe.multifactorauth.types.NormalisedMultiFactorAuthConfig" href="types.html#supertokens_python.recipe.multifactorauth.types.NormalisedMultiFactorAuthConfig">NormalisedMultiFactorAuthConfig</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>

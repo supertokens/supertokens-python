@@ -42,8 +42,10 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
+
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 
 from ...types.response import APIResponse, GeneralErrorResponse
 
@@ -54,10 +56,10 @@ if TYPE_CHECKING:
     from supertokens_python.types import User
 
     from ...supertokens import AppInfo
-    from .types import MFARequirementList, MultiFactorAuthConfig
+    from .types import MFARequirementList, NormalisedMultiFactorAuthConfig
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     @abstractmethod
     async def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
         self,
@@ -123,7 +125,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: MultiFactorAuthConfig,
+        config: NormalisedMultiFactorAuthConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         recipe_instance: MultiFactorAuthRecipe,
@@ -137,7 +139,7 @@ class APIOptions:
         self.recipe_instance = recipe_instance
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_resync_session_and_fetch_mfa_info_put = False
 
@@ -202,12 +204,13 @@ class ResyncSessionAndFetchMFAInfoPUTOkResult(APIResponse):
 <span>class <span class="ident">APIInterface</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class APIInterface:
+<pre><code class="python">class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_resync_session_and_fetch_mfa_info_put = False
 
@@ -220,6 +223,11 @@ class ResyncSessionAndFetchMFAInfoPUTOkResult(APIResponse):
     ) -&gt; Union[ResyncSessionAndFetchMFAInfoPUTOkResult, GeneralErrorResponse]:
         pass</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseAPIInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseAPIInterface">BaseAPIInterface</a></li>
+<li>abc.ABC</li>
+</ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.multifactorauth.api.implementation.APIImplementation" href="api/implementation.html#supertokens_python.recipe.multifactorauth.api.implementation.APIImplementation">APIImplementation</a></li>
@@ -236,7 +244,7 @@ class ResyncSessionAndFetchMFAInfoPUTOkResult(APIResponse):
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.interfaces.APIOptions"><code class="flex name class">
 <span>class <span class="ident">APIOptions</span></span>
-<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: MultiFactorAuthConfig, recipe_implementation: <a title="supertokens_python.recipe.multifactorauth.interfaces.RecipeInterface" href="#supertokens_python.recipe.multifactorauth.interfaces.RecipeInterface">RecipeInterface</a>, app_info: AppInfo, recipe_instance: MultiFactorAuthRecipe)</span>
+<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: NormalisedMultiFactorAuthConfig, recipe_implementation: <a title="supertokens_python.recipe.multifactorauth.interfaces.RecipeInterface" href="#supertokens_python.recipe.multifactorauth.interfaces.RecipeInterface">RecipeInterface</a>, app_info: AppInfo, recipe_instance: MultiFactorAuthRecipe)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -250,7 +258,7 @@ class ResyncSessionAndFetchMFAInfoPUTOkResult(APIResponse):
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: MultiFactorAuthConfig,
+        config: NormalisedMultiFactorAuthConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         recipe_instance: MultiFactorAuthRecipe,
@@ -309,7 +317,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RecipeInterface(ABC):
+<pre><code class="python">class RecipeInterface(BaseRecipeInterface):
     @abstractmethod
     async def assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
         self,
@@ -370,6 +378,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseRecipeInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
@@ -463,7 +472,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.multifactorauth.interfaces.ResyncSessionAndFetchMFAInfoPUTOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>

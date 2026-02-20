@@ -41,44 +41,74 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import Optional
 
-if TYPE_CHECKING:
-    from .interfaces import APIInterface, RecipeInterface
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
+    BaseOverrideConfig,
+)
 
+from .interfaces import APIInterface, RecipeInterface
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
-
-
-class JWTConfig:
-    def __init__(self, override: OverrideConfig, jwt_validity_seconds: int):
-        self.override = override
-        self.jwt_validity_seconds = jwt_validity_seconds
+JWTOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedJWTOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+OverrideConfig = JWTOverrideConfig
+&#34;&#34;&#34;Deprecated, use `JWTOverrideConfig` instead.&#34;&#34;&#34;
 
 
-def validate_and_normalise_user_input(
-    jwt_validity_seconds: Union[int, None] = None,
-    override: Union[OverrideConfig, None] = None,
+class JWTOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    jwt_validity_seconds: Optional[int] = None
+
+
+class JWTConfig(
+    JWTOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, JWTOverrideableConfig],
 ):
-    if jwt_validity_seconds is not None and not isinstance(jwt_validity_seconds, int):  # type: ignore
-        raise ValueError(&#34;jwt_validity_seconds must be an integer or None&#34;)
+    def to_overrideable_config(self) -&gt; JWTOverrideableConfig:
+        &#34;&#34;&#34;Create a `JWTOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return JWTOverrideableConfig(**self.model_dump())
 
-    if override is not None and not isinstance(override, OverrideConfig):  # type: ignore
-        raise ValueError(&#34;override must be an instance of OverrideConfig or None&#34;)
+    def from_overrideable_config(
+        self,
+        overrideable_config: JWTOverrideableConfig,
+    ) -&gt; &#34;JWTConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `JWTConfig` from a `JWTOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return JWTConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
-    if override is None:
-        override = OverrideConfig()
-    if jwt_validity_seconds is None:
+
+class NormalisedJWTConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
+    jwt_validity_seconds: int
+
+
+def validate_and_normalise_user_input(config: JWTConfig):
+    override_config = NormalisedJWTOverrideConfig.from_input_config(
+        override_config=config.override
+    )
+
+    jwt_validity_seconds = config.jwt_validity_seconds
+
+    if config.jwt_validity_seconds is None:
         jwt_validity_seconds = 3153600000
 
-    return JWTConfig(override, jwt_validity_seconds)</code></pre>
+    if not isinstance(jwt_validity_seconds, int):  # type: ignore
+        raise ValueError(&#34;jwt_validity_seconds must be an integer or None&#34;)
+
+    return NormalisedJWTConfig(
+        jwt_validity_seconds=jwt_validity_seconds, override=override_config
+    )</code></pre>
 </details>
 </section>
 <section>
@@ -89,7 +119,7 @@ def validate_and_normalise_user_input(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.jwt.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>jwt_validity_seconds: Union[int, None] = None, override: Union[<a title="supertokens_python.recipe.jwt.utils.OverrideConfig" href="#supertokens_python.recipe.jwt.utils.OverrideConfig">OverrideConfig</a>, None] = None)</span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>config: <a title="supertokens_python.recipe.jwt.utils.JWTConfig" href="#supertokens_python.recipe.jwt.utils.JWTConfig">JWTConfig</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -99,41 +129,213 @@ def validate_and_normalise_user_input(
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="supertokens_python.recipe.jwt.utils.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
+<span>class <span class="ident">OverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.apis" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig.apis">apis</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.functions" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI.functions">functions</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
 <dt id="supertokens_python.recipe.jwt.utils.JWTConfig"><code class="flex name class">
 <span>class <span class="ident">JWTConfig</span></span>
-<span>(</span><span>override: <a title="supertokens_python.recipe.jwt.utils.OverrideConfig" href="#supertokens_python.recipe.jwt.utils.OverrideConfig">OverrideConfig</a>, jwt_validity_seconds: int)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class JWTConfig:
-    def __init__(self, override: OverrideConfig, jwt_validity_seconds: int):
-        self.override = override
-        self.jwt_validity_seconds = jwt_validity_seconds</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.jwt.utils.OverrideConfig"><code class="flex name class">
-<span>class <span class="ident">OverrideConfig</span></span>
-<span>(</span><span>functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class OverrideConfig:
-    def __init__(
+<pre><code class="python">class JWTConfig(
+    JWTOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, JWTOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; JWTOverrideableConfig:
+        &#34;&#34;&#34;Create a `JWTOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return JWTOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis</code></pre>
+        overrideable_config: JWTOverrideableConfig,
+    ) -&gt; &#34;JWTConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `JWTConfig` from a `JWTOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return JWTConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.jwt.utils.JWTOverrideableConfig" href="#supertokens_python.recipe.jwt.utils.JWTOverrideableConfig">JWTOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li>supertokens_python.types.config.BaseConfig[RecipeInterface, APIInterface, JWTOverrideableConfig]</li>
+<li><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.jwt.utils.JWTConfig.from_overrideable_config"><code class="name flex">
+<span>def <span class="ident">from_overrideable_config</span></span>(<span>self, overrideable_config: <a title="supertokens_python.recipe.jwt.utils.JWTOverrideableConfig" href="#supertokens_python.recipe.jwt.utils.JWTOverrideableConfig">JWTOverrideableConfig</a>) ‑> <a title="supertokens_python.recipe.jwt.utils.JWTConfig" href="#supertokens_python.recipe.jwt.utils.JWTConfig">JWTConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.jwt.utils.JWTConfig" href="#supertokens_python.recipe.jwt.utils.JWTConfig">JWTConfig</a></code> from a <code><a title="supertokens_python.recipe.jwt.utils.JWTOverrideableConfig" href="#supertokens_python.recipe.jwt.utils.JWTOverrideableConfig">JWTOverrideableConfig</a></code>.
+Not a classmethod since it needs to be used in a dynamic context within plugins.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.jwt.utils.JWTConfig.to_overrideable_config"><code class="name flex">
+<span>def <span class="ident">to_overrideable_config</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.jwt.utils.JWTOverrideableConfig" href="#supertokens_python.recipe.jwt.utils.JWTOverrideableConfig">JWTOverrideableConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.jwt.utils.JWTOverrideableConfig" href="#supertokens_python.recipe.jwt.utils.JWTOverrideableConfig">JWTOverrideableConfig</a></code> from the current config.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe.jwt.utils.JWTOverrideableConfig" href="#supertokens_python.recipe.jwt.utils.JWTOverrideableConfig">JWTOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe.jwt.utils.JWTOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.jwt.utils.JWTOverrideableConfig.jwt_validity_seconds" href="#supertokens_python.recipe.jwt.utils.JWTOverrideableConfig.jwt_validity_seconds">jwt_validity_seconds</a></code></li>
+<li><code><a title="supertokens_python.recipe.jwt.utils.JWTOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.jwt.utils.JWTOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li><code><b><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseConfig.override" href="../../types/config.html#supertokens_python.types.config.BaseConfig.override">override</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.jwt.utils.JWTOverrideableConfig"><code class="flex name class">
+<span>class <span class="ident">JWTOverrideableConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class JWTOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    jwt_validity_seconds: Optional[int] = None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.jwt.utils.JWTConfig" href="#supertokens_python.recipe.jwt.utils.JWTConfig">JWTConfig</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.jwt.utils.JWTOverrideableConfig.jwt_validity_seconds"><code class="name">var <span class="ident">jwt_validity_seconds</span> : Optional[int]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.jwt.utils.NormalisedJWTConfig"><code class="flex name class">
+<span>class <span class="ident">NormalisedJWTConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for normalized config of a Recipe with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NormalisedJWTConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
+    jwt_validity_seconds: int</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></li>
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig">BaseNormalisedConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.jwt.utils.NormalisedJWTConfig.jwt_validity_seconds"><code class="name">var <span class="ident">jwt_validity_seconds</span> : int</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].override" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig.override">override</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -157,10 +359,26 @@ def validate_and_normalise_user_input(
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="supertokens_python.recipe.jwt.utils.JWTConfig" href="#supertokens_python.recipe.jwt.utils.JWTConfig">JWTConfig</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.jwt.utils.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.jwt.utils.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.jwt.utils.OverrideConfig" href="#supertokens_python.recipe.jwt.utils.OverrideConfig">OverrideConfig</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.jwt.utils.JWTConfig" href="#supertokens_python.recipe.jwt.utils.JWTConfig">JWTConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.jwt.utils.JWTConfig.from_overrideable_config" href="#supertokens_python.recipe.jwt.utils.JWTConfig.from_overrideable_config">from_overrideable_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.jwt.utils.JWTConfig.to_overrideable_config" href="#supertokens_python.recipe.jwt.utils.JWTConfig.to_overrideable_config">to_overrideable_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.jwt.utils.JWTOverrideableConfig" href="#supertokens_python.recipe.jwt.utils.JWTOverrideableConfig">JWTOverrideableConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.jwt.utils.JWTOverrideableConfig.jwt_validity_seconds" href="#supertokens_python.recipe.jwt.utils.JWTOverrideableConfig.jwt_validity_seconds">jwt_validity_seconds</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.jwt.utils.NormalisedJWTConfig" href="#supertokens_python.recipe.jwt.utils.NormalisedJWTConfig">NormalisedJWTConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.jwt.utils.NormalisedJWTConfig.jwt_validity_seconds" href="#supertokens_python.recipe.jwt.utils.NormalisedJWTConfig.jwt_validity_seconds">jwt_validity_seconds</a></code></li>
+</ul>
 </li>
 </ul>
 </li>

@@ -189,8 +189,10 @@ def merge_providers_from_core_and_static(
 
     if len(provider_configs_from_core) == 0:
         for config in filter(
-            lambda provider: include_all_providers
-            or provider.include_in_non_public_tenants_by_default,
+            lambda provider: (
+                include_all_providers
+                or provider.include_in_non_public_tenants_by_default
+            ),
             provider_inputs_from_static,
         ):
             merged_providers.append(config)

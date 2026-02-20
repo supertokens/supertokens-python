@@ -41,12 +41,13 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.emailpassword.types import EmailTemplateVars
 from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 
 from ...supertokens import AppInfo
 from ...types import (
@@ -60,7 +61,7 @@ if TYPE_CHECKING:
 
     from ...types import User
     from .types import FormField
-    from .utils import EmailPasswordConfig
+    from .utils import NormalisedEmailPasswordConfig
 
 
 class SignUpOkResult:
@@ -146,7 +147,7 @@ class PasswordPolicyViolationError(APIResponse):
         }
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -246,7 +247,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: EmailPasswordConfig,
+        config: NormalisedEmailPasswordConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         email_delivery: EmailDeliveryIngredient[EmailTemplateVars],
@@ -254,7 +255,7 @@ class APIOptions:
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
-        self.config: EmailPasswordConfig = config
+        self.config: NormalisedEmailPasswordConfig = config
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info = app_info
         self.email_delivery = email_delivery
@@ -343,7 +344,7 @@ class SignUpPostNotAllowedResponse(APIResponse):
         return {&#34;status&#34;: self.status, &#34;reason&#34;: self.reason}
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_email_exists_get = False
         self.disable_generate_password_reset_token_post = False
@@ -439,12 +440,13 @@ class APIInterface:
 <span>class <span class="ident">APIInterface</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class APIInterface:
+<pre><code class="python">class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_email_exists_get = False
         self.disable_generate_password_reset_token_post = False
@@ -526,6 +528,11 @@ class APIInterface:
     ]:
         pass</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseAPIInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseAPIInterface">BaseAPIInterface</a></li>
+<li>abc.ABC</li>
+</ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.emailpassword.api.implementation.APIImplementation" href="api/implementation.html#supertokens_python.recipe.emailpassword.api.implementation.APIImplementation">APIImplementation</a></li>
@@ -566,7 +573,7 @@ class APIInterface:
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.APIOptions"><code class="flex name class">
 <span>class <span class="ident">APIOptions</span></span>
-<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: EmailPasswordConfig, recipe_implementation: <a title="supertokens_python.recipe.emailpassword.interfaces.RecipeInterface" href="#supertokens_python.recipe.emailpassword.interfaces.RecipeInterface">RecipeInterface</a>, app_info: AppInfo, email_delivery: EmailDeliveryIngredient[EmailTemplateVars])</span>
+<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: NormalisedEmailPasswordConfig, recipe_implementation: <a title="supertokens_python.recipe.emailpassword.interfaces.RecipeInterface" href="#supertokens_python.recipe.emailpassword.interfaces.RecipeInterface">RecipeInterface</a>, app_info: AppInfo, email_delivery: EmailDeliveryIngredient[EmailTemplateVars])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -580,7 +587,7 @@ class APIInterface:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: EmailPasswordConfig,
+        config: NormalisedEmailPasswordConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         email_delivery: EmailDeliveryIngredient[EmailTemplateVars],
@@ -588,7 +595,7 @@ class APIInterface:
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
-        self.config: EmailPasswordConfig = config
+        self.config: NormalisedEmailPasswordConfig = config
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info = app_info
         self.email_delivery = email_delivery</code></pre>
@@ -665,7 +672,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.EmailAlreadyExistsError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -707,7 +714,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.EmailExistsGetOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -749,7 +756,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostNotAllowedResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -787,7 +794,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -866,7 +873,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -904,7 +911,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.PasswordResetTokenInvalidError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -927,7 +934,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RecipeInterface(ABC):
+<pre><code class="python">class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -1022,6 +1029,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseRecipeInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
@@ -1119,7 +1127,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.SignInPostNotAllowedResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1165,7 +1173,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.SignInPostOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1206,7 +1214,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.SignUpOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1248,7 +1256,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.SignUpPostNotAllowedResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1291,7 +1299,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.SignUpPostOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1370,7 +1378,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.WrongCredentialsError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>

@@ -41,7 +41,7 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from typing_extensions import Literal
@@ -51,6 +51,7 @@ from supertokens_python.types import (
     RecipeUserId,
     User,
 )
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 from supertokens_python.types.response import APIResponse, GeneralErrorResponse
 
 from .oauth2_client import OAuth2Client
@@ -59,7 +60,7 @@ if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.supertokens import AppInfo
 
-    from .utils import OAuth2ProviderConfig
+    from .utils import NormalisedOAuth2ProviderConfig
 
 
 class ErrorOAuth2Response(APIResponse):
@@ -1044,7 +1045,7 @@ class UpdateOAuth2ClientInput:
         )
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     @abstractmethod
     async def authorization(
         self,
@@ -1301,18 +1302,18 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: OAuth2ProviderConfig,
+        config: NormalisedOAuth2ProviderConfig,
         recipe_implementation: RecipeInterface,
     ):
         self.app_info: AppInfo = app_info
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
-        self.config: OAuth2ProviderConfig = config
+        self.config: NormalisedOAuth2ProviderConfig = config
         self.recipe_implementation: RecipeInterface = recipe_implementation
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_login_get = False
         self.disable_auth_get = False
@@ -1451,12 +1452,13 @@ class APIInterface:
 <span>class <span class="ident">APIInterface</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class APIInterface:
+<pre><code class="python">class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_login_get = False
         self.disable_auth_get = False
@@ -1581,6 +1583,11 @@ class APIInterface:
     ) -&gt; Union[FrontendRedirectResponse, ErrorOAuth2Response, GeneralErrorResponse]:
         pass</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseAPIInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseAPIInterface">BaseAPIInterface</a></li>
+<li>abc.ABC</li>
+</ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.oauth2provider.api.implementation.APIImplementation" href="api/implementation.html#supertokens_python.recipe.oauth2provider.api.implementation.APIImplementation">APIImplementation</a></li>
@@ -1651,7 +1658,7 @@ class APIInterface:
 </dd>
 <dt id="supertokens_python.recipe.oauth2provider.interfaces.APIOptions"><code class="flex name class">
 <span>class <span class="ident">APIOptions</span></span>
-<span>(</span><span>app_info: AppInfo, request: BaseRequest, response: BaseResponse, recipe_id: str, config: OAuth2ProviderConfig, recipe_implementation: <a title="supertokens_python.recipe.oauth2provider.interfaces.RecipeInterface" href="#supertokens_python.recipe.oauth2provider.interfaces.RecipeInterface">RecipeInterface</a>)</span>
+<span>(</span><span>app_info: AppInfo, request: BaseRequest, response: BaseResponse, recipe_id: str, config: NormalisedOAuth2ProviderConfig, recipe_implementation: <a title="supertokens_python.recipe.oauth2provider.interfaces.RecipeInterface" href="#supertokens_python.recipe.oauth2provider.interfaces.RecipeInterface">RecipeInterface</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1666,14 +1673,14 @@ class APIInterface:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: OAuth2ProviderConfig,
+        config: NormalisedOAuth2ProviderConfig,
         recipe_implementation: RecipeInterface,
     ):
         self.app_info: AppInfo = app_info
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
-        self.config: OAuth2ProviderConfig = config
+        self.config: NormalisedOAuth2ProviderConfig = config
         self.recipe_implementation: RecipeInterface = recipe_implementation</code></pre>
 </details>
 </dd>
@@ -2718,7 +2725,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RecipeInterface(ABC):
+<pre><code class="python">class RecipeInterface(BaseRecipeInterface):
     @abstractmethod
     async def authorization(
         self,
@@ -2969,6 +2976,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseRecipeInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>

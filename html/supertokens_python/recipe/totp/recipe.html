@@ -100,17 +100,13 @@ class TOTPRecipe(RecipeModule):
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.config
         )
-        self.recipe_implementation: RecipeInterface = (
+        self.recipe_implementation: RecipeInterface = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
         api_implementation = APIImplementation()
-        self.api_implementation: APIInterface = (
+        self.api_implementation: APIInterface = self.config.override.apis(
             api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
         )
 
         def callback():
@@ -233,12 +229,21 @@ class TOTPRecipe(RecipeModule):
     def init(
         config: Union[TOTPConfig, None] = None,
     ):
-        def func(app_info: AppInfo):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        if config is None:
+            config = TOTPConfig()
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if TOTPRecipe.__instance is None:
                 TOTPRecipe.__instance = TOTPRecipe(
-                    TOTPRecipe.recipe_id,
-                    app_info,
-                    config,
+                    recipe_id=TOTPRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=TOTPRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return TOTPRecipe.__instance
             raise Exception(
@@ -300,17 +305,13 @@ inheritance.</p></div>
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.config
         )
-        self.recipe_implementation: RecipeInterface = (
+        self.recipe_implementation: RecipeInterface = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
         api_implementation = APIImplementation()
-        self.api_implementation: APIInterface = (
+        self.api_implementation: APIInterface = self.config.override.apis(
             api_implementation
-            if self.config.override.apis is None
-            else self.config.override.apis(api_implementation)
         )
 
         def callback():
@@ -433,12 +434,21 @@ inheritance.</p></div>
     def init(
         config: Union[TOTPConfig, None] = None,
     ):
-        def func(app_info: AppInfo):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        if config is None:
+            config = TOTPConfig()
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if TOTPRecipe.__instance is None:
                 TOTPRecipe.__instance = TOTPRecipe(
-                    TOTPRecipe.recipe_id,
-                    app_info,
-                    config,
+                    recipe_id=TOTPRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=TOTPRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return TOTPRecipe.__instance
             raise Exception(
@@ -472,7 +482,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.totp.recipe.TOTPRecipe.recipe_id"><code class="name">var <span class="ident">recipe_id</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Static methods</h3>
@@ -529,6 +539,14 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe_module.RecipeModule" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe_module.RecipeModule.get_tenant_id" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule.get_tenant_id">get_tenant_id</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>

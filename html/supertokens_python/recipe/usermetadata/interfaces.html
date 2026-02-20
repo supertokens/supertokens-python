@@ -29,6 +29,8 @@
 <pre><code class="python">from abc import ABC, abstractmethod
 from typing import Any, Dict
 
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
+
 
 class MetadataResult(ABC):
     def __init__(self, metadata: Dict[str, Any]):
@@ -39,7 +41,7 @@ class ClearUserMetadataResult:
     pass
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     @abstractmethod
     async def get_user_metadata(
         self, user_id: str, user_context: Dict[str, Any]
@@ -62,7 +64,7 @@ class RecipeInterface(ABC):
         pass
 
 
-class APIInterface(ABC):
+class APIInterface(BaseAPIInterface):
     pass</code></pre>
 </details>
 </section>
@@ -85,11 +87,12 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class APIInterface(ABC):
+<pre><code class="python">class APIInterface(BaseAPIInterface):
     pass</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseAPIInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseAPIInterface">BaseAPIInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 </dd>
@@ -136,7 +139,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RecipeInterface(ABC):
+<pre><code class="python">class RecipeInterface(BaseRecipeInterface):
     @abstractmethod
     async def get_user_metadata(
         self, user_id: str, user_context: Dict[str, Any]
@@ -160,6 +163,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseRecipeInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>

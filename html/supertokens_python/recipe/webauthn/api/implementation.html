@@ -40,7 +40,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Optional, Union, cast
+from typing import List, Optional, Union, cast
 
 from typing_extensions import Unpack
 
@@ -51,6 +51,7 @@ from supertokens_python.auth_utils import (
     post_auth_checks,
     pre_auth_checks,
 )
+from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.accountlinking.types import (
     AccountInfoWithRecipeId,
@@ -58,6 +59,14 @@ from supertokens_python.recipe.accountlinking.types import (
     ShouldNotAutomaticallyLink,
 )
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
+from supertokens_python.recipe.multifactorauth.asyncio import (
+    assert_allowed_to_setup_factor_else_throw_invalid_claim_error,
+)
+from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
+    MultiFactorAuthClaim,
+)
+from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
+from supertokens_python.recipe.multifactorauth.types import FactorIds
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.webauthn.constants import (
     DEFAULT_REGISTER_OPTIONS_ATTESTATION,
@@ -75,6 +84,7 @@ from supertokens_python.recipe.webauthn.interfaces.api import (
     APIOptions,
     EmailExistsGetResponse,
     GenerateRecoverAccountTokenPOSTErrorResponse,
+    ListCredentialsGETResponse,
     RecoverAccountNotAllowedErrorResponse,
     RecoverAccountPOSTErrorResponse,
     RecoverAccountPOSTResponse,
@@ -271,7 +281,7 @@ class APIImplementation(APIInterface):
                 recipe_id=&#34;webauthn&#34;,
                 email=email,
             ),
-            factor_ids=[&#34;webauthn&#34;],
+            factor_ids=[FactorIds.WEBAUTHN],
             is_sign_up=True,
             is_verified=is_fake_email(email),
             sign_in_verifies_login_method=False,
@@ -347,7 +357,7 @@ class APIImplementation(APIInterface):
             authenticated_user=sign_up_response.user,
             recipe_user_id=sign_up_response.recipe_user_id,
             is_sign_up=True,
-            factor_id=&#34;webauthn&#34;,
+            factor_id=FactorIds.WEBAUTHN,
             session=session,
             request=options.req,
             tenant_id=tenant_id,
@@ -461,7 +471,7 @@ class APIImplementation(APIInterface):
                 recipe_id=&#34;webauthn&#34;,
                 email=email,
             ),
-            factor_ids=[&#34;webauthn&#34;],
+            factor_ids=[FactorIds.WEBAUTHN],
             is_sign_up=False,
             authenticating_user=authenticating_user.user,
             is_verified=is_verified,
@@ -524,7 +534,7 @@ class APIImplementation(APIInterface):
             authenticated_user=sign_in_response.user,
             recipe_user_id=sign_in_response.recipe_user_id,
             is_sign_up=False,
-            factor_id=&#34;webauthn&#34;,
+            factor_id=FactorIds.WEBAUTHN,
             session=session,
             request=options.req,
             tenant_id=tenant_id,
@@ -1096,6 +1106,42 @@ class APIImplementation(APIInterface):
             user=user_after_linking,
         )
 
+    async def list_credentials_get(
+        self,
+        *,
+        options: APIOptions,
+        user_context: UserContext,
+        session: SessionContainer,
+    ) -&gt; ListCredentialsGETResponse:
+        existing_user = await get_user(
+            user_id=session.get_user_id(),
+            user_context=user_context,
+        )
+        if existing_user is None:
+            raise_general_exception(&#34;User not found&#34;)
+
+        recipe_user_ids = [
+            lm.recipe_user_id
+            for lm in existing_user.login_methods
+            if lm.recipe_id == &#34;webauthn&#34;
+        ]
+
+        credentials: List[ListCredentialsGETResponse.Credential] = []
+
+        for recipe_user_id in recipe_user_ids:
+            list_credentials_response = (
+                await options.recipe_implementation.list_credentials(
+                    recipe_user_id=recipe_user_id.get_as_string(),
+                    user_context=user_context,
+                )
+            )
+
+            credentials.extend(list_credentials_response.credentials)
+
+        return ListCredentialsGETResponse(
+            credentials=credentials,
+        )
+
     async def register_credential_post(
         self,
         *,
@@ -1115,6 +1161,14 @@ class APIImplementation(APIInterface):
             &#34;INVALID_AUTHENTICATOR_ERROR&#34;: &#34;The device used for authentication is not supported. Please use a different device. (ERR_CODE_026)&#34;,
             &#34;INVALID_CREDENTIALS_ERROR&#34;: &#34;The credentials are incorrect. Please make sure you are using the correct credentials. (ERR_CODE_025)&#34;,
         }
+
+        mfa_instance = MultiFactorAuthRecipe.get_instance()
+        if mfa_instance is not None:
+            await assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
+                session=session,
+                factor_id=FactorIds.WEBAUTHN,
+                user_context=user_context,
+            )
 
         generated_options = await options.recipe_implementation.get_generated_options(
             webauthn_generated_options_id=webauthn_generated_options_id,
@@ -1150,6 +1204,53 @@ class APIImplementation(APIInterface):
                     error_code_map=error_code_map,
                 )
             )
+
+        return OkResponseBaseModel()
+
+    async def remove_credential_post(
+        self,
+        *,
+        webauthn_credential_id: str,
+        session: SessionContainer,
+        options: APIOptions,
+        user_context: UserContext,
+    ) -&gt; Union[
+        OkResponseBaseModel, GeneralErrorResponse, CredentialNotFoundErrorResponse
+    ]:
+        mfa_instance = MultiFactorAuthRecipe.get_instance()
+        if mfa_instance is not None:
+            await session.assert_claims(
+                claim_validators=[
+                    MultiFactorAuthClaim.validators.has_completed_mfa_requirements_for_auth()
+                ]
+            )
+
+        user = await get_user(session.get_user_id(), user_context=user_context)
+        if user is None:
+            raise_general_exception(&#34;User not found&#34;)
+
+        required_login_methods = [
+            lm
+            for lm in user.login_methods
+            if lm.recipe_id == &#34;webauthn&#34;
+            and lm.webauthn is not None
+            and webauthn_credential_id in lm.webauthn.credential_ids
+        ]
+        if len(required_login_methods) == 0:
+            raise_general_exception(&#34;User not found&#34;)
+
+        recipe_user_id = required_login_methods[0].recipe_user_id
+
+        remove_credential_response = (
+            await options.recipe_implementation.remove_credential(
+                webauthn_credential_id=webauthn_credential_id,
+                recipe_user_id=recipe_user_id.get_as_string(),
+                user_context=user_context,
+            )
+        )
+
+        if remove_credential_response.status != &#34;OK&#34;:
+            return remove_credential_response
 
         return OkResponseBaseModel()
 
@@ -1344,7 +1445,7 @@ inheritance.</p></div>
                 recipe_id=&#34;webauthn&#34;,
                 email=email,
             ),
-            factor_ids=[&#34;webauthn&#34;],
+            factor_ids=[FactorIds.WEBAUTHN],
             is_sign_up=True,
             is_verified=is_fake_email(email),
             sign_in_verifies_login_method=False,
@@ -1420,7 +1521,7 @@ inheritance.</p></div>
             authenticated_user=sign_up_response.user,
             recipe_user_id=sign_up_response.recipe_user_id,
             is_sign_up=True,
-            factor_id=&#34;webauthn&#34;,
+            factor_id=FactorIds.WEBAUTHN,
             session=session,
             request=options.req,
             tenant_id=tenant_id,
@@ -1534,7 +1635,7 @@ inheritance.</p></div>
                 recipe_id=&#34;webauthn&#34;,
                 email=email,
             ),
-            factor_ids=[&#34;webauthn&#34;],
+            factor_ids=[FactorIds.WEBAUTHN],
             is_sign_up=False,
             authenticating_user=authenticating_user.user,
             is_verified=is_verified,
@@ -1597,7 +1698,7 @@ inheritance.</p></div>
             authenticated_user=sign_in_response.user,
             recipe_user_id=sign_in_response.recipe_user_id,
             is_sign_up=False,
-            factor_id=&#34;webauthn&#34;,
+            factor_id=FactorIds.WEBAUTHN,
             session=session,
             request=options.req,
             tenant_id=tenant_id,
@@ -2169,6 +2270,42 @@ inheritance.</p></div>
             user=user_after_linking,
         )
 
+    async def list_credentials_get(
+        self,
+        *,
+        options: APIOptions,
+        user_context: UserContext,
+        session: SessionContainer,
+    ) -&gt; ListCredentialsGETResponse:
+        existing_user = await get_user(
+            user_id=session.get_user_id(),
+            user_context=user_context,
+        )
+        if existing_user is None:
+            raise_general_exception(&#34;User not found&#34;)
+
+        recipe_user_ids = [
+            lm.recipe_user_id
+            for lm in existing_user.login_methods
+            if lm.recipe_id == &#34;webauthn&#34;
+        ]
+
+        credentials: List[ListCredentialsGETResponse.Credential] = []
+
+        for recipe_user_id in recipe_user_ids:
+            list_credentials_response = (
+                await options.recipe_implementation.list_credentials(
+                    recipe_user_id=recipe_user_id.get_as_string(),
+                    user_context=user_context,
+                )
+            )
+
+            credentials.extend(list_credentials_response.credentials)
+
+        return ListCredentialsGETResponse(
+            credentials=credentials,
+        )
+
     async def register_credential_post(
         self,
         *,
@@ -2188,6 +2325,14 @@ inheritance.</p></div>
             &#34;INVALID_AUTHENTICATOR_ERROR&#34;: &#34;The device used for authentication is not supported. Please use a different device. (ERR_CODE_026)&#34;,
             &#34;INVALID_CREDENTIALS_ERROR&#34;: &#34;The credentials are incorrect. Please make sure you are using the correct credentials. (ERR_CODE_025)&#34;,
         }
+
+        mfa_instance = MultiFactorAuthRecipe.get_instance()
+        if mfa_instance is not None:
+            await assert_allowed_to_setup_factor_else_throw_invalid_claim_error(
+                session=session,
+                factor_id=FactorIds.WEBAUTHN,
+                user_context=user_context,
+            )
 
         generated_options = await options.recipe_implementation.get_generated_options(
             webauthn_generated_options_id=webauthn_generated_options_id,
@@ -2226,6 +2371,53 @@ inheritance.</p></div>
 
         return OkResponseBaseModel()
 
+    async def remove_credential_post(
+        self,
+        *,
+        webauthn_credential_id: str,
+        session: SessionContainer,
+        options: APIOptions,
+        user_context: UserContext,
+    ) -&gt; Union[
+        OkResponseBaseModel, GeneralErrorResponse, CredentialNotFoundErrorResponse
+    ]:
+        mfa_instance = MultiFactorAuthRecipe.get_instance()
+        if mfa_instance is not None:
+            await session.assert_claims(
+                claim_validators=[
+                    MultiFactorAuthClaim.validators.has_completed_mfa_requirements_for_auth()
+                ]
+            )
+
+        user = await get_user(session.get_user_id(), user_context=user_context)
+        if user is None:
+            raise_general_exception(&#34;User not found&#34;)
+
+        required_login_methods = [
+            lm
+            for lm in user.login_methods
+            if lm.recipe_id == &#34;webauthn&#34;
+            and lm.webauthn is not None
+            and webauthn_credential_id in lm.webauthn.credential_ids
+        ]
+        if len(required_login_methods) == 0:
+            raise_general_exception(&#34;User not found&#34;)
+
+        recipe_user_id = required_login_methods[0].recipe_user_id
+
+        remove_credential_response = (
+            await options.recipe_implementation.remove_credential(
+                webauthn_credential_id=webauthn_credential_id,
+                recipe_user_id=recipe_user_id.get_as_string(),
+                user_context=user_context,
+            )
+        )
+
+        if remove_credential_response.status != &#34;OK&#34;:
+            return remove_credential_response
+
+        return OkResponseBaseModel()
+
     async def email_exists_get(
         self,
         *,
@@ -2256,6 +2448,7 @@ inheritance.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIInterface">APIInterface</a></li>
+<li><a title="supertokens_python.types.recipe.BaseAPIInterface" href="../../../types/recipe.html#supertokens_python.types.recipe.BaseAPIInterface">BaseAPIInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Methods</h3>
@@ -2268,6 +2461,12 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.api.implementation.APIImplementation.generate_recover_account_token_post"><code class="name flex">
 <span>async def <span class="ident">generate_recover_account_token_post</span></span>(<span>self, *, email: str, tenant_id: str, options: <a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.types.response.OkResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.RecoverAccountNotAllowedErrorResponse">RecoverAccountNotAllowedErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.api.implementation.APIImplementation.list_credentials_get"><code class="name flex">
+<span>async def <span class="ident">list_credentials_get</span></span>(<span>self, *, options: <a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIOptions">APIOptions</a>, user_context: Dict[str, Any], session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>) ‑> <a title="supertokens_python.recipe.webauthn.interfaces.recipe.ListCredentialsResponse" href="../interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.ListCredentialsResponse">ListCredentialsResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2286,6 +2485,12 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.webauthn.api.implementation.APIImplementation.register_options_post"><code class="name flex">
 <span>async def <span class="ident">register_options_post</span></span>(<span>self, *, tenant_id: str, options: <a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIOptions">APIOptions</a>, user_context: Dict[str, Any], **kwargs: Unpack[<a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTKwargsInput" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTKwargsInput">RegisterOptionsPOSTKwargsInput</a>]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.RegisterOptionsPOSTResponse">RegisterOptionsPOSTResponse</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse" href="../interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse">RecoverAccountTokenInvalidErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse" href="../interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidOptionsErrorResponse">InvalidOptionsErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.InvalidEmailErrorResponse" href="../interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.InvalidEmailErrorResponse">InvalidEmailErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.webauthn.api.implementation.APIImplementation.remove_credential_post"><code class="name flex">
+<span>async def <span class="ident">remove_credential_post</span></span>(<span>self, *, webauthn_credential_id: str, session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, options: <a title="supertokens_python.recipe.webauthn.interfaces.api.APIOptions" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.types.response.OkResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.OkResponseBaseModel">OkResponseBaseModel</a>, <a title="supertokens_python.types.response.GeneralErrorResponse" href="../../../types/response.html#supertokens_python.types.response.GeneralErrorResponse">GeneralErrorResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.CredentialNotFoundErrorResponse" href="../interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.CredentialNotFoundErrorResponse">CredentialNotFoundErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2309,6 +2514,23 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIInterface">APIInterface</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_email_exists_get" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_email_exists_get">disable_email_exists_get</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_generate_recover_account_token_post" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_generate_recover_account_token_post">disable_generate_recover_account_token_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_list_credentials_get" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_list_credentials_get">disable_list_credentials_get</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_recover_account_post" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_recover_account_post">disable_recover_account_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_register_credential_post" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_register_credential_post">disable_register_credential_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_register_options_post" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_register_options_post">disable_register_options_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_remove_credential_post" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_remove_credential_post">disable_remove_credential_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_sign_in_options_post" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_sign_in_options_post">disable_sign_in_options_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_sign_in_post" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_sign_in_post">disable_sign_in_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_sign_up_post" href="../interfaces/api.html#supertokens_python.recipe.webauthn.interfaces.api.APIInterface.disable_sign_up_post">disable_sign_up_post</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -2331,9 +2553,11 @@ inheritance.</p></div>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.webauthn.api.implementation.APIImplementation.email_exists_get" href="#supertokens_python.recipe.webauthn.api.implementation.APIImplementation.email_exists_get">email_exists_get</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.api.implementation.APIImplementation.generate_recover_account_token_post" href="#supertokens_python.recipe.webauthn.api.implementation.APIImplementation.generate_recover_account_token_post">generate_recover_account_token_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.api.implementation.APIImplementation.list_credentials_get" href="#supertokens_python.recipe.webauthn.api.implementation.APIImplementation.list_credentials_get">list_credentials_get</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.api.implementation.APIImplementation.recover_account_post" href="#supertokens_python.recipe.webauthn.api.implementation.APIImplementation.recover_account_post">recover_account_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.api.implementation.APIImplementation.register_credential_post" href="#supertokens_python.recipe.webauthn.api.implementation.APIImplementation.register_credential_post">register_credential_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.api.implementation.APIImplementation.register_options_post" href="#supertokens_python.recipe.webauthn.api.implementation.APIImplementation.register_options_post">register_options_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.webauthn.api.implementation.APIImplementation.remove_credential_post" href="#supertokens_python.recipe.webauthn.api.implementation.APIImplementation.remove_credential_post">remove_credential_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.api.implementation.APIImplementation.sign_in_options_post" href="#supertokens_python.recipe.webauthn.api.implementation.APIImplementation.sign_in_options_post">sign_in_options_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.api.implementation.APIImplementation.sign_in_post" href="#supertokens_python.recipe.webauthn.api.implementation.APIImplementation.sign_in_post">sign_in_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.api.implementation.APIImplementation.sign_up_post" href="#supertokens_python.recipe.webauthn.api.implementation.APIImplementation.sign_up_post">sign_up_post</a></code></li>

@@ -69,7 +69,7 @@ if TYPE_CHECKING:
     from supertokens_python.querier import Querier
     from supertokens_python.recipe.thirdparty.provider import ProviderConfig
 
-    from .utils import MultitenancyConfig
+    from .utils import NormalisedMultitenancyConfig
 
 from supertokens_python.querier import NormalisedURLPath
 
@@ -147,7 +147,7 @@ def parse_tenant_config(tenant: Dict[str, Any]) -&gt; TenantConfig:
 
 
 class RecipeImplementation(RecipeInterface):
-    def __init__(self, querier: Querier, config: MultitenancyConfig):
+    def __init__(self, querier: Querier, config: NormalisedMultitenancyConfig):
         super().__init__()
         self.querier = querier
         self.config = config
@@ -364,7 +364,7 @@ class RecipeImplementation(RecipeInterface):
 <dl>
 <dt id="supertokens_python.recipe.multitenancy.recipe_implementation.RecipeImplementation"><code class="flex name class">
 <span>class <span class="ident">RecipeImplementation</span></span>
-<span>(</span><span>querier: Querier, config: MultitenancyConfig)</span>
+<span>(</span><span>querier: Querier, config: NormalisedMultitenancyConfig)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -374,7 +374,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class RecipeImplementation(RecipeInterface):
-    def __init__(self, querier: Querier, config: MultitenancyConfig):
+    def __init__(self, querier: Querier, config: NormalisedMultitenancyConfig):
         super().__init__()
         self.querier = querier
         self.config = config
@@ -573,6 +573,7 @@ inheritance.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.multitenancy.interfaces.RecipeInterface" href="interfaces.html#supertokens_python.recipe.multitenancy.interfaces.RecipeInterface">RecipeInterface</a></li>
+<li><a title="supertokens_python.types.recipe.BaseRecipeInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Methods</h3>

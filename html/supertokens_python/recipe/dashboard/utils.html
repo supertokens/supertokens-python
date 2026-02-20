@@ -41,12 +41,19 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from typing_extensions import Literal
 
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
+    BaseOverrideConfig,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -74,9 +81,7 @@ from .constants import (
     USERS_LIST_GET_API,
     VALIDATE_KEY_API,
 )
-
-if TYPE_CHECKING:
-    from .interfaces import APIInterface, RecipeInterface
+from .interfaces import APIInterface, RecipeInterface
 
 
 class UserWithMetadata:
@@ -102,64 +107,73 @@ class UserWithMetadata:
         return user_json
 
 
-class InputOverrideConfig:
-    def __init__(
+DashboardOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedDashboardOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+InputOverrideConfig = DashboardOverrideConfig
+&#34;&#34;&#34;Deprecated, use `DashboardOverrideConfig` instead.&#34;&#34;&#34;
+
+
+class DashboardOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    api_key: Optional[str] = None
+    admins: Optional[List[str]] = None
+
+
+class DashboardConfig(
+    DashboardOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, DashboardOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; DashboardOverrideableConfig:
+        &#34;&#34;&#34;Create a `DashboardOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return DashboardOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+        overrideable_config: DashboardOverrideableConfig,
+    ) -&gt; &#34;DashboardConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `DashboardConfig` from a `DashboardOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return DashboardConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
-
-
-class DashboardConfig:
-    def __init__(
-        self,
-        api_key: Optional[str],
-        admins: Optional[List[str]],
-        override: OverrideConfig,
-        auth_mode: str,
-    ):
-        self.api_key = api_key
-        self.admins = admins
-        self.override = override
-        self.auth_mode = auth_mode
+class NormalisedDashboardConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
+    api_key: Optional[str]
+    admins: Optional[List[str]]
+    auth_mode: str
 
 
 def validate_and_normalise_user_input(
-    # app_info: AppInfo,
-    api_key: Union[str, None],
-    admins: Optional[List[str]],
-    override: Optional[InputOverrideConfig] = None,
-) -&gt; DashboardConfig:
-    if override is None:
-        override = InputOverrideConfig()
+    config: DashboardConfig,
+) -&gt; NormalisedDashboardConfig:
+    override_config = NormalisedDashboardOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
-    if api_key is not None and admins is not None:
+    if config.api_key is not None and config.admins is not None:
         log_debug_message(
             &#34;User Dashboard: Providing &#39;admins&#39; has no effect when using an api key.&#34;
         )
 
-    admins = [normalise_email(a) for a in admins] if admins is not None else None
+    admins = (
+        [normalise_email(a) for a in config.admins]
+        if config.admins is not None
+        else None
+    )
+    auth_mode = &#34;api-key&#34; if config.api_key else &#34;email-password&#34;
 
-    return DashboardConfig(
-        api_key,
-        admins,
-        OverrideConfig(
-            functions=override.functions,
-            apis=override.apis,
-        ),
-        &#34;api-key&#34; if api_key else &#34;email-password&#34;,
+    return NormalisedDashboardConfig(
+        api_key=config.api_key,
+        admins=admins,
+        auth_mode=auth_mode,
+        override=override_config,
     )
 
 
@@ -299,7 +313,7 @@ async def _get_user_for_recipe_id(
 
 
 async def validate_api_key(
-    req: BaseRequest, config: DashboardConfig, _user_context: Dict[str, Any]
+    req: BaseRequest, config: NormalisedDashboardConfig, _user_context: Dict[str, Any]
 ) -&gt; bool:
     api_key_header_value = req.get_header(&#34;authorization&#34;)
     if not api_key_header_value:
@@ -345,13 +359,13 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>api_key: Union[str, None], admins: Optional[List[str]], override: Optional[<a title="supertokens_python.recipe.dashboard.utils.InputOverrideConfig" href="#supertokens_python.recipe.dashboard.utils.InputOverrideConfig">InputOverrideConfig</a>] = None) ‑> <a title="supertokens_python.recipe.dashboard.utils.DashboardConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardConfig">DashboardConfig</a></span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>config: <a title="supertokens_python.recipe.dashboard.utils.DashboardConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardConfig">DashboardConfig</a>) ‑> <a title="supertokens_python.recipe.dashboard.utils.NormalisedDashboardConfig" href="#supertokens_python.recipe.dashboard.utils.NormalisedDashboardConfig">NormalisedDashboardConfig</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.utils.validate_api_key"><code class="name flex">
-<span>async def <span class="ident">validate_api_key</span></span>(<span>req: BaseRequest, config: <a title="supertokens_python.recipe.dashboard.utils.DashboardConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardConfig">DashboardConfig</a>, _user_context: Dict[str, Any])</span>
+<span>async def <span class="ident">validate_api_key</span></span>(<span>req: BaseRequest, config: <a title="supertokens_python.recipe.dashboard.utils.NormalisedDashboardConfig" href="#supertokens_python.recipe.dashboard.utils.NormalisedDashboardConfig">NormalisedDashboardConfig</a>, _user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -361,29 +375,173 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="supertokens_python.recipe.dashboard.utils.DashboardConfig"><code class="flex name class">
-<span>class <span class="ident">DashboardConfig</span></span>
-<span>(</span><span>api_key: Optional[str], admins: Optional[List[str]], override: <a title="supertokens_python.recipe.dashboard.utils.OverrideConfig" href="#supertokens_python.recipe.dashboard.utils.OverrideConfig">OverrideConfig</a>, auth_mode: str)</span>
+<dt id="supertokens_python.recipe.dashboard.utils.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
+<span>class <span class="ident">InputOverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.apis" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig.apis">apis</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.functions" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI.functions">functions</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.utils.DashboardConfig"><code class="flex name class">
+<span>class <span class="ident">DashboardConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class DashboardConfig:
-    def __init__(
+<pre><code class="python">class DashboardConfig(
+    DashboardOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, DashboardOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; DashboardOverrideableConfig:
+        &#34;&#34;&#34;Create a `DashboardOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return DashboardOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        api_key: Optional[str],
-        admins: Optional[List[str]],
-        override: OverrideConfig,
-        auth_mode: str,
-    ):
-        self.api_key = api_key
-        self.admins = admins
-        self.override = override
-        self.auth_mode = auth_mode</code></pre>
+        overrideable_config: DashboardOverrideableConfig,
+    ) -&gt; &#34;DashboardConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `DashboardConfig` from a `DashboardOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return DashboardConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig">DashboardOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li>supertokens_python.types.config.BaseConfig[RecipeInterface, APIInterface, DashboardOverrideableConfig]</li>
+<li><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.utils.DashboardConfig.from_overrideable_config"><code class="name flex">
+<span>def <span class="ident">from_overrideable_config</span></span>(<span>self, overrideable_config: <a title="supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig">DashboardOverrideableConfig</a>) ‑> <a title="supertokens_python.recipe.dashboard.utils.DashboardConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardConfig">DashboardConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.dashboard.utils.DashboardConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardConfig">DashboardConfig</a></code> from a <code><a title="supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig">DashboardOverrideableConfig</a></code>.
+Not a classmethod since it needs to be used in a dynamic context within plugins.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.utils.DashboardConfig.to_overrideable_config"><code class="name flex">
+<span>def <span class="ident">to_overrideable_config</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig">DashboardOverrideableConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig">DashboardOverrideableConfig</a></code> from the current config.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig">DashboardOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig.admins" href="#supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig.admins">admins</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig.api_key" href="#supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig.api_key">api_key</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li><code><b><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseConfig.override" href="../../types/config.html#supertokens_python.types.config.BaseConfig.override">override</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig"><code class="flex name class">
+<span>class <span class="ident">DashboardOverrideableConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DashboardOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    api_key: Optional[str] = None
+    admins: Optional[List[str]] = None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.dashboard.utils.DashboardConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardConfig">DashboardConfig</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig.admins"><code class="name">var <span class="ident">admins</span> : Optional[List[str]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig.api_key"><code class="name">var <span class="ident">api_key</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.utils.GetUserForRecipeIdHelperResult"><code class="flex name class">
 <span>class <span class="ident">GetUserForRecipeIdHelperResult</span></span>
@@ -419,45 +577,61 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
         self.recipe = recipe</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.dashboard.utils.InputOverrideConfig"><code class="flex name class">
-<span>class <span class="ident">InputOverrideConfig</span></span>
-<span>(</span><span>functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None)</span>
+<dt id="supertokens_python.recipe.dashboard.utils.NormalisedDashboardConfig"><code class="flex name class">
+<span>class <span class="ident">NormalisedDashboardConfig</span></span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Base class for normalized config of a Recipe with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class InputOverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis</code></pre>
+<pre><code class="python">class NormalisedDashboardConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
+    api_key: Optional[str]
+    admins: Optional[List[str]]
+    auth_mode: str</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></li>
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig">BaseNormalisedConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.utils.NormalisedDashboardConfig.admins"><code class="name">var <span class="ident">admins</span> : Optional[List[str]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="supertokens_python.recipe.dashboard.utils.OverrideConfig"><code class="flex name class">
-<span>class <span class="ident">OverrideConfig</span></span>
-<span>(</span><span>functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None)</span>
-</code></dt>
+<dt id="supertokens_python.recipe.dashboard.utils.NormalisedDashboardConfig.api_key"><code class="name">var <span class="ident">api_key</span> : Optional[str]</code></dt>
 <dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis</code></pre>
-</details>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.utils.NormalisedDashboardConfig.auth_mode"><code class="name">var <span class="ident">auth_mode</span> : str</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].override" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig.override">override</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.utils.UserWithMetadata"><code class="flex name class">
 <span>class <span class="ident">UserWithMetadata</span></span>
@@ -494,15 +668,15 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 <dl>
 <dt id="supertokens_python.recipe.dashboard.utils.UserWithMetadata.first_name"><code class="name">var <span class="ident">first_name</span> : Optional[str]</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.utils.UserWithMetadata.last_name"><code class="name">var <span class="ident">last_name</span> : Optional[str]</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.utils.UserWithMetadata.user"><code class="name">var <span class="ident">user</span> : <a title="supertokens_python.types.base.User" href="../../types/base.html#supertokens_python.types.base.User">User</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -548,7 +722,21 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
+<h4><code><a title="supertokens_python.recipe.dashboard.utils.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.dashboard.utils.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
+</li>
+<li>
 <h4><code><a title="supertokens_python.recipe.dashboard.utils.DashboardConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardConfig">DashboardConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.utils.DashboardConfig.from_overrideable_config" href="#supertokens_python.recipe.dashboard.utils.DashboardConfig.from_overrideable_config">from_overrideable_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.utils.DashboardConfig.to_overrideable_config" href="#supertokens_python.recipe.dashboard.utils.DashboardConfig.to_overrideable_config">to_overrideable_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig" href="#supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig">DashboardOverrideableConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig.admins" href="#supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig.admins">admins</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig.api_key" href="#supertokens_python.recipe.dashboard.utils.DashboardOverrideableConfig.api_key">api_key</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.dashboard.utils.GetUserForRecipeIdHelperResult" href="#supertokens_python.recipe.dashboard.utils.GetUserForRecipeIdHelperResult">GetUserForRecipeIdHelperResult</a></code></h4>
@@ -557,10 +745,12 @@ def get_api_path_with_dashboard_base(path: str) -&gt; str:
 <h4><code><a title="supertokens_python.recipe.dashboard.utils.GetUserForRecipeIdResult" href="#supertokens_python.recipe.dashboard.utils.GetUserForRecipeIdResult">GetUserForRecipeIdResult</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.dashboard.utils.InputOverrideConfig" href="#supertokens_python.recipe.dashboard.utils.InputOverrideConfig">InputOverrideConfig</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.dashboard.utils.OverrideConfig" href="#supertokens_python.recipe.dashboard.utils.OverrideConfig">OverrideConfig</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.dashboard.utils.NormalisedDashboardConfig" href="#supertokens_python.recipe.dashboard.utils.NormalisedDashboardConfig">NormalisedDashboardConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.utils.NormalisedDashboardConfig.admins" href="#supertokens_python.recipe.dashboard.utils.NormalisedDashboardConfig.admins">admins</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.utils.NormalisedDashboardConfig.api_key" href="#supertokens_python.recipe.dashboard.utils.NormalisedDashboardConfig.api_key">api_key</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.utils.NormalisedDashboardConfig.auth_mode" href="#supertokens_python.recipe.dashboard.utils.NormalisedDashboardConfig.auth_mode">auth_mode</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.dashboard.utils.UserWithMetadata" href="#supertokens_python.recipe.dashboard.utils.UserWithMetadata">UserWithMetadata</a></code></h4>

@@ -42,8 +42,10 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 
 if TYPE_CHECKING:
     from supertokens_python import AppInfo
@@ -58,8 +60,8 @@ if TYPE_CHECKING:
         InvalidTOTPError,
         LimitReachedError,
         ListDevicesOkResult,
+        NormalisedTOTPConfig,
         RemoveDeviceOkResult,
-        TOTPNormalisedConfig,
         UnknownDeviceError,
         UnknownUserIdError,
         UpdateDeviceOkResult,
@@ -70,7 +72,7 @@ if TYPE_CHECKING:
     )
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     @abstractmethod
     async def get_user_identifier_info_for_user_id(
         self, user_id: str, user_context: Dict[str, Any]
@@ -157,7 +159,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: TOTPNormalisedConfig,
+        config: NormalisedTOTPConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         recipe_instance: TOTPRecipe,
@@ -171,7 +173,7 @@ class APIOptions:
         self.recipe_instance = recipe_instance
 
 
-class APIInterface(ABC):
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_create_device_post = False
         self.disable_list_devices_get = False
@@ -261,7 +263,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class APIInterface(ABC):
+<pre><code class="python">class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_create_device_post = False
         self.disable_list_devices_get = False
@@ -333,6 +335,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseAPIInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseAPIInterface">BaseAPIInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
@@ -375,7 +378,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.totp.interfaces.APIOptions"><code class="flex name class">
 <span>class <span class="ident">APIOptions</span></span>
-<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: TOTPNormalisedConfig, recipe_implementation: <a title="supertokens_python.recipe.totp.interfaces.RecipeInterface" href="#supertokens_python.recipe.totp.interfaces.RecipeInterface">RecipeInterface</a>, app_info: AppInfo, recipe_instance: TOTPRecipe)</span>
+<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: NormalisedTOTPConfig, recipe_implementation: <a title="supertokens_python.recipe.totp.interfaces.RecipeInterface" href="#supertokens_python.recipe.totp.interfaces.RecipeInterface">RecipeInterface</a>, app_info: AppInfo, recipe_instance: TOTPRecipe)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -389,7 +392,7 @@ inheritance.</p></div>
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: TOTPNormalisedConfig,
+        config: NormalisedTOTPConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
         recipe_instance: TOTPRecipe,
@@ -413,7 +416,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RecipeInterface(ABC):
+<pre><code class="python">class RecipeInterface(BaseRecipeInterface):
     @abstractmethod
     async def get_user_identifier_info_for_user_id(
         self, user_id: str, user_context: Dict[str, Any]
@@ -495,6 +498,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseRecipeInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>

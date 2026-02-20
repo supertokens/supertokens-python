@@ -41,16 +41,21 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from typing_extensions import Literal
 
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
 from supertokens_python.types import RecipeUserId, User
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
+    BaseOverrideConfig,
+)
 
-if TYPE_CHECKING:
-    from .interfaces import APIInterface, RecipeInterface
-
+from .interfaces import APIInterface, RecipeInterface
 
 MFARequirementList = List[
     Union[str, Dict[Union[Literal[&#34;oneOf&#34;], Literal[&#34;allOfInAnyOrder&#34;]], List[str]]]
@@ -66,35 +71,70 @@ class MFAClaimValue:
         self.v = v
 
 
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+MultiFactorAuthOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedMultiFactorAuthOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+OverrideConfig = MultiFactorAuthOverrideConfig
+&#34;&#34;&#34;Deprecated, use `MultiFactorAuthOverrideConfig` instead.&#34;&#34;&#34;
 
 
-class MultiFactorAuthConfig:
-    def __init__(
+class MultiFactorAuthOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    first_factors: Optional[List[str]] = None
+
+
+class MultiFactorAuthConfig(
+    MultiFactorAuthOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, MultiFactorAuthOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; MultiFactorAuthOverrideableConfig:
+        &#34;&#34;&#34;Create a `MultiFactorAuthOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return MultiFactorAuthOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        first_factors: Optional[List[str]],
-        override: OverrideConfig,
-    ):
-        self.first_factors = first_factors
-        self.override = override
+        overrideable_config: MultiFactorAuthOverrideableConfig,
+    ) -&gt; &#34;MultiFactorAuthConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `MultiFactorAuthConfig` from a `MultiFactorAuthOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return MultiFactorAuthConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
+
+
+class NormalisedMultiFactorAuthConfig(
+    BaseNormalisedConfig[RecipeInterface, APIInterface]
+):
+    first_factors: Optional[List[str]]
 
 
 class FactorIds:
-    EMAILPASSWORD: Literal[&#34;emailpassword&#34;] = &#34;emailpassword&#34;
-    OTP_EMAIL: Literal[&#34;otp-email&#34;] = &#34;otp-email&#34;
-    OTP_PHONE: Literal[&#34;otp-phone&#34;] = &#34;otp-phone&#34;
-    LINK_EMAIL: Literal[&#34;link-email&#34;] = &#34;link-email&#34;
-    LINK_PHONE: Literal[&#34;link-phone&#34;] = &#34;link-phone&#34;
-    THIRDPARTY: Literal[&#34;thirdparty&#34;] = &#34;thirdparty&#34;
-    TOTP: Literal[&#34;totp&#34;] = &#34;totp&#34;
-    WEBAUTHN: Literal[&#34;webauthn&#34;] = &#34;webauthn&#34;
+    EMAILPASSWORD = &#34;emailpassword&#34;
+    OTP_EMAIL = &#34;otp-email&#34;
+    OTP_PHONE = &#34;otp-phone&#34;
+    LINK_EMAIL = &#34;link-email&#34;
+    LINK_PHONE = &#34;link-phone&#34;
+    THIRDPARTY = &#34;thirdparty&#34;
+    TOTP = &#34;totp&#34;
+    WEBAUTHN = &#34;webauthn&#34;
+
+    @staticmethod
+    def get_all_factors():
+        return [
+            FactorIds.EMAILPASSWORD,
+            FactorIds.OTP_EMAIL,
+            FactorIds.OTP_PHONE,
+            FactorIds.LINK_EMAIL,
+            FactorIds.LINK_PHONE,
+            FactorIds.THIRDPARTY,
+            FactorIds.TOTP,
+            FactorIds.WEBAUTHN,
+        ]
 
 
 class FactorIdsAndType:
@@ -186,6 +226,39 @@ class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="supertokens_python.recipe.multifactorauth.types.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
+<span>class <span class="ident">OverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.apis" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig.apis">apis</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.functions" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI.functions">functions</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
 <dt id="supertokens_python.recipe.multifactorauth.types.FactorIds"><code class="flex name class">
 <span>class <span class="ident">FactorIds</span></span>
 </code></dt>
@@ -196,46 +269,68 @@ class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class FactorIds:
-    EMAILPASSWORD: Literal[&#34;emailpassword&#34;] = &#34;emailpassword&#34;
-    OTP_EMAIL: Literal[&#34;otp-email&#34;] = &#34;otp-email&#34;
-    OTP_PHONE: Literal[&#34;otp-phone&#34;] = &#34;otp-phone&#34;
-    LINK_EMAIL: Literal[&#34;link-email&#34;] = &#34;link-email&#34;
-    LINK_PHONE: Literal[&#34;link-phone&#34;] = &#34;link-phone&#34;
-    THIRDPARTY: Literal[&#34;thirdparty&#34;] = &#34;thirdparty&#34;
-    TOTP: Literal[&#34;totp&#34;] = &#34;totp&#34;
-    WEBAUTHN: Literal[&#34;webauthn&#34;] = &#34;webauthn&#34;</code></pre>
+    EMAILPASSWORD = &#34;emailpassword&#34;
+    OTP_EMAIL = &#34;otp-email&#34;
+    OTP_PHONE = &#34;otp-phone&#34;
+    LINK_EMAIL = &#34;link-email&#34;
+    LINK_PHONE = &#34;link-phone&#34;
+    THIRDPARTY = &#34;thirdparty&#34;
+    TOTP = &#34;totp&#34;
+    WEBAUTHN = &#34;webauthn&#34;
+
+    @staticmethod
+    def get_all_factors():
+        return [
+            FactorIds.EMAILPASSWORD,
+            FactorIds.OTP_EMAIL,
+            FactorIds.OTP_PHONE,
+            FactorIds.LINK_EMAIL,
+            FactorIds.LINK_PHONE,
+            FactorIds.THIRDPARTY,
+            FactorIds.TOTP,
+            FactorIds.WEBAUTHN,
+        ]</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.EMAILPASSWORD"><code class="name">var <span class="ident">EMAILPASSWORD</span> : Literal['emailpassword']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.EMAILPASSWORD"><code class="name">var <span class="ident">EMAILPASSWORD</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.LINK_EMAIL"><code class="name">var <span class="ident">LINK_EMAIL</span> : Literal['link-email']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.LINK_EMAIL"><code class="name">var <span class="ident">LINK_EMAIL</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.LINK_PHONE"><code class="name">var <span class="ident">LINK_PHONE</span> : Literal['link-phone']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.LINK_PHONE"><code class="name">var <span class="ident">LINK_PHONE</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.OTP_EMAIL"><code class="name">var <span class="ident">OTP_EMAIL</span> : Literal['otp-email']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.OTP_EMAIL"><code class="name">var <span class="ident">OTP_EMAIL</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.OTP_PHONE"><code class="name">var <span class="ident">OTP_PHONE</span> : Literal['otp-phone']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.OTP_PHONE"><code class="name">var <span class="ident">OTP_PHONE</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.THIRDPARTY"><code class="name">var <span class="ident">THIRDPARTY</span> : Literal['thirdparty']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.THIRDPARTY"><code class="name">var <span class="ident">THIRDPARTY</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.TOTP"><code class="name">var <span class="ident">TOTP</span> : Literal['totp']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.TOTP"><code class="name">var <span class="ident">TOTP</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.WEBAUTHN"><code class="name">var <span class="ident">WEBAUTHN</span> : Literal['webauthn']</code></dt>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.WEBAUTHN"><code class="name">var <span class="ident">WEBAUTHN</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.multifactorauth.types.FactorIds.get_all_factors"><code class="name flex">
+<span>def <span class="ident">get_all_factors</span></span>(<span>)</span>
+</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -325,7 +420,7 @@ class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
 <dl>
 <dt id="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorOkResult.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -345,7 +440,7 @@ class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
 <dl>
 <dt id="supertokens_python.recipe.multifactorauth.types.GetEmailsForFactorUnknownSessionRecipeUserIdResult.status"><code class="name">var <span class="ident">status</span> : Literal['UNKNOWN_SESSION_RECIPE_USER_ID']</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -413,7 +508,7 @@ class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
 <dl>
 <dt id="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsOkResult.status"><code class="name">var <span class="ident">status</span> : Literal['OK']</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -433,7 +528,7 @@ class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
 <dl>
 <dt id="supertokens_python.recipe.multifactorauth.types.GetPhoneNumbersForFactorsUnknownSessionRecipeUserIdResult.status"><code class="name">var <span class="ident">status</span> : Literal['UNKNOWN_SESSION_RECIPE_USER_ID']</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
@@ -459,53 +554,190 @@ class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
 <dl>
 <dt id="supertokens_python.recipe.multifactorauth.types.MFAClaimValue.c"><code class="name">var <span class="ident">c</span> : Dict[str, int]</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.types.MFAClaimValue.v"><code class="name">var <span class="ident">v</span> : bool</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 </dd>
 <dt id="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig"><code class="flex name class">
 <span>class <span class="ident">MultiFactorAuthConfig</span></span>
-<span>(</span><span>first_factors: Optional[List[str]], override: <a title="supertokens_python.recipe.multifactorauth.types.OverrideConfig" href="#supertokens_python.recipe.multifactorauth.types.OverrideConfig">OverrideConfig</a>)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class MultiFactorAuthConfig:
-    def __init__(
+<pre><code class="python">class MultiFactorAuthConfig(
+    MultiFactorAuthOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, MultiFactorAuthOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; MultiFactorAuthOverrideableConfig:
+        &#34;&#34;&#34;Create a `MultiFactorAuthOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return MultiFactorAuthOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        first_factors: Optional[List[str]],
-        override: OverrideConfig,
-    ):
-        self.first_factors = first_factors
-        self.override = override</code></pre>
+        overrideable_config: MultiFactorAuthOverrideableConfig,
+    ) -&gt; &#34;MultiFactorAuthConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `MultiFactorAuthConfig` from a `MultiFactorAuthOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return MultiFactorAuthConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig" href="#supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig">MultiFactorAuthOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li>supertokens_python.types.config.BaseConfig[RecipeInterface, APIInterface, MultiFactorAuthOverrideableConfig]</li>
+<li><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig.from_overrideable_config"><code class="name flex">
+<span>def <span class="ident">from_overrideable_config</span></span>(<span>self, overrideable_config: <a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig" href="#supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig">MultiFactorAuthOverrideableConfig</a>) ‑> <a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig" href="#supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig">MultiFactorAuthConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig" href="#supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig">MultiFactorAuthConfig</a></code> from a <code><a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig" href="#supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig">MultiFactorAuthOverrideableConfig</a></code>.
+Not a classmethod since it needs to be used in a dynamic context within plugins.</p></div>
 </dd>
-<dt id="supertokens_python.recipe.multifactorauth.types.OverrideConfig"><code class="flex name class">
-<span>class <span class="ident">OverrideConfig</span></span>
-<span>(</span><span>functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None)</span>
+<dt id="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig.to_overrideable_config"><code class="name flex">
+<span>def <span class="ident">to_overrideable_config</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig" href="#supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig">MultiFactorAuthOverrideableConfig</a></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig" href="#supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig">MultiFactorAuthOverrideableConfig</a></code> from the current config.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig" href="#supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig">MultiFactorAuthOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig.first_factors" href="#supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig.first_factors">first_factors</a></code></li>
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li><code><b><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseConfig.override" href="../../types/config.html#supertokens_python.types.config.BaseConfig.override">override</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig"><code class="flex name class">
+<span>class <span class="ident">MultiFactorAuthOverrideableConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis</code></pre>
+<pre><code class="python">class MultiFactorAuthOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    first_factors: Optional[List[str]] = None</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig" href="#supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig">MultiFactorAuthConfig</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig.first_factors"><code class="name">var <span class="ident">first_factors</span> : Optional[List[str]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.multifactorauth.types.NormalisedMultiFactorAuthConfig"><code class="flex name class">
+<span>class <span class="ident">NormalisedMultiFactorAuthConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for normalized config of a Recipe with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NormalisedMultiFactorAuthConfig(
+    BaseNormalisedConfig[RecipeInterface, APIInterface]
+):
+    first_factors: Optional[List[str]]</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></li>
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig">BaseNormalisedConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.multifactorauth.types.NormalisedMultiFactorAuthConfig.first_factors"><code class="name">var <span class="ident">first_factors</span> : Optional[List[str]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].override" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig.override">override</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -524,6 +756,9 @@ class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
+<h4><code><a title="supertokens_python.recipe.multifactorauth.types.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.multifactorauth.types.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
+</li>
+<li>
 <h4><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds" href="#supertokens_python.recipe.multifactorauth.types.FactorIds">FactorIds</a></code></h4>
 <ul class="two-column">
 <li><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds.EMAILPASSWORD" href="#supertokens_python.recipe.multifactorauth.types.FactorIds.EMAILPASSWORD">EMAILPASSWORD</a></code></li>
@@ -534,6 +769,7 @@ class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
 <li><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds.THIRDPARTY" href="#supertokens_python.recipe.multifactorauth.types.FactorIds.THIRDPARTY">THIRDPARTY</a></code></li>
 <li><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds.TOTP" href="#supertokens_python.recipe.multifactorauth.types.FactorIds.TOTP">TOTP</a></code></li>
 <li><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds.WEBAUTHN" href="#supertokens_python.recipe.multifactorauth.types.FactorIds.WEBAUTHN">WEBAUTHN</a></code></li>
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.FactorIds.get_all_factors" href="#supertokens_python.recipe.multifactorauth.types.FactorIds.get_all_factors">get_all_factors</a></code></li>
 </ul>
 </li>
 <li>
@@ -584,9 +820,22 @@ class GetPhoneNumbersForFactorsFromOtherRecipesFunc:
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig" href="#supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig">MultiFactorAuthConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig.from_overrideable_config" href="#supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig.from_overrideable_config">from_overrideable_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig.to_overrideable_config" href="#supertokens_python.recipe.multifactorauth.types.MultiFactorAuthConfig.to_overrideable_config">to_overrideable_config</a></code></li>
+</ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.multifactorauth.types.OverrideConfig" href="#supertokens_python.recipe.multifactorauth.types.OverrideConfig">OverrideConfig</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig" href="#supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig">MultiFactorAuthOverrideableConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig.first_factors" href="#supertokens_python.recipe.multifactorauth.types.MultiFactorAuthOverrideableConfig.first_factors">first_factors</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.multifactorauth.types.NormalisedMultiFactorAuthConfig" href="#supertokens_python.recipe.multifactorauth.types.NormalisedMultiFactorAuthConfig">NormalisedMultiFactorAuthConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.multifactorauth.types.NormalisedMultiFactorAuthConfig.first_factors" href="#supertokens_python.recipe.multifactorauth.types.NormalisedMultiFactorAuthConfig.first_factors">first_factors</a></code></li>
+</ul>
 </li>
 </ul>
 </li>

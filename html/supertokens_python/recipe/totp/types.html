@@ -40,10 +40,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from typing_extensions import Literal
 
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
+    BaseOverrideConfig,
+)
 from supertokens_python.types.response import APIResponse
 
 from .interfaces import APIInterface, RecipeInterface
@@ -205,42 +212,48 @@ class VerifyTOTPOkResult(OkResult):
         return {&#34;status&#34;: self.status}
 
 
-class OverrideConfig:
-    def __init__(
+TOTPOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedTOTPOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+OverrideConfig = TOTPOverrideConfig
+&#34;&#34;&#34;Deprecated: Use `TOTPOverrideConfig` instead.&#34;&#34;&#34;
+
+
+class TOTPOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    issuer: Optional[str] = None
+    default_skew: Optional[int] = None
+    default_period: Optional[int] = None
+
+
+class TOTPConfig(
+    TOTPOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, TOTPOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; TOTPOverrideableConfig:
+        &#34;&#34;&#34;Create a `TOTPOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return TOTPOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        functions: Optional[Callable[[RecipeInterface], RecipeInterface]] = None,
-        apis: Optional[Callable[[APIInterface], APIInterface]] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
+        overrideable_config: TOTPOverrideableConfig,
+    ) -&gt; &#34;TOTPConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `TOTPConfig` from a `TOTPOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return TOTPConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
 
 
-class TOTPConfig:
-    def __init__(
-        self,
-        issuer: Optional[str] = None,
-        default_skew: Optional[int] = None,
-        default_period: Optional[int] = None,
-        override: Optional[OverrideConfig] = None,
-    ):
-        self.issuer = issuer
-        self.default_skew = default_skew
-        self.default_period = default_period
-        self.override = override
-
-
-class TOTPNormalisedConfig:
-    def __init__(
-        self,
-        issuer: str,
-        default_skew: int,
-        default_period: int,
-        override: OverrideConfig,
-    ):
-        self.issuer = issuer
-        self.default_skew = default_skew
-        self.default_period = default_period
-        self.override = override</code></pre>
+class NormalisedTOTPConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
+    issuer: str
+    default_skew: int
+    default_period: int</code></pre>
 </details>
 </section>
 <section>
@@ -252,6 +265,39 @@ class TOTPNormalisedConfig:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="supertokens_python.recipe.totp.types.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
+<span>class <span class="ident">OverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.apis" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig.apis">apis</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.functions" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI.functions">functions</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
 <dt id="supertokens_python.recipe.totp.types.CreateDeviceOkResult"><code class="flex name class">
 <span>class <span class="ident">CreateDeviceOkResult</span></span>
 <span>(</span><span>device_name: str, secret: str, qr_code_string: str)</span>
@@ -485,6 +531,62 @@ inheritance.</p></div>
 </dd>
 </dl>
 </dd>
+<dt id="supertokens_python.recipe.totp.types.NormalisedTOTPConfig"><code class="flex name class">
+<span>class <span class="ident">NormalisedTOTPConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for normalized config of a Recipe with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NormalisedTOTPConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
+    issuer: str
+    default_skew: int
+    default_period: int</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></li>
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig">BaseNormalisedConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.totp.types.NormalisedTOTPConfig.default_period"><code class="name">var <span class="ident">default_period</span> : int</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.totp.types.NormalisedTOTPConfig.default_skew"><code class="name">var <span class="ident">default_skew</span> : int</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.totp.types.NormalisedTOTPConfig.issuer"><code class="name">var <span class="ident">issuer</span> : str</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].override" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig.override">override</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
 <dt id="supertokens_python.recipe.totp.types.OkResult"><code class="flex name class">
 <span>class <span class="ident">OkResult</span></span>
 </code></dt>
@@ -514,26 +616,6 @@ inheritance.</p></div>
 <li><a title="supertokens_python.recipe.totp.types.VerifyDeviceOkResult" href="#supertokens_python.recipe.totp.types.VerifyDeviceOkResult">VerifyDeviceOkResult</a></li>
 <li><a title="supertokens_python.recipe.totp.types.VerifyTOTPOkResult" href="#supertokens_python.recipe.totp.types.VerifyTOTPOkResult">VerifyTOTPOkResult</a></li>
 </ul>
-</dd>
-<dt id="supertokens_python.recipe.totp.types.OverrideConfig"><code class="flex name class">
-<span>class <span class="ident">OverrideConfig</span></span>
-<span>(</span><span>functions: Optional[Callable[[<a title="supertokens_python.recipe.totp.interfaces.RecipeInterface" href="interfaces.html#supertokens_python.recipe.totp.interfaces.RecipeInterface">RecipeInterface</a>], <a title="supertokens_python.recipe.totp.interfaces.RecipeInterface" href="interfaces.html#supertokens_python.recipe.totp.interfaces.RecipeInterface">RecipeInterface</a>]] = None, apis: Optional[Callable[[<a title="supertokens_python.recipe.totp.interfaces.APIInterface" href="interfaces.html#supertokens_python.recipe.totp.interfaces.APIInterface">APIInterface</a>], <a title="supertokens_python.recipe.totp.interfaces.APIInterface" href="interfaces.html#supertokens_python.recipe.totp.interfaces.APIInterface">APIInterface</a>]] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class OverrideConfig:
-    def __init__(
-        self,
-        functions: Optional[Callable[[RecipeInterface], RecipeInterface]] = None,
-        apis: Optional[Callable[[APIInterface], APIInterface]] = None,
-    ):
-        self.functions = functions
-        self.apis = apis</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.totp.types.RemoveDeviceOkResult"><code class="flex name class">
 <span>class <span class="ident">RemoveDeviceOkResult</span></span>
@@ -575,51 +657,144 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.totp.types.TOTPConfig"><code class="flex name class">
 <span>class <span class="ident">TOTPConfig</span></span>
-<span>(</span><span>issuer: Optional[str] = None, default_skew: Optional[int] = None, default_period: Optional[int] = None, override: Optional[<a title="supertokens_python.recipe.totp.types.OverrideConfig" href="#supertokens_python.recipe.totp.types.OverrideConfig">OverrideConfig</a>] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TOTPConfig:
-    def __init__(
+<pre><code class="python">class TOTPConfig(
+    TOTPOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, TOTPOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; TOTPOverrideableConfig:
+        &#34;&#34;&#34;Create a `TOTPOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return TOTPOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        issuer: Optional[str] = None,
-        default_skew: Optional[int] = None,
-        default_period: Optional[int] = None,
-        override: Optional[OverrideConfig] = None,
-    ):
-        self.issuer = issuer
-        self.default_skew = default_skew
-        self.default_period = default_period
-        self.override = override</code></pre>
+        overrideable_config: TOTPOverrideableConfig,
+    ) -&gt; &#34;TOTPConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `TOTPConfig` from a `TOTPOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return TOTPConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.totp.types.TOTPOverrideableConfig" href="#supertokens_python.recipe.totp.types.TOTPOverrideableConfig">TOTPOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li>supertokens_python.types.config.BaseConfig[RecipeInterface, APIInterface, TOTPOverrideableConfig]</li>
+<li><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.totp.types.TOTPConfig.from_overrideable_config"><code class="name flex">
+<span>def <span class="ident">from_overrideable_config</span></span>(<span>self, overrideable_config: <a title="supertokens_python.recipe.totp.types.TOTPOverrideableConfig" href="#supertokens_python.recipe.totp.types.TOTPOverrideableConfig">TOTPOverrideableConfig</a>) ‑> <a title="supertokens_python.recipe.totp.types.TOTPConfig" href="#supertokens_python.recipe.totp.types.TOTPConfig">TOTPConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.totp.types.TOTPConfig" href="#supertokens_python.recipe.totp.types.TOTPConfig">TOTPConfig</a></code> from a <code><a title="supertokens_python.recipe.totp.types.TOTPOverrideableConfig" href="#supertokens_python.recipe.totp.types.TOTPOverrideableConfig">TOTPOverrideableConfig</a></code>.
+Not a classmethod since it needs to be used in a dynamic context within plugins.</p></div>
 </dd>
-<dt id="supertokens_python.recipe.totp.types.TOTPNormalisedConfig"><code class="flex name class">
-<span>class <span class="ident">TOTPNormalisedConfig</span></span>
-<span>(</span><span>issuer: str, default_skew: int, default_period: int, override: <a title="supertokens_python.recipe.totp.types.OverrideConfig" href="#supertokens_python.recipe.totp.types.OverrideConfig">OverrideConfig</a>)</span>
+<dt id="supertokens_python.recipe.totp.types.TOTPConfig.to_overrideable_config"><code class="name flex">
+<span>def <span class="ident">to_overrideable_config</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.totp.types.TOTPOverrideableConfig" href="#supertokens_python.recipe.totp.types.TOTPOverrideableConfig">TOTPOverrideableConfig</a></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.totp.types.TOTPOverrideableConfig" href="#supertokens_python.recipe.totp.types.TOTPOverrideableConfig">TOTPOverrideableConfig</a></code> from the current config.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe.totp.types.TOTPOverrideableConfig" href="#supertokens_python.recipe.totp.types.TOTPOverrideableConfig">TOTPOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe.totp.types.TOTPOverrideableConfig.default_period" href="#supertokens_python.recipe.totp.types.TOTPOverrideableConfig.default_period">default_period</a></code></li>
+<li><code><a title="supertokens_python.recipe.totp.types.TOTPOverrideableConfig.default_skew" href="#supertokens_python.recipe.totp.types.TOTPOverrideableConfig.default_skew">default_skew</a></code></li>
+<li><code><a title="supertokens_python.recipe.totp.types.TOTPOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.totp.types.TOTPOverrideableConfig.issuer" href="#supertokens_python.recipe.totp.types.TOTPOverrideableConfig.issuer">issuer</a></code></li>
+<li><code><a title="supertokens_python.recipe.totp.types.TOTPOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.totp.types.TOTPOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li><code><b><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseConfig.override" href="../../types/config.html#supertokens_python.types.config.BaseConfig.override">override</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.totp.types.TOTPOverrideableConfig"><code class="flex name class">
+<span>class <span class="ident">TOTPOverrideableConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TOTPNormalisedConfig:
-    def __init__(
-        self,
-        issuer: str,
-        default_skew: int,
-        default_period: int,
-        override: OverrideConfig,
-    ):
-        self.issuer = issuer
-        self.default_skew = default_skew
-        self.default_period = default_period
-        self.override = override</code></pre>
+<pre><code class="python">class TOTPOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    issuer: Optional[str] = None
+    default_skew: Optional[int] = None
+    default_period: Optional[int] = None</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.totp.types.TOTPConfig" href="#supertokens_python.recipe.totp.types.TOTPConfig">TOTPConfig</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.totp.types.TOTPOverrideableConfig.default_period"><code class="name">var <span class="ident">default_period</span> : Optional[int]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.totp.types.TOTPOverrideableConfig.default_skew"><code class="name">var <span class="ident">default_skew</span> : Optional[int]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.totp.types.TOTPOverrideableConfig.issuer"><code class="name">var <span class="ident">issuer</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="supertokens_python.recipe.totp.types.UnknownDeviceError"><code class="flex name class">
 <span>class <span class="ident">UnknownDeviceError</span></span>
@@ -854,6 +1029,9 @@ inheritance.</p></div>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
+<h4><code><a title="supertokens_python.recipe.totp.types.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.totp.types.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
+</li>
+<li>
 <h4><code><a title="supertokens_python.recipe.totp.types.CreateDeviceOkResult" href="#supertokens_python.recipe.totp.types.CreateDeviceOkResult">CreateDeviceOkResult</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.totp.types.CreateDeviceOkResult.to_json" href="#supertokens_python.recipe.totp.types.CreateDeviceOkResult.to_json">to_json</a></code></li>
@@ -890,10 +1068,15 @@ inheritance.</p></div>
 </ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.totp.types.OkResult" href="#supertokens_python.recipe.totp.types.OkResult">OkResult</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.totp.types.NormalisedTOTPConfig" href="#supertokens_python.recipe.totp.types.NormalisedTOTPConfig">NormalisedTOTPConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.totp.types.NormalisedTOTPConfig.default_period" href="#supertokens_python.recipe.totp.types.NormalisedTOTPConfig.default_period">default_period</a></code></li>
+<li><code><a title="supertokens_python.recipe.totp.types.NormalisedTOTPConfig.default_skew" href="#supertokens_python.recipe.totp.types.NormalisedTOTPConfig.default_skew">default_skew</a></code></li>
+<li><code><a title="supertokens_python.recipe.totp.types.NormalisedTOTPConfig.issuer" href="#supertokens_python.recipe.totp.types.NormalisedTOTPConfig.issuer">issuer</a></code></li>
+</ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.totp.types.OverrideConfig" href="#supertokens_python.recipe.totp.types.OverrideConfig">OverrideConfig</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.totp.types.OkResult" href="#supertokens_python.recipe.totp.types.OkResult">OkResult</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.totp.types.RemoveDeviceOkResult" href="#supertokens_python.recipe.totp.types.RemoveDeviceOkResult">RemoveDeviceOkResult</a></code></h4>
@@ -903,9 +1086,18 @@ inheritance.</p></div>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.totp.types.TOTPConfig" href="#supertokens_python.recipe.totp.types.TOTPConfig">TOTPConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.totp.types.TOTPConfig.from_overrideable_config" href="#supertokens_python.recipe.totp.types.TOTPConfig.from_overrideable_config">from_overrideable_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.totp.types.TOTPConfig.to_overrideable_config" href="#supertokens_python.recipe.totp.types.TOTPConfig.to_overrideable_config">to_overrideable_config</a></code></li>
+</ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.totp.types.TOTPNormalisedConfig" href="#supertokens_python.recipe.totp.types.TOTPNormalisedConfig">TOTPNormalisedConfig</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.totp.types.TOTPOverrideableConfig" href="#supertokens_python.recipe.totp.types.TOTPOverrideableConfig">TOTPOverrideableConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.totp.types.TOTPOverrideableConfig.default_period" href="#supertokens_python.recipe.totp.types.TOTPOverrideableConfig.default_period">default_period</a></code></li>
+<li><code><a title="supertokens_python.recipe.totp.types.TOTPOverrideableConfig.default_skew" href="#supertokens_python.recipe.totp.types.TOTPOverrideableConfig.default_skew">default_skew</a></code></li>
+<li><code><a title="supertokens_python.recipe.totp.types.TOTPOverrideableConfig.issuer" href="#supertokens_python.recipe.totp.types.TOTPOverrideableConfig.issuer">issuer</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.totp.types.UnknownDeviceError" href="#supertokens_python.recipe.totp.types.UnknownDeviceError">UnknownDeviceError</a></code></h4>

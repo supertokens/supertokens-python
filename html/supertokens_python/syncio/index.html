@@ -53,8 +53,9 @@ from supertokens_python.interfaces import (
     UserIdMappingAlreadyExistsError,
     UserIDTypes,
 )
+from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.types import User
-from supertokens_python.types.base import AccountInfoInput
+from supertokens_python.types.base import AccountInfoInput, UserContext
 
 
 def get_users_oldest_first(
@@ -205,6 +206,22 @@ def list_users_by_account_info(
         async_list_users_by_account_info(
             tenant_id, account_info, do_union_of_account_info, user_context
         )
+    )
+
+
+def get_available_first_factors(
+    tenant_id: str,
+    session: Optional[SessionContainer],
+    user_context: Optional[UserContext],
+):
+    from supertokens_python.asyncio import (
+        get_available_first_factors as async_get_available_first_factors,
+    )
+
+    return sync(
+        async_get_available_first_factors(
+            tenant_id=tenant_id, session=session, user_context=user_context
+        )
     )</code></pre>
 </details>
 </section>
@@ -229,6 +246,12 @@ def list_users_by_account_info(
 </dd>
 <dt id="supertokens_python.syncio.delete_user_id_mapping"><code class="name flex">
 <span>def <span class="ident">delete_user_id_mapping</span></span>(<span>user_id: str, user_id_type: Optional[Literal['SUPERTOKENS', 'EXTERNAL', 'ANY']] = None, force: Optional[bool] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.interfaces.DeleteUserIdMappingOkResult" href="../interfaces.html#supertokens_python.interfaces.DeleteUserIdMappingOkResult">DeleteUserIdMappingOkResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.syncio.get_available_first_factors"><code class="name flex">
+<span>def <span class="ident">get_available_first_factors</span></span>(<span>tenant_id: str, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], user_context: Optional[Dict[str, Any]])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -296,6 +319,7 @@ def list_users_by_account_info(
 <li><code><a title="supertokens_python.syncio.create_user_id_mapping" href="#supertokens_python.syncio.create_user_id_mapping">create_user_id_mapping</a></code></li>
 <li><code><a title="supertokens_python.syncio.delete_user" href="#supertokens_python.syncio.delete_user">delete_user</a></code></li>
 <li><code><a title="supertokens_python.syncio.delete_user_id_mapping" href="#supertokens_python.syncio.delete_user_id_mapping">delete_user_id_mapping</a></code></li>
+<li><code><a title="supertokens_python.syncio.get_available_first_factors" href="#supertokens_python.syncio.get_available_first_factors">get_available_first_factors</a></code></li>
 <li><code><a title="supertokens_python.syncio.get_user" href="#supertokens_python.syncio.get_user">get_user</a></code></li>
 <li><code><a title="supertokens_python.syncio.get_user_count" href="#supertokens_python.syncio.get_user_count">get_user_count</a></code></li>
 <li><code><a title="supertokens_python.syncio.get_user_id_mapping" href="#supertokens_python.syncio.get_user_id_mapping">get_user_id_mapping</a></code></li>

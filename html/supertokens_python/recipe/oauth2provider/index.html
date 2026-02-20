@@ -41,24 +41,27 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Union
 
-from . import exceptions as ex
-from . import recipe, utils
-
-exceptions = ex
-InputOverrideConfig = utils.InputOverrideConfig
+from .recipe import OAuth2ProviderRecipe
+from .utils import InputOverrideConfig, OAuth2ProviderOverrideConfig
 
 if TYPE_CHECKING:
-    from supertokens_python.supertokens import AppInfo
-
-    from ...recipe_module import RecipeModule
+    from supertokens_python.supertokens import RecipeInit
 
 
 def init(
-    override: Union[InputOverrideConfig, None] = None,
-) -&gt; Callable[[AppInfo], RecipeModule]:
-    return recipe.OAuth2ProviderRecipe.init(override)</code></pre>
+    override: Union[OAuth2ProviderOverrideConfig, None] = None,
+) -&gt; RecipeInit:
+    return OAuth2ProviderRecipe.init(override)
+
+
+__all__ = [
+    &#34;InputOverrideConfig&#34;,  # deprecated, use OAuth2ProviderOverrideConfig instead
+    &#34;OAuth2ProviderOverrideConfig&#34;,
+    &#34;OAuth2ProviderRecipe&#34;,
+    &#34;init&#34;,
+]</code></pre>
 </details>
 </section>
 <section>
@@ -112,7 +115,7 @@ def init(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.oauth2provider.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>override: Union[InputOverrideConfig, None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>override: Union[<a title="supertokens_python.recipe.oauth2provider.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.oauth2provider.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a>, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -120,6 +123,572 @@ def init(
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.recipe.oauth2provider.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
+<span>class <span class="ident">InputOverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.oauth2provider.BaseOverrideConfig[RecipeInterface, APIInterface].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
+<span>class <span class="ident">OAuth2ProviderOverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.apis" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig.apis">apis</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.functions" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI.functions">functions</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe"><code class="flex name class">
+<span>class <span class="ident">OAuth2ProviderRecipe</span></span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, config: OAuth2ProviderConfig)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class OAuth2ProviderRecipe(RecipeModule):
+    recipe_id = &#34;oauth2provider&#34;
+    __instance = None
+
+    def __init__(
+        self,
+        recipe_id: str,
+        app_info: AppInfo,
+        config: OAuth2ProviderConfig,
+    ) -&gt; None:
+        super().__init__(recipe_id, app_info)
+        self.config: NormalisedOAuth2ProviderConfig = validate_and_normalise_user_input(
+            config=config,
+        )
+
+        from .recipe_implementation import RecipeImplementation
+
+        recipe_implementation: RecipeInterface = RecipeImplementation(
+            Querier.get_instance(recipe_id),
+            app_info,
+            self.get_default_access_token_payload,
+            self.get_default_id_token_payload,
+            self.get_default_user_info_payload,
+        )
+        self.recipe_implementation: RecipeInterface = self.config.override.functions(
+            recipe_implementation
+        )
+
+        api_implementation = APIImplementation()
+        self.api_implementation: APIInterface = self.config.override.apis(
+            api_implementation
+        )
+
+        self._access_token_builders: List[PayloadBuilderFunction] = []
+        self._id_token_builders: List[PayloadBuilderFunction] = []
+        self._user_info_builders: List[UserInfoBuilderFunction] = []
+
+    def is_error_from_this_recipe_based_on_instance(self, err: Exception) -&gt; bool:
+        return isinstance(err, OAuth2ProviderError)
+
+    def get_apis_handled(self) -&gt; List[APIHandled]:
+        return [
+            APIHandled(
+                NormalisedURLPath(LOGIN_PATH),
+                &#34;get&#34;,
+                LOGIN_PATH,
+                self.api_implementation.disable_login_get,
+            ),
+            APIHandled(
+                NormalisedURLPath(TOKEN_PATH),
+                &#34;post&#34;,
+                TOKEN_PATH,
+                self.api_implementation.disable_token_post,
+            ),
+            APIHandled(
+                NormalisedURLPath(AUTH_PATH),
+                &#34;get&#34;,
+                AUTH_PATH,
+                self.api_implementation.disable_auth_get,
+            ),
+            APIHandled(
+                NormalisedURLPath(LOGIN_INFO_PATH),
+                &#34;get&#34;,
+                LOGIN_INFO_PATH,
+                self.api_implementation.disable_login_info_get,
+            ),
+            APIHandled(
+                NormalisedURLPath(USER_INFO_PATH),
+                &#34;get&#34;,
+                USER_INFO_PATH,
+                self.api_implementation.disable_user_info_get,
+            ),
+            APIHandled(
+                NormalisedURLPath(REVOKE_TOKEN_PATH),
+                &#34;post&#34;,
+                REVOKE_TOKEN_PATH,
+                self.api_implementation.disable_revoke_token_post,
+            ),
+            APIHandled(
+                NormalisedURLPath(INTROSPECT_TOKEN_PATH),
+                &#34;post&#34;,
+                INTROSPECT_TOKEN_PATH,
+                self.api_implementation.disable_introspect_token_post,
+            ),
+            APIHandled(
+                NormalisedURLPath(END_SESSION_PATH),
+                &#34;get&#34;,
+                END_SESSION_PATH,
+                self.api_implementation.disable_end_session_get,
+            ),
+            APIHandled(
+                NormalisedURLPath(END_SESSION_PATH),
+                &#34;post&#34;,
+                END_SESSION_PATH,
+                self.api_implementation.disable_end_session_post,
+            ),
+            APIHandled(
+                NormalisedURLPath(LOGOUT_PATH),
+                &#34;post&#34;,
+                LOGOUT_PATH,
+                self.api_implementation.disable_logout_post,
+            ),
+        ]
+
+    async def handle_api_request(
+        self,
+        request_id: str,
+        tenant_id: str,
+        request: BaseRequest,
+        path: NormalisedURLPath,
+        method: str,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[BaseResponse, None]:
+        api_options = APIOptions(
+            app_info=self.app_info,
+            request=request,
+            response=response,
+            recipe_id=self.recipe_id,
+            config=self.config,
+            recipe_implementation=self.recipe_implementation,
+        )
+        if request_id == LOGIN_PATH:
+            return await login(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
+
+        if request_id == TOKEN_PATH:
+            return await token_post(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
+
+        if request_id == AUTH_PATH:
+            return await auth_get(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
+
+        if request_id == LOGIN_INFO_PATH:
+            return await login_info_get(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
+
+        if request_id == USER_INFO_PATH:
+            return await user_info_get(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
+
+        if request_id == REVOKE_TOKEN_PATH:
+            return await revoke_token_post(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
+
+        if request_id == INTROSPECT_TOKEN_PATH:
+            return await introspect_token_post(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
+
+        if request_id == END_SESSION_PATH and method == &#34;get&#34;:
+            return await end_session_get(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
+
+        if request_id == END_SESSION_PATH and method == &#34;post&#34;:
+            return await end_session_post(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
+
+        if request_id == LOGOUT_PATH and method == &#34;post&#34;:
+            return await logout_post(
+                tenant_id, self.api_implementation, api_options, user_context
+            )
+
+        raise Exception(
+            &#34;Should never come here: handle_api_request called with unknown id&#34;
+        )
+
+    async def handle_error(
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
+    ) -&gt; BaseResponse:
+        raise err
+
+    def get_all_cors_headers(self) -&gt; List[str]:
+        return []
+
+    @staticmethod
+    def init(
+        override: Optional[OAuth2ProviderOverrideConfig] = None,
+    ):
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = OAuth2ProviderConfig(override=override)
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]) -&gt; OAuth2ProviderRecipe:
+            if OAuth2ProviderRecipe.__instance is None:
+                OAuth2ProviderRecipe.__instance = OAuth2ProviderRecipe(
+                    recipe_id=OAuth2ProviderRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=OAuth2ProviderRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
+                )
+
+                return OAuth2ProviderRecipe.__instance
+            raise_general_exception(
+                &#34;OAuth2Provider recipe has already been initialised. Please check your code for bugs.&#34;
+            )
+
+        return func
+
+    @staticmethod
+    def get_instance() -&gt; OAuth2ProviderRecipe:
+        if OAuth2ProviderRecipe.__instance is not None:
+            return OAuth2ProviderRecipe.__instance
+        raise_general_exception(
+            &#34;Initialisation not done. Did you forget to call the SuperTokens.init function?&#34;
+        )
+
+    @staticmethod
+    def get_instance_optional() -&gt; Optional[OAuth2ProviderRecipe]:
+        return OAuth2ProviderRecipe.__instance
+
+    @staticmethod
+    def reset():
+        if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
+            environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
+        ):
+            raise_general_exception(&#34;calling testing function in non testing env&#34;)
+        OAuth2ProviderRecipe.__instance = None
+
+    def add_user_info_builder_from_other_recipe(
+        self, user_info_builder_fn: UserInfoBuilderFunction
+    ) -&gt; None:
+        self._user_info_builders.append(user_info_builder_fn)
+
+    def add_access_token_builder_from_other_recipe(
+        self, access_token_builder: PayloadBuilderFunction
+    ) -&gt; None:
+        self._access_token_builders.append(access_token_builder)
+
+    def add_id_token_builder_from_other_recipe(
+        self, id_token_builder: PayloadBuilderFunction
+    ) -&gt; None:
+        self._id_token_builders.append(id_token_builder)
+
+    async def get_default_access_token_payload(
+        self,
+        user: User,
+        scopes: List[str],
+        session_handle: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Dict[str, Any]:
+        payload: Dict[str, Any] = {}
+
+        if &#34;email&#34; in scopes:
+            payload[&#34;email&#34;] = user.emails[0] if user.emails else None
+            payload[&#34;email_verified&#34;] = (
+                any(
+                    lm.has_same_email_as(user.emails[0]) and lm.verified
+                    for lm in user.login_methods
+                )
+                if user.emails
+                else False
+            )
+            payload[&#34;emails&#34;] = user.emails
+
+        if &#34;phoneNumber&#34; in scopes:
+            if user.phone_numbers:
+                payload[&#34;phoneNumber&#34;] = user.phone_numbers[0]
+            payload[&#34;phoneNumber_verified&#34;] = (
+                any(
+                    lm.has_same_phone_number_as(user.phone_numbers[0]) and lm.verified
+                    for lm in user.login_methods
+                )
+                if user.phone_numbers
+                else False
+            )
+            payload[&#34;phoneNumbers&#34;] = user.phone_numbers
+
+        for fn in self._access_token_builders:
+            builder_payload = await fn(user, scopes, session_handle, user_context)
+            payload.update(builder_payload)
+
+        return payload
+
+    async def get_default_id_token_payload(
+        self,
+        user: User,
+        scopes: List[str],
+        session_handle: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Dict[str, Any]:
+        payload: Dict[str, Any] = {}
+
+        if &#34;email&#34; in scopes:
+            payload[&#34;email&#34;] = user.emails[0] if user.emails else None
+            payload[&#34;email_verified&#34;] = (
+                any(
+                    lm.has_same_email_as(user.emails[0]) and lm.verified
+                    for lm in user.login_methods
+                )
+                if user.emails
+                else False
+            )
+            payload[&#34;emails&#34;] = user.emails
+
+        if &#34;phoneNumber&#34; in scopes:
+            if user.phone_numbers:
+                payload[&#34;phoneNumber&#34;] = user.phone_numbers[0]
+            payload[&#34;phoneNumber_verified&#34;] = (
+                any(
+                    lm.has_same_phone_number_as(user.phone_numbers[0]) and lm.verified
+                    for lm in user.login_methods
+                )
+                if user.phone_numbers
+                else False
+            )
+            payload[&#34;phoneNumbers&#34;] = user.phone_numbers
+
+        for fn in self._id_token_builders:
+            builder_payload = await fn(user, scopes, session_handle, user_context)
+            payload.update(builder_payload)
+
+        return payload
+
+    async def get_default_user_info_payload(
+        self,
+        user: User,
+        access_token_payload: Dict[str, Any],
+        scopes: List[str],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Dict[str, Any]:
+        payload: Dict[str, Any] = {&#34;sub&#34;: access_token_payload[&#34;sub&#34;]}
+
+        if &#34;email&#34; in scopes:
+            payload[&#34;email&#34;] = user.emails[0] if user.emails else None
+            payload[&#34;email_verified&#34;] = (
+                any(
+                    lm.has_same_email_as(user.emails[0]) and lm.verified
+                    for lm in user.login_methods
+                )
+                if user.emails
+                else False
+            )
+            payload[&#34;emails&#34;] = user.emails
+
+        if &#34;phoneNumber&#34; in scopes:
+            payload[&#34;phoneNumber&#34;] = (
+                user.phone_numbers[0] if user.phone_numbers else None
+            )
+            payload[&#34;phoneNumber_verified&#34;] = (
+                any(
+                    lm.has_same_phone_number_as(user.phone_numbers[0]) and lm.verified
+                    for lm in user.login_methods
+                )
+                if user.phone_numbers
+                else False
+            )
+            payload[&#34;phoneNumbers&#34;] = user.phone_numbers
+
+        for fn in self._user_info_builders:
+            builder_payload = await fn(
+                user, access_token_payload, scopes, tenant_id, user_context
+            )
+            payload.update(builder_payload)
+
+        return payload</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe_module.RecipeModule" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.recipe_id"><code class="name">var <span class="ident">recipe_id</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_instance"><code class="name flex">
+<span>def <span class="ident">get_instance</span></span>(<span>) ‑> <a title="supertokens_python.recipe.oauth2provider.recipe.OAuth2ProviderRecipe" href="recipe.html#supertokens_python.recipe.oauth2provider.recipe.OAuth2ProviderRecipe">OAuth2ProviderRecipe</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_instance_optional"><code class="name flex">
+<span>def <span class="ident">get_instance_optional</span></span>(<span>) ‑> Optional[<a title="supertokens_python.recipe.oauth2provider.recipe.OAuth2ProviderRecipe" href="recipe.html#supertokens_python.recipe.oauth2provider.recipe.OAuth2ProviderRecipe">OAuth2ProviderRecipe</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.init"><code class="name flex">
+<span>def <span class="ident">init</span></span>(<span>override: Optional[<a title="supertokens_python.recipe.oauth2provider.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.oauth2provider.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a>] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.reset"><code class="name flex">
+<span>def <span class="ident">reset</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.add_access_token_builder_from_other_recipe"><code class="name flex">
+<span>def <span class="ident">add_access_token_builder_from_other_recipe</span></span>(<span>self, access_token_builder: PayloadBuilderFunction) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.add_id_token_builder_from_other_recipe"><code class="name flex">
+<span>def <span class="ident">add_id_token_builder_from_other_recipe</span></span>(<span>self, id_token_builder: PayloadBuilderFunction) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.add_user_info_builder_from_other_recipe"><code class="name flex">
+<span>def <span class="ident">add_user_info_builder_from_other_recipe</span></span>(<span>self, user_info_builder_fn: UserInfoBuilderFunction) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_all_cors_headers"><code class="name flex">
+<span>def <span class="ident">get_all_cors_headers</span></span>(<span>self) ‑> List[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_apis_handled"><code class="name flex">
+<span>def <span class="ident">get_apis_handled</span></span>(<span>self) ‑> List[<a title="supertokens_python.recipe_module.APIHandled" href="../../recipe_module.html#supertokens_python.recipe_module.APIHandled">APIHandled</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_default_access_token_payload"><code class="name flex">
+<span>async def <span class="ident">get_default_access_token_payload</span></span>(<span>self, user: User, scopes: List[str], session_handle: str, user_context: Dict[str, Any]) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_default_id_token_payload"><code class="name flex">
+<span>async def <span class="ident">get_default_id_token_payload</span></span>(<span>self, user: User, scopes: List[str], session_handle: str, user_context: Dict[str, Any]) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_default_user_info_payload"><code class="name flex">
+<span>async def <span class="ident">get_default_user_info_payload</span></span>(<span>self, user: User, access_token_payload: Dict[str, Any], scopes: List[str], tenant_id: str, user_context: Dict[str, Any]) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.handle_api_request"><code class="name flex">
+<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.handle_error"><code class="name flex">
+<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.is_error_from_this_recipe_based_on_instance"><code class="name flex">
+<span>def <span class="ident">is_error_from_this_recipe_based_on_instance</span></span>(<span>self, err: Exception) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe_module.RecipeModule" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe_module.RecipeModule.get_tenant_id" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule.get_tenant_id">get_tenant_id</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -150,6 +719,40 @@ def init(
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.oauth2provider.init" href="#supertokens_python.recipe.oauth2provider.init">init</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.oauth2provider.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.oauth2provider.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.oauth2provider.BaseOverrideConfig[RecipeInterface, APIInterface].model_config" href="#supertokens_python.recipe.oauth2provider.BaseOverrideConfig[RecipeInterface, APIInterface].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.oauth2provider.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.oauth2provider.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe" href="#supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe">OAuth2ProviderRecipe</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.add_access_token_builder_from_other_recipe" href="#supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.add_access_token_builder_from_other_recipe">add_access_token_builder_from_other_recipe</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.add_id_token_builder_from_other_recipe" href="#supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.add_id_token_builder_from_other_recipe">add_id_token_builder_from_other_recipe</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.add_user_info_builder_from_other_recipe" href="#supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.add_user_info_builder_from_other_recipe">add_user_info_builder_from_other_recipe</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_all_cors_headers" href="#supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_all_cors_headers">get_all_cors_headers</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_apis_handled" href="#supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_apis_handled">get_apis_handled</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_default_access_token_payload" href="#supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_default_access_token_payload">get_default_access_token_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_default_id_token_payload" href="#supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_default_id_token_payload">get_default_id_token_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_default_user_info_payload" href="#supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_default_user_info_payload">get_default_user_info_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_instance" href="#supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_instance">get_instance</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_instance_optional" href="#supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.get_instance_optional">get_instance_optional</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.handle_api_request" href="#supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.handle_api_request">handle_api_request</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.handle_error" href="#supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.handle_error">handle_error</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.init" href="#supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.init">init</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.is_error_from_this_recipe_based_on_instance" href="#supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.is_error_from_this_recipe_based_on_instance">is_error_from_this_recipe_based_on_instance</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.recipe_id" href="#supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.recipe_id">recipe_id</a></code></li>
+<li><code><a title="supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.reset" href="#supertokens_python.recipe.oauth2provider.OAuth2ProviderRecipe.reset">reset</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

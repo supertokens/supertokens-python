@@ -486,8 +486,13 @@ class RecipeImplementation(RecipeInterface):
                 scopes=scopes,
                 user_context=user_context,
             )
-
-            if isinstance(token_info, ActiveTokenResponse):
+            if isinstance(token_info, InactiveTokenResponse):
+                return ErrorOAuth2Response(
+                    status_code=400,
+                    error=&#34;invalid_grant&#34;,
+                    error_description=&#34;The provided refresh token is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.&#34;,
+                )
+            else:
                 session_handle = token_info.payload[&#34;sessionHandle&#34;]
 
                 client_info = await self.get_oauth2_client(
@@ -1481,8 +1486,13 @@ inheritance.</p></div>
                 scopes=scopes,
                 user_context=user_context,
             )
-
-            if isinstance(token_info, ActiveTokenResponse):
+            if isinstance(token_info, InactiveTokenResponse):
+                return ErrorOAuth2Response(
+                    status_code=400,
+                    error=&#34;invalid_grant&#34;,
+                    error_description=&#34;The provided refresh token is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.&#34;,
+                )
+            else:
                 session_handle = token_info.payload[&#34;sessionHandle&#34;]
 
                 client_info = await self.get_oauth2_client(
@@ -2065,6 +2075,7 @@ inheritance.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.oauth2provider.interfaces.RecipeInterface" href="interfaces.html#supertokens_python.recipe.oauth2provider.interfaces.RecipeInterface">RecipeInterface</a></li>
+<li><a title="supertokens_python.types.recipe.BaseRecipeInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Methods</h3>

@@ -41,7 +41,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, cast
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.emailpassword.constants import (
@@ -106,7 +106,9 @@ async def validate_form_fields_or_throw_error(
 
     form_fields: List[FormField] = []
 
-    form_fields_list_raw: List[Dict[str, Any]] = form_fields_raw
+    form_fields_list_raw: List[Dict[str, Any]] = cast(
+        List[Dict[str, Any]], form_fields_raw
+    )
     for current_form_field in form_fields_list_raw:
         if (
             &#34;id&#34; not in current_form_field

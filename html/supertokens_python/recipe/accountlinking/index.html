@@ -41,18 +41,22 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Awaitable, Callable, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Union
 
-from ...types import User
-from ..session.interfaces import SessionContainer
-from . import types
+from supertokens_python.types import User
+
 from .recipe import AccountLinkingRecipe
+from .types import (
+    AccountInfoWithRecipeIdAndUserId,
+    AccountLinkingOverrideConfig,
+    InputOverrideConfig,
+    RecipeLevelUser,
+    ShouldAutomaticallyLink,
+    ShouldNotAutomaticallyLink,
+)
 
-InputOverrideConfig = types.InputOverrideConfig
-RecipeLevelUser = types.RecipeLevelUser
-AccountInfoWithRecipeIdAndUserId = types.AccountInfoWithRecipeIdAndUserId
-ShouldAutomaticallyLink = types.ShouldAutomaticallyLink
-ShouldNotAutomaticallyLink = types.ShouldNotAutomaticallyLink
+if TYPE_CHECKING:
+    from ..session.interfaces import SessionContainer
 
 
 def init(
@@ -71,11 +75,23 @@ def init(
             Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
         ]
     ] = None,
-    override: Optional[InputOverrideConfig] = None,
+    override: Optional[AccountLinkingOverrideConfig] = None,
 ):
     return AccountLinkingRecipe.init(
         on_account_linked, should_do_automatic_account_linking, override
-    )</code></pre>
+    )
+
+
+__all__ = [
+    &#34;AccountInfoWithRecipeIdAndUserId&#34;,
+    &#34;AccountLinkingOverrideConfig&#34;,
+    &#34;AccountLinkingRecipe&#34;,
+    &#34;InputOverrideConfig&#34;,  # deprecated, use AccountLinkingOverrideConfig instead
+    &#34;RecipeLevelUser&#34;,
+    &#34;ShouldAutomaticallyLink&#34;,
+    &#34;ShouldNotAutomaticallyLink&#34;,
+    &#34;init&#34;,
+]</code></pre>
 </details>
 </section>
 <section>
@@ -117,7 +133,7 @@ def init(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.accountlinking.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>on_account_linked: Optional[Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]] = None, should_do_automatic_account_linking: Optional[Callable[[AccountInfoWithRecipeIdAndUserId, Optional[User], Optional[SessionContainer], str, Dict[str, Any]], Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]]]] = None, override: Optional[InputOverrideConfig] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>on_account_linked: Optional[Callable[[User, <a title="supertokens_python.recipe.accountlinking.RecipeLevelUser" href="#supertokens_python.recipe.accountlinking.RecipeLevelUser">RecipeLevelUser</a>, Dict[str, Any]], Awaitable[None]]] = None, should_do_automatic_account_linking: Optional[Callable[[<a title="supertokens_python.recipe.accountlinking.AccountInfoWithRecipeIdAndUserId" href="#supertokens_python.recipe.accountlinking.AccountInfoWithRecipeIdAndUserId">AccountInfoWithRecipeIdAndUserId</a>, Optional[User], Optional[SessionContainer], str, Dict[str, Any]], Awaitable[Union[<a title="supertokens_python.recipe.accountlinking.ShouldNotAutomaticallyLink" href="#supertokens_python.recipe.accountlinking.ShouldNotAutomaticallyLink">ShouldNotAutomaticallyLink</a>, <a title="supertokens_python.recipe.accountlinking.ShouldAutomaticallyLink" href="#supertokens_python.recipe.accountlinking.ShouldAutomaticallyLink">ShouldAutomaticallyLink</a>]]]] = None, override: Optional[<a title="supertokens_python.recipe.accountlinking.BaseOverrideConfigWithoutAPI[RecipeInterface]" href="#supertokens_python.recipe.accountlinking.BaseOverrideConfigWithoutAPI[RecipeInterface]">BaseOverrideConfigWithoutAPI[RecipeInterface]</a>] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -125,6 +141,1341 @@ def init(
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.recipe.accountlinking.AccountInfoWithRecipeIdAndUserId"><code class="flex name class">
+<span>class <span class="ident">AccountInfoWithRecipeIdAndUserId</span></span>
+<span>(</span><span>recipe_user_id: Optional[RecipeUserId], recipe_id: "Literal['emailpassword', 'thirdparty', 'passwordless', 'webauthn']", email: Optional[str] = None, phone_number: Optional[str] = None, third_party: Optional[ThirdPartyInfo] = None, webauthn: Optional[WebauthnInfo] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AccountInfoWithRecipeIdAndUserId(AccountInfoWithRecipeId):
+    def __init__(
+        self,
+        recipe_user_id: Optional[RecipeUserId],
+        recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;, &#34;webauthn&#34;],
+        email: Optional[str] = None,
+        phone_number: Optional[str] = None,
+        third_party: Optional[ThirdPartyInfo] = None,
+        webauthn: Optional[WebauthnInfo] = None,
+    ):
+        super().__init__(recipe_id, email, phone_number, third_party, webauthn=webauthn)
+        self.recipe_user_id = recipe_user_id
+
+    @staticmethod
+    def from_account_info_or_login_method(
+        account_info: Union[AccountInfoWithRecipeId, LoginMethod],
+    ) -&gt; AccountInfoWithRecipeIdAndUserId:
+        from supertokens_python.types import (
+            LoginMethod as LM,
+        )
+
+        return AccountInfoWithRecipeIdAndUserId(
+            recipe_id=account_info.recipe_id,
+            email=account_info.email,
+            phone_number=account_info.phone_number,
+            third_party=account_info.third_party,
+            webauthn=account_info.webauthn,
+            recipe_user_id=(
+                account_info.recipe_user_id if isinstance(account_info, LM) else None
+            ),
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId" href="types.html#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId">AccountInfoWithRecipeId</a></li>
+<li><a title="supertokens_python.types.base.AccountInfo" href="../../types/base.html#supertokens_python.types.base.AccountInfo">AccountInfo</a></li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.accountlinking.AccountInfoWithRecipeIdAndUserId.from_account_info_or_login_method"><code class="name flex">
+<span>def <span class="ident">from_account_info_or_login_method</span></span>(<span>account_info: Union[AccountInfoWithRecipeId, LoginMethod]) ‑> <a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeIdAndUserId" href="types.html#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeIdAndUserId">AccountInfoWithRecipeIdAndUserId</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe"><code class="flex name class">
+<span>class <span class="ident">AccountLinkingRecipe</span></span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, config: AccountLinkingConfig)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AccountLinkingRecipe(RecipeModule):
+    recipe_id = &#34;accountlinking&#34;
+    __instance = None
+
+    def __init__(
+        self,
+        recipe_id: str,
+        app_info: AppInfo,
+        config: AccountLinkingConfig,
+    ):
+        super().__init__(recipe_id, app_info)
+        self.config = validate_and_normalise_user_input(app_info, config=config)
+        recipe_implementation: RecipeInterface = RecipeImplementation(
+            Querier.get_instance(recipe_id), self, self.config
+        )
+
+        self.recipe_implementation: RecipeInterface = self.config.override.functions(
+            recipe_implementation
+        )
+
+        self.email_verification_recipe: EmailVerificationRecipe | None = None
+
+    def register_email_verification_recipe(
+        self, email_verification_recipe: EmailVerificationRecipe
+    ):
+        self.email_verification_recipe = email_verification_recipe
+
+    def is_error_from_this_recipe_based_on_instance(self, err: Exception) -&gt; bool:
+        return False
+
+    def get_apis_handled(self) -&gt; List[APIHandled]:
+        return []
+
+    async def handle_api_request(
+        self,
+        request_id: str,
+        tenant_id: Optional[str],
+        request: BaseRequest,
+        path: NormalisedURLPath,
+        method: str,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[BaseResponse, None]:
+        raise Exception(&#34;Should never come here&#34;)
+
+    async def handle_error(
+        self,
+        request: BaseRequest,
+        err: SuperTokensError,
+        response: BaseResponse,
+        user_context: Dict[str, Any],
+    ) -&gt; BaseResponse:
+        raise err
+
+    def get_all_cors_headers(self) -&gt; List[str]:
+        return []
+
+    @staticmethod
+    def init(
+        on_account_linked: Optional[
+            Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]
+        ] = None,
+        should_do_automatic_account_linking: Optional[
+            Callable[
+                [
+                    AccountInfoWithRecipeIdAndUserId,
+                    Optional[User],
+                    Optional[SessionContainer],
+                    str,
+                    Dict[str, Any],
+                ],
+                Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
+            ]
+        ] = None,
+        override: Optional[AccountLinkingOverrideConfig] = None,
+    ) -&gt; Callable[..., AccountLinkingRecipe]:
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = AccountLinkingConfig(
+            on_account_linked=on_account_linked,
+            should_do_automatic_account_linking=should_do_automatic_account_linking,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
+            if AccountLinkingRecipe.__instance is None:
+                AccountLinkingRecipe.__instance = AccountLinkingRecipe(
+                    recipe_id=AccountLinkingRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=AccountLinkingRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
+                )
+                return AccountLinkingRecipe.__instance
+            raise Exception(
+                None,
+                &#34;Accountlinking recipe has already been initialised. Please check your code for bugs.&#34;,
+            )
+
+        return func
+
+    @staticmethod
+    def get_instance() -&gt; AccountLinkingRecipe:
+        if AccountLinkingRecipe.__instance is not None:
+            return AccountLinkingRecipe.__instance
+
+        raise_general_exception(
+            &#34;Initialisation not done. Did you forget to call the SuperTokens.init function?&#34;
+        )
+
+    @staticmethod
+    def reset():
+        if (&#34;SUPERTOKENS_ENV&#34; not in environ) or (
+            environ[&#34;SUPERTOKENS_ENV&#34;] != &#34;testing&#34;
+        ):
+            raise_general_exception(&#34;calling testing function in non testing env&#34;)
+        AccountLinkingRecipe.__instance = None
+
+    async def get_primary_user_that_can_be_linked_to_recipe_user_id(
+        self,
+        tenant_id: str,
+        user: User,
+        user_context: Dict[str, Any],
+    ) -&gt; Optional[User]:
+        # First we check if this user itself is a primary user or not. If it is, we return that.
+        if user.is_primary_user:
+            return user
+
+        # Then, we try and find a primary user based on the email / phone number / third party ID.
+        users = await self.recipe_implementation.list_users_by_account_info(
+            tenant_id=tenant_id,
+            account_info=AccountInfoInput(
+                email=user.login_methods[0].email,
+                phone_number=user.login_methods[0].phone_number,
+                third_party=user.login_methods[0].third_party,
+                # We don&#39;t need to list by (webauthn) credentialId because we are looking for
+                # a user to link to the current recipe user, but any search using the credentialId
+                # of the current user &#34;will identify the same user&#34; which is the current one.
+                webauthn=None,
+            ),
+            do_union_of_account_info=True,
+            user_context=user_context,
+        )
+
+        log_debug_message(
+            &#34;getPrimaryUserThatCanBeLinkedToRecipeUserId found %d matching users&#34;
+            % len(users)
+        )
+        primary_users = [u for u in users if u.is_primary_user]
+        log_debug_message(
+            &#34;getPrimaryUserThatCanBeLinkedToRecipeUserId found %d matching primary users&#34;
+            % len(primary_users)
+        )
+
+        if len(primary_users) &gt; 1:
+            # This means that the new user has account info such that it&#39;s
+            # spread across multiple primary user IDs. In this case, even
+            # if we return one of them, it won&#39;t be able to be linked anyway
+            # cause if we did, it would mean 2 primary users would have the
+            # same account info. So we return None
+
+            # This being said, with the current set of auth recipes, it should
+            # never come here - cause:
+            # ----&gt; If the recipeuserid is a passwordless user, then it can have either a phone
+            # email or both. If it has just one of them, then anyway 2 primary users can&#39;t
+            # exist with the same phone number / email. If it has both, then the only way
+            # that it can have multiple primary users returned is if there is another passwordless
+            # primary user with the same phone number - which is not possible, cause phone
+            # numbers are unique across passwordless users.
+            #
+            # ----&gt; If the input is a third party user, then it has third party info and an email. Now there can be able to primary user with the same email, but
+            # there can&#39;t be another thirdparty user with the same third party info (since that is unique).
+            # Nor can there an email password primary user with the same email along with another
+            # thirdparty primary user with the same email (since emails can&#39;t be the same across primary users).
+            #
+            # ----&gt; If the input is an email password user, then it has an email. There can&#39;t be multiple primary users with the same email anyway.
+            raise Exception(
+                &#34;You found a bug. Please report it on github.com/supertokens/supertokens-node&#34;
+            )
+
+        return primary_users[0] if len(primary_users) &gt; 0 else None
+
+    async def get_oldest_user_that_can_be_linked_to_recipe_user(
+        self,
+        tenant_id: str,
+        user: User,
+        user_context: Dict[str, Any],
+    ) -&gt; Optional[User]:
+        # First we check if this user itself is a primary user or not. If it is, we return that since it cannot be linked to anything else
+        if user.is_primary_user:
+            return user
+
+        # Then, we try and find matching users based on the email / phone number / third party ID.
+        users = await self.recipe_implementation.list_users_by_account_info(
+            tenant_id=tenant_id,
+            account_info=AccountInfoInput(
+                email=user.login_methods[0].email,
+                phone_number=user.login_methods[0].phone_number,
+                third_party=user.login_methods[0].third_party,
+                # We don&#39;t need to list by (webauthn) credentialId because we are looking for
+                # a user to link to the current recipe user, but any search using the credentialId
+                # of the current user &#34;will identify the same user&#34; which is the current one.
+                webauthn=None,
+            ),
+            do_union_of_account_info=True,
+            user_context=user_context,
+        )
+
+        log_debug_message(
+            f&#34;getOldestUserThatCanBeLinkedToRecipeUser found {len(users)} matching users&#34;
+        )
+
+        # Finally select the oldest one
+        oldest_user = min(users, key=lambda u: u.time_joined) if users else None
+        return oldest_user
+
+    async def is_sign_in_allowed(
+        self,
+        user: User,
+        account_info: Union[AccountInfoWithRecipeId, LoginMethod],
+        tenant_id: str,
+        session: Optional[SessionContainer],
+        sign_in_verifies_login_method: bool,
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
+        ProcessState.get_instance().add_state(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED)
+        if (
+            user.is_primary_user
+            or user.login_methods[0].verified
+            or sign_in_verifies_login_method
+        ):
+            return True
+
+        return await self.is_sign_in_up_allowed_helper(
+            account_info=account_info,
+            is_verified=user.login_methods[0].verified,
+            session=session,
+            tenant_id=tenant_id,
+            is_sign_in=True,
+            user=user,
+            user_context=user_context,
+        )
+
+    async def is_sign_up_allowed(
+        self,
+        new_user: AccountInfoWithRecipeId,
+        is_verified: bool,
+        session: Optional[SessionContainer],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
+        ProcessState.get_instance().add_state(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)
+        if new_user.email is not None and new_user.phone_number is not None:
+            # We do this check cause below when we call list_users_by_account_info,
+            # we only pass in one of email or phone number
+            raise Exception(&#34;Please pass one of email or phone number, not both&#34;)
+
+        return await self.is_sign_in_up_allowed_helper(
+            account_info=new_user,
+            is_verified=is_verified,
+            session=session,
+            tenant_id=tenant_id,
+            user_context=user_context,
+            user=None,
+            is_sign_in=False,
+        )
+
+    async def is_sign_in_up_allowed_helper(
+        self,
+        account_info: Union[AccountInfoWithRecipeId, LoginMethod],
+        is_verified: bool,
+        session: Optional[SessionContainer],
+        tenant_id: str,
+        is_sign_in: bool,
+        user: Optional[User],
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
+        ProcessState.get_instance().add_state(
+            PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED
+        )
+
+        users = await self.recipe_implementation.list_users_by_account_info(
+            tenant_id=tenant_id,
+            account_info=AccountInfoInput(
+                email=account_info.email,
+                phone_number=account_info.phone_number,
+                third_party=account_info.third_party,
+                # We don&#39;t need to list by (webauthn) credentialId because we are looking for
+                # a user to link to the current recipe user, but any search using the credentialId
+                # of the current user &#34;will identify the same user&#34; which is the current one.
+                webauthn=None,
+            ),
+            do_union_of_account_info=True,
+            user_context=user_context,
+        )
+
+        if not users:
+            log_debug_message(
+                &#34;isSignInUpAllowedHelper returning true because no user with given account info&#34;
+            )
+            return True
+
+        if is_sign_in and user is None:
+            raise Exception(
+                &#34;This should never happen: isSignInUpAllowedHelper called with isSignIn: true, user: None&#34;
+            )
+
+        if (
+            len(users) == 1
+            and is_sign_in
+            and user is not None
+            and users[0].id == user.id
+        ):
+            log_debug_message(
+                &#34;isSignInUpAllowedHelper returning true because this is sign in and there is only a single user with the given account info&#34;
+            )
+            return True
+
+        primary_users = [u for u in users if u.is_primary_user]
+
+        if not primary_users:
+            log_debug_message(&#34;isSignInUpAllowedHelper no primary user exists&#34;)
+            should_do_account_linking = (
+                await self.config.should_do_automatic_account_linking(
+                    AccountInfoWithRecipeIdAndUserId.from_account_info_or_login_method(
+                        account_info
+                    ),
+                    None,
+                    session,
+                    tenant_id,
+                    user_context,
+                )
+            )
+
+            if isinstance(should_do_account_linking, ShouldNotAutomaticallyLink):
+                log_debug_message(
+                    &#34;isSignInUpAllowedHelper returning true because account linking is disabled&#34;
+                )
+                return True
+
+            if not should_do_account_linking.should_require_verification:
+                log_debug_message(
+                    &#34;isSignInUpAllowedHelper returning true because dev does not require email verification&#34;
+                )
+                return True
+
+            should_allow = True
+            for curr_user in users:
+                if session is not None and curr_user.id == session.get_user_id(
+                    user_context
+                ):
+                    # We do not consider the current session user to be conflicting
+                    # This can be useful in cases where the current sign in will mark the session user as verified
+                    continue
+
+                this_iteration_is_verified = False
+                if account_info.email is not None:
+                    if (
+                        curr_user.login_methods[0].has_same_email_as(account_info.email)
+                        and curr_user.login_methods[0].verified
+                    ):
+                        log_debug_message(
+                            &#34;isSignInUpAllowedHelper found same email for another user and verified&#34;
+                        )
+                        this_iteration_is_verified = True
+
+                if account_info.phone_number is not None:
+                    if (
+                        curr_user.login_methods[0].has_same_phone_number_as(
+                            account_info.phone_number
+                        )
+                        and curr_user.login_methods[0].verified
+                    ):
+                        log_debug_message(
+                            &#34;isSignInUpAllowedHelper found same phone number for another user and verified&#34;
+                        )
+                        this_iteration_is_verified = True
+
+                if not this_iteration_is_verified:
+                    # even if one of the users is not verified, we do not allow sign up (see why above).
+                    # Sure, this allows attackers to create email password accounts with an email
+                    # to block actual users from signing up, but that&#39;s ok, since those
+                    # users will just see an email already exists error and then will try another
+                    # login method. They can also still just go through the password reset flow
+                    # and then gain access to their email password account (which can then be verified).
+                    log_debug_message(
+                        &#34;isSignInUpAllowedHelper returning false cause one of the other recipe level users is not verified&#34;
+                    )
+                    should_allow = False
+                    break
+
+            ProcessState.get_instance().add_state(
+                PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS
+            )
+            log_debug_message(f&#34;isSignInUpAllowedHelper returning {should_allow}&#34;)
+            return should_allow
+        else:
+            if len(primary_users) &gt; 1:
+                raise Exception(
+                    &#34;You have found a bug. Please report to https://github.com/supertokens/supertokens-node/issues&#34;
+                )
+
+            primary_user = primary_users[0]
+            log_debug_message(&#34;isSignInUpAllowedHelper primary user found&#34;)
+
+            should_do_account_linking = (
+                await self.config.should_do_automatic_account_linking(
+                    AccountInfoWithRecipeIdAndUserId.from_account_info_or_login_method(
+                        account_info
+                    ),
+                    primary_user,
+                    session,
+                    tenant_id,
+                    user_context,
+                )
+            )
+
+            if isinstance(should_do_account_linking, ShouldNotAutomaticallyLink):
+                log_debug_message(
+                    &#34;isSignInUpAllowedHelper returning true because account linking is disabled&#34;
+                )
+                return True
+
+            if not should_do_account_linking.should_require_verification:
+                log_debug_message(
+                    &#34;isSignInUpAllowedHelper returning true because dev does not require email verification&#34;
+                )
+                return True
+
+            if not is_verified:
+                log_debug_message(
+                    &#34;isSignInUpAllowedHelper returning false because new user&#39;s email is not verified, and primary user with the same email was found.&#34;
+                )
+                return False
+
+            if session is not None and primary_user.id == session.get_user_id(
+                user_context
+            ):
+                return True
+
+            for login_method in primary_user.login_methods:
+                if login_method.email is not None:
+                    if (
+                        login_method.has_same_email_as(account_info.email)
+                        and login_method.verified
+                    ):
+                        log_debug_message(
+                            &#34;isSignInUpAllowedHelper returning true cause found same email for primary user and verified&#34;
+                        )
+                        return True
+
+                if login_method.phone_number is not None:
+                    if (
+                        login_method.has_same_phone_number_as(account_info.phone_number)
+                        and login_method.verified
+                    ):
+                        log_debug_message(
+                            &#34;isSignInUpAllowedHelper returning true cause found same phone number for primary user and verified&#34;
+                        )
+                        return True
+
+            log_debug_message(
+                &#34;isSignInUpAllowedHelper returning false cause primary user does not have the same email or phone number that is verified&#34;
+            )
+            return False
+
+    async def is_email_change_allowed(
+        self,
+        user: User,
+        new_email: str,
+        is_verified: bool,
+        session: Optional[SessionContainer],
+        user_context: Dict[str, Any],
+    ) -&gt; EmailChangeAllowedResult:
+        &#34;&#34;&#34;
+        The purpose of this function is to check if a recipe user ID&#39;s email
+        can be changed or not. There are two conditions for when it can&#39;t be changed:
+        - If the recipe user is a primary user, then we need to check that the new email
+        doesn&#39;t belong to any other primary user. If it does, we disallow the change
+        since multiple primary user&#39;s can&#39;t have the same account info.
+
+        - If the recipe user is NOT a primary user, and if is_verified is false, then
+        we check if there exists a primary user with the same email, and if it does
+        we disallow the email change cause if this email is changed, and an email
+        verification email is sent, then the primary user may end up clicking
+        on the link by mistake, causing account linking to happen which can result
+        in account take over if this recipe user is malicious.
+        &#34;&#34;&#34;
+
+        for tenant_id in user.tenant_ids:
+            existing_users_with_new_email = (
+                await self.recipe_implementation.list_users_by_account_info(
+                    tenant_id=tenant_id,
+                    account_info=AccountInfoInput(email=new_email),
+                    do_union_of_account_info=False,
+                    user_context=user_context,
+                )
+            )
+
+            other_users_with_new_email = [
+                u for u in existing_users_with_new_email if u.id != user.id
+            ]
+            other_primary_user_for_new_email = [
+                u for u in other_users_with_new_email if u.is_primary_user
+            ]
+
+            if len(other_primary_user_for_new_email) &gt; 1:
+                raise Exception(
+                    &#34;You found a bug. Please report it on github.com/supertokens/supertokens-core&#34;
+                )
+
+            if user.is_primary_user:
+                if other_primary_user_for_new_email:
+                    log_debug_message(
+                        f&#34;isEmailChangeAllowed: returning false cause email change will lead to two primary users having same email on {tenant_id}&#34;
+                    )
+                    return EmailChangeAllowedResult(
+                        allowed=False, reason=&#34;PRIMARY_USER_CONFLICT&#34;
+                    )
+
+                if is_verified:
+                    log_debug_message(
+                        f&#34;isEmailChangeAllowed: can change on {tenant_id} cause input user is primary, new email is verified and doesn&#39;t belong to any other primary user&#34;
+                    )
+                    continue
+
+                if any(
+                    lm.has_same_email_as(new_email) and lm.verified
+                    for lm in user.login_methods
+                ):
+                    log_debug_message(
+                        f&#34;isEmailChangeAllowed: can change on {tenant_id} cause input user is primary, new email is verified in another login method and doesn&#39;t belong to any other primary user&#34;
+                    )
+                    continue
+
+                if not other_users_with_new_email:
+                    log_debug_message(
+                        f&#34;isEmailChangeAllowed: can change on {tenant_id} cause input user is primary and the new email doesn&#39;t belong to any other user (primary or non-primary)&#34;
+                    )
+                    continue
+
+                should_do_account_linking = await self.config.should_do_automatic_account_linking(
+                    AccountInfoWithRecipeIdAndUserId.from_account_info_or_login_method(
+                        other_users_with_new_email[0].login_methods[0]
+                    ),
+                    user,
+                    session,
+                    tenant_id,
+                    user_context,
+                )
+
+                if isinstance(should_do_account_linking, ShouldNotAutomaticallyLink):
+                    log_debug_message(
+                        f&#34;isEmailChangeAllowed: can change on {tenant_id} cause linking is disabled&#34;
+                    )
+                    continue
+
+                if not should_do_account_linking.should_require_verification:
+                    log_debug_message(
+                        f&#34;isEmailChangeAllowed: can change on {tenant_id} cause linking doesn&#39;t require email verification&#34;
+                    )
+                    continue
+
+                log_debug_message(
+                    f&#34;isEmailChangeAllowed: returning false because the user hasn&#39;t verified the new email address and there exists another user with it on {tenant_id} and linking requires verification&#34;
+                )
+                return EmailChangeAllowedResult(
+                    allowed=False, reason=&#34;ACCOUNT_TAKEOVER_RISK&#34;
+                )
+            else:
+                if is_verified:
+                    log_debug_message(
+                        f&#34;isEmailChangeAllowed: can change on {tenant_id} cause input user is not a primary and new email is verified&#34;
+                    )
+                    continue
+
+                if user.login_methods[0].has_same_email_as(new_email):
+                    log_debug_message(
+                        f&#34;isEmailChangeAllowed: can change on {tenant_id} cause input user is not a primary and new email is same as the older one&#34;
+                    )
+                    continue
+
+                if other_primary_user_for_new_email:
+                    should_do_account_linking = (
+                        await self.config.should_do_automatic_account_linking(
+                            AccountInfoWithRecipeIdAndUserId(
+                                recipe_id=user.login_methods[0].recipe_id,
+                                email=user.login_methods[0].email,
+                                recipe_user_id=user.login_methods[0].recipe_user_id,
+                                phone_number=user.login_methods[0].phone_number,
+                                third_party=user.login_methods[0].third_party,
+                            ),
+                            other_primary_user_for_new_email[0],
+                            session,
+                            tenant_id,
+                            user_context,
+                        )
+                    )
+
+                    if isinstance(
+                        should_do_account_linking, ShouldNotAutomaticallyLink
+                    ):
+                        log_debug_message(
+                            f&#34;isEmailChangeAllowed: can change on {tenant_id} cause input user is not a primary there exists a primary user exists with the new email, but the dev does not have account linking enabled.&#34;
+                        )
+                        continue
+
+                    if not should_do_account_linking.should_require_verification:
+                        log_debug_message(
+                            f&#34;isEmailChangeAllowed: can change on {tenant_id} cause input user is not a primary there exists a primary user exists with the new email, but the dev does not require email verification.&#34;
+                        )
+                        continue
+
+                    log_debug_message(
+                        &#34;isEmailChangeAllowed: returning false cause input user is not a primary there exists a primary user exists with the new email.&#34;
+                    )
+                    return EmailChangeAllowedResult(
+                        allowed=False, reason=&#34;ACCOUNT_TAKEOVER_RISK&#34;
+                    )
+
+                log_debug_message(
+                    f&#34;isEmailChangeAllowed: can change on {tenant_id} cause input user is not a primary no primary user exists with the new email&#34;
+                )
+                continue
+
+        log_debug_message(
+            &#34;isEmailChangeAllowed: returning true cause email change can happen on all tenants the user is part of&#34;
+        )
+        return EmailChangeAllowedResult(allowed=True, reason=&#34;OK&#34;)
+
+    async def verify_email_for_recipe_user_if_linked_accounts_are_verified(
+        self,
+        user: User,
+        recipe_user_id: RecipeUserId,
+        user_context: Dict[str, Any],
+    ) -&gt; None:
+        if self.email_verification_recipe is None:
+            return
+
+        if user.is_primary_user:
+            recipe_user_email: Optional[str] = None
+            is_already_verified = False
+            for lm in user.login_methods:
+                if lm.recipe_user_id.get_as_string() == recipe_user_id.get_as_string():
+                    recipe_user_email = lm.email
+                    is_already_verified = lm.verified
+                    break
+
+            if recipe_user_email is not None:
+                if is_already_verified:
+                    return
+                should_verify_email = False
+                for lm in user.login_methods:
+                    if lm.has_same_email_as(recipe_user_email) and lm.verified:
+                        should_verify_email = True
+                        break
+
+                if should_verify_email:
+                    ev_recipe = self.email_verification_recipe.get_instance_or_throw()
+                    resp = await ev_recipe.recipe_implementation.create_email_verification_token(
+                        tenant_id=user.tenant_ids[0],
+                        recipe_user_id=recipe_user_id,
+                        email=recipe_user_email,
+                        user_context=user_context,
+                    )
+                    if resp.status == &#34;OK&#34;:
+                        # we purposely pass in false below cause we don&#39;t want account
+                        # linking to happen
+                        await ev_recipe.recipe_implementation.verify_email_using_token(
+                            tenant_id=user.tenant_ids[0],
+                            token=resp.token,
+                            attempt_account_linking=False,
+                            user_context=user_context,
+                        )
+
+    async def should_become_primary_user(
+        self,
+        user: User,
+        tenant_id: str,
+        session: Optional[SessionContainer],
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
+        should_do_account_linking = (
+            await self.config.should_do_automatic_account_linking(
+                AccountInfoWithRecipeIdAndUserId.from_account_info_or_login_method(
+                    user.login_methods[0]
+                ),
+                None,
+                session,
+                tenant_id,
+                user_context,
+            )
+        )
+
+        if isinstance(should_do_account_linking, ShouldNotAutomaticallyLink):
+            log_debug_message(
+                &#34;should_become_primary_user returning false because shouldAutomaticallyLink is false&#34;
+            )
+            return False
+
+        if (
+            should_do_account_linking.should_require_verification
+            and not user.login_methods[0].verified
+        ):
+            log_debug_message(
+                &#34;should_become_primary_user returning false because shouldRequireVerification is true but the login method is not verified&#34;
+            )
+            return False
+
+        log_debug_message(&#34;should_become_primary_user returning true&#34;)
+        return True
+
+    async def try_linking_by_account_info_or_create_primary_user(
+        self,
+        input_user: User,
+        session: Optional[SessionContainer],
+        tenant_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; TryLinkingByAccountInfoOrCreatePrimaryUserResult:
+        tries = 0
+        while tries &lt; 100:
+            tries += 1
+            primary_user_that_can_be_linked_to_the_input_user = (
+                await self.get_primary_user_that_can_be_linked_to_recipe_user_id(
+                    tenant_id=tenant_id,
+                    user=input_user,
+                    user_context=user_context,
+                )
+            )
+            if primary_user_that_can_be_linked_to_the_input_user is not None:
+                log_debug_message(
+                    &#34;try_linking_by_account_info_or_create_primary_user: got primary user we can try linking&#34;
+                )
+                # we check if the input_user and primary_user_that_can_be_linked_to_the_input_user are linked based on recipeIds because the input_user obj could be outdated
+                if not any(
+                    lm.recipe_user_id.get_as_string()
+                    == input_user.login_methods[0].recipe_user_id.get_as_string()
+                    for lm in primary_user_that_can_be_linked_to_the_input_user.login_methods
+                ):
+                    should_do_account_linking = await self.config.should_do_automatic_account_linking(
+                        AccountInfoWithRecipeIdAndUserId.from_account_info_or_login_method(
+                            input_user.login_methods[0]
+                        ),
+                        primary_user_that_can_be_linked_to_the_input_user,
+                        session,
+                        tenant_id,
+                        user_context,
+                    )
+
+                    if isinstance(
+                        should_do_account_linking, ShouldNotAutomaticallyLink
+                    ):
+                        log_debug_message(
+                            &#34;try_linking_by_account_info_or_create_primary_user: not linking because shouldAutomaticallyLink is false&#34;
+                        )
+                        return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                            status=&#34;NO_LINK&#34;, user=None
+                        )
+
+                    account_info_verified_in_prim_user = any(
+                        (
+                            input_user.login_methods[0].email is not None
+                            and lm.has_same_email_as(input_user.login_methods[0].email)
+                        )
+                        or (
+                            input_user.login_methods[0].phone_number is not None
+                            and lm.has_same_phone_number_as(
+                                input_user.login_methods[0].phone_number
+                            )
+                            and lm.verified
+                        )
+                        for lm in primary_user_that_can_be_linked_to_the_input_user.login_methods
+                    )
+                    if should_do_account_linking.should_require_verification and (
+                        not input_user.login_methods[0].verified
+                        or not account_info_verified_in_prim_user
+                    ):
+                        log_debug_message(
+                            &#34;try_linking_by_account_info_or_create_primary_user: not linking because shouldRequireVerification is true but the login method is not verified in the new or the primary user&#34;
+                        )
+                        return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                            status=&#34;NO_LINK&#34;, user=None
+                        )
+
+                    log_debug_message(
+                        &#34;try_linking_by_account_info_or_create_primary_user linking&#34;
+                    )
+                    link_accounts_result = await self.recipe_implementation.link_accounts(
+                        recipe_user_id=input_user.login_methods[0].recipe_user_id,
+                        primary_user_id=primary_user_that_can_be_linked_to_the_input_user.id,
+                        user_context=user_context,
+                    )
+
+                    if link_accounts_result.status == &#34;OK&#34;:
+                        log_debug_message(
+                            &#34;try_linking_by_account_info_or_create_primary_user successfully linked&#34;
+                        )
+                        return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                            status=&#34;OK&#34;, user=link_accounts_result.user
+                        )
+                    elif (
+                        link_accounts_result.status
+                        == &#34;RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;
+                    ):
+                        log_debug_message(
+                            &#34;try_linking_by_account_info_or_create_primary_user already linked to another user&#34;
+                        )
+                        return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                            status=&#34;OK&#34;, user=link_accounts_result.user
+                        )
+                    elif (
+                        link_accounts_result.status
+                        == &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;
+                    ):
+                        log_debug_message(
+                            &#34;try_linking_by_account_info_or_create_primary_user linking failed because of a race condition&#34;
+                        )
+                        continue
+                    else:
+                        log_debug_message(
+                            &#34;try_linking_by_account_info_or_create_primary_user linking failed because of a race condition&#34;
+                        )
+                        continue
+                return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                    status=&#34;OK&#34;, user=input_user
+                )
+
+            oldest_user_that_can_be_linked_to_the_input_user = (
+                await self.get_oldest_user_that_can_be_linked_to_recipe_user(
+                    tenant_id=tenant_id,
+                    user=input_user,
+                    user_context=user_context,
+                )
+            )
+            if (
+                oldest_user_that_can_be_linked_to_the_input_user is not None
+                and oldest_user_that_can_be_linked_to_the_input_user.id != input_user.id
+            ):
+                log_debug_message(
+                    &#34;try_linking_by_account_info_or_create_primary_user: got an older user we can try linking&#34;
+                )
+                should_make_older_user_primary = await self.should_become_primary_user(
+                    oldest_user_that_can_be_linked_to_the_input_user,
+                    tenant_id,
+                    session,
+                    user_context,
+                )
+                if should_make_older_user_primary:
+                    create_primary_user_result = await self.recipe_implementation.create_primary_user(
+                        recipe_user_id=oldest_user_that_can_be_linked_to_the_input_user.login_methods[
+                            0
+                        ].recipe_user_id,
+                        user_context=user_context,
+                    )
+                    if (
+                        create_primary_user_result.status
+                        == &#34;ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;
+                        or create_primary_user_result.status
+                        == &#34;RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR&#34;
+                    ):
+                        log_debug_message(
+                            f&#34;try_linking_by_account_info_or_create_primary_user: retrying because createPrimaryUser returned {create_primary_user_result.status}&#34;
+                        )
+                        continue
+                    should_do_account_linking = await self.config.should_do_automatic_account_linking(
+                        AccountInfoWithRecipeIdAndUserId.from_account_info_or_login_method(
+                            input_user.login_methods[0]
+                        ),
+                        create_primary_user_result.user,
+                        session,
+                        tenant_id,
+                        user_context,
+                    )
+
+                    if isinstance(
+                        should_do_account_linking, ShouldNotAutomaticallyLink
+                    ):
+                        log_debug_message(
+                            &#34;try_linking_by_account_info_or_create_primary_user: not linking because shouldAutomaticallyLink is false&#34;
+                        )
+                        return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                            status=&#34;NO_LINK&#34;, user=None
+                        )
+
+                    if (
+                        should_do_account_linking.should_require_verification
+                        and not input_user.login_methods[0].verified
+                    ):
+                        log_debug_message(
+                            &#34;try_linking_by_account_info_or_create_primary_user: not linking because shouldRequireVerification is true but the login method is not verified&#34;
+                        )
+                        return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                            status=&#34;NO_LINK&#34;, user=None
+                        )
+
+                    log_debug_message(
+                        &#34;try_linking_by_account_info_or_create_primary_user linking&#34;
+                    )
+                    link_accounts_result = (
+                        await self.recipe_implementation.link_accounts(
+                            recipe_user_id=input_user.login_methods[0].recipe_user_id,
+                            primary_user_id=create_primary_user_result.user.id,
+                            user_context=user_context,
+                        )
+                    )
+
+                    if link_accounts_result.status == &#34;OK&#34;:
+                        log_debug_message(
+                            &#34;try_linking_by_account_info_or_create_primary_user successfully linked&#34;
+                        )
+                        return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                            status=&#34;OK&#34;, user=link_accounts_result.user
+                        )
+                    elif (
+                        link_accounts_result.status
+                        == &#34;RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;
+                    ):
+                        log_debug_message(
+                            &#34;try_linking_by_account_info_or_create_primary_user already linked to another user&#34;
+                        )
+                        return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                            status=&#34;OK&#34;, user=link_accounts_result.user
+                        )
+                    elif (
+                        link_accounts_result.status
+                        == &#34;INPUT_USER_IS_NOT_A_PRIMARY_USER&#34;
+                    ):
+                        log_debug_message(
+                            &#34;try_linking_by_account_info_or_create_primary_user linking failed because of a race condition&#34;
+                        )
+                        continue
+                    else:
+                        log_debug_message(
+                            &#34;try_linking_by_account_info_or_create_primary_user linking failed because of a race condition&#34;
+                        )
+                        continue
+
+            log_debug_message(
+                &#34;try_linking_by_account_info_or_create_primary_user: trying to make the current user primary&#34;
+            )
+
+            if await self.should_become_primary_user(
+                input_user, tenant_id, session, user_context
+            ):
+                create_primary_user_result = (
+                    await self.recipe_implementation.create_primary_user(
+                        recipe_user_id=input_user.login_methods[0].recipe_user_id,
+                        user_context=user_context,
+                    )
+                )
+
+                if (
+                    create_primary_user_result.status
+                    == &#34;ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR&#34;
+                    or create_primary_user_result.status
+                    == &#34;RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR&#34;
+                ):
+                    continue
+                return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                    status=&#34;OK&#34;,
+                    user=create_primary_user_result.user,
+                )
+            else:
+                return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
+                    status=&#34;OK&#34;, user=input_user
+                )
+
+        raise Exception(
+            &#34;This should never happen: ran out of retries for try_linking_by_account_info_or_create_primary_user&#34;
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe_module.RecipeModule" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.recipe_id"><code class="name">var <span class="ident">recipe_id</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.get_instance"><code class="name flex">
+<span>def <span class="ident">get_instance</span></span>(<span>) ‑> <a title="supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe" href="recipe.html#supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe">AccountLinkingRecipe</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.init"><code class="name flex">
+<span>def <span class="ident">init</span></span>(<span>on_account_linked: Optional[Callable[[User, <a title="supertokens_python.recipe.accountlinking.RecipeLevelUser" href="#supertokens_python.recipe.accountlinking.RecipeLevelUser">RecipeLevelUser</a>, Dict[str, Any]], Awaitable[None]]] = None, should_do_automatic_account_linking: Optional[Callable[[<a title="supertokens_python.recipe.accountlinking.AccountInfoWithRecipeIdAndUserId" href="#supertokens_python.recipe.accountlinking.AccountInfoWithRecipeIdAndUserId">AccountInfoWithRecipeIdAndUserId</a>, Optional[User], Optional[SessionContainer], str, Dict[str, Any]], Awaitable[Union[<a title="supertokens_python.recipe.accountlinking.ShouldNotAutomaticallyLink" href="#supertokens_python.recipe.accountlinking.ShouldNotAutomaticallyLink">ShouldNotAutomaticallyLink</a>, <a title="supertokens_python.recipe.accountlinking.ShouldAutomaticallyLink" href="#supertokens_python.recipe.accountlinking.ShouldAutomaticallyLink">ShouldAutomaticallyLink</a>]]]] = None, override: Optional[<a title="supertokens_python.recipe.accountlinking.BaseOverrideConfigWithoutAPI[RecipeInterface]" href="#supertokens_python.recipe.accountlinking.BaseOverrideConfigWithoutAPI[RecipeInterface]">BaseOverrideConfigWithoutAPI[RecipeInterface]</a>] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.reset"><code class="name flex">
+<span>def <span class="ident">reset</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.get_all_cors_headers"><code class="name flex">
+<span>def <span class="ident">get_all_cors_headers</span></span>(<span>self) ‑> List[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.get_apis_handled"><code class="name flex">
+<span>def <span class="ident">get_apis_handled</span></span>(<span>self) ‑> List[<a title="supertokens_python.recipe_module.APIHandled" href="../../recipe_module.html#supertokens_python.recipe_module.APIHandled">APIHandled</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.get_oldest_user_that_can_be_linked_to_recipe_user"><code class="name flex">
+<span>async def <span class="ident">get_oldest_user_that_can_be_linked_to_recipe_user</span></span>(<span>self, tenant_id: str, user: User, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.get_primary_user_that_can_be_linked_to_recipe_user_id"><code class="name flex">
+<span>async def <span class="ident">get_primary_user_that_can_be_linked_to_recipe_user_id</span></span>(<span>self, tenant_id: str, user: User, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.handle_api_request"><code class="name flex">
+<span>async def <span class="ident">handle_api_request</span></span>(<span>self, request_id: str, tenant_id: Optional[str], request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.handle_error"><code class="name flex">
+<span>async def <span class="ident">handle_error</span></span>(<span>self, request: BaseRequest, err: SuperTokensError, response: BaseResponse, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.is_email_change_allowed"><code class="name flex">
+<span>async def <span class="ident">is_email_change_allowed</span></span>(<span>self, user: User, new_email: str, is_verified: bool, session: Optional[SessionContainer], user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The purpose of this function is to check if a recipe user ID's email
+can be changed or not. There are two conditions for when it can't be changed:
+- If the recipe user is a primary user, then we need to check that the new email
+doesn't belong to any other primary user. If it does, we disallow the change
+since multiple primary user's can't have the same account info.</p>
+<ul>
+<li>If the recipe user is NOT a primary user, and if is_verified is false, then
+we check if there exists a primary user with the same email, and if it does
+we disallow the email change cause if this email is changed, and an email
+verification email is sent, then the primary user may end up clicking
+on the link by mistake, causing account linking to happen which can result
+in account take over if this recipe user is malicious.</li>
+</ul></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.is_error_from_this_recipe_based_on_instance"><code class="name flex">
+<span>def <span class="ident">is_error_from_this_recipe_based_on_instance</span></span>(<span>self, err: Exception) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.is_sign_in_allowed"><code class="name flex">
+<span>async def <span class="ident">is_sign_in_allowed</span></span>(<span>self, user: User, account_info: Union[AccountInfoWithRecipeId, LoginMethod], tenant_id: str, session: Optional[SessionContainer], sign_in_verifies_login_method: bool, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.is_sign_in_up_allowed_helper"><code class="name flex">
+<span>async def <span class="ident">is_sign_in_up_allowed_helper</span></span>(<span>self, account_info: Union[AccountInfoWithRecipeId, LoginMethod], is_verified: bool, session: Optional[SessionContainer], tenant_id: str, is_sign_in: bool, user: Optional[User], user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.is_sign_up_allowed"><code class="name flex">
+<span>async def <span class="ident">is_sign_up_allowed</span></span>(<span>self, new_user: AccountInfoWithRecipeId, is_verified: bool, session: Optional[SessionContainer], tenant_id: str, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.register_email_verification_recipe"><code class="name flex">
+<span>def <span class="ident">register_email_verification_recipe</span></span>(<span>self, email_verification_recipe: EmailVerificationRecipe)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.should_become_primary_user"><code class="name flex">
+<span>async def <span class="ident">should_become_primary_user</span></span>(<span>self, user: User, tenant_id: str, session: Optional[SessionContainer], user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.try_linking_by_account_info_or_create_primary_user"><code class="name flex">
+<span>async def <span class="ident">try_linking_by_account_info_or_create_primary_user</span></span>(<span>self, input_user: User, session: Optional[SessionContainer], tenant_id: str, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.verify_email_for_recipe_user_if_linked_accounts_are_verified"><code class="name flex">
+<span>async def <span class="ident">verify_email_for_recipe_user_if_linked_accounts_are_verified</span></span>(<span>self, user: User, recipe_user_id: RecipeUserId, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe_module.RecipeModule" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe_module.RecipeModule.get_tenant_id" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule.get_tenant_id">get_tenant_id</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.BaseOverrideConfigWithoutAPI[RecipeInterface]"><code class="flex name class">
+<span>class <span class="ident">AccountLinkingOverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for input override config without API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.accountlinking.BaseOverrideConfigWithoutAPI[RecipeInterface].model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.BaseOverrideConfigWithoutAPI[RecipeInterface]"><code class="flex name class">
+<span>class <span class="ident">InputOverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for input override config without API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI.functions" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI.functions">functions</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.RecipeLevelUser"><code class="flex name class">
+<span>class <span class="ident">RecipeLevelUser</span></span>
+<span>(</span><span>tenant_ids: List[str], time_joined: int, recipe_id: "Literal['emailpassword', 'thirdparty', 'passwordless', 'webauthn']", email: Optional[str] = None, phone_number: Optional[str] = None, third_party: Optional[ThirdPartyInfo] = None, webauthn: Optional[WebauthnInfo] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RecipeLevelUser(AccountInfoWithRecipeId):
+    def __init__(
+        self,
+        tenant_ids: List[str],
+        time_joined: int,
+        recipe_id: Literal[&#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;, &#34;webauthn&#34;],
+        email: Optional[str] = None,
+        phone_number: Optional[str] = None,
+        third_party: Optional[ThirdPartyInfo] = None,
+        webauthn: Optional[WebauthnInfo] = None,
+    ):
+        super().__init__(recipe_id, email, phone_number, third_party, webauthn=webauthn)
+        self.tenant_ids = tenant_ids
+        self.time_joined = time_joined
+        self.recipe_id: Literal[
+            &#34;emailpassword&#34;, &#34;thirdparty&#34;, &#34;passwordless&#34;, &#34;webauthn&#34;
+        ] = recipe_id
+
+    @staticmethod
+    def from_login_method(
+        login_method: LoginMethod,
+    ) -&gt; RecipeLevelUser:
+        return RecipeLevelUser(
+            tenant_ids=login_method.tenant_ids,
+            time_joined=login_method.time_joined,
+            recipe_id=login_method.recipe_id,
+            email=login_method.email,
+            phone_number=login_method.phone_number,
+            third_party=login_method.third_party,
+            webauthn=login_method.webauthn,
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId" href="types.html#supertokens_python.recipe.accountlinking.types.AccountInfoWithRecipeId">AccountInfoWithRecipeId</a></li>
+<li><a title="supertokens_python.types.base.AccountInfo" href="../../types/base.html#supertokens_python.types.base.AccountInfo">AccountInfo</a></li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.accountlinking.RecipeLevelUser.from_login_method"><code class="name flex">
+<span>def <span class="ident">from_login_method</span></span>(<span>login_method: LoginMethod) ‑> <a title="supertokens_python.recipe.accountlinking.types.RecipeLevelUser" href="types.html#supertokens_python.recipe.accountlinking.types.RecipeLevelUser">RecipeLevelUser</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.ShouldAutomaticallyLink"><code class="flex name class">
+<span>class <span class="ident">ShouldAutomaticallyLink</span></span>
+<span>(</span><span>should_require_verification: bool)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ShouldAutomaticallyLink:
+    def __init__(self, should_require_verification: bool):
+        self.should_require_verification = should_require_verification</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.accountlinking.ShouldNotAutomaticallyLink"><code class="flex name class">
+<span>class <span class="ident">ShouldNotAutomaticallyLink</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ShouldNotAutomaticallyLink:
+    def __init__(self):
+        pass</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -152,6 +1503,61 @@ def init(
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.accountlinking.init" href="#supertokens_python.recipe.accountlinking.init">init</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.accountlinking.AccountInfoWithRecipeIdAndUserId" href="#supertokens_python.recipe.accountlinking.AccountInfoWithRecipeIdAndUserId">AccountInfoWithRecipeIdAndUserId</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountInfoWithRecipeIdAndUserId.from_account_info_or_login_method" href="#supertokens_python.recipe.accountlinking.AccountInfoWithRecipeIdAndUserId.from_account_info_or_login_method">from_account_info_or_login_method</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe">AccountLinkingRecipe</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.get_all_cors_headers" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.get_all_cors_headers">get_all_cors_headers</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.get_apis_handled" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.get_apis_handled">get_apis_handled</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.get_instance" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.get_instance">get_instance</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.get_oldest_user_that_can_be_linked_to_recipe_user" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.get_oldest_user_that_can_be_linked_to_recipe_user">get_oldest_user_that_can_be_linked_to_recipe_user</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.get_primary_user_that_can_be_linked_to_recipe_user_id" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.get_primary_user_that_can_be_linked_to_recipe_user_id">get_primary_user_that_can_be_linked_to_recipe_user_id</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.handle_api_request" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.handle_api_request">handle_api_request</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.handle_error" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.handle_error">handle_error</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.init" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.init">init</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.is_email_change_allowed" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.is_email_change_allowed">is_email_change_allowed</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.is_error_from_this_recipe_based_on_instance" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.is_error_from_this_recipe_based_on_instance">is_error_from_this_recipe_based_on_instance</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.is_sign_in_allowed" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.is_sign_in_allowed">is_sign_in_allowed</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.is_sign_in_up_allowed_helper" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.is_sign_in_up_allowed_helper">is_sign_in_up_allowed_helper</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.is_sign_up_allowed" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.is_sign_up_allowed">is_sign_up_allowed</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.recipe_id" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.recipe_id">recipe_id</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.register_email_verification_recipe" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.register_email_verification_recipe">register_email_verification_recipe</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.reset" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.reset">reset</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.should_become_primary_user" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.should_become_primary_user">should_become_primary_user</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.try_linking_by_account_info_or_create_primary_user" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.try_linking_by_account_info_or_create_primary_user">try_linking_by_account_info_or_create_primary_user</a></code></li>
+<li><code><a title="supertokens_python.recipe.accountlinking.AccountLinkingRecipe.verify_email_for_recipe_user_if_linked_accounts_are_verified" href="#supertokens_python.recipe.accountlinking.AccountLinkingRecipe.verify_email_for_recipe_user_if_linked_accounts_are_verified">verify_email_for_recipe_user_if_linked_accounts_are_verified</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.accountlinking.BaseOverrideConfigWithoutAPI[RecipeInterface]" href="#supertokens_python.recipe.accountlinking.BaseOverrideConfigWithoutAPI[RecipeInterface]">BaseOverrideConfigWithoutAPI[RecipeInterface]</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.accountlinking.BaseOverrideConfigWithoutAPI[RecipeInterface].model_config" href="#supertokens_python.recipe.accountlinking.BaseOverrideConfigWithoutAPI[RecipeInterface].model_config">model_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.accountlinking.BaseOverrideConfigWithoutAPI[RecipeInterface]" href="#supertokens_python.recipe.accountlinking.BaseOverrideConfigWithoutAPI[RecipeInterface]">BaseOverrideConfigWithoutAPI[RecipeInterface]</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.accountlinking.RecipeLevelUser" href="#supertokens_python.recipe.accountlinking.RecipeLevelUser">RecipeLevelUser</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.accountlinking.RecipeLevelUser.from_login_method" href="#supertokens_python.recipe.accountlinking.RecipeLevelUser.from_login_method">from_login_method</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.accountlinking.ShouldAutomaticallyLink" href="#supertokens_python.recipe.accountlinking.ShouldAutomaticallyLink">ShouldAutomaticallyLink</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.accountlinking.ShouldNotAutomaticallyLink" href="#supertokens_python.recipe.accountlinking.ShouldNotAutomaticallyLink">ShouldNotAutomaticallyLink</a></code></h4>
+</li>
 </ul>
 </li>
 </ul>

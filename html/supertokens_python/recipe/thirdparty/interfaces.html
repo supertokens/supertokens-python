@@ -41,8 +41,10 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 
 from ...types import RecipeUserId, User
 from ...types.response import APIResponse, GeneralErrorResponse
@@ -55,7 +57,7 @@ if TYPE_CHECKING:
     from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 
     from .types import RawUserInfoFromProvider
-    from .utils import ThirdPartyConfig
+    from .utils import NormalisedThirdPartyConfig
 
 
 class SignInUpOkResult:
@@ -107,7 +109,7 @@ class EmailChangeNotAllowedError:
         self.reason = reason
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -163,7 +165,7 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: ThirdPartyConfig,
+        config: NormalisedThirdPartyConfig,
         recipe_implementation: RecipeInterface,
         providers: List[ProviderInput],
         app_info: AppInfo,
@@ -171,7 +173,7 @@ class APIOptions:
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
-        self.config: ThirdPartyConfig = config
+        self.config: NormalisedThirdPartyConfig = config
         self.providers: List[ProviderInput] = providers
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info: AppInfo = app_info
@@ -226,7 +228,7 @@ class AuthorisationUrlGetOkResult(APIResponse):
         }
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_sign_in_up_post = False
         self.disable_authorisation_url_get = False
@@ -284,12 +286,13 @@ class APIInterface:
 <span>class <span class="ident">APIInterface</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class APIInterface:
+<pre><code class="python">class APIInterface(BaseAPIInterface):
     def __init__(self):
         self.disable_sign_in_up_post = False
         self.disable_authorisation_url_get = False
@@ -333,6 +336,11 @@ class APIInterface:
     ):
         pass</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseAPIInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseAPIInterface">BaseAPIInterface</a></li>
+<li>abc.ABC</li>
+</ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.thirdparty.api.implementation.APIImplementation" href="api/implementation.html#supertokens_python.recipe.thirdparty.api.implementation.APIImplementation">APIImplementation</a></li>
@@ -361,7 +369,7 @@ class APIInterface:
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.APIOptions"><code class="flex name class">
 <span>class <span class="ident">APIOptions</span></span>
-<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: ThirdPartyConfig, recipe_implementation: <a title="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface" href="#supertokens_python.recipe.thirdparty.interfaces.RecipeInterface">RecipeInterface</a>, providers: List[ProviderInput], app_info: AppInfo)</span>
+<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: NormalisedThirdPartyConfig, recipe_implementation: <a title="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface" href="#supertokens_python.recipe.thirdparty.interfaces.RecipeInterface">RecipeInterface</a>, providers: List[ProviderInput], app_info: AppInfo)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -375,7 +383,7 @@ class APIInterface:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: ThirdPartyConfig,
+        config: NormalisedThirdPartyConfig,
         recipe_implementation: RecipeInterface,
         providers: List[ProviderInput],
         app_info: AppInfo,
@@ -383,7 +391,7 @@ class APIInterface:
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
-        self.config: ThirdPartyConfig = config
+        self.config: NormalisedThirdPartyConfig = config
         self.providers: List[ProviderInput] = providers
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info: AppInfo = app_info</code></pre>
@@ -425,7 +433,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -500,7 +508,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RecipeInterface(ABC):
+<pre><code class="python">class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -551,6 +559,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseRecipeInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
@@ -609,11 +618,11 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed.reason"><code class="name">var <span class="ident">reason</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpNotAllowed.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -677,7 +686,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -734,7 +743,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>

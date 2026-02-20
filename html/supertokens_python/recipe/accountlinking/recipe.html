@@ -54,7 +54,6 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import PROCESS_STATE, ProcessState
 from supertokens_python.querier import Querier
 from supertokens_python.recipe_module import APIHandled, RecipeModule
-from supertokens_python.supertokens import Supertokens
 from supertokens_python.types.base import AccountInfoInput
 
 from .interfaces import RecipeInterface
@@ -62,7 +61,8 @@ from .recipe_implementation import RecipeImplementation
 from .types import (
     AccountInfoWithRecipeId,
     AccountInfoWithRecipeIdAndUserId,
-    InputOverrideConfig,
+    AccountLinkingConfig,
+    AccountLinkingOverrideConfig,
     RecipeLevelUser,
     ShouldAutomaticallyLink,
     ShouldNotAutomaticallyLink,
@@ -105,35 +105,16 @@ class AccountLinkingRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        on_account_linked: Optional[
-            Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]
-        ] = None,
-        should_do_automatic_account_linking: Optional[
-            Callable[
-                [
-                    AccountInfoWithRecipeIdAndUserId,
-                    Optional[User],
-                    Optional[SessionContainer],
-                    str,
-                    Dict[str, Any],
-                ],
-                Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
-            ]
-        ] = None,
-        override: Optional[InputOverrideConfig] = None,
+        config: AccountLinkingConfig,
     ):
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(
-            app_info, on_account_linked, should_do_automatic_account_linking, override
-        )
+        self.config = validate_and_normalise_user_input(app_info, config=config)
         recipe_implementation: RecipeInterface = RecipeImplementation(
             Querier.get_instance(recipe_id), self, self.config
         )
 
-        self.recipe_implementation: RecipeInterface = (
+        self.recipe_implementation: RecipeInterface = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
         self.email_verification_recipe: EmailVerificationRecipe | None = None
@@ -190,16 +171,26 @@ class AccountLinkingRecipe(RecipeModule):
                 Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
             ]
         ] = None,
-        override: Optional[InputOverrideConfig] = None,
-    ):
-        def func(app_info: AppInfo):
+        override: Optional[AccountLinkingOverrideConfig] = None,
+    ) -&gt; Callable[..., AccountLinkingRecipe]:
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = AccountLinkingConfig(
+            on_account_linked=on_account_linked,
+            should_do_automatic_account_linking=should_do_automatic_account_linking,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if AccountLinkingRecipe.__instance is None:
                 AccountLinkingRecipe.__instance = AccountLinkingRecipe(
-                    AccountLinkingRecipe.recipe_id,
-                    app_info,
-                    on_account_linked,
-                    should_do_automatic_account_linking,
-                    override,
+                    recipe_id=AccountLinkingRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=AccountLinkingRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return AccountLinkingRecipe.__instance
             raise Exception(
@@ -211,11 +202,12 @@ class AccountLinkingRecipe(RecipeModule):
 
     @staticmethod
     def get_instance() -&gt; AccountLinkingRecipe:
-        if AccountLinkingRecipe.__instance is None:
-            AccountLinkingRecipe.init()(Supertokens.get_instance().app_info)
+        if AccountLinkingRecipe.__instance is not None:
+            return AccountLinkingRecipe.__instance
 
-        assert AccountLinkingRecipe.__instance is not None
-        return AccountLinkingRecipe.__instance
+        raise_general_exception(
+            &#34;Initialisation not done. Did you forget to call the SuperTokens.init function?&#34;
+        )
 
     @staticmethod
     def reset():
@@ -1090,7 +1082,7 @@ class AccountLinkingRecipe(RecipeModule):
 <dl>
 <dt id="supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe"><code class="flex name class">
 <span>class <span class="ident">AccountLinkingRecipe</span></span>
-<span>(</span><span>recipe_id: str, app_info: AppInfo, on_account_linked: Optional[Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]] = None, should_do_automatic_account_linking: Optional[Callable[[AccountInfoWithRecipeIdAndUserId, Optional[User], Optional[SessionContainer], str, Dict[str, Any]], Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]]]] = None, override: Optional[InputOverrideConfig] = None)</span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, config: AccountLinkingConfig)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -1107,35 +1099,16 @@ inheritance.</p></div>
         self,
         recipe_id: str,
         app_info: AppInfo,
-        on_account_linked: Optional[
-            Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]
-        ] = None,
-        should_do_automatic_account_linking: Optional[
-            Callable[
-                [
-                    AccountInfoWithRecipeIdAndUserId,
-                    Optional[User],
-                    Optional[SessionContainer],
-                    str,
-                    Dict[str, Any],
-                ],
-                Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
-            ]
-        ] = None,
-        override: Optional[InputOverrideConfig] = None,
+        config: AccountLinkingConfig,
     ):
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(
-            app_info, on_account_linked, should_do_automatic_account_linking, override
-        )
+        self.config = validate_and_normalise_user_input(app_info, config=config)
         recipe_implementation: RecipeInterface = RecipeImplementation(
             Querier.get_instance(recipe_id), self, self.config
         )
 
-        self.recipe_implementation: RecipeInterface = (
+        self.recipe_implementation: RecipeInterface = self.config.override.functions(
             recipe_implementation
-            if self.config.override.functions is None
-            else self.config.override.functions(recipe_implementation)
         )
 
         self.email_verification_recipe: EmailVerificationRecipe | None = None
@@ -1192,16 +1165,26 @@ inheritance.</p></div>
                 Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]],
             ]
         ] = None,
-        override: Optional[InputOverrideConfig] = None,
-    ):
-        def func(app_info: AppInfo):
+        override: Optional[AccountLinkingOverrideConfig] = None,
+    ) -&gt; Callable[..., AccountLinkingRecipe]:
+        from supertokens_python.plugins import OverrideMap, apply_plugins
+
+        config = AccountLinkingConfig(
+            on_account_linked=on_account_linked,
+            should_do_automatic_account_linking=should_do_automatic_account_linking,
+            override=override,
+        )
+
+        def func(app_info: AppInfo, plugins: List[OverrideMap]):
             if AccountLinkingRecipe.__instance is None:
                 AccountLinkingRecipe.__instance = AccountLinkingRecipe(
-                    AccountLinkingRecipe.recipe_id,
-                    app_info,
-                    on_account_linked,
-                    should_do_automatic_account_linking,
-                    override,
+                    recipe_id=AccountLinkingRecipe.recipe_id,
+                    app_info=app_info,
+                    config=apply_plugins(
+                        recipe_id=AccountLinkingRecipe.recipe_id,
+                        config=config,
+                        plugins=plugins,
+                    ),
                 )
                 return AccountLinkingRecipe.__instance
             raise Exception(
@@ -1213,11 +1196,12 @@ inheritance.</p></div>
 
     @staticmethod
     def get_instance() -&gt; AccountLinkingRecipe:
-        if AccountLinkingRecipe.__instance is None:
-            AccountLinkingRecipe.init()(Supertokens.get_instance().app_info)
+        if AccountLinkingRecipe.__instance is not None:
+            return AccountLinkingRecipe.__instance
 
-        assert AccountLinkingRecipe.__instance is not None
-        return AccountLinkingRecipe.__instance
+        raise_general_exception(
+            &#34;Initialisation not done. Did you forget to call the SuperTokens.init function?&#34;
+        )
 
     @staticmethod
     def reset():
@@ -2089,7 +2073,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.recipe_id"><code class="name">var <span class="ident">recipe_id</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Static methods</h3>
@@ -2101,7 +2085,7 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.recipe.AccountLinkingRecipe.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>on_account_linked: Optional[Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]] = None, should_do_automatic_account_linking: Optional[Callable[[AccountInfoWithRecipeIdAndUserId, Optional[User], Optional[SessionContainer], str, Dict[str, Any]], Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]]]] = None, override: Optional[InputOverrideConfig] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>on_account_linked: Optional[Callable[[User, RecipeLevelUser, Dict[str, Any]], Awaitable[None]]] = None, should_do_automatic_account_linking: Optional[Callable[[AccountInfoWithRecipeIdAndUserId, Optional[User], Optional[SessionContainer], str, Dict[str, Any]], Awaitable[Union[ShouldNotAutomaticallyLink, ShouldAutomaticallyLink]]]] = None, override: Optional[AccountLinkingOverrideConfig] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2218,6 +2202,14 @@ in account take over if this recipe user is malicious.</li>
 <div class="desc"></div>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe_module.RecipeModule" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe_module.RecipeModule.get_tenant_id" href="../../recipe_module.html#supertokens_python.recipe_module.RecipeModule.get_tenant_id">get_tenant_id</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="supertokens_python.recipe.accountlinking.recipe.EmailChangeAllowedResult"><code class="flex name class">
 <span>class <span class="ident">EmailChangeAllowedResult</span></span>

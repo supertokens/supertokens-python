@@ -41,12 +41,13 @@
 # under the License.
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from typing_extensions import Literal
 
 from supertokens_python.recipe.multitenancy.interfaces import TenantConfig
+from supertokens_python.types.recipe import BaseAPIInterface, BaseRecipeInterface
 
 from ...types.response import APIResponse
 
@@ -55,7 +56,7 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import SessionInformationResult
 
     from ...supertokens import AppInfo
-    from .utils import DashboardConfig, UserWithMetadata
+    from .utils import NormalisedDashboardConfig, UserWithMetadata
 
 
 class SessionInfo:
@@ -69,7 +70,7 @@ class SessionInfo:
         self.tenant_id = info.tenant_id
 
 
-class RecipeInterface(ABC):
+class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -81,7 +82,7 @@ class RecipeInterface(ABC):
     async def should_allow_access(
         self,
         request: BaseRequest,
-        config: DashboardConfig,
+        config: NormalisedDashboardConfig,
         user_context: Dict[str, Any],
     ) -&gt; bool:
         pass
@@ -93,19 +94,19 @@ class APIOptions:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: DashboardConfig,
+        config: NormalisedDashboardConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
     ):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
-        self.config: DashboardConfig = config
+        self.config: NormalisedDashboardConfig = config
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info = app_info
 
 
-class APIInterface:
+class APIInterface(BaseAPIInterface):
     def __init__(self):
         # undefined should be allowed
         self.dashboard_get: Optional[
@@ -427,18 +428,24 @@ class CoreConfigFieldInfo:
 <span>class <span class="ident">APIInterface</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class APIInterface:
+<pre><code class="python">class APIInterface(BaseAPIInterface):
     def __init__(self):
         # undefined should be allowed
         self.dashboard_get: Optional[
             Callable[[APIOptions, Dict[str, Any]], Awaitable[str]]
         ] = None</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseAPIInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseAPIInterface">BaseAPIInterface</a></li>
+<li>abc.ABC</li>
+</ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.dashboard.api.implementation.APIImplementation" href="api/implementation.html#supertokens_python.recipe.dashboard.api.implementation.APIImplementation">APIImplementation</a></li>
@@ -446,7 +453,7 @@ class CoreConfigFieldInfo:
 </dd>
 <dt id="supertokens_python.recipe.dashboard.interfaces.APIOptions"><code class="flex name class">
 <span>class <span class="ident">APIOptions</span></span>
-<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: DashboardConfig, recipe_implementation: <a title="supertokens_python.recipe.dashboard.interfaces.RecipeInterface" href="#supertokens_python.recipe.dashboard.interfaces.RecipeInterface">RecipeInterface</a>, app_info: AppInfo)</span>
+<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: NormalisedDashboardConfig, recipe_implementation: <a title="supertokens_python.recipe.dashboard.interfaces.RecipeInterface" href="#supertokens_python.recipe.dashboard.interfaces.RecipeInterface">RecipeInterface</a>, app_info: AppInfo)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -460,14 +467,14 @@ class CoreConfigFieldInfo:
         request: BaseRequest,
         response: BaseResponse,
         recipe_id: str,
-        config: DashboardConfig,
+        config: NormalisedDashboardConfig,
         recipe_implementation: RecipeInterface,
         app_info: AppInfo,
     ):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
-        self.config: DashboardConfig = config
+        self.config: NormalisedDashboardConfig = config
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info = app_info</code></pre>
 </details>
@@ -497,7 +504,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.AnalyticsResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -656,7 +663,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.DashboardListTenantsGetResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -707,7 +714,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.DashboardUsersGetResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -745,7 +752,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -768,7 +775,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RecipeInterface(ABC):
+<pre><code class="python">class RecipeInterface(BaseRecipeInterface):
     def __init__(self):
         pass
 
@@ -780,13 +787,14 @@ inheritance.</p></div>
     async def should_allow_access(
         self,
         request: BaseRequest,
-        config: DashboardConfig,
+        config: NormalisedDashboardConfig,
         user_context: Dict[str, Any],
     ) -&gt; bool:
         pass</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.recipe.BaseRecipeInterface" href="../../types/recipe.html#supertokens_python.types.recipe.BaseRecipeInterface">BaseRecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
@@ -802,7 +810,7 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.interfaces.RecipeInterface.should_allow_access"><code class="name flex">
-<span>async def <span class="ident">should_allow_access</span></span>(<span>self, request: BaseRequest, config: DashboardConfig, user_context: Dict[str, Any])</span>
+<span>async def <span class="ident">should_allow_access</span></span>(<span>self, request: BaseRequest, config: NormalisedDashboardConfig, user_context: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -839,11 +847,11 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.SearchTagsOK.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.interfaces.SearchTagsOK.tags"><code class="name">var <span class="ident">tags</span> : List[str]</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -902,7 +910,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.SignOutOK.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -944,7 +952,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserCountGetAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -982,7 +990,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1024,7 +1032,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1062,7 +1070,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyPutAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1100,7 +1108,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1138,7 +1146,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIOkResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1176,7 +1184,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1221,7 +1229,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1263,7 +1271,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1301,7 +1309,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1343,7 +1351,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIInvalidPasswordErrorResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1381,7 +1389,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1419,7 +1427,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1461,7 +1469,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1503,7 +1511,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1541,7 +1549,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1579,7 +1587,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1631,7 +1639,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -1669,7 +1677,7 @@ inheritance.</p></div>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>

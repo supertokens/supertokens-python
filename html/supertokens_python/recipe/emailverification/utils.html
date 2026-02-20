@@ -42,7 +42,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union
 
 from typing_extensions import Literal
 
@@ -54,53 +54,76 @@ from supertokens_python.ingredients.emaildelivery.types import (
 from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import (
     BackwardCompatibilityService,
 )
+from supertokens_python.types.config import (
+    BaseConfig,
+    BaseNormalisedConfig,
+    BaseNormalisedOverrideConfig,
+    BaseOverrideableConfig,
+    BaseOverrideConfig,
+)
+
+from .interfaces import APIInterface, RecipeInterface, TypeGetEmailForUserIdFunction
+from .types import EmailTemplateVars, VerificationEmailTemplateVars
 
 if TYPE_CHECKING:
-    from typing import Callable, Union
-
     from supertokens_python.supertokens import AppInfo
-
-    from .interfaces import APIInterface, RecipeInterface, TypeGetEmailForUserIdFunction
-    from .types import EmailTemplateVars, VerificationEmailTemplateVars
-
-
-class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis
 
 
 MODE_TYPE = Literal[&#34;REQUIRED&#34;, &#34;OPTIONAL&#34;]
 
+EmailVerificationOverrideConfig = BaseOverrideConfig[RecipeInterface, APIInterface]
+NormalisedEmailVerificationOverrideConfig = BaseNormalisedOverrideConfig[
+    RecipeInterface, APIInterface
+]
+InputOverrideConfig = EmailVerificationOverrideConfig
+&#34;&#34;&#34;Deprecated, use `EmailVerificationOverrideConfig` instead.&#34;&#34;&#34;
 
-class EmailVerificationConfig:
-    def __init__(
+
+class EmailVerificationOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    mode: MODE_TYPE
+    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
+    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None
+
+
+class EmailVerificationConfig(
+    EmailVerificationOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, EmailVerificationOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; EmailVerificationOverrideableConfig:
+        &#34;&#34;&#34;Create a `EmailVerificationOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return EmailVerificationOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        mode: MODE_TYPE,
-        get_email_delivery_config: Callable[
-            [], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
-        ],
-        get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction],
-        override: OverrideConfig,
-    ):
-        self.mode = mode
-        self.override = override
-        self.get_email_delivery_config = get_email_delivery_config
-        self.get_email_for_recipe_user_id = get_email_for_recipe_user_id
+        overrideable_config: EmailVerificationOverrideableConfig,
+    ) -&gt; &#34;EmailVerificationConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `EmailVerificationConfig` from a `EmailVerificationOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return EmailVerificationConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )
+
+
+class NormalisedEmailVerificationConfig(
+    BaseNormalisedConfig[RecipeInterface, APIInterface]
+):
+    mode: MODE_TYPE
+    get_email_delivery_config: Callable[
+        [], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
+    ]
+    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction]
 
 
 def validate_and_normalise_user_input(
     app_info: AppInfo,
-    mode: MODE_TYPE,
-    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
-    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-    override: Union[OverrideConfig, None] = None,
-) -&gt; EmailVerificationConfig:
-    if mode not in [&#34;REQUIRED&#34;, &#34;OPTIONAL&#34;]:
+    config: EmailVerificationConfig,
+) -&gt; NormalisedEmailVerificationConfig:
+    if config.mode not in [&#34;REQUIRED&#34;, &#34;OPTIONAL&#34;]:
         raise ValueError(
             &#34;Email Verification recipe mode must be one of &#39;REQUIRED&#39; or &#39;OPTIONAL&#39;&#34;
         )
@@ -108,27 +131,30 @@ def validate_and_normalise_user_input(
     def get_email_delivery_config() -&gt; EmailDeliveryConfigWithService[
         VerificationEmailTemplateVars
     ]:
-        email_service = email_delivery.service if email_delivery is not None else None
+        email_service = (
+            config.email_delivery.service if config.email_delivery is not None else None
+        )
         if email_service is None:
             email_service = BackwardCompatibilityService(app_info)
 
-        if email_delivery is not None and email_delivery.override is not None:
-            override = email_delivery.override
+        if (
+            config.email_delivery is not None
+            and config.email_delivery.override is not None
+        ):
+            override = config.email_delivery.override
         else:
             override = None
         return EmailDeliveryConfigWithService(email_service, override=override)
 
-    if override is not None and not isinstance(override, OverrideConfig):  # type: ignore
-        raise ValueError(&#34;override must be of type OverrideConfig or None&#34;)
+    override_config = NormalisedEmailVerificationOverrideConfig.from_input_config(
+        override_config=config.override
+    )
 
-    if override is None:
-        override = OverrideConfig()
-
-    return EmailVerificationConfig(
-        mode,
-        get_email_delivery_config,
-        get_email_for_recipe_user_id,
-        override,
+    return NormalisedEmailVerificationConfig(
+        mode=config.mode,
+        get_email_delivery_config=get_email_delivery_config,
+        get_email_for_recipe_user_id=config.get_email_for_recipe_user_id,
+        override=override_config,
     )
 
 
@@ -164,7 +190,7 @@ def get_email_verify_link(
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, mode: MODE_TYPE, email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None, get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None, override: Union[<a title="supertokens_python.recipe.emailverification.utils.OverrideConfig" href="#supertokens_python.recipe.emailverification.utils.OverrideConfig">OverrideConfig</a>, None] = None)</span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, config: <a title="supertokens_python.recipe.emailverification.utils.EmailVerificationConfig" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationConfig">EmailVerificationConfig</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -174,51 +200,239 @@ def get_email_verify_link(
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="supertokens_python.recipe.emailverification.utils.BaseOverrideConfig[RecipeInterface, APIInterface]"><code class="flex name class">
+<span>class <span class="ident">InputOverrideConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for input override config with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideConfigWithoutAPI" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI">BaseOverrideConfigWithoutAPI</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig">BaseOverrideConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.apis" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfig.apis">apis</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.functions" href="../../types/config.html#supertokens_python.types.config.BaseOverrideConfigWithoutAPI.functions">functions</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
 <dt id="supertokens_python.recipe.emailverification.utils.EmailVerificationConfig"><code class="flex name class">
 <span>class <span class="ident">EmailVerificationConfig</span></span>
-<span>(</span><span>mode: MODE_TYPE, get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]], get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction], override: <a title="supertokens_python.recipe.emailverification.utils.OverrideConfig" href="#supertokens_python.recipe.emailverification.utils.OverrideConfig">OverrideConfig</a>)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class EmailVerificationConfig:
-    def __init__(
+<pre><code class="python">class EmailVerificationConfig(
+    EmailVerificationOverrideableConfig,
+    BaseConfig[RecipeInterface, APIInterface, EmailVerificationOverrideableConfig],
+):
+    def to_overrideable_config(self) -&gt; EmailVerificationOverrideableConfig:
+        &#34;&#34;&#34;Create a `EmailVerificationOverrideableConfig` from the current config.&#34;&#34;&#34;
+        return EmailVerificationOverrideableConfig(**self.model_dump())
+
+    def from_overrideable_config(
         self,
-        mode: MODE_TYPE,
-        get_email_delivery_config: Callable[
-            [], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
-        ],
-        get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction],
-        override: OverrideConfig,
-    ):
-        self.mode = mode
-        self.override = override
-        self.get_email_delivery_config = get_email_delivery_config
-        self.get_email_for_recipe_user_id = get_email_for_recipe_user_id</code></pre>
+        overrideable_config: EmailVerificationOverrideableConfig,
+    ) -&gt; &#34;EmailVerificationConfig&#34;:
+        &#34;&#34;&#34;
+        Create a `EmailVerificationConfig` from a `EmailVerificationOverrideableConfig`.
+        Not a classmethod since it needs to be used in a dynamic context within plugins.
+        &#34;&#34;&#34;
+        return EmailVerificationConfig(
+            **overrideable_config.model_dump(),
+            override=self.override,
+        )</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig">EmailVerificationOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li>supertokens_python.types.config.BaseConfig[RecipeInterface, APIInterface, EmailVerificationOverrideableConfig]</li>
+<li><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.emailverification.utils.EmailVerificationConfig.from_overrideable_config"><code class="name flex">
+<span>def <span class="ident">from_overrideable_config</span></span>(<span>self, overrideable_config: <a title="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig">EmailVerificationOverrideableConfig</a>) ‑> <a title="supertokens_python.recipe.emailverification.utils.EmailVerificationConfig" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationConfig">EmailVerificationConfig</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationConfig" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationConfig">EmailVerificationConfig</a></code> from a <code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig">EmailVerificationOverrideableConfig</a></code>.
+Not a classmethod since it needs to be used in a dynamic context within plugins.</p></div>
 </dd>
-<dt id="supertokens_python.recipe.emailverification.utils.OverrideConfig"><code class="flex name class">
-<span>class <span class="ident">OverrideConfig</span></span>
-<span>(</span><span>functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None)</span>
+<dt id="supertokens_python.recipe.emailverification.utils.EmailVerificationConfig.to_overrideable_config"><code class="name flex">
+<span>def <span class="ident">to_overrideable_config</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig">EmailVerificationOverrideableConfig</a></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Create a <code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig">EmailVerificationOverrideableConfig</a></code> from the current config.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig">EmailVerificationOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.email_delivery" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.email_delivery">email_delivery</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.get_email_for_recipe_user_id" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.get_email_for_recipe_user_id">get_email_for_recipe_user_id</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.mode" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.mode">mode</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li><code><b><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseConfig.override" href="../../types/config.html#supertokens_python.types.config.BaseConfig.override">override</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig"><code class="flex name class">
+<span>class <span class="ident">EmailVerificationOverrideableConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Input config properties overrideable using the plugin config overrides</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class OverrideConfig:
-    def __init__(
-        self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-    ):
-        self.functions = functions
-        self.apis = apis</code></pre>
+<pre><code class="python">class EmailVerificationOverrideableConfig(BaseOverrideableConfig):
+    &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
+
+    mode: MODE_TYPE
+    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
+    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction] = None</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationConfig" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationConfig">EmailVerificationConfig</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.email_delivery"><code class="name">var <span class="ident">email_delivery</span> : Optional[<a title="supertokens_python.ingredients.emaildelivery.types.EmailDeliveryConfig" href="../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.EmailDeliveryConfig">EmailDeliveryConfig</a>[<a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.get_email_for_recipe_user_id"><code class="name">var <span class="ident">get_email_for_recipe_user_id</span> : Optional[Callable[[<a title="supertokens_python.types.base.RecipeUserId" href="../../types/base.html#supertokens_python.types.base.RecipeUserId">RecipeUserId</a>, Dict[str, Any]], Awaitable[Union[<a title="supertokens_python.recipe.emailverification.interfaces.GetEmailForUserIdOkResult" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.GetEmailForUserIdOkResult">GetEmailForUserIdOkResult</a>, <a title="supertokens_python.recipe.emailverification.interfaces.EmailDoesNotExistError" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.EmailDoesNotExistError">EmailDoesNotExistError</a>, <a title="supertokens_python.recipe.emailverification.interfaces.UnknownUserIdError" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.UnknownUserIdError">UnknownUserIdError</a>]]]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.mode"><code class="name">var <span class="ident">mode</span> : Literal['REQUIRED', 'OPTIONAL']</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.utils.NormalisedEmailVerificationConfig"><code class="flex name class">
+<span>class <span class="ident">NormalisedEmailVerificationConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for normalized config of a Recipe with API overrides.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>self</code> is explicitly positional-only to allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NormalisedEmailVerificationConfig(
+    BaseNormalisedConfig[RecipeInterface, APIInterface]
+):
+    mode: MODE_TYPE
+    get_email_delivery_config: Callable[
+        [], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
+    ]
+    get_email_for_recipe_user_id: Optional[TypeGetEmailForUserIdFunction]</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></li>
+<li><a title="supertokens_python.types.config.BaseNormalisedConfig" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig">BaseNormalisedConfig</a></li>
+<li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
+<li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+<li>pydantic.main.BaseModel</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.emailverification.utils.NormalisedEmailVerificationConfig.get_email_delivery_config"><code class="name">var <span class="ident">get_email_delivery_config</span> : Callable[[], <a title="supertokens_python.ingredients.emaildelivery.types.EmailDeliveryConfigWithService" href="../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.EmailDeliveryConfigWithService">EmailDeliveryConfigWithService</a>[<a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.utils.NormalisedEmailVerificationConfig.get_email_for_recipe_user_id"><code class="name">var <span class="ident">get_email_for_recipe_user_id</span> : Optional[Callable[[<a title="supertokens_python.types.base.RecipeUserId" href="../../types/base.html#supertokens_python.types.base.RecipeUserId">RecipeUserId</a>, Dict[str, Any]], Awaitable[Union[<a title="supertokens_python.recipe.emailverification.interfaces.GetEmailForUserIdOkResult" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.GetEmailForUserIdOkResult">GetEmailForUserIdOkResult</a>, <a title="supertokens_python.recipe.emailverification.interfaces.EmailDoesNotExistError" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.EmailDoesNotExistError">EmailDoesNotExistError</a>, <a title="supertokens_python.recipe.emailverification.interfaces.UnknownUserIdError" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.UnknownUserIdError">UnknownUserIdError</a>]]]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.utils.NormalisedEmailVerificationConfig.mode"><code class="name">var <span class="ident">mode</span> : Literal['REQUIRED', 'OPTIONAL']</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].override" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig.override">override</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -243,10 +457,30 @@ def get_email_verify_link(
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationConfig" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationConfig">EmailVerificationConfig</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.emailverification.utils.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.emailverification.utils.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.emailverification.utils.OverrideConfig" href="#supertokens_python.recipe.emailverification.utils.OverrideConfig">OverrideConfig</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationConfig" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationConfig">EmailVerificationConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationConfig.from_overrideable_config" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationConfig.from_overrideable_config">from_overrideable_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationConfig.to_overrideable_config" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationConfig.to_overrideable_config">to_overrideable_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig">EmailVerificationOverrideableConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.email_delivery" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.email_delivery">email_delivery</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.get_email_for_recipe_user_id" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.get_email_for_recipe_user_id">get_email_for_recipe_user_id</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.mode" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationOverrideableConfig.mode">mode</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.emailverification.utils.NormalisedEmailVerificationConfig" href="#supertokens_python.recipe.emailverification.utils.NormalisedEmailVerificationConfig">NormalisedEmailVerificationConfig</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.emailverification.utils.NormalisedEmailVerificationConfig.get_email_delivery_config" href="#supertokens_python.recipe.emailverification.utils.NormalisedEmailVerificationConfig.get_email_delivery_config">get_email_delivery_config</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.utils.NormalisedEmailVerificationConfig.get_email_for_recipe_user_id" href="#supertokens_python.recipe.emailverification.utils.NormalisedEmailVerificationConfig.get_email_for_recipe_user_id">get_email_for_recipe_user_id</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.utils.NormalisedEmailVerificationConfig.mode" href="#supertokens_python.recipe.emailverification.utils.NormalisedEmailVerificationConfig.mode">mode</a></code></li>
+</ul>
 </li>
 </ul>
 </li>
