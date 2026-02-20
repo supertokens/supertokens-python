@@ -24,6 +24,7 @@ from .google import Google
 from .google_workspaces import GoogleWorkspaces
 from .linkedin import Linkedin
 from .okta import Okta
+from .saml import SAML
 from .twitter import Twitter
 from .utils import do_get_request
 
@@ -215,6 +216,8 @@ def create_provider(provider_input: ProviderInput) -> Provider:
         return Twitter(provider_input)
     if provider_input.config.third_party_id.startswith("boxy-saml"):
         return BoxySAML(provider_input)
+    if provider_input.config.third_party_id.startswith("saml"):
+        return SAML(provider_input)
 
     return NewProvider(provider_input)
 

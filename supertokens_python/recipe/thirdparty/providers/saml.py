@@ -35,21 +35,22 @@ class SAMLProviderImpl(GenericProvider):
         redirect_uri_on_provider_dashboard: str,
         user_context: Dict[str, Any],
     ) -> AuthorisationRedirect:
+        from urllib.parse import urlencode
+
         from supertokens_python.supertokens import Supertokens
 
         st_instance = Supertokens.get_instance()
         app_info = st_instance.app_info
 
+        tenant_id = getattr(self, "tenant_id", "public")
+
         # Build URL to the SAML recipe's login endpoint
-        # The tenantId will be extracted from the redirect_uri_on_provider_dashboard
-        # or we use the default path
+        # Include tenant_id in the path so the SAML handler receives it
         saml_login_url = (
             app_info.api_domain.get_as_string_dangerous()
             + app_info.api_base_path.get_as_string_dangerous()
-            + "/saml/login"
+            + f"/{tenant_id}/saml/login"
         )
-
-        from urllib.parse import urlencode
 
         query_params: Dict[str, str] = {
             "client_id": self.config.client_id,

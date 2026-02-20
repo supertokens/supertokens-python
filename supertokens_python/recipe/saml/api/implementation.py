@@ -51,7 +51,7 @@ class APIImplementation(APIInterface):
         acs_url = (
             options.app_info.api_domain.get_as_string_dangerous()
             + options.app_info.api_base_path.get_as_string_dangerous()
-            + "/saml/callback"
+            + f"/{tenant_id}/saml/callback"
         )
 
         return await options.recipe_implementation.create_login_request(

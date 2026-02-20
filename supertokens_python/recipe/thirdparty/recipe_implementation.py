@@ -219,4 +219,7 @@ class RecipeImplementation(RecipeInterface):
             merged_providers, third_party_id, client_type, user_context
         )
 
+        if provider is not None:
+            provider.tenant_id = tenant_id
+
         return provider
