@@ -71,7 +71,7 @@ class Transporter:
             return mail
         except Exception as e:
             log_debug_message("Couldn't connect to the SMTP server: %s", e)
-            raise e
+            raise
 
     async def send_email(self, input_: EmailContent, _: Dict[str, Any]) -> None:
         connection = await self._connect()
@@ -91,6 +91,6 @@ class Transporter:
                 await connection.sendmail(from_addr, input_.to_email, input_.body)
         except Exception as e:
             log_debug_message("Error in sending email: %s", e)
-            raise e
+            raise
         finally:
             await connection.quit()

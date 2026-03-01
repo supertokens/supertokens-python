@@ -1,7 +1,7 @@
 services:
   core:
     # Uses `$SUPERTOKENS_CORE_VERSION` when available, else latest
-    image: supertokens/supertokens-dev-postgresql:${SUPERTOKENS_CORE_VERSION:-master}
+    image: supertokens/supertokens-dev-postgresql:${SUPERTOKENS_CORE_VERSION:-11.4}$
     entrypoint: [
       "/usr/lib/supertokens/jre/bin/java",
       "-classpath", "/usr/lib/supertokens/core/*:/usr/lib/supertokens/plugin-interface/*:/usr/lib/supertokens/ee/*",
