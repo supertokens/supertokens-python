@@ -120,7 +120,7 @@ setup(
         "asgiref>=3.4.1,<4",
         "httpx>=0.15.0,<1.0.0",
         "packaging>=25.0,<26.0",
-        "phonenumbers<9",
+        "phonenumbers>=8.0,<10",
         "pkce<1.1.0",
         "pycryptodome<3.21.0",
         "pydantic>=2.10.6,<3.0.0",
