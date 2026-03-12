@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.31.1] - 2026-03-12
+
+- Updated the phonenumbers dependency limitation
+
 ## [0.31.0] - 2026-02-20
 - Adds SAML recipe with support for SP-initiated and IdP-initiated login flows
   - Client management (create, update, list, remove)
