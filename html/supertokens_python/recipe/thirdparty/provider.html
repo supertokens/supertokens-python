@@ -73,6 +73,7 @@ class Provider:
         self.id = id
         self.config = config
         self.provider_type: str = &#34;oauth2&#34;
+        self.tenant_id: str = &#34;public&#34;
 
     async def get_config_for_client_type(
         self, client_type: Optional[str], user_context: Dict[str, Any]
@@ -601,6 +602,7 @@ class ProviderInput:
         self.id = id
         self.config = config
         self.provider_type: str = &#34;oauth2&#34;
+        self.tenant_id: str = &#34;public&#34;
 
     async def get_config_for_client_type(
         self, client_type: Optional[str], user_context: Dict[str, Any]
