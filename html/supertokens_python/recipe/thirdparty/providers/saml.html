@@ -63,21 +63,22 @@ class SAMLProviderImpl(GenericProvider):
         redirect_uri_on_provider_dashboard: str,
         user_context: Dict[str, Any],
     ) -&gt; AuthorisationRedirect:
+        from urllib.parse import urlencode
+
         from supertokens_python.supertokens import Supertokens
 
         st_instance = Supertokens.get_instance()
         app_info = st_instance.app_info
 
+        tenant_id = getattr(self, &#34;tenant_id&#34;, &#34;public&#34;)
+
         # Build URL to the SAML recipe&#39;s login endpoint
-        # The tenantId will be extracted from the redirect_uri_on_provider_dashboard
-        # or we use the default path
+        # Include tenant_id in the path so the SAML handler receives it
         saml_login_url = (
             app_info.api_domain.get_as_string_dangerous()
             + app_info.api_base_path.get_as_string_dangerous()
-            + &#34;/saml/login&#34;
+            + f&#34;/{tenant_id}/saml/login&#34;
         )
-
-        from urllib.parse import urlencode
 
         query_params: Dict[str, str] = {
             &#34;client_id&#34;: self.config.client_id,
@@ -182,21 +183,22 @@ def SAML(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-buil
         redirect_uri_on_provider_dashboard: str,
         user_context: Dict[str, Any],
     ) -&gt; AuthorisationRedirect:
+        from urllib.parse import urlencode
+
         from supertokens_python.supertokens import Supertokens
 
         st_instance = Supertokens.get_instance()
         app_info = st_instance.app_info
 
+        tenant_id = getattr(self, &#34;tenant_id&#34;, &#34;public&#34;)
+
         # Build URL to the SAML recipe&#39;s login endpoint
-        # The tenantId will be extracted from the redirect_uri_on_provider_dashboard
-        # or we use the default path
+        # Include tenant_id in the path so the SAML handler receives it
         saml_login_url = (
             app_info.api_domain.get_as_string_dangerous()
             + app_info.api_base_path.get_as_string_dangerous()
-            + &#34;/saml/login&#34;
+            + f&#34;/{tenant_id}/saml/login&#34;
         )
-
-        from urllib.parse import urlencode
 
         query_params: Dict[str, str] = {
             &#34;client_id&#34;: self.config.client_id,
