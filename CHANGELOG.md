@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+- The dependency on aiosmtplib has been updated.
+
 ## [0.31.1] - 2026-03-12
 
 - Updated the phonenumbers dependency limitation
