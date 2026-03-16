@@ -14,76 +14,128 @@ We're so excited you're interested in helping with SuperTokens! We are happy to 
 
 ## Development Setup
 
-You will need to setup the [supertokens-core](https://github.com/supertokens/supertokens-core) in order to run the `supertokens-python` tests, you can setup `supertokens-core` by following this [guide](https://github.com/supertokens/supertokens-core/blob/master/CONTRIBUTING.md#development-setup)
-**Note: If you are not contributing to the `supertokens-core` you can skip steps 1 & 4 under Project Setup of the `supertokens-core` contributing guide.**
-
 ### Prerequisites
 
--   Python (version 3.7 or above)
--   IDE: [PyCharm](https://www.jetbrains.com/pycharm/download)(recommended) OR [VS Code](https://code.visualstudio.com/) OR equivalent IDE
+- Python 3.8 or above
+- [Docker](https://docs.docker.com/desktop/) (required to run tests)
+- IDE: [PyCharm](https://www.jetbrains.com/pycharm/download) (recommended) or [VS Code](https://code.visualstudio.com/)
+- [changie](https://changie.dev/guide/installation/) (required to add changelog entries)
+  ```bash
+  brew install changie   # macOS
+  # or download a binary from https://github.com/miniscruff/changie/releases
+  ```
 
 ### Project Setup
 
-1. Fork the [supertokens-python](https://github.com/supertokens/supertokens-python) repository.
-2. Clone the forked repository in the parent directory of the previously setup `supertokens-root`.
-   `supertokens-python` and `supertokens-root` should exist side by side within the same parent directory.
-3. Create a virtual environment for the `supertokens-python` project and activate it.
-4. Install the project dependencies
-   `make dev-install`
-5. Add git pre-commit hooks
-   `make set-up-hooks`
+1. Fork and clone [supertokens-python](https://github.com/supertokens/supertokens-python).
+2. Create and activate a virtual environment:
+   ```bash
+   python3 -m venv venv && source venv/bin/activate
+   ```
+3. Install project dependencies:
+   ```bash
+   make dev-install
+   ```
+4. Install framework-specific extras if needed:
+   ```bash
+   make with-fastapi   # or with-flask, with-django, with-drf
+   ```
+5. Set up git hooks (enforces version sync between `setup.py` and `constants.py`):
+   ```bash
+   make set-up-hooks
+   ```
 
 ## Modifying Code
 
-- Open the `supertokens-python` project in your IDE and you can start modifying the code.
-- Use `make lint` to find lint/formatting errors before committing. (They will run anyways)
+- Open the project in your IDE and start modifying.
+- Run `make lint` to check for lint/type errors before committing (the pre-commit hook also runs this).
 
 ## Testing
 
 > [!CAUTION]
-> These tests run by creating multiple applications on the supertokens-core, and should **not** be run on actual core instances.
-> Use the Docker `compose.yml` file to run the required containers for tests.
+> Tests create multiple applications on the SuperTokens core and **must not** be run against production instances. Use the Docker `compose.yml` provided.
 
-1. Install `docker`
-   1. [Docker Desktop](https://docs.docker.com/desktop/) is convenient to install and use, and includes a Docker Engine.
-   2. [Docker Engine](https://docs.docker.com/engine/install/) is the minimum requirement to spin up containers required for tests.
-2. To run all tests, use `make test`.
-   1. NOTE: This starts up a docker container, and is required for tests to run.
-   2. Set `SUPERTOKENS_CORE_VERSION` to pull a certain image, defaults to `latest`.
-3. To run individual tests
-   1. `docker compose up --wait; pytest ./tests/path/to/test/file.py::test_function_name`
-   2. OR use your IDE's in-built UI for running python tests. You may read [VSCode Python Testing](https://code.visualstudio.com/docs/python/testing) and [PyCharm Testing](https://www.jetbrains.com/help/pycharm/testing-your-first-python-application.html#debug-test) for more info.
+1. Run all tests (starts required containers automatically):
+   ```bash
+   make test
+   ```
+   Set `SUPERTOKENS_CORE_VERSION` to test against a specific core version (defaults to `latest`).
+
+2. Run a specific test file or function:
+   ```bash
+   docker compose up --wait
+   pytest ./tests/path/to/test_file.py
+   pytest ./tests/path/to/test_file.py::test_function_name
+   ```
+   You can also use your IDE's built-in test runner:
+   [VS Code Python Testing](https://code.visualstudio.com/docs/python/testing) |
+   [PyCharm Testing](https://www.jetbrains.com/help/pycharm/testing-your-first-python-application.html)
+
+## Changelog
+
+Every pull request must include a changelog fragment describing the change. We use [changie](https://changie.dev) to manage changelog entries.
+
+### Adding a fragment
+
+Run the following command from the repo root and follow the prompts:
+
+```bash
+changie new
+```
+
+This creates a small YAML file under `.changes/unreleased/`. Commit this file with your changes — CI will check that it exists.
+
+**Kinds to choose from:**
+
+| Kind | When to use |
+|---|---|
+| `Added` | New feature or capability |
+| `Changed` | Change to existing behaviour |
+| `Fixed` | Bug fix |
+| `Breaking Changes` | Anything that breaks backwards compatibility |
+| `Infrastructure` | CI, tooling, dependency changes |
+| `Deprecated` | Something that will be removed in a future version |
+| `Removed` | Removal of a feature |
+| `Security` | Security fix |
+
+### Skipping the changelog check
+
+If a PR has no user-facing impact (e.g., a documentation typo fix or test refactor), add the `Skip-Changelog` label on GitHub to bypass the check.
 
 ## Pull Request
 
-1. Before submitting a pull request make sure all tests have passed.
-2. Reference the relevant issue or pull request and give a clear description of changes/features added when submitting a pull request.
-3. Make sure the PR title follows [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
-
-## SuperTokens Community
-
-SuperTokens is made possible by a passionate team and a strong community of developers. If you have any questions or would like to get more involved in the SuperTokens community you can check out:
-
--   [Github Issues](https://github.com/supertokens/supertokens-python/issues)
--   [Discord](https://supertokens.io/discord)
--   [Twitter](https://twitter.com/supertokensio)
--   or [email us](mailto:team@supertokens.io)
-
-Additional resources you might find useful:
-
--   [SuperTokens Docs](https://supertokens.io/docs/community/getting-started/installation)
--   [Blog Posts](https://supertokens.io/blog/)
+1. Make sure all tests pass before submitting.
+2. Reference the relevant issue and give a clear description of the changes.
+3. Ensure the PR title follows the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification (enforced by CI).
+4. Include a changelog fragment (see [Changelog](#changelog) above) or add the `Skip-Changelog` label.
 
 ## Implementing RecipeInterfaces
 
 - Make sure all CRUD operations are available via the `(a)?syncio` modules of that recipe.
-- Make sure the corresponding `RecipeImplementation` takes type imports from the `interfaces.py` file of that recipe. This is so that if a user wants to copy / paste that code into their project, they can do so via the normal import statement.
+- Make sure the corresponding `RecipeImplementation` takes type imports from the `interfaces.py` file of that recipe. This allows users to copy/paste that code into their project with standard imports.
 
 ## Implementing APIInterfaces
-- Make sure the corresonding `APIImplementation` takes type imports from the `interfaces.py` file of that recipe. This is so that if a user wants to copy / paste that code into their project, they can do so via the normal import statement.
 
-## Generating docs
-This will generate the API docs in a folder called docs
-```
+- Make sure the corresponding `APIImplementation` takes type imports from the `interfaces.py` file of that recipe. This allows users to copy/paste that code into their project with standard imports.
+
+## Generating Docs
+
+```bash
 make build-docs
 ```
+
+This generates API docs in a `html/` folder.
+
+## SuperTokens Community
+
+SuperTokens is made possible by a passionate team and a strong community of developers. If you have any questions or would like to get more involved:
+
+- [Github Issues](https://github.com/supertokens/supertokens-python/issues)
+- [Discord](https://supertokens.io/discord)
+- [Twitter](https://twitter.com/supertokensio)
+- [Email us](mailto:team@supertokens.io)
+
+Additional resources:
+
+- [SuperTokens Docs](https://supertokens.io/docs/community/getting-started/installation)
+- [Blog Posts](https://supertokens.io/blog/)
