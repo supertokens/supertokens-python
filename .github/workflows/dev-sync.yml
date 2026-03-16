@@ -55,7 +55,14 @@ jobs:
         id: next
         run: |
           bump="${{ inputs.bump || 'auto' }}"
-          version=$(changie next $bump)
+
+          if ! version=$(changie next $bump 2>&1); then
+            echo "changie next returned: $version"
+            echo "No bumpable fragments found (all changes may be Infrastructure/none). Skipping sync."
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           version_branch=$(echo "$version" | grep -oE '^[0-9]+\.[0-9]+')
 
           echo "version=$version"               >> $GITHUB_OUTPUT
@@ -63,6 +70,7 @@ jobs:
           echo "pr_branch=release/v$version"    >> $GITHUB_OUTPUT
 
       - name: Create version branch if it doesn't exist
+        if: steps.next.outputs.skip != 'true'
         run: |
           version_branch="${{ steps.next.outputs.version_branch }}"
 
@@ -75,15 +83,18 @@ jobs:
           fi
 
       - uses: actions/setup-python@v5
+        if: steps.next.outputs.skip != 'true'
         with:
           python-version: '3.13'
 
       - name: Install doc dependencies
         # pdoc3 needs supertokens_python importable; install the package itself
         # plus pdoc3 — no need for the full dev-requirements (frameworks, test tools, etc.)
+        if: steps.next.outputs.skip != 'true'
         run: pip install pdoc3==0.11.0 -e .
 
       - name: Build release branch
+        if: steps.next.outputs.skip != 'true'
         run: |
           pr_branch="${{ steps.next.outputs.pr_branch }}"
           version_branch="${{ steps.next.outputs.version_branch }}"
@@ -116,6 +127,7 @@ jobs:
           git push origin "$pr_branch" --force
 
       - name: Create or update pull request
+        if: steps.next.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.ALL_REPO_PAT }}
         run: |
