@@ -1,4 +1,4 @@
-name: Auth-React Tests - L1 - Django
+name: Auth-React Tests - L1
 
 on:
   pull_request:
@@ -93,7 +93,10 @@ jobs:
           artifact-id: ${{ matrix.fdi-version }}
           matrix: |
             py-version: ${{ needs.define-versions.outputs.pyVersions }}
-            framework: ["django"]
+            framework:
+              - fastapi
+              # - django   # re-enable for full framework coverage
+              # - flask     # re-enable for full framework coverage
             spec: ${{ steps.envs.outputs.specs }}
 
   launch-fdi-workflows:
