@@ -89,10 +89,8 @@ jobs:
           python-version: '3.13'
 
       - name: Install doc dependencies
-        # pdoc3 needs supertokens_python importable; install the package itself
-        # plus pdoc3 — no need for the full dev-requirements (frameworks, test tools, etc.)
         if: steps.next.outputs.skip != 'true'
-        run: pip install pdoc3==0.11.0 -e .
+        run: pip install pdoc3==0.11.0 -e ".[fastapi,flask,django,drf]"
 
       - name: Build release branch
         if: steps.next.outputs.skip != 'true'
