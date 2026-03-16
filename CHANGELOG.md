@@ -6,10 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [unreleased]
-
-- The dependency on aiosmtplib has been updated.
-
 ## [0.31.1] - 2026-03-12
 
 - Updated the phonenumbers dependency limitation
@@ -124,7 +120,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `supertokens_python.recipe.accountlinking.recipe_implementation.RecipeImplementation.list_users_by_account_info`
     - `supertokens_python.recipe.passwordless.api.implementation.get_passwordless_user_by_account_info`
     - `supertokens_python.recipe.passwordless.api.implementation.get_passwordless_user_by_account_info`
-
 
 ## [0.29.2] - 2025-05-19
 - Fixes cookies being set without expiry in Django
@@ -1259,7 +1254,6 @@ With this update, verify_session will return a 401 error if it detects multiple 
 ## [0.16.1] - 2023-09-19
 - Handle AWS Public URLs (ending with `.amazonaws.com`) separately while extracting TLDs for SameSite attribute.
 
-
 ## [0.16.0] - 2023-09-13
 
 
@@ -1275,7 +1269,6 @@ With this update, verify_session will return a 401 error if it detects multiple 
 ## [0.15.3] - 2023-09-25
 
 - Handle 429 rate limiting from SaaS core instances
-
 
 ## [0.15.2] - 2023-09-23
 
@@ -1794,7 +1787,6 @@ With this update, verify_session will return a 401 error if it detects multiple 
     - supertokens-web-js@0.7.0
     - supertokens-website@17.0.2
 
-
 ## [0.14.8] - 2023-07-07
 ## Fixes
 
@@ -1825,7 +1817,6 @@ With this update, verify_session will return a 401 error if it detects multiple 
 - Throw error when `verify_sesion` is used with a view that allows `OPTIONS` or `TRACE` requests
 - Allow `verify_session` decorator to be with `@app.before_request` in Flask without returning a response
 
-
 ## [0.14.3] - 2023-06-7
 
 ### Changes
@@ -1835,7 +1826,6 @@ With this update, verify_session will return a 401 error if it detects multiple 
 ## [0.14.2] - 2023-05-29
 
 - Adds additional debug logs whenever the SDK throws a `TRY_REFRESH_TOKEN` or `UNAUTHORISED` error to make debugging easier
-
 
 ## [0.14.1] - 2023-05-23
 
@@ -2213,7 +2203,6 @@ session.init(
 )
 ```
 
-
 ## [0.12.9] - 2023-04-28
 
 - Added missing arguments in `get_users_newest_first` and `get_users_oldest_first`
@@ -2243,9 +2232,9 @@ session.init(
 
 ## [0.12.3] - 2023-02-27
 - Adds APIs and logic to the dashboard recipe to enable email password based login
+
 ## [0.12.2] - 2023-02-23
 - Fix expiry time of access token cookie.
-
 
 ## [0.12.1] - 2023-02-06
 
@@ -2290,7 +2279,6 @@ session.init(
 ## [0.11.10] - 2022-12-12
 
 -   Fixes issue of sign up API not sending a `FIELD_ERROR` response in case of duplicate email: https://github.com/supertokens/supertokens-python/issues/264
-
 
 ## [0.11.9] - 2022-12-06
 
@@ -2501,7 +2489,6 @@ The `UserRoles` recipe now adds role and permission information into the access 
 -   You can disable this behaviour by setting `skip_adding_roles_to_access_token` and `skip_adding_permissions_to_access_token` to true in the recipe init.
 -   Check how to use the new claims in the updated guide: https://supertokens.com/docs/userroles/protecting-routes
 
-
 ## [0.10.4] - 2022-08-30
 ## Features:
 - Add support for User ID Mapping using `create_user_id_mapping`, `get_user_id_mapping`, `delete_user_id_mapping`, `update_or_delete_user_id_mapping` functions
@@ -2601,7 +2588,6 @@ init(
 
 ### Documentation
 - Add more details in the `CONTRIBUTING.md` to make it beginner friendly.
-
 
 ## [0.9.1] - 2022-06-27
 ### Features:
@@ -2888,7 +2874,6 @@ init(
 ### Fixes
 - Bug in user pagination functions: https://github.com/supertokens/supertokens-python/issues/95
 
-
 ## [0.5.2] - 2022-03-17
 ### Fixes
 - https://github.com/supertokens/supertokens-python/issues/90
@@ -2976,12 +2961,10 @@ init(
 - The ability to enable JWT creation with session management, this allows easier integration with services that require JWT based authentication: https://github.com/supertokens/supertokens-core/issues/250
 - You can do BaseRequest.request to get the original request object. Fixes #61
 
-
 ## [0.2.3] - 2021-12-07
 ### Fixes
 
 - Removes use of apiGatewayPath from apple's redirect URI since that is already there in the apiBasePath
-
 
 ## [0.2.2] - 2021-11-22
 
@@ -3038,7 +3021,6 @@ init(
 ### Added
 - Adds OAuth development keys for Google and Github for faster recipe implementation.
 - Removed the Literal from python 3.8 and added Literal from typing_extensions package. Now supertokens_python can be used with python 3.7 .
-
 
 ## [0.0.2] - 2021-10-09
 ### Fixes

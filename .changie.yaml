@@ -1,0 +1,40 @@
+changesDir: .changes
+unreleasedDir: unreleased
+headerPath: header.md
+changelogPath: CHANGELOG.md
+versionExt: md
+versionFormat: "## [{{.VersionNoPrefix}}] - {{.Time.Format \"2006-01-02\"}}"
+kindFormat: "### {{.Kind}}"
+changeFormat: "- {{.Body}}"
+
+kinds:
+  - label: Added
+    bump: minor
+  - label: Changed
+    bump: patch
+  - label: Fixed
+    bump: patch
+  - label: Breaking Changes
+    bump: minor   # treat as minor while major version is 0
+  - label: Infrastructure
+    bump: none    # tooling changes don't affect the version
+  - label: Deprecated
+    bump: patch
+  - label: Removed
+    bump: minor
+  - label: Security
+    bump: patch
+
+newlines:
+  afterChangelogHeader: 2
+  afterVersion: 1
+
+replacements:
+  - path: setup.py
+    find: 'version="[0-9]+\.[0-9]+\.[0-9]+"'
+    replace: 'version="{{.VersionNoPrefix}}"'
+    flags: ""
+  - path: supertokens_python/constants.py
+    find: 'VERSION = "[0-9]+\.[0-9]+\.[0-9]+"'
+    replace: 'VERSION = "{{.VersionNoPrefix}}"'
+    flags: ""
