@@ -31,12 +31,9 @@ jobs:
         id: skip
         with:
           # Only consider the source tree, not changelog/docs/html
-          paths: '["supertokens_python/**", "tests/**", "setup.py", "*.cfg", "*.toml"]'
-          # On push events, skip if an identical tree already produced a passing run
-          # (e.g. the same code was just tested via a dev PR)
+          paths: '["supertokens_python/**", "tests/**", "*.cfg", "*.toml"]'
+          # Skip if an identical source tree already produced a passing run
           skip_after_successful_duplicate: 'true'
-          # Never skip on pull_request — the label gate below handles that instead
-          do_not_skip: '["pull_request"]'
 
   define-versions:
     if: |
@@ -89,7 +86,7 @@ jobs:
   # Required status check for PRs. Enforces that every PR explicitly opts in to
   # tests ('run-tests' label) or explicitly opts out ('skip-tests' label).
   # Prevents accidentally merging untested code by forgetting to add a label.
-  # Release PRs are exempt — they carry 'Skip-Changelog' and tests ran on dev.
+  # Release PRs carry 'run-tests' and are hash-skipped when dev already passed.
   test-gate:
     runs-on: ubuntu-latest
     needs: [test]
@@ -102,17 +99,13 @@ jobs:
         run: |
           has_run_tests=$(echo "$LABELS"    | jq 'contains(["run-tests"])')
           has_skip_tests=$(echo "$LABELS"   | jq 'contains(["skip-tests"])')
-          is_release_pr=$(echo "$LABELS"    | jq 'contains(["Skip-Changelog"])')
 
-          if [[ "$is_release_pr" == "true" ]]; then
-            echo "Release PR — tests ran on dev branch."
-            exit 0
-          elif [[ "$has_skip_tests" == "true" ]]; then
+          if [[ "$has_skip_tests" == "true" ]]; then
             echo "Tests explicitly skipped via 'skip-tests' label."
             exit 0
           elif [[ "$has_run_tests" == "true" ]]; then
-            if [[ "$TEST_RESULT" == "success" ]]; then
-              echo "Tests passed."
+            if [[ "$TEST_RESULT" == "success" || "$TEST_RESULT" == "skipped" ]]; then
+              echo "Tests passed (result: $TEST_RESULT)."
               exit 0
             else
               echo "::error::Tests did not pass (result: $TEST_RESULT)."

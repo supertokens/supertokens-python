@@ -163,7 +163,8 @@ jobs:
           if [[ -n "$pr_number" ]]; then
             gh pr edit "$pr_number" \
               --title "chore: prepare release v${version}" \
-              --body "$body"
+              --body "$body" \
+              --add-label "run-tests"
             echo "Updated PR #$pr_number"
           else
             gh pr create \
@@ -171,6 +172,6 @@ jobs:
               --head "$pr_branch" \
               --title "chore: prepare release v${version}" \
               --body "$body" \
-              --label "Skip-Changelog"
+              --label "run-tests,Skip-Changelog"
             echo "Created new release PR"
           fi
