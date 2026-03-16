@@ -56,13 +56,14 @@ jobs:
         run: |
           bump="${{ inputs.bump || 'auto' }}"
 
-          if ! version=$(changie next $bump 2>&1); then
-            echo "changie next returned: $version"
+          if ! raw_version=$(changie next $bump 2>&1); then
+            echo "changie next returned: $raw_version"
             echo "No bumpable fragments found (all changes may be Infrastructure/none). Skipping sync."
             echo "skip=true" >> $GITHUB_OUTPUT
             exit 0
           fi
 
+          version="${raw_version#v}"  # strip leading 'v' if present (changie next returns e.g. v0.31.2)
           version_branch=$(echo "$version" | grep -oE '^[0-9]+\.[0-9]+')
 
           echo "version=$version"               >> $GITHUB_OUTPUT
