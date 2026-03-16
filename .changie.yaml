@@ -9,21 +9,21 @@ changeFormat: "- {{.Body}}"
 
 kinds:
   - label: Added
-    bump: minor
+    auto: minor
   - label: Changed
-    bump: patch
+    auto: patch
   - label: Fixed
-    bump: patch
+    auto: patch
   - label: Breaking Changes
-    bump: minor   # treat as minor while major version is 0
+    auto: minor   # treat as minor while major version is 0
   - label: Infrastructure
-    bump: none    # tooling changes don't affect the version
+    auto: none    # tooling changes don't affect the version
   - label: Deprecated
-    bump: patch
+    auto: patch
   - label: Removed
-    bump: minor
+    auto: minor
   - label: Security
-    bump: patch
+    auto: patch
 
 newlines:
   afterChangelogHeader: 2
