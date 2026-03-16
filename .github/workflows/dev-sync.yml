@@ -47,11 +47,9 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch --all --tags
 
-      - name: Install changie
-        run: |
-          curl -sSL "https://github.com/miniscruff/changie/releases/latest/download/changie_linux_amd64.tar.gz" \
-            | tar -xz changie
-          sudo mv changie /usr/local/bin/changie
+      - uses: miniscruff/changie-action@v2
+        with:
+          version: latest
 
       - name: Compute next version
         id: next

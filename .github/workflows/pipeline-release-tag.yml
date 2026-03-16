@@ -218,11 +218,9 @@ jobs:
             exit 1
           fi
 
-      - name: Install changie
-        run: |
-          curl -sSL "https://github.com/miniscruff/changie/releases/latest/download/changie_linux_amd64.tar.gz" \
-            | tar -xz changie
-          sudo mv changie /usr/local/bin/changie
+      - uses: miniscruff/changie-action@v2
+        with:
+          version: latest
 
       - name: Update changelog for release
         run: |
@@ -242,6 +240,7 @@ jobs:
           git add .changes/ CHANGELOG.md setup.py supertokens_python/constants.py
           git diff --staged --quiet || git commit -m "chore: update changelog for ${{ needs.setup.outputs.releaseTag }}"
           git push origin ${{ inputs.branch }}
+
 
       - name: Mark for release
         run: |
