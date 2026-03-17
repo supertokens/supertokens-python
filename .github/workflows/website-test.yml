@@ -166,7 +166,7 @@ jobs:
               ;;
           esac
 
-      - uses: supertokens/website-testing-action@main
+      - uses: supertokens/actions/website-testing-action@main
         with:
           version: ${{ steps.versions.outputs.websiteVersion }}
           node-sdk-version: ${{ steps.versions.outputs.nodeVersion }}

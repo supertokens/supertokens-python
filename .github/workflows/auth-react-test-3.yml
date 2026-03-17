@@ -85,7 +85,7 @@ jobs:
 
       - name: Get supported Python CDI versions
         id: cdi-versions
-        uses: supertokens/get-supported-versions-action@main
+        uses: supertokens/actions/get-supported-versions-action@main
         with:
             has-cdi: true
             working-directory: supertokens-python
@@ -147,7 +147,7 @@ jobs:
           mkdir -p $AUTH_REACT__LOG_DIR
           python3 app.py --port 8083 &> $AUTH_REACT__LOG_DIR/flask.log &
 
-      - uses: supertokens/auth-react-testing-action@main
+      - uses: supertokens/actions/auth-react-testing-action@main
         with:
           fdi-version: ${{ inputs.fdi-version }}
           check-name-suffix: '[FDI=${{ inputs.fdi-version }}][Py=${{ matrix.py-version }}][Framework=${{ matrix.framework }}][Spec=${{ matrix.spec }}]'

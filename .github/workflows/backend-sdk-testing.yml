@@ -142,7 +142,7 @@ jobs:
           python3 tests/test-server/app.py &> logs/python.log &
           docker compose logs -f core &> logs/core.log &
 
-      - uses: supertokens/backend-sdk-testing-action@main
+      - uses: supertokens/actions/backend-sdk-testing-action@main
         with:
           version: ${{ matrix.fdi-version }}
           check-name-suffix: '[CDI=${{ matrix.cdi-version }}][Core=${{ steps.core-version.outputs.coreVersion }}][FDI=${{ matrix.fdi-version }}][Py=${{ matrix.py-version }}][Node=20]'
