@@ -15,6 +15,9 @@ on:
       - '**.md'
       - 'docs/**'
 
+permissions:
+  contents: read
+
 # Only one instance of this workflow will run on the same ref (PR/Branch/Tag)
 # Previous runs will be cancelled.
 concurrency:
@@ -32,6 +35,7 @@ jobs:
         with:
           # Only consider the source tree, not changelog/docs/html
           paths: '["supertokens_python/**", "tests/**", "*.cfg", "*.toml"]'
+          paths_ignore: '["supertokens_python/constants.py"]'
           # Skip if an identical source tree already produced a passing run
           skip_after_successful_duplicate: 'true'
 
@@ -43,45 +47,19 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      coreCdiVersionMap: ${{ steps.core-versions.outputs.cdiVersions }}
+      coreCdiVersionMap: ${{ steps.matrix.outputs.coreCdiVersionMap }}
       testMatrix: ${{ steps.matrix.outputs.testMatrix }}
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: supertokens/get-supported-versions-action@main
-        id: versions
-        with:
-          has-fdi: true
-          has-cdi: true
-
-      - uses: supertokens/actions/get-versions-from-repo@main
-        id: core-versions
-        with:
-          repo: supertokens-core
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          cdi-versions: ${{steps.versions.outputs.cdiVersions }}
-
-      - name: Compute boundary test matrix
+      - uses: supertokens/actions/generate-test-matrix@main
         id: matrix
-        run: |
-          py_versions='["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
-          cdi_versions='${{ steps.versions.outputs.cdiVersions }}'
-          latest_cdi=$(echo "$cdi_versions" | jq -r '.[-1]')
-          latest_py="3.13"
-
-          # All Python versions × latest CDI (covers Python compat)
-          boundary=$(echo "$py_versions" | jq --arg cdi "$latest_cdi" \
-            '[.[] | {"py-version": ., "cdi-version": $cdi}]')
-
-          # All other CDI versions × latest Python (covers CDI compat, avoids duplicate)
-          extra=$(echo "$cdi_versions" | jq --arg py "$latest_py" --arg latest "$latest_cdi" \
-            '[.[] | select(. != $latest) | {"py-version": $py, "cdi-version": .}]')
-
-          testMatrix=$(jq -nc --argjson a "$boundary" --argjson b "$extra" \
-            '{"include": ($a + $b)}')
-
-          echo "testMatrix=$testMatrix" >> $GITHUB_OUTPUT
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          include-cdi: 'true'
+          extra-axes: '{"py-version":["3.8","3.9","3.10","3.11","3.12","3.13"]}'
+          latest-extra: '{"py-version":"3.13"}'
 
   # Required status check for PRs. Enforces that every PR explicitly opts in to
   # tests ('run-tests' label) or explicitly opts out ('skip-tests' label).

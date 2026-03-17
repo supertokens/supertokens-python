@@ -117,6 +117,7 @@ jobs:
         run: |
           source venv/bin/activate
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          make with-django
           cd tests/auth-react/django3x
 
           mkdir -p $AUTH_REACT__LOG_DIR
@@ -128,6 +129,7 @@ jobs:
         run: |
           source venv/bin/activate
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          make with-fastapi
           cd tests/auth-react/fastapi-server
 
           mkdir -p $AUTH_REACT__LOG_DIR
@@ -139,6 +141,7 @@ jobs:
         run: |
           source venv/bin/activate
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          make with-flask
           cd tests/auth-react/flask-server
 
           mkdir -p $AUTH_REACT__LOG_DIR
