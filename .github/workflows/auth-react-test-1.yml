@@ -102,8 +102,8 @@ jobs:
         with:
           artifact-id: ${{ matrix.fdi-version }}
           matrix: |
-            py-version: ${{ fromJSON(needs.define-versions.outputs.extraAxes)['py-version'] }}
-            framework: ${{ fromJSON(needs.define-versions.outputs.extraAxes)['framework'] }}
+            py-version: ${{ toJSON(fromJSON(needs.define-versions.outputs.extraAxes)['py-version']) }}
+            framework: ${{ toJSON(fromJSON(needs.define-versions.outputs.extraAxes)['framework']) }}
             spec: ${{ steps.envs.outputs.specs }}
 
   launch-fdi-workflows:
