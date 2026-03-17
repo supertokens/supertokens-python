@@ -6,12 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [unreleased]
+## [0.31.2] - 2026-03-16
 
-## [0.31.1] - 2026-03-12
+### Changed
+- The dependency on aiosmtplib has been updated.
+### Infrastructure
+- Updated ci flows to automate more of our release process## [0.31.1] - 2026-03-12
 
 - Updated the phonenumbers dependency limitation
-
 ## [0.31.0] - 2026-02-20
 - Adds SAML recipe with support for SP-initiated and IdP-initiated login flows
   - Client management (create, update, list, remove)
@@ -71,20 +73,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - TOTP `OverrideConfig` -> `TOTPOverrideConfig`
     - UserMetadata `InputOverrideConfig` -> `UserMetadataOverrideConfig`
     - UserRoles `InputOverrideConfig` -> `UserRolesOverrideConfig`
-
 ## [0.30.3] - 2026-01-30
 - Fixes webauthn MFA integration
 - Adds missing `rp_id` field to Webauthn's `SignInOptionResponse`
 - Updated phonenumbers dependency
 - Explicitly added missing sniffio dependency
 - Fix the OAuth2Provider `tokenExchange` error message when the refresh token is expired
-
 ## [0.30.2] - 2025-08-14
 - Adds Webauthn user editing support to the Dashboard
-
 ## [0.30.1] - 2025-07-21
 - Adds missing register credential endpoint to the Webauthn recipe
-
 ## [0.30.0] - 2025-05-27
 ### Adds Webauthn (Passkeys) support
 - Adds Webauthn recipe with support for:
@@ -122,8 +120,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `supertokens_python.recipe.accountlinking.recipe_implementation.RecipeImplementation.list_users_by_account_info`
     - `supertokens_python.recipe.passwordless.api.implementation.get_passwordless_user_by_account_info`
     - `supertokens_python.recipe.passwordless.api.implementation.get_passwordless_user_by_account_info`
-
-
 ## [0.29.2] - 2025-05-19
 - Fixes cookies being set without expiry in Django
   - Reverts timezone change from 0.28.0 and uses GMT
@@ -135,11 +131,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updates `frontendIntegration` servers
 - Sets up workflow to run auth-react tests
   - Updates test-servers to work with updated tests
-
 ## [0.29.1] - 2025-04-11
 - Fixes an issue where `removeDevice` API allowed removing verified TOTP devices without the user completing MFA.
 - Fixes issue with ThirdParty provider info on dashboard
-
 ## [0.29.0] - 2025-03-03
 ### Breaking changes
 - Makes URL path normalization case sensitive
@@ -156,16 +150,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updates `Makefile` to use a Docker `compose` setup step
   - Migrates unit tests from CircleCI to Github Actions
   - Adds lint/format checks to Github Actions
-
 ## [0.28.2] - 2025-05-19
 - Fixes cookies being set without expiry in Django
   - Reverts timezone change from 0.28.0 and uses GMT
-
 ## [0.28.1] - 2025-02-26
 - Pins `httpx` and `respx` to current major versions (<1.0.0)
 - Removes `respx` dependency from `fastapi` install
 - Upgrades `pip` and `setuptools` in CI runs
-
 ## [0.28.0] - 2025-02-10
 - **[Breaking] Updates pre-commit hooks to use `pre-commit`**
   - Migration:
@@ -183,27 +174,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     + user_info.raw_user_info_from_provider.from_user_info_api["email"]
     ```
 - Updates timestamps to use UTC instead of GMT as the timezone
-
 ## [0.27.0] - 2024-12-30
 
 - Added OAuth2Provider recipe
 - Added support for FDIs: 4.0. Required by: auth-react >=0.48.0 and web-js>=0.14.0
-
 ## [0.26.1] - 2024-11-28
 
 - Fixes dependency for docs build
-
 ## [0.26.0] - 2024-11-20
 
 - Not supporting Python 3.7
 - Updating dependencies for vulnerability fixes
-
 ## [0.25.1] - 2024-11-08
 
 - Fixes issues with dashboard - userroles and tenants
 - Fixes `LoginMethod` to json conversion to not include `null` as values
 - Adds `to_json` method to `TenantConfig`
-
 ## [0.25.0] - 2024-09-18
 
 ### Overview
@@ -705,11 +691,9 @@ passwordless.init(
     override=passwordless.InputOverrideConfig(functions=functions_override)
 )
 ```
-
 ## [0.24.4] - 2024-10-16
 
 - Updates `phonenumbers` and `twilio` to latest versions
-
 ## [0.24.3] - 2024-09-24
 
 - Adds support for form field related improvements by making fields accept any type of values
@@ -745,14 +729,11 @@ for field in form_fields:
             raise ValueError('name needs to be a string')
         name = str(value_to_consume)
 ```
-
 ## [0.24.2] - 2024-09-03
 - Makes optional input form fields truly optional instead of just being able to accept `""`.
-
 ## [0.24.1] - 2024-08-16
 
 -   Sets time out for httpx client to 30s everywhere. - https://github.com/supertokens/supertokens-python/issues/516
-
 ## [0.24.0] - 2024-07-31
 
 ### Changes
@@ -859,29 +840,24 @@ for tenant in tenants_res.tenants:
 
             multitenancy.create_or_update_third_party_config(tenant.tenant_id, provider)
 ```
-
 ## [0.23.1] - 2024-07-09
 
 ### Changes
 
 -   `refresh_post` and `refresh_session` now clears all user tokens upon CSRF failures and if no tokens are found. See the latest comment on https://github.com/supertokens/supertokens-node/issues/141 for more details.
 -   Adds `jwks_refresh_interval_sec` config to `session.init` to set the default JWKS cache duration. The default is 4 hours.
-
 ## [0.23.0] - 2024-06-24
 
 ### Breaking change
 
 - The access token cookie expiry has been changed from 100 years to 1 year due to some browsers capping the maximum expiry at 400 days. No action is needed on your part.
-
 ## [0.22.1] - 2024-06-10
 - Remove `user_context` being `None` check in querier delete function to make it consistent with other non GET functions
-
 ## [0.22.0] - 2024-06-05
 - Adds caching per API based on user context.
 
 ### Breaking change:
 - Changes general error in querier to normal python error.
-
 ## [0.21.0] - 2024-05-23
 
 ### Breaking change
@@ -1011,15 +987,12 @@ for tenant in tenants_res.tenants:
         else:
             print(thirdparty_user)
         ```
-
 ## [0.20.2] - 2024-05-17
 
 -   Improves FastAPI middleware performance using recommended ASGI middleware implementation.
-
 ## [0.20.1] - 2024-05-10
 
 -   Fixes parameter mismatch in generating fake email
-
 ## [0.20.0] - 2024-05-08
 
 -   Added `older_cookie_domain` config option in the session recipe. This will allow users to clear cookies from the older domain when the `cookie_domain` is changed.
@@ -1100,7 +1073,6 @@ With this update, verify_session will return a 401 error if it detects multiple 
         - The user remains stuck until they clear cookies manually or `older_cookie_domain` is set.
     - If `older_cookie_domain` is set, the refresh clears the older cookie, returning a 200 response.
         - The frontend retries the original API call, sending only the new cookie (`domain=.example.com`), resulting in a successful request.
-
 ## [0.19.0] - 2024-05-06
 
 -  `create_new_session` now defaults to the value of the `st-auth-mode` header (if available) if the configured `get_token_transfer_method` returns `any`.
@@ -1108,55 +1080,43 @@ With this update, verify_session will return a 401 error if it detects multiple 
 
 ### Breaking change:
 - A session is not required when calling the sign out API. Otherwise the API will return a 401 error.
-
 ## [0.18.11] - 2024-04-26
 
 - Fixes issues with the propagation of session creation/updates with django-rest-framework because the django-rest-framework wrapped the original request with it's own request object. Updates on that object were not reflecting on the original request object.
 - Fixes type mismatch for FastAPI middleware.
-
 ## [0.18.10] - 2024-04-05
 
 - Relax constraints on `aiosmtplib` dependency version.
-
 ## [0.18.9] - 2024-03-14
 
 - Updates version for CICD testing
 - Fixes session recipe to not pass tenant id when `revoke_across_all_tenants` or `fetch_across_all_tenants` is set to `True`
 - Updated fake email generation
-
 ## [0.18.8] - 2024-02-29
 
 - Fixes dashboard URI path. Now it returns the complete user given path instead of just the normalized connectionURI domain.
-
 ## [0.18.7] - 2024-01-17
 
 - Fixes `connection_uri` normalisation in the dashboard recipe.
 - Fixes issue with fetching of thirdparty passwordless user in dashboard: https://github.com/supertokens/supertokens-python/issues/472
-
 ## [0.18.6] - 2024-01-12
 
 - Relax constraints on `httpx` dependency version.
-
 ## [0.18.5] - 2023-12-14
 
 - Fixes an incompatibility issue with Django version 4.0 and above.
-
 ## [0.18.4] - 2023-12-12
 
 - CI/CD changes
-
 ## [0.18.3] - 2023-12-07
 
 - Fixes security issue with shared `g` objects from gunicorn: https://github.com/supertokens/supertokens-python/issues/463
-
 ## [0.18.2] - 2023-12-05
 
 - Updates LinkedIn OAuth implementation as per the latest [changes](https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2?context=linkedin%2Fconsumer%2Fcontext#authenticating-members).
-
 ## [0.18.1] - 2023-12-01
 
 - Fixes bug in dashboard recipe where we did not expose `USER_EMAIL_VERIFY_TOKEN_API` API.
-
 ## [0.18.0] - 2023-11-25
 
 ### Added
@@ -1199,13 +1159,11 @@ With this update, verify_session will return a 401 error if it detects multiple 
     ```
 
 - In the session recipe, if there is an `UNAUTHORISED` or `TOKEN_THEFT_DETECTED` error, the session tokens are cleared in the response regardless of if you have provided your own `error_handlers` in `session.init`
-
 ## [0.17.0] - 2023-11-14
 - Fixes `create_reset_password_link` in the emailpassword recipe wherein we passed the `rid` instead of the token in the link
 
 ### Breaking fix
 - Fixed spelling of `CreateResetPasswordLinkUnknownUserIdError` in `create_reset_password_link`. It used to be `CreateResetPasswordLinkUknownUserIdError`
-
 ## [0.16.8] - 2023-11-7
 
 ### Added
@@ -1219,27 +1177,22 @@ With this update, verify_session will return a 401 error if it detects multiple 
 - Functions `get_users_oldest_first`, `get_users_newest_first`, `get_user_count`, `delete_user`, `create_user_id_mapping`, `get_user_id_mapping`, `delete_user_id_mapping` and `update_or_delete_user_id_mapping_info` now accept `user_context` as an optional argument.
 - Fixed the dependencies in the example apps
   - Example apps will now fetch the latest version of the frameworks
-
 ## [0.16.7] - 2023-11-2
 
 - Added `debug` flag in `init()`. If set to `True`, debug logs will be printed.
-
 ## [0.16.6] - 2023-10-24
 
 - Fixed server error in `sign_in_up` API
     - There was a bug in case where the API was called with just oAuth tokens without passing the `redirect_uri_info`.
-
 ## [0.16.5] - 2023-10-23
 
 - Relaxed constraint on `pyJWT` dependency.
   - This is done because some users face `InvalidSignatureError` when decoding the id token with the latest `pyJWT` version.
-
 ## [0.16.4] - 2023-10-05
 
 - Add `validate_access_token` function to providers
     - This can be used to verify the access token received from providers.
     - Implemented `validate_access_token` for the Github provider.
-
 ## [0.16.3] - 2023-09-28
 
 - Add Twitter provider for thirdparty login
@@ -1248,16 +1201,12 @@ With this update, verify_session will return a 401 error if it detects multiple 
     - This can be used to control the `Cache-Control` header mentioned above.
     - It defaults to `60` or the value set in the cache-control header returned by the core
     - This is optional (so you are not required to update your overrides). Returning `None` means that the header won't be set
-
 ## [0.16.2] - 2023-09-20
 
 - Allow use of [nest-asyncio](https://pypi.org/project/nest-asyncio/) when env var `SUPERTOKENS_NEST_ASYNCIO=1`.
 - Retry Querier request on `AsyncLibraryNotFoundError`
-
 ## [0.16.1] - 2023-09-19
 - Handle AWS Public URLs (ending with `.amazonaws.com`) separately while extracting TLDs for SameSite attribute.
-
-
 ## [0.16.0] - 2023-09-13
 
 
@@ -1269,19 +1218,14 @@ With this update, verify_session will return a 401 error if it detects multiple 
 
 -   Dashboard APIs now return a status code `403` for all non-GET requests if the currently logged in Dashboard User is not listed in the `admins` array
 - Now ignoring protected props in the payload in `create_new_session` and `create_new_session_without_request_response`
-
 ## [0.15.3] - 2023-09-25
 
 - Handle 429 rate limiting from SaaS core instances
-
-
 ## [0.15.2] - 2023-09-23
 
 - Fixed bugs in thirdparty providers: Bitbucket, Boxy-SAML, and Facebook
-
 ## [0.15.1] - 2023-09-22
 - Fixes name of passwordless recipe function from `passwordlessSigninup` to `passwordless_signinup`
-
 ## [0.15.0] - 2023-09-22
 
 -   Fixes apple redirect
@@ -1791,29 +1735,23 @@ With this update, verify_session will return a 401 error if it detects multiple 
     - supertokens-auth-react@0.34.0
     - supertokens-web-js@0.7.0
     - supertokens-website@17.0.2
-
-
 ## [0.14.8] - 2023-07-07
 ## Fixes
 
 - Anti csrf check should happen only when access token is passed while session is optional
 - `verify_session` middleware now handles supertokens related errors as well.
-
 ## [0.14.7] - 2023-07-03
 - Fixes error message in querier.
-
 ## [0.14.6] - 2023-06-22
 
 ### Changes and fixes
 
 - Relax constraints on `httpx` dependency version
-
 ## [0.14.5] - 2023-06-21
 
 ### Changes and fixes
 
 - Remove constraints on `cryptograpy` dependency version and let `pyjwt` library handle it
-
 ## [0.14.4] - 2023-06-14
 
 ### Changes and fixes
@@ -1822,33 +1760,25 @@ With this update, verify_session will return a 401 error if it detects multiple 
 - Use request library instead of urllib to fetch JWKS keys ([#344](https://github.com/supertokens/supertokens-python/issues/344))
 - Throw error when `verify_sesion` is used with a view that allows `OPTIONS` or `TRACE` requests
 - Allow `verify_session` decorator to be with `@app.before_request` in Flask without returning a response
-
-
 ## [0.14.3] - 2023-06-7
 
 ### Changes
 
 - Update email templates to fix an issue with styling on some email clients
-
 ## [0.14.2] - 2023-05-29
 
 - Adds additional debug logs whenever the SDK throws a `TRY_REFRESH_TOKEN` or `UNAUTHORISED` error to make debugging easier
-
-
 ## [0.14.1] - 2023-05-23
 
 ### Changes
 
 -   Added a new `get_request_from_user_context` function that can be used to read the original network request from the user context in overridden APIs and recipe functions
-
 ## [0.14.0] - 2023-05-18
 - Adds missing `check_database` boolean in `verify_session`
-
 ## [0.13.1] - 2023-05-15
 ### Changes
 -   Made the access token string optional in the overrideable `get_session` function
 -   Moved checking if the access token is defined into the overrideable `get_session` function
-
 ## [0.13.0] - 2023-05-04
 ### Breaking changes
 
@@ -2210,41 +2140,31 @@ session.init(
     )
 )
 ```
-
-
 ## [0.12.9] - 2023-04-28
 
 - Added missing arguments in `get_users_newest_first` and `get_users_oldest_first`
-
 ## [0.12.8] - 2023-04-19
 
 - Fixed an issues that threw 500 when changing password for user from dashboard
-
 ## [0.12.7] - 2023-04-18
 
 - Email template for verify email updated
-
 ## [0.12.6] - 2023-03-31
 
 - Adds search APIs to the dashboard recipe
-
 ## [0.12.5] - 2023-03-30
 
 - Adds a telemetry API to the dashboard recipe
-
 ## [0.12.4] - 2023-03-29
 ### Changed
 - Update all example apps to initialise dashboard recipe
 
 ### Added
 - Login with gitlab (single tenant only) and bitbucket
-
 ## [0.12.3] - 2023-02-27
 - Adds APIs and logic to the dashboard recipe to enable email password based login
 ## [0.12.2] - 2023-02-23
 - Fix expiry time of access token cookie.
-
-
 ## [0.12.1] - 2023-02-06
 
 -   Email template updates
@@ -2276,24 +2196,18 @@ session.init(
 
 - Add missing `original` attribute to flask response and remove logic for cases where `response` is `None`
 - Relax PyJWT version constraints https://github.com/supertokens/supertokens-python/issues/272
-
 ## [0.11.12] - 2022-12-27
 -  Fix django cookie expiry time format to make it consistent with other frameworks: https://github.com/supertokens/supertokens-python/issues/267
-
 ## [0.11.11] - 2022-12-26
 
 -   Updates dashboard version
 -   Updates user GET API for the dashboard recipe
-
 ## [0.11.10] - 2022-12-12
 
 -   Fixes issue of sign up API not sending a `FIELD_ERROR` response in case of duplicate email: https://github.com/supertokens/supertokens-python/issues/264
-
-
 ## [0.11.9] - 2022-12-06
 
 -   Fixes issue where if send_email is overridden with a different email, it will reset that email.
-
 ## [0.11.8] - 2022-11-28
 
 ### Added:
@@ -2302,33 +2216,26 @@ session.init(
 ### Changed:
 - Updates dashboard version to 0.2
 - Add tests for different scenarios while revoking session during session refresh call
-
 ## [0.11.7] - 2022-11-21
 
 - Remove `jsonschema` from package requirements
 
 ### Bug fix:
 - Update session claims in email verification token generation API in case the session claims are outdated.
-
 ## [0.11.6] - 2022-10-27
 - Fix cookie_same_site for subdomains [#239](https://github.com/supertokens/supertokens-python/issues/239)
-
 ## [0.11.5] - 2022-10-27
 - Add `to_json` method to `ClaimValidationError` class.
-
 ## [0.11.4] - 2022-10-21
 - Relaxes typing_extensions constraint
 - Update frontend integration test servers for /angular and /testError tests
-
 ## [0.11.3] - 2022-10-17
 - Updated google token endpoint.
-
 ## [0.11.2] - 2022-10-14
 ### Changes:
 - Removed default `default_max_age` from session claim base classes
 - Added a 5 minute `default_max_age` to UserRoleClaim, PermissionClaim and EmailVerificationClaim
 - Fix Repetition of root_path in supertokens mididdlware for fastapi [#230](https://github.com/supertokens/supertokens-python/issues/230)
-
 ## [0.11.1] - 2022-09-28
 ### Changes:
 - Email verification endpoints will now clear the session if called by a deleted/unknown user
@@ -2336,7 +2243,6 @@ session.init(
 ### Additions:
 - Adds dashboard recipe
 - Added a `username` field to the `SMTPSettings` model for passing custom SMTP server username.
-
 ## [0.11.0] - 2022-09-14
 
 ### Changes
@@ -2498,12 +2404,9 @@ The `UserRoles` recipe now adds role and permission information into the access 
 
 -   You can disable this behaviour by setting `skip_adding_roles_to_access_token` and `skip_adding_permissions_to_access_token` to true in the recipe init.
 -   Check how to use the new claims in the updated guide: https://supertokens.com/docs/userroles/protecting-routes
-
-
 ## [0.10.4] - 2022-08-30
 ## Features:
 - Add support for User ID Mapping using `create_user_id_mapping`, `get_user_id_mapping`, `delete_user_id_mapping`, `update_or_delete_user_id_mapping` functions
-
 ## [0.10.3] - 2022-08-29
 
 ### Bug fix
@@ -2511,11 +2414,9 @@ The `UserRoles` recipe now adds role and permission information into the access 
 
 ### Changes
 - Add to test to ensure that overrides are applying correctly in methods called on SessionContainer instances
-
 ## [0.10.2] - 2022-07-14
 ### Bug fix
 - Make `user_context` optional in userroles recipe syncio functions.
-
 ## [0.10.1] - 2022-07-11
 
 ### Documentation:
@@ -2525,7 +2426,6 @@ The `UserRoles` recipe now adds role and permission information into the access 
 
 ### Changes
 - Relax version requirements for `httpx`, `cryptography`, and `asgiref` to fix https://github.com/supertokens/supertokens-python/issues/207
-
 ## [0.10.0] - 2022-07-04
 
 - Update tests to cover `resend_code` feature in `passwordless` and `thirdpartypasswordless` recipe.
@@ -2599,8 +2499,6 @@ init(
 
 ### Documentation
 - Add more details in the `CONTRIBUTING.md` to make it beginner friendly.
-
-
 ## [0.9.1] - 2022-06-27
 ### Features:
 
@@ -2632,7 +2530,6 @@ result = await create_new_role_or_add_permissions(role, permissions)
 result = await add_role_to_user(user_id, role)
 # Check documentation for more examples..
 ```
-
 ## [0.9.0] - 2022-06-23
 ### Fixes
 - Fixes Cookie same_site config validation.
@@ -2660,7 +2557,6 @@ result = await add_role_to_user(user_id, role)
 
 ### Changes
 -   Changes `get_email_for_user_id` function inside thirdpartypasswordless to take into account passwordless emails and return an empty string in case a passwordless email doesn't exist. This helps situations where the dev wants to customise the email verification functions in the thirdpartypasswordless recipe.
-
 ## [0.8.4] - 2022-06-17
 ### Added
 
@@ -2770,12 +2666,10 @@ init(
     )]
 )
 ```
-
 ## [0.8.3] - 2022-06-09
 - Fix bugs in syncio functions across all the recipes
 - Fixes bug in resend code POST API in passwordless recipe to use the correct instance type during checks.
 - Fixes bug in thirdpartypasswordless recipe to prevent infinite loop during resent code API
-
 ## [0.8.2] - 2022-05-27
 - Update phonenumbers lib dependency version
 - Adds type checks to the parameters of the emailpassword init funtion.
@@ -2789,11 +2683,9 @@ init(
 - Adds type checks to the parameters of the thirdpartypasswordless init funtion.
 - Adds type checks to the parameters of the usermetadata init funtion.
 - Adds django with thirdpartyemailpassword example.
-
 ## [0.8.1]
 - Fixed execute_async to check and use asyncio mode.
 - Ignores any exception from send_telemetry, not to prevent the app from starting up.
-
 ## [0.8.0]
 - Updates `RecipeInterface` and `APIInterface` methods to return exact return types instead of abstract base types, for the emailpassword recipe.
 - Updates `RecipeInterface` and `APIInterface` methods to return exact return types instead of abstract base types, for the thirdparty recipe.
@@ -2813,50 +2705,38 @@ init(
 - Renames `*ErrorResponse` classes to `*Error`.
 - Renames `*OkResponse` classes to `*OkResult`.
 - Renames `*ResultOk` classes to `*OkResult`.
-
 ## [0.7.3] - 2022-05-12
 - Fixed execute_async to check and use asyncio mode.
 - Ignores any exception from send_telemetry, not to prevent the app from starting up.
-
 ## [0.7.2] - 2022-05-08
 - Bug fix in telemetry data API
-
 ## [0.7.1] - 2022-05-06
 - Updates Project Setup, Modifying Code and Testing sections in the contributing guide
 - Fixed async execution of `send_telemetry` in init and `call_get_handshake_info` in session recipe implementation.
 - Fixed `Content-length` in FastAPI Response wrapper.
-
 ## [0.7.0] - 2022-04-28
 - Changes third party provider type to get client ID dynamically so that it can be changed based on user context.
-
 ## [0.6.7] - 2022-04-23
 - Adds delete email (`delete_email_for_user`) and phone number (`delete_phone_number_for_user`) functions for passwordless and thirdpartypasswordless recipe
 - Adds check for user type in update passwordless info in thirdpartypasswordless recipe
-
 ## [0.6.6] - 2022-04-22
 - Fixes issue in user metadata recipe where as are exposing async functions in the syncio file.
-
 ## [0.6.5] - 2022-04-18
 - Upgrade and freeze pyright version
 - Rename `compare_version` to `get_max_version` for readability
 - Add user metadata recipe
-
 ## [0.6.4] - 2022-04-11
 - bug fix in `default_create_and_send_custom_email` for emailverification recipe where we were not sending the email if env var was not set.
 - Fix telemetry issues related to asyncio when using FastAPI. Related issue: https://github.com/supertokens/supertokens-core/issues/421
 - adds git action for running tests
-
 ## [0.6.3] - 2022-04-09
 - Setup logging for easier debugging
 - Adds github action for checking all things checked by pre commit hook
-
 ## [0.6.2] - 2022-04-07
 - Fix Passwordless OTP recipe phone number field to fix https://github.com/supertokens/supertokens-core/issues/416
-
 ## [0.6.1] - 2022-03-29
 
 - Expands allowed version range for httpx library to fix https://github.com/supertokens/supertokens-python/issues/98
-
 ## [0.6.0] - 2022-03-26
 
 ### Changes
@@ -2881,12 +2761,9 @@ init(
 
 ### Fixes
 - `user_context` was passed incorrectly to the `create_new_session_function`.
-
 ## [0.5.3] - 2022-03-26
 ### Fixes
 - Bug in user pagination functions: https://github.com/supertokens/supertokens-python/issues/95
-
-
 ## [0.5.2] - 2022-03-17
 ### Fixes
 - https://github.com/supertokens/supertokens-python/issues/90
@@ -2894,12 +2771,10 @@ init(
 
 ### Changed:
 - Added new function to BaseRequest class called `set_session_as_none` to set session object to None.
-
 ## [0.5.1] - 2022-03-02
 
 ### Fixes:
 - Bug where a user had to add dependencies on all frameworks when using the SDK: https://github.com/supertokens/supertokens-python/issues/82
-
 ## [0.5.0] - 2022-02-03
 
 ### Breaking Change
@@ -2935,7 +2810,6 @@ init(
 ### Bug fix:
 - If logging in via social login and the email is already verified from the provider's side, it marks the email as verified in SuperTokens core.
 - Corrects how override is done in thirdpartyemailpassword recipe and API implementation
-
 ## [0.4.1] - 2022-01-27
 
 ### Added
@@ -2948,13 +2822,11 @@ init(
 ### Fixed
 - Bug fixes in Literal import which caused issues when using the sdk with python version 3.7.
 - Fixes https://github.com/supertokens/supertokens-node/issues/244 - throws an error if a user tries to update email / password of a third party login user.
-
 ## [0.4.0] - 2022-01-09
 
 ### Added
 -   Adds passwordless recipe
 -   Adds compatibility with FDI 1.12 and CDI 2.11
-
 ## [0.3.1] - 2021-12-20
 
 ### Fixes
@@ -2963,7 +2835,6 @@ init(
 ### Added
 - delete_user function
 - Compatibility with CDI 2.10
-
 ## [0.3.0] - 2021-12-10
 
 ### Breaking Change
@@ -2973,14 +2844,10 @@ init(
 - Added `mode` config for FastAPI which now supports both `asgi` and `wsgi`.
 - The ability to enable JWT creation with session management, this allows easier integration with services that require JWT based authentication: https://github.com/supertokens/supertokens-core/issues/250
 - You can do BaseRequest.request to get the original request object. Fixes #61
-
-
 ## [0.2.3] - 2021-12-07
 ### Fixes
 
 - Removes use of apiGatewayPath from apple's redirect URI since that is already there in the apiBasePath
-
-
 ## [0.2.2] - 2021-11-22
 
 ### Added
@@ -2990,7 +2857,6 @@ init(
 - Allow sending of custom response: https://github.com/supertokens/supertokens-node/issues/197
 - Change `set_content` to `set_json_content` in all the frameworks
 - Adds `"application/json; charset=utf-8"` header to json responses.
-
 ## [0.2.1] - 2021-11-10
 
 ### Changes
@@ -3000,7 +2866,6 @@ init(
 - Verifies ID Token sent for sign in with apple as per https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api/verifying_a_user
 - Removes empty awslambda folder from framework
 - If json parsing fails in the frameworks, catches those exceptions and returns an empty object.
-
 ## [0.2.0] - 2021-10-22
 
 ### Breaking change
@@ -3014,7 +2879,6 @@ init(
 - Bug fix: https://github.com/supertokens/supertokens-python/issues/42
 - Bug fix: https://github.com/supertokens/supertokens-python/issues/10
 - Bug fix: https://github.com/supertokens/supertokens-python/issues/13
-
 ## [0.1.0] - 2021-10-18
 ### Changes
 - all the user facing async functions now needs to be imported from asyncio sub directory. For example, importing the async implementation of create_new_session from session recipe has changed from:
@@ -3031,17 +2895,13 @@ init(
 ### Added
 - auth-react tests for flask and django
 - if running django in async way, set `mode` to `asgi` in `config`
-
 ## [0.0.3] - 2021-10-13
 ### Added
 - Adds OAuth development keys for Google and Github for faster recipe implementation.
 - Removed the Literal from python 3.8 and added Literal from typing_extensions package. Now supertokens_python can be used with python 3.7 .
-
-
 ## [0.0.2] - 2021-10-09
 ### Fixes
 - dependency issues for frameworks
-
 ## [0.0.1] - 2021-09-10
 ### Added
 - Multiple framework support. Currently supporting Django, Flask(1.x) and Fastapi.

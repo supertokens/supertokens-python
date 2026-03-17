@@ -19,16 +19,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  define-versions:
-    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'run-tests')
+  skip-check:
     runs-on: ubuntu-latest
     outputs:
-      fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
+      should-skip: ${{ steps.skip.outputs.should_skip }}
+    steps:
+      - uses: fkirc/skip-duplicate-actions@v5
+        id: skip
+        with:
+          paths: '["supertokens_python/**", "tests/**", "*.cfg", "*.toml"]'
+          skip_after_successful_duplicate: 'true'
+
+  define-versions:
+    if: |
+      needs.skip-check.outputs.should-skip != 'true' &&
+      (github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'run-tests'))
+    needs: skip-check
+    runs-on: ubuntu-latest
+    outputs:
       cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
-      pyVersions: '["3.8", "3.13"]'
       nodeFdiVersionMap: ${{ steps.node-versions.outputs.fdiVersions }}
       websiteFdiVersionMap: ${{ steps.website-versions.outputs.fdiVersions }}
       coreCdiVersionMap: ${{ steps.core-versions.outputs.cdiVersions }}
+      testMatrix: ${{ steps.matrix.outputs.testMatrix }}
     steps:
       - uses: actions/checkout@v4
 
@@ -59,23 +72,42 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           cdi-versions: ${{steps.versions.outputs.cdiVersions }}
 
+      - name: Compute boundary test matrix
+        id: matrix
+        run: |
+          py_versions='["3.8", "3.13"]'
+          fdi_versions='${{ steps.versions.outputs.fdiVersions }}'
+          frameworks='["django2x","django3x","drf_sync","drf_async","fastapi","flask","flask-nest-asyncio"]'
+          latest_fdi=$(echo "$fdi_versions" | jq -r '.[-1]')
+          latest_py="3.13"
+
+          # All Python versions × all frameworks × latest FDI (covers Python and framework compat)
+          boundary=$(jq -nc \
+            --argjson pys "$py_versions" \
+            --argjson fws "$frameworks" \
+            --arg fdi "$latest_fdi" \
+            '[$pys[] | . as $py | $fws[] | {"py-version": $py, "framework": ., "fdi-version": $fdi}]')
+
+          # All other FDI versions × latest Python × fastapi (covers FDI compat, avoids duplicates)
+          extra=$(echo "$fdi_versions" | jq \
+            --arg py "$latest_py" \
+            --arg latest "$latest_fdi" \
+            '[.[] | select(. != $latest) | {"py-version": $py, "framework": "fastapi", "fdi-version": .}]')
+
+          testMatrix=$(jq -nc --argjson a "$boundary" --argjson b "$extra" \
+            '{"include": ($a + $b)}')
+
+          echo "testMatrix=$testMatrix" >> $GITHUB_OUTPUT
+
   test:
-    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'run-tests')
+    if: |
+      needs.skip-check.outputs.should-skip != 'true' &&
+      (github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'run-tests'))
     runs-on: ubuntu-latest
-    needs: define-versions
+    needs: [skip-check, define-versions]
     strategy:
       fail-fast: false
-      matrix:
-        py-version: ${{ fromJSON(needs.define-versions.outputs.pyVersions) }}
-        fdi-version: ${{ fromJSON(needs.define-versions.outputs.fdiVersions) }}
-        framework:
-          - django2x
-          - django3x
-          - drf_sync
-          - drf_async
-          - fastapi
-          - flask
-          - flask-nest-asyncio
+      matrix: ${{ fromJSON(needs.define-versions.outputs.testMatrix) }}
 
     steps:
       - name: Setup ENVs
@@ -120,102 +152,59 @@ jobs:
           source venv/bin/activate
           python3 -m pip install pip setuptools --upgrade
 
-      - name: Install dependencies and start servers (django2x)
-        if: matrix.framework == 'django2x'
+      - name: Install dependencies and start servers
         working-directory: supertokens-python
         run: |
           source venv/bin/activate
-          make with-django2x
-
-          # Django2 uses `cgi`, deprecated in 3.13
-          if [ ${{ matrix.py-version == '3.13' }} ]; then
-            pip install legacy-cgi
-          fi
-
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-          cd tests/frontendIntegration/django2x
+          LOG="${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}"
 
-          gunicorn mysite.wsgi --bind 0.0.0.0:8080 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
-          gunicorn mysite.wsgi --bind 0.0.0.0:8082 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
-
-      - name: Install dependencies and start servers (django3x)
-        if: matrix.framework == 'django3x'
-        working-directory: supertokens-python
-        run: |
-          source venv/bin/activate
-          make with-django
-
-          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-          cd tests/frontendIntegration/django3x
-
-          uvicorn mysite.asgi:application --port 8080 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
-          uvicorn mysite.asgi:application --port 8082 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
-
-      - name: Install dependencies and start servers (drf_sync)
-        if: matrix.framework == 'drf_sync'
-        working-directory: supertokens-python
-        run: |
-          source venv/bin/activate
-          make with-drf
-
-          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-          cd tests/frontendIntegration/drf_sync
-
-          gunicorn mysite.wsgi --bind 0.0.0.0:8080 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
-          gunicorn mysite.wsgi --bind 0.0.0.0:8082 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
-
-      - name: Install dependencies and start servers (drf_async)
-        if: matrix.framework == 'drf_async'
-        working-directory: supertokens-python
-        run: |
-          source venv/bin/activate
-          make with-drf
-
-          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-          cd tests/frontendIntegration/drf_async
-
-          uvicorn mysite.asgi:application --port 8080 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
-          uvicorn mysite.asgi:application --port 8082 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
-
-      - name: Install dependencies and start servers (fastapi)
-        if: matrix.framework == 'fastapi'
-        working-directory: supertokens-python
-        run: |
-          source venv/bin/activate
-          make with-fastapi
-
-          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-          cd tests/frontendIntegration/fastapi-server
-
-          uvicorn app:app --host 0.0.0.0 --port 8080 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
-          uvicorn app:app --host 0.0.0.0 --port 8082 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
-
-      - name: Install dependencies and start servers (flask)
-        if: matrix.framework == 'flask'
-        working-directory: supertokens-python
-        run: |
-          source venv/bin/activate
-          make with-flask
-
-          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-          cd tests/frontendIntegration/flask-server
-
-          python3 app.py --port 8080 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
-          python3 app.py --port 8082 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
-
-      - name: Install dependencies and start servers (flask-nest-asyncio)
-        if: matrix.framework == 'flask-nest-asyncio'
-        working-directory: supertokens-python
-        run: |
-          source venv/bin/activate
-          make with-flask
-          python -m pip install nest-asyncio
-
-          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-          cd tests/frontendIntegration/flask-server
-
-          python3 app.py --port 8080 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server.log &
-          python3 app.py --port 8082 &> ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}/app-server-cross-domain.log &
+          case "${{ matrix.framework }}" in
+            django2x)
+              make with-django2x
+              if [[ "${{ matrix.py-version }}" == "3.13" ]]; then pip install legacy-cgi; fi
+              cd tests/frontendIntegration/django2x
+              gunicorn mysite.wsgi --bind 0.0.0.0:8080 &> $LOG/app-server.log &
+              gunicorn mysite.wsgi --bind 0.0.0.0:8082 &> $LOG/app-server-cross-domain.log &
+              ;;
+            django3x)
+              make with-django
+              cd tests/frontendIntegration/django3x
+              uvicorn mysite.asgi:application --port 8080 &> $LOG/app-server.log &
+              uvicorn mysite.asgi:application --port 8082 &> $LOG/app-server-cross-domain.log &
+              ;;
+            drf_sync)
+              make with-drf
+              cd tests/frontendIntegration/drf_sync
+              gunicorn mysite.wsgi --bind 0.0.0.0:8080 &> $LOG/app-server.log &
+              gunicorn mysite.wsgi --bind 0.0.0.0:8082 &> $LOG/app-server-cross-domain.log &
+              ;;
+            drf_async)
+              make with-drf
+              cd tests/frontendIntegration/drf_async
+              uvicorn mysite.asgi:application --port 8080 &> $LOG/app-server.log &
+              uvicorn mysite.asgi:application --port 8082 &> $LOG/app-server-cross-domain.log &
+              ;;
+            fastapi)
+              make with-fastapi
+              cd tests/frontendIntegration/fastapi-server
+              uvicorn app:app --host 0.0.0.0 --port 8080 &> $LOG/app-server.log &
+              uvicorn app:app --host 0.0.0.0 --port 8082 &> $LOG/app-server-cross-domain.log &
+              ;;
+            flask)
+              make with-flask
+              cd tests/frontendIntegration/flask-server
+              python3 app.py --port 8080 &> $LOG/app-server.log &
+              python3 app.py --port 8082 &> $LOG/app-server-cross-domain.log &
+              ;;
+            flask-nest-asyncio)
+              make with-flask
+              python -m pip install nest-asyncio
+              cd tests/frontendIntegration/flask-server
+              python3 app.py --port 8080 &> $LOG/app-server.log &
+              python3 app.py --port 8082 &> $LOG/app-server-cross-domain.log &
+              ;;
+          esac
 
       - uses: supertokens/website-testing-action@main
         with:
@@ -224,3 +213,32 @@ jobs:
           path: supertokens-website
           check-name-suffix: '[Py=${{ matrix.py-version }}][FDI=${{ matrix.fdi-version }}][Framework=${{ matrix.framework }}]'
           app-server-logs: ${{ steps.envs.outputs.APP_SERVER_LOG_DIR }}
+
+  test-gate:
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: always() && github.event_name == 'pull_request'
+    steps:
+      - name: Evaluate test requirement
+        env:
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          TEST_RESULT: ${{ needs.test.result }}
+        run: |
+          has_run_tests=$(echo "$LABELS"    | jq 'contains(["run-tests"])')
+          has_skip_tests=$(echo "$LABELS"   | jq 'contains(["skip-tests"])')
+
+          if [[ "$has_skip_tests" == "true" ]]; then
+            echo "Tests explicitly skipped via 'skip-tests' label."
+            exit 0
+          elif [[ "$has_run_tests" == "true" ]]; then
+            if [[ "$TEST_RESULT" == "success" || "$TEST_RESULT" == "skipped" ]]; then
+              echo "Tests passed (result: $TEST_RESULT)."
+              exit 0
+            else
+              echo "::error::Tests did not pass (result: $TEST_RESULT)."
+              exit 1
+            fi
+          else
+            echo "::error::No test label found. Add 'run-tests' to run tests, or 'skip-tests' to explicitly bypass."
+            exit 1
+          fi

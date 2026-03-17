@@ -27,13 +27,31 @@ jobs:
         with:
           validateSingleCommit: true
 
-  # Enforces the update of a changelog file on every pull request
   lint-changelog:
-    name: Enforce Changelogs
+    name: Require Changelog Fragment
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: dangoslen/changelog-enforcer@v2
+      - uses: actions/checkout@v4
         with:
-          changeLogPath: "CHANGELOG.md"
-          skipLabels: "Skip-Changelog"
+          fetch-depth: 0
+
+      - name: Check for changelog fragment
+        if: "!contains(github.event.pull_request.labels.*.name, 'Skip-Changelog')"
+        run: |
+          git fetch origin ${{ github.base_ref }}
+
+          new_fragments=$(git diff --name-only --diff-filter=A \
+            "origin/${{ github.base_ref }}...HEAD" -- .changes/unreleased/)
+
+          if [[ -z "$new_fragments" ]]; then
+            echo "::error::No changelog fragment found in .changes/unreleased/"
+            echo ""
+            echo "Please add a fragment before merging:"
+            echo "  changie new"
+            echo ""
+            echo "Or add the 'Skip-Changelog' label to skip this check."
+            exit 1
+          fi
+
+          echo "Found changelog fragment(s):"
+          echo "$new_fragments"

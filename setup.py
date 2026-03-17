@@ -82,7 +82,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.31.1",
+    version="0.31.2",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",
@@ -116,7 +116,7 @@ setup(
         # [crypto] ensures that it installs the `cryptography` library as well
         # based on constraints specified in https://github.com/jpadilla/pyjwt/blob/master/setup.cfg#L50
         "PyJWT[crypto]>=2.5.0,<3.0.0",
-        "aiosmtplib>=1.1.6,<4.0.0",
+        "aiosmtplib>=1.1.6,<6.0.0",
         "asgiref>=3.4.1,<4",
         "httpx>=0.15.0,<1.0.0",
         "packaging>=25.0,<26.0",

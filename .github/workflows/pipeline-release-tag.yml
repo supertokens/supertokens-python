@@ -22,6 +22,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: read
 
 
 jobs:
@@ -35,7 +36,6 @@ jobs:
       setupVersionXy: ${{ steps.versions.outputs.setupVersionXy }}
       newestVersion: ${{ steps.versions.outputs.newestVersion }}
       targetBranch: ${{ steps.versions.outputs.targetBranch }}
-      devTag: ${{ steps.versions.outputs.devTag }}
       releaseTag: ${{ steps.versions.outputs.releaseTag }}
       versionFolder: ${{ steps.versions.outputs.versionFolder }}
       artifactName: ${{ steps.versions.outputs.artifactName }}
@@ -61,7 +61,6 @@ jobs:
           echo "newestVersion=$newestVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
           echo "targetBranch=$targetBranch" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
 
-          echo "devTag=dev-v$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
           echo "releaseTag=v$setupVersion" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
 
           echo "versionFolder=$setupVersionXy.X" | tee -a "$GITHUB_OUTPUT" "$GITHUB_ENV"
@@ -103,11 +102,43 @@ jobs:
               exit 1
           fi
 
+  register-version:
+    # Registers this version in the supertokens API with testPassed=false.
+    # This replaces the old CircleCI dev-tag flow (markDevTagAsTestNotPassed.sh).
+    # The entry must exist before mark-as-success can PATCH it.
+    runs-on: ubuntu-latest
+
+    needs:
+      - setup
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Register version with supertokens API
+        run: |
+          fdiVersions=$(jq -c '.versions' frontendDriverInterfaceSupported.json)
+          cdiVersions=$(jq -c '.versions' coreDriverInterfaceSupported.json)
+
+          curl --fail-with-body -X PUT \
+            https://api.supertokens.io/0/driver \
+            -H 'Content-Type: application/json' \
+            -H 'api-version: 0' \
+            -d "{
+              \"password\": \"${{ secrets.SUPERTOKENS_API_KEY }}\",
+              \"version\": \"${{ needs.setup.outputs.setupVersion }}\",
+              \"name\": \"python\",
+              \"frontendDriverInterfaces\": $fdiVersions,
+              \"coreDriverInterfaces\": $cdiVersions
+            }"
+
   mark-as-success:
     runs-on: ubuntu-latest
 
     needs:
       - setup
+      - register-version
 
     steps:
       - uses: actions/setup-python@v5
@@ -118,7 +149,7 @@ jobs:
         run: |
           pip install httpx
 
-      - name: Get commit status
+      - name: Check tests passed on branch
         uses: supertokens/actions/check-tests-passed@main
         with:
           ref: ${{ inputs.branch }}
@@ -127,7 +158,8 @@ jobs:
           run_id: ${{ github.run_id }}
           skip-test-checks: ${{ inputs.skip-test-checks }}
 
-      - run: |
+      - name: Mark tests as passed in supertokens API
+        run: |
           curl --fail-with-body -X PATCH \
               https://api.supertokens.io/0/driver \
               -H 'Content-Type: application/json' \
@@ -186,6 +218,30 @@ jobs:
             exit 1
           fi
 
+      - uses: miniscruff/changie-action@v2
+        with:
+          version: latest
+
+      - name: Update changelog for release
+        run: |
+          version_file=".changes/${{ needs.setup.outputs.releaseTag }}.md"
+
+          if [[ -f "$version_file" ]]; then
+            # Normal path: dev-sync already batched fragments and bumped the version.
+            # Just regenerate CHANGELOG.md to ensure it's in sync.
+            changie merge
+          else
+            # Safety net: direct/hotfix release that bypassed the dev-sync PR.
+            # Batch fragments now and apply version replacements.
+            changie batch ${{ needs.setup.outputs.releaseTag }}
+            changie merge
+          fi
+
+          git add .changes/ CHANGELOG.md setup.py supertokens_python/constants.py
+          git diff --staged --quiet || git commit -m "chore: update changelog for ${{ needs.setup.outputs.releaseTag }}"
+          git push origin ${{ inputs.branch }}
+
+
       - name: Mark for release
         run: |
           curl --fail-with-body -X PATCH \
@@ -201,9 +257,18 @@ jobs:
 
       - name: Create release tag
         run: |
-          # Add new release tag
           git tag ${{ needs.setup.outputs.releaseTag }}
           git push --tags
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.ALL_REPO_PAT }}
+        run: |
+          # Strip the version header line and leading blank lines for the release body
+          notes=$(sed '1d' .changes/v${{ needs.setup.outputs.setupVersion }}.md | sed '/./,$!d')
+          gh release create "${{ needs.setup.outputs.releaseTag }}" \
+            --title "Python SDK ${{ needs.setup.outputs.setupVersion }}" \
+            --notes "$notes"
 
 
   merge:
@@ -250,6 +315,22 @@ jobs:
             git push
             git checkout ${{ inputs.branch }}
           fi
+
+      - name: Sync dev with release
+        # Keep dev in sync after release so that:
+        #   - batched fragments are removed from dev's unreleased/
+        #   - dev's setup.py and constants.py reflect the released version
+        #   - the next dev-sync PR computes the correct next version
+        #
+        # Only runs for the latest version — older branch patches don't touch dev.
+        if: steps.merge-check.outputs.isLatest == 'true'
+        run: |
+          git fetch origin dev
+          git checkout dev
+          git merge ${{ inputs.branch }} --no-ff \
+            -m "chore: sync dev after ${{ needs.setup.outputs.releaseTag }}"
+          git push origin dev
+          git checkout ${{ inputs.branch }}
 
   publish-docs:
     runs-on: ubuntu-latest
@@ -315,6 +396,7 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
+    environment: publish
     needs:
       - setup
       - release
