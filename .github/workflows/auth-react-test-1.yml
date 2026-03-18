@@ -56,8 +56,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           include-fdi: 'true'
           upstream-fdi-repos: '["supertokens-auth-react","supertokens-node"]'
-          extra-axes: '{"py-version":["3.13"]}'
-          latest-extra: '{"py-version":"3.13"}'
+          extra-axes: '{"py-version":["3.13"],"framework":["fastapi"]}'
+          latest-extra: '{"py-version":"3.13","framework":"fastapi"}'
 
   setup-auth-react:
     if: |
@@ -90,7 +90,7 @@ jobs:
           echo "nodeVersion=${nodeVersion}" >> $GITHUB_OUTPUT
           echo "authReactVersion=${authReactVersion}" >> $GITHUB_OUTPUT
 
-      - uses: supertokens/auth-react-testing-action/setup@main
+      - uses: supertokens/actions/auth-react-testing-action/setup@main
         id: envs
         with:
           auth-react-version: ${{ steps.versions.outputs.authReactVersion }}
@@ -98,12 +98,12 @@ jobs:
           fdi-version: ${{ matrix.fdi-version }}
 
       - id: setup-matrix
-        uses: supertokens/extended-matrix-action@main
+        uses: supertokens/actions/extended-matrix-action@main
         with:
           artifact-id: ${{ matrix.fdi-version }}
           matrix: |
-            py-version: ${{ fromJSON(needs.define-versions.outputs.extraAxes)['py-version'] }}
-            framework: ${{ fromJSON(needs.define-versions.outputs.extraAxes)['framework'] }}
+            py-version: ${{ toJSON(fromJSON(needs.define-versions.outputs.extraAxes)['py-version']) }}
+            framework: ${{ toJSON(fromJSON(needs.define-versions.outputs.extraAxes)['framework']) }}
             spec: ${{ steps.envs.outputs.specs }}
 
   launch-fdi-workflows:
