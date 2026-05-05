@@ -11,14 +11,21 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from pytest import mark
 from supertokens_python import init
 from supertokens_python.recipe import oauth2provider, session
+from supertokens_python.recipe.oauth2provider.api.implementation import (
+    APIImplementation,
+)
 from supertokens_python.recipe.oauth2provider.asyncio import (
     revoke_tokens_by_client_id,
     revoke_tokens_by_session_handle,
+)
+from supertokens_python.recipe.oauth2provider.interfaces import (
+    RevokeTokenOkResponse,
+    RevokeTokenUsingClientIDAndClientSecret,
 )
 
 from tests.utils import (
@@ -87,3 +94,38 @@ async def test_revoke_tokens_by_session_handle_uses_session_endpoint():
     assert call is not None
     assert call.args[0].get_as_string_dangerous() == "/recipe/oauth/session/revoke"
     assert call.args[1] == {"sessionHandle": "handle-xyz"}
+
+
+@min_api_version("2.14")
+async def test_revoke_token_post_accepts_public_client_without_secret():
+    """
+    Regression: a public OAuth client (tokenEndpointAuthMethod="none") calls
+    /auth/oauth/revoke with `client_id` but no `client_secret`. Previously
+    Python raised `Exception("client_secret is required")` which surfaces as
+    a 500. Node forwards the request as-is (with no client_secret), letting
+    the core decide. We now match Node.
+    """
+    options = MagicMock()
+    options.recipe_implementation = MagicMock()
+    options.recipe_implementation.revoke_token = AsyncMock(
+        return_value=RevokeTokenOkResponse()
+    )
+
+    api = APIImplementation()
+    result = await api.revoke_token_post(
+        options=options,
+        token="some-access-token",
+        authorization_header=None,
+        client_id="public-client-abc",
+        client_secret=None,
+        user_context={},
+    )
+
+    assert isinstance(result, RevokeTokenOkResponse)
+    options.recipe_implementation.revoke_token.assert_awaited_once()
+    call = options.recipe_implementation.revoke_token.await_args
+    assert call is not None
+    forwarded_params = call.kwargs["params"]
+    assert isinstance(forwarded_params, RevokeTokenUsingClientIDAndClientSecret)
+    assert forwarded_params.client_id == "public-client-abc"
+    assert forwarded_params.client_secret is None
