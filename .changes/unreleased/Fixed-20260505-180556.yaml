@@ -1,0 +1,3 @@
+kind: Fixed
+body: 'userroles: stop crashing the OAuth token build flow with ''should never come here'' when the underlying session is gone (e.g. on offline_access refresh after session revocation/expiry); now matches Node behavior and issues the token without role/permission claims rather than 500-ing.'
+time: 2026-05-05T18:05:56.997754+02:00

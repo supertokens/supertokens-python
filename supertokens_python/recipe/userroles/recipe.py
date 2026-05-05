@@ -81,12 +81,16 @@ class UserRolesRecipe(RecipeModule):
                     session_handle, user_context
                 )
 
-                if session_info is None:
-                    raise Exception("should never come here")
-
                 user_roles: List[str] = []
 
                 if "roles" in scopes or "permissions" in scopes:
+                    if session_info is None:
+                        # Session no longer exists — e.g. an offline_access
+                        # OAuth refresh after the underlying session has been
+                        # revoked or expired. Issue the token without
+                        # roles/permissions rather than failing the flow.
+                        return payload
+
                     res = await self.recipe_implementation.get_roles_for_user(
                         tenant_id=session_info.tenant_id,
                         user_id=user.id,
