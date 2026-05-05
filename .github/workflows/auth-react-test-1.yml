@@ -97,6 +97,21 @@ jobs:
           node-sdk-version: ${{ steps.versions.outputs.nodeVersion }}
           fdi-version: ${{ matrix.fdi-version }}
 
+      - name: Filter known-flaky specs
+        id: filtered-specs
+        shell: bash
+        env:
+          SPECS_JSON: ${{ steps.envs.outputs.specs }}
+        run: |
+          # The multitenancy.tenant_interactions spec flakes on UI selector
+          # timing (`.logoutButton` 30s waits, intermittent assertion fails)
+          # across most FDI versions. Fixing it requires patching the
+          # upstream auth-react test and backporting across FDI lines, which
+          # is out of scope for this repo. Skip from CI until upstream fix.
+          # Tracking issue: https://github.com/supertokens/supertokens-python/issues/635
+          filtered=$(printf '%s' "$SPECS_JSON" | jq -c '. - ["test/end-to-end/multitenancy.tenant_interactions.test.js"]')
+          echo "specs=$filtered" >> "$GITHUB_OUTPUT"
+
       - id: setup-matrix
         uses: supertokens/actions/extended-matrix-action@main
         with:
@@ -104,7 +119,7 @@ jobs:
           matrix: |
             py-version: ${{ toJSON(fromJSON(needs.define-versions.outputs.extraAxes)['py-version']) }}
             framework: ${{ toJSON(fromJSON(needs.define-versions.outputs.extraAxes)['framework']) }}
-            spec: ${{ steps.envs.outputs.specs }}
+            spec: ${{ steps.filtered-specs.outputs.specs }}
 
   launch-fdi-workflows:
     if: |
