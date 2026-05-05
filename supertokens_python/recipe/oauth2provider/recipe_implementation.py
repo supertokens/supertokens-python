@@ -851,7 +851,7 @@ class RecipeImplementation(RecipeInterface):
         user_context: Dict[str, Any],
     ):
         await self.querier.send_post_request(
-            NormalisedURLPath("/recipe/oauth/session/revoke"),
+            NormalisedURLPath("/recipe/oauth/tokens/revoke"),
             {"client_id": client_id},
             user_context=user_context,
         )

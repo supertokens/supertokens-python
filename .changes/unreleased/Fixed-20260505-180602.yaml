@@ -1,0 +1,3 @@
+kind: Fixed
+body: 'oauth2provider: revoke_tokens_by_client_id now POSTs to /recipe/oauth/tokens/revoke (the client-wide revoke endpoint) instead of /recipe/oauth/session/revoke; the previous path silently no-opped on the core, leaving issued tokens valid.'
+time: 2026-05-05T18:06:02.601968+02:00
