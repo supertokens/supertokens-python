@@ -185,9 +185,6 @@ class APIImplementation(APIInterface):
                 user_context=user_context,
             )
         elif client_id is not None:
-            if client_secret is None:
-                raise Exception("client_secret is required")
-
             return await options.recipe_implementation.revoke_token(
                 params=RevokeTokenUsingClientIDAndClientSecret(
                     token=token,

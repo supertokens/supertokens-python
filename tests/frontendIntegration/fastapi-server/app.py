@@ -703,7 +703,7 @@ def check_allow_credentials(request: Request):
     return PlainTextResponse(json.dumps("allow-credentials" in request.headers), 200)
 
 
-@app.route("/testError", methods=["GET", "OPTIONS"])  # type: ignore
+@app.api_route("/testError", methods=["GET", "OPTIONS"])
 def test_error(request: Request):
     if request.method == "OPTIONS":
         return send_options_api_response()

@@ -1,6 +1,13 @@
 name: "Release Pipeline"
 
 on:
+  # Auto-trigger when a dev-sync release PR is merged into a version branch.
+  pull_request:
+    types: [closed]
+    branches:
+      - '[0-9]+.[0-9]+'
+
+  # Manual trigger for overrides (skip checks, hotfixes, etc.)
   workflow_dispatch:
     inputs:
       branch:
@@ -27,9 +34,16 @@ permissions:
 
 jobs:
   setup:
+    # For PR events: only run when a merged PR's source branch is a release branch.
+    # For workflow_dispatch: always run.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true &&
+       startsWith(github.event.pull_request.head.ref, 'release/v'))
     runs-on: ubuntu-latest
 
     outputs:
+      branch: ${{ steps.params.outputs.branch }}
       constantsVersion: ${{ steps.versions.outputs.constantsVersion }}
       constantsVersionXy: ${{ steps.versions.outputs.constantsVersionXy }}
       setupVersion: ${{ steps.versions.outputs.setupVersion }}
@@ -41,9 +55,18 @@ jobs:
       artifactName: ${{ steps.versions.outputs.artifactName }}
 
     steps:
+      - name: Determine release branch
+        id: params
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "branch=${{ inputs.branch }}" >> $GITHUB_OUTPUT
+          else
+            echo "branch=${{ github.event.pull_request.base.ref }}" >> $GITHUB_OUTPUT
+          fi
+
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ steps.params.outputs.branch }}
           # Need a complete fetch to make the master merge check work
           fetch-depth: 0
           fetch-tags: true
@@ -90,7 +113,7 @@ jobs:
             exit 1
           fi
 
-          if [[ "${{ steps.versions.outputs.setupVersion }}" != ${{ inputs.branch }}* ]]
+          if [[ "${{ steps.versions.outputs.setupVersion }}" != ${{ steps.params.outputs.branch }}* ]]
           then
             echo "Adding tag to wrong branch"
             exit 1
@@ -114,7 +137,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ needs.setup.outputs.branch }}
 
       - name: Register version with supertokens API
         run: |
@@ -152,7 +175,7 @@ jobs:
       - name: Check tests passed on branch
         uses: supertokens/actions/check-tests-passed@main
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ needs.setup.outputs.branch }}
           ref-type: branch
           repository: ${{ github.repository }}
           run_id: ${{ github.run_id }}
@@ -186,7 +209,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ needs.setup.outputs.branch }}
           fetch-tags: true
           token: ${{ secrets.ALL_REPO_PAT }}
 
@@ -207,7 +230,7 @@ jobs:
             exit 1
           fi
 
-      - if: ${{ inputs.skip-other-version-checks == 'false' || inputs.skip-other-version-checks == false }}
+      - if: inputs.skip-other-version-checks != true
         name: Check if core and frontend released
         run: |
           canReleaseSafelyResponse=`curl -s -X GET "https://api.supertokens.io/0/driver/release/check?password=${{ secrets.SUPERTOKENS_API_KEY }}&version=${{ needs.setup.outputs.setupVersion }}&name=python" -H 'api-version: 0'`
@@ -239,7 +262,7 @@ jobs:
 
           git add .changes/ CHANGELOG.md setup.py supertokens_python/constants.py
           git diff --staged --quiet || git commit -m "chore: update changelog for ${{ needs.setup.outputs.releaseTag }}"
-          git push origin ${{ inputs.branch }}
+          git push origin ${{ needs.setup.outputs.branch }}
 
 
       - name: Mark for release
@@ -283,7 +306,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ needs.setup.outputs.branch }}
           # Need a complete fetch to make the master merge work
           fetch-depth: 0
           fetch-tags: true
@@ -307,13 +330,13 @@ jobs:
           if [[ $isLatest == "true" ]]
           then
             git checkout master
-            git checkout ${{ inputs.branch }}
+            git checkout ${{ needs.setup.outputs.branch }}
 
             git merge master
             git checkout master
-            git merge ${{ inputs.branch }}
+            git merge ${{ needs.setup.outputs.branch }}
             git push
-            git checkout ${{ inputs.branch }}
+            git checkout ${{ needs.setup.outputs.branch }}
           fi
 
       - name: Sync dev with release
@@ -327,10 +350,10 @@ jobs:
         run: |
           git fetch origin dev
           git checkout dev
-          git merge ${{ inputs.branch }} --no-ff \
+          git merge ${{ needs.setup.outputs.branch }} --no-ff \
             -m "chore: sync dev after ${{ needs.setup.outputs.releaseTag }}"
           git push origin dev
-          git checkout ${{ inputs.branch }}
+          git checkout ${{ needs.setup.outputs.branch }}
 
   publish-docs:
     runs-on: ubuntu-latest
