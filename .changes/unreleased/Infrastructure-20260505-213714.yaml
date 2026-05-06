@@ -1,3 +1,0 @@
-kind: Infrastructure
-body: 'fastapi test server: replace removed Starlette `Router.route()` decorator with FastAPI''s `@app.api_route` so the website-tests fastapi job survives Starlette 1.0+.'
-time: 2026-05-05T21:37:14.649908+02:00

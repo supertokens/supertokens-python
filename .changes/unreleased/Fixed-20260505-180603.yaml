@@ -1,3 +1,0 @@
-kind: Fixed
-body: 'oauth2provider: /auth/oauth/revoke no longer 500s for public clients (tokenEndpointAuthMethod=none) that send client_id without client_secret; the request is now forwarded to the core, matching Node behavior.'
-time: 2026-05-05T18:06:03.11962+02:00
