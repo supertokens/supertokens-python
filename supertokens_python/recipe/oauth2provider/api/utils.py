@@ -94,6 +94,8 @@ async def login_get(
                     ),
                     user_context=user_context,
                 )
+                if isinstance(reject, ErrorOAuth2Response):
+                    return reject
                 return RedirectResponse(
                     redirect_to=reject.redirect_to,
                     cookies=cookies,
@@ -108,6 +110,8 @@ async def login_get(
                 ),
                 user_context=user_context,
             )
+            if isinstance(reject, ErrorOAuth2Response):
+                return reject
             return RedirectResponse(
                 redirect_to=reject.redirect_to,
                 cookies=cookies,
@@ -140,6 +144,8 @@ async def login_get(
             identity_provider_session_id=session.get_handle(),
             user_context=user_context,
         )
+        if isinstance(accept, ErrorOAuth2Response):
+            return accept
         return RedirectResponse(
             redirect_to=accept.redirect_to,
             cookies=cookies,
@@ -165,6 +171,8 @@ async def login_get(
             ),
             user_context=user_context,
         )
+        if isinstance(reject, ErrorOAuth2Response):
+            return reject
         return RedirectResponse(
             redirect_to=reject.redirect_to,
             cookies=cookies,

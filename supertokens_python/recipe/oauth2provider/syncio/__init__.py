@@ -169,7 +169,7 @@ def validate_oauth2_refresh_token(
     token: str,
     scopes: Optional[List[str]] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> Union[ActiveTokenResponse, InactiveTokenResponse]:
+) -> Union[ActiveTokenResponse, InactiveTokenResponse, ErrorOAuth2Response]:
     if user_context is None:
         user_context = {}
 

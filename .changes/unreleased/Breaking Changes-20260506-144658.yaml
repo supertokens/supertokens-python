@@ -1,0 +1,3 @@
+kind: Breaking Changes
+body: 'oauth2provider: introspect_token, validate_oauth2_refresh_token, accept_login_request, reject_login_request, accept_consent_request, and reject_consent_request now return an ErrorOAuth2Response variant when the SuperTokens core responds with status=OAUTH_ERROR (matches Node SDK). Previously the introspect path silently treated core errors as ''token inactive'' and the accept/reject paths raised KeyError on the missing redirectTo. Custom RecipeInterface overrides on these methods need to widen their return types to include ErrorOAuth2Response.'
+time: 2026-05-06T14:46:58.930996+02:00
