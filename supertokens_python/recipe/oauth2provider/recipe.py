@@ -306,6 +306,14 @@ class OAuth2ProviderRecipe(RecipeModule):
             environ["SUPERTOKENS_ENV"] != "testing"
         ):
             raise_general_exception("calling testing function in non testing env")
+        # Drop the session recipe's cached JWKS too. The OAuth2 provider's
+        # access-token validation reads keys from the session JWKS cache, so
+        # without this a fresh recipe instance would reuse keys from a
+        # previously-pointed-at core in long-running test suites (matches
+        # Node's resetCombinedJWKS).
+        from supertokens_python.recipe.session.jwks import reset_jwks_cache
+
+        reset_jwks_cache()
         OAuth2ProviderRecipe.__instance = None
 
     def add_user_info_builder_from_other_recipe(

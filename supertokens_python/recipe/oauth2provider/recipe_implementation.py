@@ -684,8 +684,16 @@ class RecipeImplementation(RecipeInterface):
         # Verify token signature using session recipe's JWKS
         session_recipe = SessionRecipe.get_instance()
         matching_keys = get_latest_keys(session_recipe.config, access_token_obj.kid)
-        err: Optional[Exception] = None
 
+        if not matching_keys:
+            # The JWS header advertised a kid that none of the JWKs we know
+            # about match. Surface this as a signature/key error rather than
+            # falling through to a misleading "Wrong token type".
+            raise Exception(
+                f"No JWKS key matching kid={access_token_obj.kid!r}; cannot verify access-token signature"
+            )
+
+        err: Optional[Exception] = None
         payload: Dict[str, Any] = {}
 
         for matching_key in matching_keys:
@@ -694,7 +702,7 @@ class RecipeImplementation(RecipeInterface):
                 payload = jwt.decode(
                     token,
                     matching_key.key,
-                    algorithms=["RS256"],
+                    algorithms=[matching_key.algorithm_name or "RS256"],
                     options={
                         "verify_signature": True,
                         "verify_exp": True,
