@@ -165,3 +165,17 @@ jobs:
           check-name-suffix: '[FDI=${{ inputs.fdi-version }}][Py=${{ matrix.py-version }}][Framework=${{ matrix.framework }}][Spec=${{ matrix.spec }}]'
           path: supertokens-auth-react
           spec: ${{ matrix.spec }}
+
+      # The auth-react-testing-action only uploads test_report/ on failure.
+      # We need the fastapi server's stdout (contains [QUERIER]/[REQUEST]
+      # lines from LOG_TEST_TIMINGS) regardless of pass/fail, so explicitly
+      # upload it here. fastapi-only since LOG_TEST_TIMINGS is only set on
+      # that framework's Start Server step.
+      - if: always() && matrix.framework == 'fastapi'
+        name: Upload test-server timing logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: timing-FDI${{ inputs.fdi-version }}-${{ strategy.job-index }}
+          path: ${{ env.AUTH_REACT__LOG_DIR }}/fastapi.log
+          if-no-files-found: ignore
+          retention-days: 7
