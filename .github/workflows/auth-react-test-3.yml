@@ -130,6 +130,14 @@ jobs:
       - name: Start Server (fastapi)
         if: matrix.framework == 'fastapi'
         working-directory: supertokens-python
+        env:
+          # Capture timing for inbound test-server requests and outbound
+          # Querier calls to the core. Logs go to fastapi.log inside
+          # AUTH_REACT__LOG_DIR, which the auth-react-testing-action
+          # uploads as a workflow artifact. Grep for `[QUERIER]` and
+          # `[REQUEST]` to surface the slowest calls. Off in other
+          # frameworks/workflows; toggle here when you want data.
+          LOG_TEST_TIMINGS: '1'
         run: |
           source venv/bin/activate
           export PYTHONPATH="${PYTHONPATH}:$(pwd)"
