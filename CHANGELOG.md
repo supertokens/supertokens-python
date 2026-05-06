@@ -6,7 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.31.2] - 2026-03-16
+## [0.31.3] - 2026-05-06
+
+### Fixed
+- userroles: stop crashing the OAuth token build flow with 'should never come here' when the underlying session is gone (e.g. on offline_access refresh after session revocation/expiry); now matches Node behavior and issues the token without role/permission claims rather than 500-ing.
+- oauth2provider: revoke_tokens_by_client_id now POSTs to /recipe/oauth/tokens/revoke (the client-wide revoke endpoint) instead of /recipe/oauth/session/revoke; the previous path silently no-opped on the core, leaving issued tokens valid.
+- oauth2provider: /auth/oauth/revoke no longer 500s for public clients (tokenEndpointAuthMethod=none) that send client_id without client_secret; the request is now forwarded to the core, matching Node behavior.
+### Infrastructure
+- Updated workflow action references to new supertokens/actions monorepo
+- fastapi test server: replace removed Starlette `Router.route()` decorator with FastAPI's `@app.api_route` so the website-tests fastapi job survives Starlette 1.0+.## [0.31.2] - 2026-03-16
 
 ### Changed
 - The dependency on aiosmtplib has been updated.

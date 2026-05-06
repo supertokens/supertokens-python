@@ -879,7 +879,7 @@ class RecipeImplementation(RecipeInterface):
         user_context: Dict[str, Any],
     ):
         await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/oauth/session/revoke&#34;),
+            NormalisedURLPath(&#34;/recipe/oauth/tokens/revoke&#34;),
             {&#34;client_id&#34;: client_id},
             user_context=user_context,
         )
@@ -1879,7 +1879,7 @@ inheritance.</p></div>
         user_context: Dict[str, Any],
     ):
         await self.querier.send_post_request(
-            NormalisedURLPath(&#34;/recipe/oauth/session/revoke&#34;),
+            NormalisedURLPath(&#34;/recipe/oauth/tokens/revoke&#34;),
             {&#34;client_id&#34;: client_id},
             user_context=user_context,
         )
