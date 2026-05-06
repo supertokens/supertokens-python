@@ -35,7 +35,7 @@ jobs:
         with:
           # Only consider the source tree, not changelog/docs/html
           paths: '["supertokens_python/**", "tests/**", "*.cfg", "*.toml"]'
-          paths_ignore: '["supertokens_python/constants.py"]'
+          paths_ignore: '["supertokens_python/constants.py", "setup.py", ".changes/**", "CHANGELOG.md", "html/**"]'
           # Skip if an identical source tree already produced a passing run
           skip_after_successful_duplicate: 'true'
 
