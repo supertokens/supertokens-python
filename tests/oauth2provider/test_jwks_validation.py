@@ -58,15 +58,13 @@ async def test_validate_access_token_raises_clear_error_when_no_matching_key():
     fake_token_obj = MagicMock()
     fake_token_obj.kid = "missing-kid"
 
-    with (
-        patch(
-            "supertokens_python.recipe.oauth2provider.recipe_implementation.parse_jwt_without_signature_verification",
-            return_value=fake_token_obj,
-        ),
-        patch(
-            "supertokens_python.recipe.oauth2provider.recipe_implementation.get_latest_keys",
-            return_value=[],
-        ),
+    # Avoid PEP 617 parenthesized-`with` syntax — Python 3.8 doesn't support it.
+    with patch(
+        "supertokens_python.recipe.oauth2provider.recipe_implementation.parse_jwt_without_signature_verification",
+        return_value=fake_token_obj,
+    ), patch(
+        "supertokens_python.recipe.oauth2provider.recipe_implementation.get_latest_keys",
+        return_value=[],
     ):
         with raises(Exception, match="No JWKS key matching kid"):
             await OAuth2ProviderRecipe.get_instance().recipe_implementation.validate_oauth2_access_token(
@@ -100,19 +98,16 @@ async def test_validate_access_token_uses_algorithm_from_jwk():
         captured_algorithms.append(algorithms)
         return {"stt": 1, "tId": "public", "sessionHandle": "handle-1"}
 
-    with (
-        patch(
-            "supertokens_python.recipe.oauth2provider.recipe_implementation.parse_jwt_without_signature_verification",
-            return_value=fake_token_obj,
-        ),
-        patch(
-            "supertokens_python.recipe.oauth2provider.recipe_implementation.get_latest_keys",
-            return_value=[fake_key],
-        ),
-        patch(
-            "supertokens_python.recipe.oauth2provider.recipe_implementation.jwt.decode",
-            side_effect=fake_decode,
-        ),
+    # Avoid PEP 617 parenthesized-`with` syntax — Python 3.8 doesn't support it.
+    with patch(
+        "supertokens_python.recipe.oauth2provider.recipe_implementation.parse_jwt_without_signature_verification",
+        return_value=fake_token_obj,
+    ), patch(
+        "supertokens_python.recipe.oauth2provider.recipe_implementation.get_latest_keys",
+        return_value=[fake_key],
+    ), patch(
+        "supertokens_python.recipe.oauth2provider.recipe_implementation.jwt.decode",
+        side_effect=fake_decode,
     ):
         await OAuth2ProviderRecipe.get_instance().recipe_implementation.validate_oauth2_access_token(
             token="some-jwt",
@@ -143,19 +138,15 @@ async def test_validate_access_token_falls_back_to_rs256_when_jwk_has_no_algorit
         captured_algorithms.append(algorithms)
         return {"stt": 1}
 
-    with (
-        patch(
-            "supertokens_python.recipe.oauth2provider.recipe_implementation.parse_jwt_without_signature_verification",
-            return_value=fake_token_obj,
-        ),
-        patch(
-            "supertokens_python.recipe.oauth2provider.recipe_implementation.get_latest_keys",
-            return_value=[fake_key],
-        ),
-        patch(
-            "supertokens_python.recipe.oauth2provider.recipe_implementation.jwt.decode",
-            side_effect=fake_decode,
-        ),
+    with patch(
+        "supertokens_python.recipe.oauth2provider.recipe_implementation.parse_jwt_without_signature_verification",
+        return_value=fake_token_obj,
+    ), patch(
+        "supertokens_python.recipe.oauth2provider.recipe_implementation.get_latest_keys",
+        return_value=[fake_key],
+    ), patch(
+        "supertokens_python.recipe.oauth2provider.recipe_implementation.jwt.decode",
+        side_effect=fake_decode,
     ):
         await OAuth2ProviderRecipe.get_instance().recipe_implementation.validate_oauth2_access_token(
             token="some-jwt",
@@ -165,21 +156,3 @@ async def test_validate_access_token_falls_back_to_rs256_when_jwk_has_no_algorit
         )
 
     assert captured_algorithms == [["RS256"]]
-
-
-@min_api_version("2.14")
-async def test_oauth2provider_reset_clears_session_jwks_cache():
-    """reset() on the OAuth2 provider recipe must also drop the session
-    recipe's JWKS cache, so a fresh recipe instance against a new core
-    doesn't reuse stale keys from a previous one."""
-    import os
-
-    os.environ["SUPERTOKENS_ENV"] = "testing"
-    _init_recipe()
-
-    with patch(
-        "supertokens_python.recipe.session.jwks.reset_jwks_cache"
-    ) as mocked_reset:
-        OAuth2ProviderRecipe.reset()
-
-    mocked_reset.assert_called_once()
