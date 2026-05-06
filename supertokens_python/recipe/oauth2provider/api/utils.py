@@ -16,8 +16,12 @@
 from __future__ import annotations
 
 import time
+from datetime import datetime, timezone
+from http.cookies import SimpleCookie
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 from urllib.parse import parse_qs, urlparse
+
+from dateutil import parser
 
 from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 from supertokens_python.recipe.session.interfaces import SessionClaimValidator
@@ -206,16 +210,59 @@ def get_merged_cookies(orig_cookies: str, new_cookies: Optional[List[str]]) -> s
             name, value = cookie.split("=", 1)
             cookie_map[name.strip()] = value
 
-    # Note: This is a simplified version. In production code you'd want to use a proper
-    # cookie parsing library to handle all cookie attributes correctly
-    if new_cookies:
-        for cookie_str in new_cookies:
-            cookie = cookie_str.split(";")[0].strip()
-            if "=" in cookie:
-                name, value = cookie.split("=", 1)
+    now = datetime.now(timezone.utc)
+    for cookie_str in new_cookies:
+        try:
+            parsed = SimpleCookie()
+            parsed.load(cookie_str)
+        except Exception:
+            # Fall back to the legacy "first segment is name=value" behavior
+            # if SimpleCookie chokes on the input.
+            head = cookie_str.split(";")[0].strip()
+            if "=" in head:
+                name, value = head.split("=", 1)
                 cookie_map[name.strip()] = value
+            continue
+
+        for morsel in parsed.values():
+            expires_at = _parse_cookie_expires(morsel.get("expires", ""))
+            if expires_at is not None and expires_at < now:
+                # Cookie has been instructed to expire — the core is asking
+                # us to drop it. Match Node's setCookieParser-based behavior.
+                cookie_map.pop(morsel.key, None)
+                continue
+            cookie_map[morsel.key] = morsel.value
 
     return ";".join(f"{key}={value}" for key, value in cookie_map.items())
+
+
+def _parse_cookie_expires(expires_str: str) -> Optional[datetime]:
+    if not expires_str:
+        return None
+    try:
+        parsed = parser.parse(expires_str)
+    except (ValueError, TypeError):
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed
+
+
+def parse_expires_ms_or_default(expires_str: str) -> int:
+    """Convert a Set-Cookie `Expires` attribute to ms since epoch.
+
+    The framework abstract `set_cookie(..., expires: int, ...)` requires an
+    integer, so we can't represent "session cookie" cleanly. When the input
+    is missing or unparseable (e.g. the core sent a cookie with no Expires —
+    a session cookie), fall back to "now + 1 hour" so the cookie survives
+    the OAuth internal redirect chain without persisting indefinitely.
+    Previously this called `dateutil.parser.parse("")` which raises ValueError
+    and crashed the auth/login handlers.
+    """
+    parsed = _parse_cookie_expires(expires_str)
+    if parsed is None:
+        return int((time.time() + 3600) * 1000)
+    return int(parsed.timestamp() * 1000)
 
 
 def merge_set_cookie_headers(
