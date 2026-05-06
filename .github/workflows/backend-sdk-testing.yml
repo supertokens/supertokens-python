@@ -117,6 +117,14 @@ jobs:
 
           echo "coreVersion=${coreVersion}" >> $GITHUB_OUTPUT
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.py-version }}
+          cache: 'pip'
+          cache-dependency-path: |
+            supertokens-python/dev-requirements.txt
+            supertokens-python/setup.py
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"

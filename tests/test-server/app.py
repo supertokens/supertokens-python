@@ -1,6 +1,7 @@
 import inspect
 import json
 import os
+import sys
 import traceback
 from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, TypeVar, Union
 
@@ -83,7 +84,20 @@ from webauthn import add_webauthn_routes
 
 from supertokens import add_supertokens_routes  # pylint: disable=import-error
 
+# Optional timing instrumentation, gated by LOG_TEST_TIMINGS=1.
+# tests/test-server/app.py is at depth 2 (tests/<dir>/app.py).
+_repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
+from tests._test_timing import (  # noqa: E402
+    install_flask_request_timing,
+    install_querier_timing,
+)
+
+install_querier_timing()
+
 app = Flask(__name__)
+install_flask_request_timing(app)
 Middleware(app)
 
 # Global variables

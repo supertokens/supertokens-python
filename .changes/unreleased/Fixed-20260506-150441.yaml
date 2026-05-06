@@ -1,0 +1,3 @@
+kind: Fixed
+body: 'oauth2provider: cookie handling on the OAuth login/auth redirect chain. Cookies set by the core without an Expires attribute (or with an unparseable one) no longer crash api/auth.py and api/login.py with dateutil ValueError; they fall back to a 1-hour TTL via the new parse_expires_ms_or_default helper. get_merged_cookies now parses Set-Cookie attributes via SimpleCookie and drops cookies whose Expires is in the past (the core''s idiom for ''delete this cookie''), matching Node''s setCookieParser behavior; the previous implementation retained logout cookies in the merged result.'
+time: 2026-05-06T15:04:41.992921+02:00

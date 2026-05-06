@@ -20,6 +20,15 @@ services:
       INFO_LOG_PATH: "null"
       ERROR_LOG_PATH: "null"
       LOG_LEVEL: "DEBUG"
+      # Test-only: dial password hashing down to milliseconds. The default
+      # bcrypt settings are ~250ms/hash, which adds up across the
+      # emailpassword/passwordless test surface. Argon2 with these
+      # deliberately weak parameters runs in ~1ms. NOT FOR PRODUCTION.
+      PASSWORD_HASHING_ALG: ARGON2
+      ARGON2_ITERATIONS: 1
+      ARGON2_MEMORY_KB: 8
+      ARGON2_PARALLELISM: 1
+      ARGON2_HASHING_POOL_SIZE: 8
     healthcheck:
       test: bash -c 'curl -s "http://127.0.0.1:3567/hello" | grep "Hello"'
       interval: 10s
