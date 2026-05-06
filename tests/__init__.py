@@ -12,6 +12,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import nest_asyncio  # type: ignore
-
-nest_asyncio.apply()  # type: ignore
+# nest_asyncio is only required by the `flask-nest-asyncio` website-test
+# matrix variant (and the unit/auth-react/backend-sdk envs that install
+# dev-requirements.txt). The other website-test variants run `make with-X`
+# without dev-requirements.txt and don't have it installed, so importing
+# unconditionally breaks any later `from tests.<...> import ...` in those
+# test servers. Make the apply optional.
+try:
+    import nest_asyncio  # type: ignore
+except ImportError:
+    pass
+else:
+    nest_asyncio.apply()  # type: ignore
