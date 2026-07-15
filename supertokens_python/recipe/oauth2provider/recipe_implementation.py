@@ -788,7 +788,7 @@ class RecipeImplementation(RecipeInterface):
         website_domain = self.app_info.get_origin(
             None, user_context
         ).get_as_string_dangerous()
-        website_base_path = self.app_info.api_base_path.get_as_string_dangerous()
+        website_base_path = self.app_info.website_base_path.get_as_string_dangerous()
 
         if isinstance(params, FrontendRedirectionURLTypeLogin):
             query_params: Dict[str, str] = {"loginChallenge": params.login_challenge}
