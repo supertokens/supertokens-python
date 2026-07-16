@@ -1,0 +1,3 @@
+kind: Infrastructure
+body: Replace the local lint-pr workflow with a thin caller of the shared supertokens/actions reusable lint-pr workflow (behavior unchanged)
+time: 2026-07-16T10:15:10.000000000Z
