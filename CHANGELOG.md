@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased]
+
+### Fixed
+- webauthn: fix sign in failing for counter-incrementing authenticators (e.g. Windows Hello) — the assertion was verified against the core twice ([supertokens-core#1195](https://github.com/supertokens/supertokens-core/issues/1195)). Adds `complete_sign_in` to the recipe interface; `sign_in_post` no longer calls `sign_in`, so move `sign_in` override logic for the API flow to `complete_sign_in`. Masked sign-in errors are now debug-logged
+
+
 ## [0.31.3] - 2026-05-06
 
 ### Fixed
