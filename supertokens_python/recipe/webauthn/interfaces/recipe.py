@@ -500,6 +500,26 @@ class RecipeInterface(BaseRecipeInterface):
     ) -> Union[SignInResponse, SignInErrorResponse]: ...
 
     @abstractmethod
+    async def complete_sign_in(
+        self,
+        *,
+        verified_credentials: VerifyCredentialsResponse,
+        session: Optional[SessionContainer] = None,
+        should_try_linking_with_session_user: Optional[bool] = None,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -> Union[SignInResponse, LinkingToSessionUserFailedError]:
+        """
+        Runs the post-verification part of sign in (email verification propagation and
+        account linking) against an already-verified credential. Called by sign_in_post
+        after its verify_credentials guard so that the assertion is verified against the
+        core exactly once per request — verifying the same assertion twice trips the
+        core's signature-counter clone detection for counter-incrementing authenticators
+        (https://github.com/supertokens/supertokens-core/issues/1195).
+        """
+        ...
+
+    @abstractmethod
     async def verify_credentials(
         self,
         *,

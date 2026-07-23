@@ -381,6 +381,12 @@ class APIImplementation(APIInterface):
         )
 
         if verify_result_response.status != "OK":
+            reason = getattr(verify_result_response, "reason", None)
+            log_debug_message(
+                "sign_in_post: returning INVALID_CREDENTIALS_ERROR because "
+                f"verify_credentials returned {verify_result_response.status}"
+                + (f" (reason: {reason})" if reason is not None else "")
+            )
             return InvalidCredentialsErrorResponse()
 
         generated_options_response = (
@@ -392,6 +398,10 @@ class APIImplementation(APIInterface):
         )
 
         if generated_options_response.status != "OK":
+            log_debug_message(
+                "sign_in_post: returning INVALID_CREDENTIALS_ERROR because "
+                f"get_generated_options returned {generated_options_response.status}"
+            )
             return InvalidCredentialsErrorResponse()
 
         async def check_credentials_on_tenant(tenant_id: str):
@@ -470,29 +480,18 @@ class APIImplementation(APIInterface):
             # Fake emails cannot be used as a first factor
             return InvalidCredentialsErrorResponse()
 
-        sign_in_response = await options.recipe_implementation.sign_in(
-            webauthn_generated_options_id=webauthn_generated_options_id,
-            credential=credential,
+        # The credential was already verified against the core by the verify_credentials
+        # call above, so we only run the post-verification steps here. Calling sign_in
+        # (which verifies again) would present the same assertion to the core twice and
+        # trip its signature-counter clone detection for counter-incrementing
+        # authenticators (https://github.com/supertokens/supertokens-core/issues/1195).
+        sign_in_response = await options.recipe_implementation.complete_sign_in(
+            verified_credentials=verify_result_response,
             session=session,
             should_try_linking_with_session_user=should_try_linking_with_session_user,
             tenant_id=tenant_id,
             user_context=user_context,
         )
-
-        if isinstance(sign_in_response, InvalidCredentialsErrorResponse):
-            return sign_in_response
-
-        if isinstance(
-            sign_in_response,
-            (
-                InvalidOptionsErrorResponse,
-                InvalidAuthenticatorErrorResponse,
-                CredentialNotFoundErrorResponse,
-                UnknownUserIdErrorResponse,
-                OptionsNotFoundErrorResponse,
-            ),
-        ):
-            return InvalidCredentialsErrorResponse()
 
         if sign_in_response.status != "OK":
             return SignInNotAllowedErrorResponse(
