@@ -1,0 +1,3 @@
+kind: Fixed
+body: 'oauth2provider: use the website base path when building frontend redirect URLs instead of the API base path.'
+time: 2026-07-20T00:00:00.000000+00:00
