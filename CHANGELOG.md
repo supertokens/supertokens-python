@@ -6,7 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.31.3] - 2026-05-06
+## [0.31.4] - 2026-07-24
+
+### Fixed
+- oauth2provider: use the website base path when building frontend redirect URLs instead of the API base path.
+- webauthn: fix sign in failing for counter-incrementing authenticators (e.g. Windows Hello) — the assertion was verified against the core twice
+### Infrastructure
+- Replace the local lint-pr workflow with a thin caller of the shared supertokens/actions reusable lint-pr workflow (behavior unchanged)
+- Replace the local dev-sync workflow with a thin caller of the shared supertokens/actions reusable dev-sync workflow (behavior unchanged)
+- Mint short-lived GitHub App installation tokens in-job (actions/create-github-app-token) for the release-tag and check-docs workflows, replacing the ALL_REPO_PAT org secret
+- Adopt the shared reusable release-tag workflow from supertokens/actions; keep only the docs and PyPI publish jobs as thin callers consuming its outputs. The git tag is now pushed before the API release mark.## [0.31.3] - 2026-05-06
 
 ### Fixed
 - userroles: stop crashing the OAuth token build flow with 'should never come here' when the underlying session is gone (e.g. on offline_access refresh after session revocation/expiry); now matches Node behavior and issues the token without role/permission claims rather than 500-ing.
