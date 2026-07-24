@@ -528,6 +528,26 @@ class RecipeInterface(BaseRecipeInterface):
     ) -&gt; Union[SignInResponse, SignInErrorResponse]: ...
 
     @abstractmethod
+    async def complete_sign_in(
+        self,
+        *,
+        verified_credentials: VerifyCredentialsResponse,
+        session: Optional[SessionContainer] = None,
+        should_try_linking_with_session_user: Optional[bool] = None,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[SignInResponse, LinkingToSessionUserFailedError]:
+        &#34;&#34;&#34;
+        Runs the post-verification part of sign in (email verification propagation and
+        account linking) against an already-verified credential. Called by sign_in_post
+        after its verify_credentials guard so that the assertion is verified against the
+        core exactly once per request — verifying the same assertion twice trips the
+        core&#39;s signature-counter clone detection for counter-incrementing authenticators
+        (https://github.com/supertokens/supertokens-core/issues/1195).
+        &#34;&#34;&#34;
+        ...
+
+    @abstractmethod
     async def verify_credentials(
         self,
         *,
@@ -1055,7 +1075,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]">StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -1097,7 +1117,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]">StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -1139,7 +1159,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]">StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -1149,12 +1169,12 @@ validated to form a valid model.</p>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></b></code>:
+<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]">StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']]</a></b></code>:
 <ul class="hlist">
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']].from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']].model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']].status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['CREDENTIAL_NOT_FOUND_ERROR']].to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1369,7 +1389,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']]">StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']]</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -1379,12 +1399,12 @@ validated to form a valid model.</p>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></b></code>:
+<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']]">StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']]</a></b></code>:
 <ul class="hlist">
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']].from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']].model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']].status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['EMAIL_ALREADY_EXISTS_ERROR']].to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1712,7 +1732,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str]</li>
+<li><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str]" href="../../../types/response.html#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str]">StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str]</a></li>
 <li><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
@@ -1723,13 +1743,13 @@ validated to form a valid model.</p>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="supertokens_python.types.response.StatusReasonResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusReasonResponseBaseModel">StatusReasonResponseBaseModel</a></b></code>:
+<li><code><b><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str]" href="../../../types/response.html#supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str]">StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str]</a></b></code>:
 <ul class="hlist">
-<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.reason" href="../../../types/response.html#supertokens_python.types.response.StatusReasonResponseBaseModel.reason">reason</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str].from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str].model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str].reason" href="../../../types/response.html#supertokens_python.types.response.StatusReasonResponseBaseModel.reason">reason</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str].status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusReasonResponseBaseModel[Literal['INVALID_AUTHENTICATOR_ERROR'], str].to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1756,7 +1776,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']]">StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']]</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -1766,12 +1786,12 @@ validated to form a valid model.</p>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></b></code>:
+<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']]">StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']]</a></b></code>:
 <ul class="hlist">
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']].from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']].model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']].status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_CREDENTIALS_ERROR']].to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1798,7 +1818,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']]">StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']]</a></li>
 <li><a title="supertokens_python.types.response.StatusErrResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusErrResponseBaseModel">StatusErrResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
@@ -1809,13 +1829,13 @@ validated to form a valid model.</p>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="supertokens_python.types.response.StatusErrResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusErrResponseBaseModel">StatusErrResponseBaseModel</a></b></code>:
+<li><code><b><a title="supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']]">StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']]</a></b></code>:
 <ul class="hlist">
-<li><code><a title="supertokens_python.types.response.StatusErrResponseBaseModel.err" href="../../../types/response.html#supertokens_python.types.response.StatusErrResponseBaseModel.err">err</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusErrResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusErrResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusErrResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusErrResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']].err" href="../../../types/response.html#supertokens_python.types.response.StatusErrResponseBaseModel.err">err</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']].from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']].model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']].status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusErrResponseBaseModel[Literal['INVALID_EMAIL_ERROR']].to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1842,7 +1862,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]">StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -1884,7 +1904,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]">StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -1894,12 +1914,12 @@ validated to form a valid model.</p>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></b></code>:
+<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]">StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']]</a></b></code>:
 <ul class="hlist">
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']].from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']].model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']].status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['INVALID_OPTIONS_ERROR']].to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1985,7 +2005,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]">StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -2027,7 +2047,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]">StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -2069,7 +2089,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]">StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -2079,12 +2099,12 @@ validated to form a valid model.</p>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></b></code>:
+<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]">StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']]</a></b></code>:
 <ul class="hlist">
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']].from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']].model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']].status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['OPTIONS_NOT_FOUND_ERROR']].to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>
@@ -2155,6 +2175,26 @@ inheritance.</p></div>
         tenant_id: str,
         user_context: UserContext,
     ) -&gt; Union[SignInResponse, SignInErrorResponse]: ...
+
+    @abstractmethod
+    async def complete_sign_in(
+        self,
+        *,
+        verified_credentials: VerifyCredentialsResponse,
+        session: Optional[SessionContainer] = None,
+        should_try_linking_with_session_user: Optional[bool] = None,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[SignInResponse, LinkingToSessionUserFailedError]:
+        &#34;&#34;&#34;
+        Runs the post-verification part of sign in (email verification propagation and
+        account linking) against an already-verified credential. Called by sign_in_post
+        after its verify_credentials guard so that the assertion is verified against the
+        core exactly once per request — verifying the same assertion twice trips the
+        core&#39;s signature-counter clone detection for counter-incrementing authenticators
+        (https://github.com/supertokens/supertokens-core/issues/1195).
+        &#34;&#34;&#34;
+        ...
 
     @abstractmethod
     async def verify_credentials(
@@ -2299,6 +2339,17 @@ inheritance.</p></div>
 </ul>
 <h3>Methods</h3>
 <dl>
+<dt id="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.complete_sign_in"><code class="name flex">
+<span>async def <span class="ident">complete_sign_in</span></span>(<span>self, *, verified_credentials: <a title="supertokens_python.recipe.webauthn.interfaces.recipe.VerifyCredentialsResponse" href="#supertokens_python.recipe.webauthn.interfaces.recipe.VerifyCredentialsResponse">VerifyCredentialsResponse</a>, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, should_try_linking_with_session_user: Optional[bool] = None, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.SignInResponse" href="#supertokens_python.recipe.webauthn.interfaces.recipe.SignInResponse">SignInResponse</a>, <a title="supertokens_python.types.auth_utils.LinkingToSessionUserFailedError" href="../../../types/auth_utils.html#supertokens_python.types.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Runs the post-verification part of sign in (email verification propagation and
+account linking) against an already-verified credential. Called by sign_in_post
+after its verify_credentials guard so that the assertion is verified against the
+core exactly once per request — verifying the same assertion twice trips the
+core's signature-counter clone detection for counter-incrementing authenticators
+(<a href="https://github.com/supertokens/supertokens-core/issues/1195">https://github.com/supertokens/supertokens-core/issues/1195</a>).</p></div>
+</dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.consume_recover_account_token"><code class="name flex">
 <span>async def <span class="ident">consume_recover_account_token</span></span>(<span>self, *, token: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.ConsumeRecoverAccountTokenResponse" href="#supertokens_python.recipe.webauthn.interfaces.recipe.ConsumeRecoverAccountTokenResponse">ConsumeRecoverAccountTokenResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse" href="#supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse">RecoverAccountTokenInvalidErrorResponse</a>]</span>
 </code></dt>
@@ -2461,7 +2512,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]">StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -2505,7 +2556,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]">StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -2549,7 +2600,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]">StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -2559,12 +2610,12 @@ validated to form a valid model.</p>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></b></code>:
+<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]">StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']]</a></b></code>:
 <ul class="hlist">
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']].from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']].model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']].status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['RECOVER_ACCOUNT_TOKEN_INVALID_ERROR']].to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>
@@ -3074,7 +3125,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]">StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -3116,7 +3167,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]</li>
+<li><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]">StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]</a></li>
 <li><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -3126,12 +3177,12 @@ validated to form a valid model.</p>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel">StatusResponseBaseModel</a></b></code>:
+<li><code><b><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]">StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']]</a></b></code>:
 <ul class="hlist">
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
-<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel.to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']].from_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']].model_config" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']].status" href="../../../types/response.html#supertokens_python.types.response.StatusResponseBaseModel.status">status</a></code></li>
+<li><code><a title="supertokens_python.types.response.StatusResponseBaseModel[Literal['UNKNOWN_USER_ID_ERROR']].to_json" href="../../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>
@@ -3407,6 +3458,7 @@ validated to form a valid model.</p>
 <li>
 <h4><code><a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface" href="#supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface">RecipeInterface</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.complete_sign_in" href="#supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.complete_sign_in">complete_sign_in</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.consume_recover_account_token" href="#supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.consume_recover_account_token">consume_recover_account_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.create_new_recipe_user" href="#supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.create_new_recipe_user">create_new_recipe_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.generate_recover_account_token" href="#supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.generate_recover_account_token">generate_recover_account_token</a></code></li>

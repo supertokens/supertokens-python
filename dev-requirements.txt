@@ -4,6 +4,9 @@ django-cors-headers==4.4.0
 django-stubs==4.2.7
 django-stubs-ext==4.2.7
 fastapi==0.115.5
+# filelock >= 3.20 (transitive dep of tldextract) calls `os.ftruncate` on lock fds,
+# which is incompatible with pyfakefs (OSError: [Errno 9] Invalid file descriptor)
+filelock<3.20
 Flask==3.0.3
 flask-cors==5.0.0
 nest-asyncio==1.6.0
