@@ -204,7 +204,12 @@ class APIImplementation(APIInterface):
         scopes: Optional[List[str]],
         options: APIOptions,
         user_context: Dict[str, Any],
-    ) -> Union[ActiveTokenResponse, InactiveTokenResponse, GeneralErrorResponse]:
+    ) -> Union[
+        ActiveTokenResponse,
+        InactiveTokenResponse,
+        ErrorOAuth2Response,
+        GeneralErrorResponse,
+    ]:
         return await options.recipe_implementation.introspect_token(
             token=token,
             scopes=scopes,

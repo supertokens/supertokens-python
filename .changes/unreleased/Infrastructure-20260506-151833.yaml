@@ -1,0 +1,3 @@
+kind: Infrastructure
+body: 'ci: enable pip download caching on actions/setup-python in unit-test, website-test, auth-react-test-3, and backend-sdk-testing workflows. Cuts the ''Create virtual environment and install dependencies'' step from ~30-90s to a few seconds when the dev-requirements.txt + setup.py hash matches a previous run. Also adds the missing setup-python step to backend-sdk-testing, which previously relied on whatever Python the runner shipped (the matrix declared py-version 3.8-3.13 but it was never honored).'
+time: 2026-05-06T15:18:33.928542+02:00

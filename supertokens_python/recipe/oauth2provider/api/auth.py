@@ -18,8 +18,6 @@ from http.cookies import SimpleCookie
 from typing import TYPE_CHECKING, Any, Dict
 from urllib.parse import parse_qsl
 
-from dateutil import parser
-
 from supertokens_python.utils import send_200_response, send_non_200_response
 
 if TYPE_CHECKING:
@@ -28,7 +26,7 @@ if TYPE_CHECKING:
         APIOptions,
     )
 
-from .utils import get_session
+from .utils import get_session, parse_expires_ms_or_default
 
 
 async def auth_get(
@@ -88,8 +86,9 @@ async def auth_get(
                         domain=morsel.get("domain"),
                         secure=morsel.get("secure", True),
                         httponly=morsel.get("httponly", True),
-                        expires=parser.parse(morsel.get("expires", "")).timestamp()
-                        * 1000,  # type: ignore
+                        expires=parse_expires_ms_or_default(
+                            str(morsel.get("expires", ""))
+                        ),
                         path=morsel.get("path", "/"),
                         samesite=morsel.get("samesite", "lax"),
                     )

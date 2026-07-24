@@ -113,7 +113,7 @@ def validate_oauth2_access_token(
 
 def create_token_for_client_credentials(
     client_id: str,
-    client_secret: str,
+    client_secret: Optional[str] = None,
     scope: Optional[List[str]] = None,
     audience: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
@@ -169,7 +169,7 @@ def validate_oauth2_refresh_token(
     token: str,
     scopes: Optional[List[str]] = None,
     user_context: Optional[Dict[str, Any]] = None,
-) -> Union[ActiveTokenResponse, InactiveTokenResponse]:
+) -> Union[ActiveTokenResponse, InactiveTokenResponse, ErrorOAuth2Response]:
     if user_context is None:
         user_context = {}
 

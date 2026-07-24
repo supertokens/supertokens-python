@@ -1,6 +1,9 @@
 [tool.ruff]
 line-length = 88 # Match Black's formatting
 src = ["supertokens_python"]
+# Match setup.py's python_requires=">=3.8" so ruff-format doesn't emit
+# 3.9+ syntax (e.g. parenthesized `with` statements).
+target-version = "py38"
 
 [tool.ruff.lint]
 extend-select = [
