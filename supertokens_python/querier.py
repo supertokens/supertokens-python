@@ -20,6 +20,8 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Tupl
 
 from httpx import AsyncClient, ConnectTimeout, NetworkError, Response
 
+from supertokens_python.ssl_utils import get_ssl_context
+
 from .constants import (
     API_KEY_HEADER,
     API_VERSION,
@@ -107,7 +109,7 @@ class Querier:
             raise Exception("Retry request failed")
 
         try:
-            async with AsyncClient(timeout=30.0) as client:
+            async with AsyncClient(timeout=30.0, verify=get_ssl_context()) as client:
                 if method == "GET":
                     return await client.get(url, *args, **kwargs)  # type: ignore
                 if method == "POST":

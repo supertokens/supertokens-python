@@ -17,6 +17,7 @@ from supertokens_python.recipe.thirdparty.providers.utils import (
     get_actual_client_id_from_development_client_id,
     is_using_oauth_development_client_id,
 )
+from supertokens_python.ssl_utils import get_ssl_context
 
 from ..provider import (
     AuthorisationRedirect,
@@ -155,7 +156,7 @@ async def verify_id_token_from_jwks_endpoint_and_get_payload(
     id_token: str, jwks_uri: str, audience: str
 ):
     public_keys: List[RSAAlgorithm] = []
-    async with AsyncClient(timeout=30.0) as client:
+    async with AsyncClient(timeout=30.0, verify=get_ssl_context()) as client:
         response = await client.get(jwks_uri)  # type:ignore
         key_payload = response.json()
         for key in key_payload["keys"]:

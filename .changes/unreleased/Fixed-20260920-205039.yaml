@@ -1,0 +1,3 @@
+kind: Fixed
+body: Reuse TLS contexts for Core and third-party provider requests to avoid repeatedly loading trusted certificates.
+time: 2026-09-20T20:50:39.0338+01:00
