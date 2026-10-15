@@ -73,7 +73,7 @@ async def test_thirdpary_parsing_works(fastapi_client: TestClient):
     init(**st_init_args)
 
     state = b64encode(
-        json.dumps({"frontendRedirectURI": "http://localhost:3000/redirect"}).encode()
+        json.dumps({"frontendRedirectURI": "http://supertokens.io/redirect"}).encode()
     ).decode()
     code = "testing"
 
@@ -84,7 +84,7 @@ async def test_thirdpary_parsing_works(fastapi_client: TestClient):
     assert res.content == b""
     assert (
         res.headers["location"]
-        == f"http://localhost:3000/redirect?state={state.replace('=', '%3D')}&code={code}"
+        == f"http://supertokens.io/redirect?state={state.replace('=', '%3D')}&code={code}"
     )
 
 
