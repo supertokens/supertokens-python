@@ -453,7 +453,7 @@ class SupertokensTest(TestCase):
 
         state = b64encode(
             json.dumps(
-                {"frontendRedirectURI": "http://localhost:3000/redirect"}
+                {"frontendRedirectURI": "http://supertokens.io/redirect"}
             ).encode()
         ).decode()
         code = "testing"
@@ -474,7 +474,7 @@ class SupertokensTest(TestCase):
         self.assertEqual(response.content, b"")
         self.assertEqual(
             response.headers["location"],
-            f"http://localhost:3000/redirect?state={state.replace('=', '%3D')}&code={code}",
+            f"http://supertokens.io/redirect?state={state.replace('=', '%3D')}&code={code}",
         )
 
     @override_settings(ALLOWED_HOSTS=["testserver"])
