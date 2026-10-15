@@ -22,6 +22,7 @@ from .recipe import ThirdPartyRecipe
 
 InputOverrideConfig = utils.InputOverrideConfig
 SignInAndUpFeature = utils.SignInAndUpFeature
+TypeIsValidFrontendRedirectURIFunction = utils.TypeIsValidFrontendRedirectURIFunction
 ProviderInput = provider.ProviderInput
 ProviderConfig = provider.ProviderConfig
 ProviderClientConfig = provider.ProviderClientConfig
@@ -36,7 +37,17 @@ if TYPE_CHECKING:
 def init(
     sign_in_and_up_feature: Optional[SignInAndUpFeature] = None,
     override: Union[InputOverrideConfig, None] = None,
+    is_valid_frontend_redirect_uri: Optional[
+        TypeIsValidFrontendRedirectURIFunction
+    ] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
+    """
+    `is_valid_frontend_redirect_uri` decides whether the Apple form_post callback may redirect
+    to the frontend redirect URI from the `state` sent to Apple. See
+    `TypeIsValidFrontendRedirectURIFunction` for details.
+    """
     if sign_in_and_up_feature is None:
         sign_in_and_up_feature = SignInAndUpFeature()
-    return ThirdPartyRecipe.init(sign_in_and_up_feature, override)
+    return ThirdPartyRecipe.init(
+        sign_in_and_up_feature, override, is_valid_frontend_redirect_uri
+    )

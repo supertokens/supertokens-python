@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Security
+- thirdparty: the Apple form_post callback now only redirects to the configured `origin` / `website_domain` and answers invalid callback state with a 400. Apps whose `origin` depends on the request, or that redirect to other targets (e.g. another origin, https universal/app links or custom-scheme mobile deep links such as `myapp://callback`), can allow them with the new `is_valid_frontend_redirect_uri` thirdparty config option. `javascript:`, `data:` and similar schemes are always rejected.
+
 ## [0.30.3] - 2026-01-30
 - Fixes webauthn MFA integration
 - Adds missing `rp_id` field to Webauthn's `SignInOptionResponse`
