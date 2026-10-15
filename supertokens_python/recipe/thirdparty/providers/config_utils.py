@@ -1,3 +1,4 @@
+import copy
 from typing import Any, Dict, List, Optional
 
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
@@ -15,7 +16,7 @@ from .active_directory import ActiveDirectory
 from .apple import Apple
 from .bitbucket import Bitbucket
 from .boxy_saml import BoxySAML
-from .custom import NewProvider
+from .custom import NewProvider, clone_provider_config
 from .discord import Discord
 from .facebook import Facebook
 from .github import Github
@@ -29,9 +30,24 @@ from .twitter import Twitter
 from .utils import do_get_request
 
 
+def clone_provider_input(provider_input: ProviderInput) -> ProviderInput:
+    """
+    Returns a copy of the provider input whose config can be changed without changing
+    the original (e.g. the static providers passed to the thirdparty recipe on init).
+    """
+    result = copy.copy(provider_input)
+    result.config = clone_provider_config(provider_input.config)
+    return result
+
+
 def merge_config(
     config_from_static: ProviderConfig, config_from_core: ProviderConfig
 ) -> ProviderConfig:
+    # The result must not share any mutable state with the inputs, otherwise changes
+    # to it (e.g. the per tenant user info map below) would change the static config.
+    config_from_static = clone_provider_config(config_from_static)
+    config_from_core = clone_provider_config(config_from_core)
+
     result = ProviderConfig(
         third_party_id=config_from_static.third_party_id,
         name=(
@@ -168,7 +184,7 @@ def merge_providers_from_core_and_static(
             ),
             provider_inputs_from_static,
         ):
-            merged_providers.append(config)
+            merged_providers.append(clone_provider_input(config))
     else:
         for provider_config_from_core in provider_configs_from_core:
             merged_provider_input = ProviderInput(provider_config_from_core)
@@ -190,6 +206,10 @@ def merge_providers_from_core_and_static(
 
 
 def create_provider(provider_input: ProviderInput) -> Provider:
+    # The built-in providers fill in defaults on the input they receive, so we pass
+    # them a copy to keep the (possibly static) input unchanged.
+    provider_input = clone_provider_input(provider_input)
+
     if provider_input.config.third_party_id.startswith("active-directory"):
         return ActiveDirectory(provider_input)
     if provider_input.config.third_party_id.startswith("apple"):
