@@ -1,0 +1,3 @@
+kind: Changed
+body: 'passwordless: `revoke_all_codes` with `phone_number` now revokes the codes of that phone number. Passing both `email` and `phone_number` now raises an error.'
+time: 2026-10-16T10:04:00.000000+00:00
