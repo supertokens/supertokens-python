@@ -1,0 +1,3 @@
+kind: Changed
+body: 'dashboard: when `admins` is set, unlinking accounts through the dashboard now requires an admin, like the other dashboard APIs that change data.'
+time: 2026-10-16T10:05:00.000000+00:00
