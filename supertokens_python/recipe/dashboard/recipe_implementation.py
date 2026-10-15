@@ -60,12 +60,17 @@ class RecipeImplementation(RecipeInterface):
             # For all non GET requests we also want to check if the
             # user is allowed to perform this operation
             if normalise_http_method(request.method()) != "get":
+                # Match on the same normalised path the request is routed by (no query string)
+                request_path = NormalisedURLPath(
+                    request.get_path()
+                ).get_as_string_dangerous()
+
                 # We dont want to block the analytics API
-                if request.get_original_url().endswith(DASHBOARD_ANALYTICS_API):
+                if request_path.endswith(DASHBOARD_ANALYTICS_API):
                     return True
 
                 # We do not want to block the sign out request
-                if request.get_original_url().endswith(SIGN_OUT_API):
+                if request_path.endswith(SIGN_OUT_API):
                     return True
 
                 admins = config.admins
