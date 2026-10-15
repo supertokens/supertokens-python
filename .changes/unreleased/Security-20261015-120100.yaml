@@ -1,0 +1,3 @@
+kind: Security
+body: 'session: access token structure validation now requires a string `tId` claim for v4 and later access tokens.'
+time: 2026-10-15T12:01:00.000000+00:00
