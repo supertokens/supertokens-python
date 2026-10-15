@@ -1,0 +1,3 @@
+kind: Changed
+body: 'multifactorauth: a tenant whose `first_factors` is an empty list now allows no first factors, matching the documented meaning and the other SDKs. Sign in and sign up are rejected for such tenants, and with multi-factor auth enabled, their existing sessions that have no MFA claim yet are signed out. Current cores store tenants created through the API without `first_factors` with an empty list, so set `first_factors` explicitly (or to `None`) for those tenants, e.g. with `create_or_update_tenant` or the dashboard.'
+time: 2026-10-15T13:00:00.000000+00:00
