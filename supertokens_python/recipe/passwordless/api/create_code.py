@@ -74,6 +74,20 @@ async def create_code(
     if "phoneNumber" in body:
         phone_number = body["phoneNumber"]
 
+    should_try_linking_with_session_user = (
+        get_normalised_should_try_linking_with_session_user_flag(
+            api_options.request, body
+        )
+    )
+
+    session = await load_session_in_auth_api_if_needed(
+        api_options.request, should_try_linking_with_session_user, user_context
+    )
+
+    # We resolve the tenant before running the (tenant specific) email and phone number validators
+    if session is not None:
+        tenant_id = session.get_tenant_id()
+
     if email is not None and (
         isinstance(
             api_options.config.contact_config,
@@ -115,19 +129,6 @@ async def create_code(
             phone_number = phone_number_formatted
         except Exception:
             phone_number = phone_number.strip()
-
-    should_try_linking_with_session_user = (
-        get_normalised_should_try_linking_with_session_user_flag(
-            api_options.request, body
-        )
-    )
-
-    session = await load_session_in_auth_api_if_needed(
-        api_options.request, should_try_linking_with_session_user, user_context
-    )
-
-    if session is not None:
-        tenant_id = session.get_tenant_id()
 
     result = await api_implementation.create_code_post(
         email=email,
