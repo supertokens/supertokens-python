@@ -70,6 +70,27 @@ async def do_post_request(
             return res.status_code, {"message": res.text}
 
 
+async def do_post_request_with_json_body(
+    url: str,
+    body_params: Dict[str, Any],
+    headers: Optional[Dict[str, str]] = None,
+) -> Tuple[int, Dict[str, Any]]:
+    """Sends body_params as a JSON body, for APIs that don't accept form data"""
+    request_headers = {"accept": "application/json"}
+    for key, value in (headers or {}).items():
+        request_headers[key.lower()] = value
+    request_headers["content-type"] = "application/json"
+
+    async with AsyncClient(timeout=30.0) as client:
+        res = await client.post(url, json=body_params, headers=request_headers)  # type:ignore
+        # The body isn't logged, since it can contain the token that was sent
+        log_debug_message("Received response with status %s", res.status_code)
+        try:
+            return res.status_code, res.json()
+        except Exception:
+            return res.status_code, {"message": res.text}
+
+
 def normalise_oidc_endpoint_to_include_well_known(url: str) -> str:
     # We call this only for built-in providers that use OIDC.
     # We no longer generically add well-known in the custom provider
