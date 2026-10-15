@@ -13,6 +13,7 @@
 # under the License.
 from __future__ import annotations
 
+import hmac
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from typing_extensions import Literal
@@ -129,7 +130,14 @@ def validate_and_normalise_user_input(
         override_config=config.override
     )
 
-    if config.api_key is not None and config.admins is not None:
+    # An empty or whitespace-only api key means no api key, i.e. dashboard sessions are used
+    api_key = (
+        config.api_key
+        if config.api_key is not None and config.api_key.strip() != ""
+        else None
+    )
+
+    if api_key is not None and config.admins is not None:
         log_debug_message(
             "User Dashboard: Providing 'admins' has no effect when using an api key."
         )
@@ -139,10 +147,10 @@ def validate_and_normalise_user_input(
         if config.admins is not None
         else None
     )
-    auth_mode = "api-key" if config.api_key else "email-password"
+    auth_mode = "api-key" if api_key is not None else "email-password"
 
     return NormalisedDashboardConfig(
-        api_key=config.api_key,
+        api_key=api_key,
         admins=admins,
         auth_mode=auth_mode,
         override=override_config,
@@ -287,12 +295,24 @@ async def _get_user_for_recipe_id(
 async def validate_api_key(
     req: BaseRequest, config: NormalisedDashboardConfig, _user_context: Dict[str, Any]
 ) -> bool:
-    api_key_header_value = req.get_header("authorization")
-    if not api_key_header_value:
+    if not config.api_key:
         return False
-    # We receieve the api key as `Bearer API_KEY`, this retrieves just the key
-    api_key_header_value = api_key_header_value.split(" ")[1]
-    return api_key_header_value == config.api_key
+
+    api_key_header_value = req.get_header("authorization")
+    # We receive the api key as `Bearer API_KEY`, this retrieves just the key
+    bearer_prefix = "Bearer "
+    if api_key_header_value is None or not api_key_header_value.startswith(
+        bearer_prefix
+    ):
+        return False
+
+    api_key_header_value = api_key_header_value[len(bearer_prefix) :]
+    if api_key_header_value == "":
+        return False
+
+    return hmac.compare_digest(
+        api_key_header_value.encode("utf-8"), config.api_key.encode("utf-8")
+    )
 
 
 def get_api_path_with_dashboard_base(path: str) -> str:
