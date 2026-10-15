@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import unicodedata
 from typing import Any, Dict, Union
 
 from supertokens_python.recipe.multifactorauth.asyncio import (
@@ -97,12 +98,26 @@ class APIImplementation(APIInterface):
             user_id=user_id, user_context=user_context
         )
 
-        # MFA should be completed when trying to remove a verified TOTP device
-        if any(
-            [
-                device.name == device_name and device.verified
-                for device in device_list.devices
-            ]
+        # MFA should be completed when trying to remove a verified TOTP device.
+        # The core may match device names differently than a strict comparison (e.g.: case-insensitively),
+        # so we only allow removal without completed MFA if the name exactly matches an unverified device and
+        # it doesn't match any verified device even after normalisation.
+        def normalise_device_name(name: str) -> str:
+            return unicodedata.normalize("NFKC", name).lower()
+
+        normalised_device_name = normalise_device_name(device_name)
+        is_removing_only_an_unverified_device = any(
+            device.name == device_name and not device.verified
+            for device in device_list.devices
+        ) and not any(
+            device.verified
+            and normalise_device_name(device.name) == normalised_device_name
+            for device in device_list.devices
+        )
+
+        if (
+            any(device.verified for device in device_list.devices)
+            and not is_removing_only_an_unverified_device
         ):
             await session.assert_claims(
                 [
