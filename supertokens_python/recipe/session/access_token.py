@@ -138,6 +138,10 @@ def get_info_from_access_token(
 
 
 def validate_access_token_structure(payload: Dict[str, Any], version: int) -> None:
+    # Session access tokens have stt set to 0 or not set at all
+    if "stt" in payload and (isinstance(payload["stt"], bool) or payload["stt"] != 0):
+        raise Exception("Wrong token type")
+
     if version >= 3:
         if (
             not isinstance(payload.get("sub"), str)

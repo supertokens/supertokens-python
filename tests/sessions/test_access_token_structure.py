@@ -69,3 +69,37 @@ def test_v3_tokens_still_require_the_base_claims():
 
     with pytest.raises(Exception):
         validate_access_token_structure(payload, 3)
+
+
+@pytest.mark.parametrize("version", [2, 3, 4, 5])
+@pytest.mark.parametrize("stt", [1, 2, "0", None, False])
+def test_tokens_with_a_non_session_token_type_are_rejected(version: int, stt: Any):
+    if version == 2:
+        payload: Dict[str, Any] = {
+            "sessionHandle": "sessionhandle",
+            "userId": "userid",
+            "refreshTokenHash1": "hash",
+            "userData": {},
+            "expiryTime": 1000,
+            "timeCreated": 1000,
+            "stt": stt,
+        }
+    else:
+        payload = get_payload(version, stt=stt)
+
+    with pytest.raises(Exception) as e:
+        validate_access_token_structure(payload, version)
+
+    assert str(e.value) == "Wrong token type"
+
+
+@pytest.mark.parametrize("version", [3, 4, 5])
+def test_tokens_with_the_session_token_type_are_valid(version: int):
+    validate_access_token_structure(get_payload(version, stt=0), version)
+
+
+@pytest.mark.parametrize("version", [3, 4, 5])
+def test_tokens_without_a_token_type_are_valid(version: int):
+    payload = get_payload(version)
+    assert "stt" not in payload
+    validate_access_token_structure(payload, version)

@@ -1,0 +1,3 @@
+kind: Changed
+body: 'session: access tokens whose payload has an `stt` claim other than `0` are now rejected, and `stt` can no longer be set as a custom claim in the access token payload. Sessions that already carry a custom `stt` claim need to sign in again after upgrading.'
+time: 2026-10-16T10:06:00.000000+00:00
