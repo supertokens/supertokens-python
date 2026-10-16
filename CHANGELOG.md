@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - thirdparty: the GitHub provider now validates the access token with GitHub (using `validate_access_token`) on every sign in, which needs the client's `client_secret`. Add it to the GitHub provider config, or set a custom `validate_access_token`.
 - webauthn: account recovery now replaces the account's existing passkeys with the newly registered one and signs out its existing sessions if the account's email was not verified before the recovery. Accounts with a verified email keep their passkeys and sessions. Apps that don't use the EmailVerification recipe never have verified emails, so for them every account recovery resets the account's passkeys and sessions.
+- dashboard: an empty or whitespace-only `api_key` is now treated as not set, so the dashboard uses its own sign in. In API key mode, the `Authorization` header must now be exactly `Bearer <api_key>`.
 - auth: when there is a session, the sign in and sign up APIs now use its tenant (which already took precedence) before looking up third party providers and running the email, phone number and form field validators, so these now run with the tenant the user actually signs in to.
 - auth: the sign in and sign up APIs (when they use an existing session to link a new login method) and the webauthn register credential API now check the session with the core, so revoked sessions are rejected. This adds one core call to those requests.
 

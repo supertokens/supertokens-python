@@ -41,7 +41,7 @@ class RecipeImplementation(RecipeInterface):
         user_context: Dict[str, Any],
     ) -> bool:
         # For cases where we're not using the API key, the JWT is being used; we allow their access by default
-        if config.api_key is None:
+        if not config.api_key:
             auth_header_value = request.get_header("authorization")
             if not auth_header_value:
                 return False
