@@ -196,7 +196,9 @@ def verify_id_token_from_jwks_endpoint(
     return data
 
 
-def get_normalised_origin_tuple(url: str) -> Optional[Tuple[str, str, int]]:
+def get_normalised_origin_tuple(
+    url: str, convert_idn_host: bool = False
+) -> Optional[Tuple[str, str, int]]:
     """
     Returns the (scheme, lowercased hostname, port) tuple of an absolute http(s) URL,
     filling in the default port if it is not explicit. Returns None if the input is not
@@ -204,6 +206,10 @@ def get_normalised_origin_tuple(url: str) -> Optional[Tuple[str, str, int]]:
 
     URLs containing a backslash, whitespace or a control character, or with a userinfo
     part, are rejected: browsers and urllib can disagree on which host they point to.
+
+    If `convert_idn_host` is set (we do this for the configured origin), a non-ASCII host is
+    converted to its IDNA A-label (punycode) form, which is how browsers send it, and None is
+    returned if that isn't possible. Otherwise URLs with a non-ASCII host are rejected.
     """
     if has_unsafe_url_characters(url):
         return None
@@ -218,9 +224,16 @@ def get_normalised_origin_tuple(url: str) -> Optional[Tuple[str, str, int]]:
     if scheme not in ("http", "https") or not parsed.hostname:
         return None
 
-    # A Location header can't carry a non-ASCII host, so we don't accept those
-    if not parsed.hostname.isascii():
-        return None
+    hostname = parsed.hostname
+    if not hostname.isascii():
+        # A Location header can't carry a non-ASCII host, so we don't accept those in redirect
+        # targets
+        if not convert_idn_host:
+            return None
+        try:
+            hostname = hostname.encode("idna").decode("ascii")
+        except UnicodeError:
+            return None
 
     if parsed.username is not None or parsed.password is not None:
         return None
@@ -228,7 +241,7 @@ def get_normalised_origin_tuple(url: str) -> Optional[Tuple[str, str, int]]:
     if port is None:
         port = 443 if scheme == "https" else 80
 
-    return scheme, parsed.hostname.lower(), port
+    return scheme, hostname.lower(), port
 
 
 # Schemes that are never allowed as a redirect target, even if the app allows the URL
