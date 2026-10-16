@@ -984,6 +984,9 @@ async def load_session_in_auth_api_if_needed(
             request,
             session_required=should_try_linking_with_session_user is True,
             override_global_claim_validators=lambda _, __, ___: [],
+            # The session can be used to link a new login method to the session user, so we make sure it
+            # hasn't been revoked (e.g.: during account recovery)
+            check_database=True,
             user_context=user_context,
         )
     return None
