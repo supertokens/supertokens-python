@@ -969,9 +969,14 @@ async def filter_out_invalid_second_factors_or_throw_if_all_are_invalid(
 
 
 def is_fake_email(email: str) -> bool:
-    return email.endswith("@stfakeemail.supertokens.com") or email.endswith(
-        ".fakeemail.com"
-    )  # .fakeemail.com for older users
+    # emails are matched case-insensitively (after trimming), so we normalise the same way here
+    normalised_email = email.strip().lower()
+    return normalised_email.endswith(
+        (
+            "@stfakeemail.supertokens.com",
+            ".fakeemail.com",  # .fakeemail.com for older users
+        )
+    )
 
 
 async def load_session_in_auth_api_if_needed(
