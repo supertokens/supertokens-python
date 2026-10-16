@@ -1,0 +1,3 @@
+kind: Changed
+body: 'session: when `validate_claims_for_session_handle` refetches claim values, it now fetches them for the session''s own tenant, and it drops protected access token payload claims (such as `sub` or `tId`) from the resulting payload update before merging it into the session.'
+time: 2026-10-16T10:08:00.000000+00:00
