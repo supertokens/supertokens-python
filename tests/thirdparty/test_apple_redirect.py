@@ -10,7 +10,10 @@ from starlette.types import Message
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session, thirdparty
-from supertokens_python.recipe.thirdparty.utils import normalise_frontend_redirect_uri
+from supertokens_python.recipe.thirdparty.utils import (
+    get_normalised_origin_tuple,
+    normalise_frontend_redirect_uri,
+)
 
 from tests.utils import get_new_core_app_url
 
@@ -644,3 +647,70 @@ def test_normalise_frontend_redirect_uri(
     assert normalise_frontend_redirect_uri(frontend_redirect_uri) == normalised_uri
     # Normalising again doesn't change it
     assert normalise_frontend_redirect_uri(normalised_uri) == normalised_uri
+
+
+@mark.parametrize(
+    "origin,frontend_redirect_uri",
+    [
+        ("https://bücher.example", "https://xn--bcher-kva.example/auth/callback/apple"),
+        ("https://BÜCHER.example:443", "https://xn--bcher-kva.example/cb"),
+        ("https://xn--bcher-kva.example", "https://XN--BCHER-KVA.example/cb"),
+    ],
+)
+async def test_apple_redirect_compares_internationalised_origins_in_punycode_form(
+    fastapi_client: TestClient, origin: str, frontend_redirect_uri: str
+):
+    init_st(origin=origin)
+
+    state = encode_state({"frontendRedirectURI": frontend_redirect_uri})
+    res = post_callback(fastapi_client, {"state": state, "code": "testcode"})
+
+    assert res.status_code == 303
+    location = urlsplit(res.headers["location"])
+    assert location.netloc == "xn--bcher-kva.example"
+    assert parse_qs(location.query)["code"] == ["testcode"]
+
+
+@mark.parametrize(
+    "origin,frontend_redirect_uri",
+    [
+        ("https://bücher.example", "https://bücher.example/cb"),
+        ("https://bücher.example", "https://xn--bcher-kva.example.evil.test/cb"),
+        ("https://bücher.example", "http://xn--bcher-kva.example/cb"),
+    ],
+)
+async def test_apple_redirect_rejects_targets_off_an_internationalised_origin(
+    fastapi_client: TestClient, origin: str, frontend_redirect_uri: str
+):
+    init_st(origin=origin)
+
+    state = encode_state({"frontendRedirectURI": frontend_redirect_uri})
+    res = post_callback(fastapi_client, {"state": state, "code": "testcode"})
+
+    assert_rejected(res)
+
+
+@mark.parametrize(
+    "url,convert_idn_host,expected",
+    [
+        ("https://App.Example.com", False, ("https", "app.example.com", 443)),
+        ("https://App.Example.com", True, ("https", "app.example.com", 443)),
+        ("https://bücher.example", False, None),
+        ("https://bücher.example", True, ("https", "xn--bcher-kva.example", 443)),
+        ("http://BÜCHER.example:8080/x", True, ("http", "xn--bcher-kva.example", 8080)),
+        (
+            "https://xn--bcher-kva.example",
+            False,
+            ("https", "xn--bcher-kva.example", 443),
+        ),
+        (f"https://{'ü' * 64}.example", True, None),
+        ("https://user@bücher.example", True, None),
+        ("myapp://bücher.example", True, None),
+    ],
+)
+def test_get_normalised_origin_tuple_converts_idn_hosts_only_if_asked(
+    url: str, convert_idn_host: bool, expected: Optional[Tuple[str, str, int]]
+):
+    assert (
+        get_normalised_origin_tuple(url, convert_idn_host=convert_idn_host) == expected
+    )
