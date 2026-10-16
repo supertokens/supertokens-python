@@ -100,7 +100,13 @@ may be sync or async.
 
 The function is only called for absolute URLs. http(s) URLs must have a host, and `javascript:`,
 `data:`, `vbscript:`, `file:`, `blob:`, `about:` and `filesystem:` URLs are always rejected
-without calling it.
+without calling it. Browsers and Python's URL parsing can disagree on where some URLs point, and a
+Location header can't carry a non-ASCII host, so these are always rejected without calling it too:
+
+- URLs containing a backslash, whitespace or a control character,
+- http(s) URLs with a username or password (e.g. `https://user@app.example.com/`),
+- http(s) URLs with a non-ASCII host: use its punycode form instead, as browsers do (e.g.
+  `https://xn--bcher-kva.example/` instead of `https://bücher.example/`).
 
 The frontend redirect URI is passed in the normalised form we redirect to, without the fields
 Apple posted, which are added to its query afterwards: the scheme is lowercased, for http(s) URLs
@@ -109,11 +115,12 @@ the host is lowercased, a default port is dropped and an empty path becomes `/`,
 characters are percent-encoded (as UTF-8). For example, `HTTPS://App.Example.com/a/../cb` is passed
 as `https://app.example.com/cb`.
 
-The whole `state` is chosen by whoever starts the sign in, so treat the URI as untrusted: compare
-it against an exact list of allowed URLs, or parse it and compare the scheme, host, port and path.
-Do not use prefix or substring checks: for example, `https://app.example.com.evil.test/` and
-`https://app.example.com@evil.test/` both start with `https://app.example.com`, and in
-`intent://callback#Intent;package=...;end` the receiving app is chosen by the fragment.
+The whole `state` is chosen by whoever starts the sign in, so treat the URI as untrusted. Parse it
+(e.g. with `urllib.parse.urlsplit`) and compare its parts, such as the scheme, host, port and path,
+with the values you allow, instead of comparing it as a string. In particular, don't use prefix or
+substring checks: for example, `https://app.example.com.evil.test/` starts with
+`https://app.example.com`, and in `intent://callback#Intent;package=...;end` the receiving app is
+chosen by the fragment.
 
 The redirect carries the authorization code and the `id_token` from Apple. Custom URL schemes are
 not owned by a single app: any app installed on the device can register the same scheme and receive
@@ -231,6 +238,25 @@ def get_normalised_origin_tuple(
         port = 443 if scheme == "https" else 80
 
     return scheme, hostname.lower(), port
+
+
+def is_http_url_with_userinfo(url: str) -> bool:
+    """
+    Returns whether the URL is an http(s) URL with a userinfo part (a username or password),
+    which `get_normalised_origin_tuple` rejects. URLs containing a backslash, whitespace or a
+    control character are rejected for those characters instead, so this returns False for them.
+    """
+    if has_unsafe_url_characters(url):
+        return False
+
+    try:
+        parsed = urlsplit(url)
+    except ValueError:
+        return False
+
+    return parsed.scheme.lower() in ("http", "https") and (
+        parsed.username is not None or parsed.password is not None
+    )
 
 
 # Schemes that are never allowed as a redirect target, even if the app allows the URL
