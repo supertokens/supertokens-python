@@ -313,10 +313,12 @@ class APIImplementation(APIInterface):
             configured_origin_str = api_options.app_info.get_origin(
                 api_options.request, user_context
             ).get_as_string_dangerous()
-            configured_origin = get_normalised_origin_tuple(configured_origin_str)
+            configured_origin = get_normalised_origin_tuple(
+                configured_origin_str, convert_idn_host=True
+            )
             if configured_origin is None:
                 log_debug_message(
-                    f"apple_redirect_handler_post: rejecting redirect because the configured origin ({configured_origin_str}) is not an http or https URL. Use is_valid_frontend_redirect_uri to allow redirects in this case."
+                    f"apple_redirect_handler_post: rejecting redirect because the configured origin ({configured_origin_str}) is not a valid http or https origin. Use is_valid_frontend_redirect_uri to allow redirects in this case."
                 )
                 raise_bad_input_exception(
                     "frontendRedirectURI in state does not match the configured origin"
