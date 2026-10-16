@@ -10,6 +10,7 @@ from starlette.types import Message
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session, thirdparty
+from supertokens_python.recipe.thirdparty.utils import normalise_frontend_redirect_uri
 
 from tests.utils import get_new_core_app_url
 
@@ -451,6 +452,10 @@ async def test_apple_redirect_custom_check_is_not_called_for_disallowed_targets(
         ),
         ("MyApp://Callback/x", "myapp://Callback/x"),
         ("myapp:///callback", "myapp:///callback"),
+        ("HTTPS://App.Example.com/a/../cb", "https://app.example.com/cb"),
+        ("https://app.example.com/a/%2e%2E/cb?x=1", "https://app.example.com/cb?x=1"),
+        ("myapp://Callback/../x", "myapp://Callback/x"),
+        ("com.example.app:/a/../oauth2redirect", "com.example.app:/oauth2redirect"),
     ],
 )
 async def test_apple_redirect_custom_check_gets_the_normalised_uri_that_is_redirected_to(
@@ -564,3 +569,78 @@ async def test_apple_redirect_rejects_non_ascii_hosts(fastapi_client: TestClient
 
     assert_rejected(res)
     assert calls == []
+
+
+@mark.parametrize(
+    "frontend_redirect_uri,expected_location",
+    [
+        ("https://app.example.com/a/../cb", "https://app.example.com/cb?{}"),
+        ("https://app.example.com/a/%2E%2e/b/./cb", "https://app.example.com/b/cb?{}"),
+        ("https://app.example.com/cb?", "https://app.example.com/cb?{}"),
+        ("https://app.example.com/cb#", "https://app.example.com/cb?{}#"),
+    ],
+)
+async def test_apple_redirect_removes_dot_segments_from_the_target(
+    fastapi_client: TestClient, frontend_redirect_uri: str, expected_location: str
+):
+    init_st()
+
+    state = encode_state({"frontendRedirectURI": frontend_redirect_uri})
+    res = post_callback(fastapi_client, {"state": state, "code": "testcode"})
+
+    assert res.status_code == 303
+    assert res.headers["location"] == expected_location.format(
+        urlencode({"state": state, "code": "testcode"})
+    )
+
+
+@mark.parametrize(
+    "frontend_redirect_uri,normalised_uri",
+    [
+        ("https://app.example.com", "https://app.example.com/"),
+        ("HTTPS://App.Example.com:443/cb", "https://app.example.com/cb"),
+        ("HTTPS://App.Example.com/a/../cb", "https://app.example.com/cb"),
+        ("https://app.example.com/a/%2e%2e/cb", "https://app.example.com/cb"),
+        ("https://app.example.com/a/%2E%2e/cb", "https://app.example.com/cb"),
+        ("https://app.example.com/a/.%2e/cb", "https://app.example.com/cb"),
+        ("https://app.example.com/a/%2e./cb", "https://app.example.com/cb"),
+        ("https://app.example.com/a/./%2e/cb", "https://app.example.com/a/cb"),
+        ("https://app.example.com/a/b/..", "https://app.example.com/a/"),
+        ("https://app.example.com/a/b/%2e", "https://app.example.com/a/b/"),
+        ("https://app.example.com/../../cb", "https://app.example.com/cb"),
+        ("https://app.example.com/a//../b", "https://app.example.com/a/b"),
+        (
+            "https://app.example.com/a/..%2fb/...",
+            "https://app.example.com/a/..%2fb/...",
+        ),
+        (
+            "https://app.example.com/a/../cb?x=/../y#/../z",
+            "https://app.example.com/cb?x=/../y#/../z",
+        ),
+        ("https://[::1]:8443/a/../b", "https://[::1]:8443/b"),
+        ("https://app.example.com/cb?", "https://app.example.com/cb?"),
+        ("https://app.example.com/cb#", "https://app.example.com/cb#"),
+        ("https://app.example.com?#", "https://app.example.com/?#"),
+        ("myapp://Callback/../x", "myapp://Callback/x"),
+        ("myapp://Callback/a/%2e%2e/x", "myapp://Callback/x"),
+        ("myapp://Callback/a/b/../..", "myapp://Callback/"),
+        ("myapp:///a/../callback", "myapp:///callback"),
+        ("myapp://host/.//x", "myapp://host//x"),
+        ("com.example.app:/a/../oauth2redirect", "com.example.app:/oauth2redirect"),
+        ("com.example.app:/a/..//evil/x", "com.example.app:/.//evil/x"),
+        ("com.example.app:/.//evil/x", "com.example.app:/.//evil/x"),
+        ("myapp:callback/../x", "myapp:callback/../x"),
+        ("myapp://Callback?", "myapp://Callback?"),
+        ("myapp:callback#", "myapp:callback#"),
+        (
+            "intent://callback/../x#Intent;package=com.example.app;end",
+            "intent://callback/x#Intent;package=com.example.app;end",
+        ),
+    ],
+)
+def test_normalise_frontend_redirect_uri(
+    frontend_redirect_uri: str, normalised_uri: str
+):
+    assert normalise_frontend_redirect_uri(frontend_redirect_uri) == normalised_uri
+    # Normalising again doesn't change it
+    assert normalise_frontend_redirect_uri(normalised_uri) == normalised_uri
