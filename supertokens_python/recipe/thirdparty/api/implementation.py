@@ -383,4 +383,12 @@ def get_frontend_redirect_uri_from_state(state_in_b64: Any) -> str:
     if not isinstance(frontend_redirect_uri, str):
         raise_bad_input_exception("state must contain frontendRedirectURI as a string")
 
+    try:
+        frontend_redirect_uri.encode("utf-8")
+    except UnicodeEncodeError:
+        # e.g. a lone surrogate (`\ud800` in the JSON), which can't be put in a URL
+        raise_bad_input_exception(
+            "frontendRedirectURI in state must be a valid unicode string"
+        )
+
     return frontend_redirect_uri
