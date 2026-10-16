@@ -329,6 +329,16 @@ async def test_apple_redirect_custom_check_only_allows_on_true(
     assert_rejected(res)
 
 
+@mark.parametrize("is_valid_frontend_redirect_uri", ["https://app.example.com", True])
+async def test_init_rejects_a_custom_check_that_is_not_a_function(
+    is_valid_frontend_redirect_uri: Any,
+):
+    with raises(
+        ValueError, match="is_valid_frontend_redirect_uri must be a function or None"
+    ):
+        init_st(is_valid_frontend_redirect_uri=is_valid_frontend_redirect_uri)
+
+
 async def test_apple_redirect_custom_check_errors_propagate(
     fastapi_client: TestClient,
 ):
