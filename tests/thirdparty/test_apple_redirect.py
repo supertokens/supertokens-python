@@ -16,6 +16,7 @@ from supertokens_python.recipe.thirdparty.api.implementation import (
 )
 from supertokens_python.recipe.thirdparty.utils import (
     get_normalised_origin_tuple,
+    is_http_url_with_userinfo,
     normalise_frontend_redirect_uri,
 )
 
@@ -769,3 +770,56 @@ async def test_apple_redirect_custom_check_is_not_called_for_lone_surrogates(
 
     assert_rejected(res)
     assert calls == []
+
+
+@mark.parametrize(
+    "frontend_redirect_uri",
+    [
+        "https://user@app.example.com/cb",
+        "https://user:password@app.example.com/cb",
+        "https://:password@app.example.com/cb",
+        "HTTP://app.example.com@evil.test/cb",
+    ],
+)
+@mark.parametrize("with_custom_check", [False, True])
+async def test_apple_redirect_names_userinfo_as_the_reason_for_rejecting(
+    fastapi_client: TestClient, frontend_redirect_uri: str, with_custom_check: bool
+):
+    calls: List[str] = []
+
+    async def is_valid_frontend_redirect_uri(
+        frontend_redirect_uri: str, request: Any, user_context: Dict[str, Any]
+    ) -> bool:
+        calls.append(frontend_redirect_uri)
+        return True
+
+    if with_custom_check:
+        init_st(is_valid_frontend_redirect_uri=is_valid_frontend_redirect_uri)
+    else:
+        init_st()
+
+    state = encode_state({"frontendRedirectURI": frontend_redirect_uri})
+    res = post_callback(fastapi_client, {"state": state, "code": "testcode"})
+
+    assert_rejected(res)
+    assert res.json() == {
+        "message": "frontendRedirectURI in state must not contain a username or password"
+    }
+    assert calls == []
+
+
+@mark.parametrize(
+    "url,expected",
+    [
+        ("https://user@app.example.com/cb", True),
+        ("http://user:password@app.example.com/cb", True),
+        ("https://@app.example.com/cb", True),
+        ("https://app.example.com/cb?a=b@c#d@e", False),
+        ("https://evil.test\\@app.example.com/cb", False),
+        ("https://user@app.example.com/c b", False),
+        ("myapp://user@callback", False),
+        ("https://[::1/cb", False),
+    ],
+)
+def test_is_http_url_with_userinfo(url: str, expected: bool):
+    assert is_http_url_with_userinfo(url) is expected
