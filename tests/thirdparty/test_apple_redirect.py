@@ -128,6 +128,7 @@ redirect_uris_on_other_origins: List[str] = [
     "https://app.example.com:abc/auth/callback/apple",
     "https://app.example.com/auth/callback/apple\r\nSet-Cookie: a=b",
     "https://app.exa\tmple.com/auth/callback/apple",
+    "https://app%2eexample.com/auth/callback/apple",
     "/auth/callback/apple",
     "//evil.test/auth/callback/apple",
     "javascript:alert(1)",
@@ -428,6 +429,9 @@ async def test_apple_redirect_custom_check_keeps_the_fragment_after_the_query(
         "https://evil.test\\@app.example.com/auth/callback/apple",
         "https://app.example.com@evil.test/auth/callback/apple",
         "myapp://callback\r\nSet-Cookie: a=b",
+        "https://app%2eexample.com/auth/callback/apple",
+        "https://%65vil.test/auth/callback/apple",
+        "http://[fe80::1%25eth0]/auth/callback/apple",
     ],
 )
 async def test_apple_redirect_custom_check_is_not_called_for_disallowed_targets(
@@ -800,6 +804,13 @@ def test_get_normalised_origin_tuple_logs_how_to_configure_an_origin_it_cant_com
         ),
         (f"https://{'ü' * 64}.example", True, None),
         ("https://straße.example", True, None),
+        ("https://app%2eexample.com", False, None),
+        ("https://app%2Eexample.com", True, None),
+        (
+            "https://app.example.com/a%2eb?c=%2e",
+            False,
+            ("https", "app.example.com", 443),
+        ),
         ("https://ὀδός.example", True, None),
         ("https://a\u200db.example", True, None),
         (
