@@ -99,7 +99,7 @@ The function is only called for absolute URLs. http(s) URLs must have a host, an
 without calling it. Browsers and Python's URL parsing can disagree on where some URLs point, and a
 Location header can't carry a non-ASCII host, so these are always rejected without calling it too:
 
-- URLs containing a backslash, whitespace or a control character,
+- URLs containing a backslash, whitespace, a C0 control character or DEL,
 - http(s) URLs with a username or password (e.g. `https://user@app.example.com/`),
 - http(s) URLs with a `%` in the host, which browsers percent-decode (e.g.
   `https://app%2eexample.com/` opens `https://app.example.com/`),
@@ -214,9 +214,9 @@ def get_normalised_origin_tuple(
     filling in the default port if it is not explicit. Returns None if the input is not
     such a URL.
 
-    URLs containing a backslash, whitespace or a control character, with a userinfo part or
-    with a `%` in the host are rejected: browsers and urllib can disagree on which host they
-    point to (e.g. browsers percent-decode the host).
+    URLs containing a backslash, whitespace, a C0 control character or DEL, with a userinfo
+    part or with a `%` in the host are rejected: browsers and urllib can disagree on which host
+    they point to (e.g. browsers percent-decode the host).
 
     If `convert_idn_host` is set (we do this for the configured origin), a non-ASCII host is
     converted to its punycode (`xn--`) form with Python's `idna` codec, and None is returned if
@@ -281,8 +281,9 @@ def get_normalised_origin_tuple(
 def is_http_url_with_userinfo(url: str) -> bool:
     """
     Returns whether the URL is an http(s) URL with a userinfo part (a username or password),
-    which `get_normalised_origin_tuple` rejects. URLs containing a backslash, whitespace or a
-    control character are rejected for those characters instead, so this returns False for them.
+    which `get_normalised_origin_tuple` rejects. URLs containing a backslash, whitespace, a C0
+    control character or DEL are rejected for those characters instead, so this returns False
+    for them.
     """
     if has_unsafe_url_characters(url):
         return False
@@ -351,6 +352,9 @@ def normalise_frontend_redirect_uri(url: str) -> str:
     - dot segments (`.` and `..`, also written as `%2e`) are removed from paths that start with
       `/`, as in RFC 3986 section 5.2.4 (e.g. `https://app.example.com/a/../cb` becomes
       `https://app.example.com/cb`),
+    - if the URL has no authority (no `//` after the scheme) and its path would then start with
+      `//`, `/.` is added in front of the path, so the path isn't read as an authority (e.g.
+      `com.example.app:/a/..//evil/x` becomes `com.example.app:/.//evil/x`),
     - non-ASCII characters are percent-encoded (as UTF-8) everywhere except the scheme and the
       host of http(s) URLs.
 
