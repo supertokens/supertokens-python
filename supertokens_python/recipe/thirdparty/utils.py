@@ -30,6 +30,7 @@ from urllib.parse import quote, unquote_plus, urlencode, urlsplit
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework import BaseRequest
+from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.thirdparty.provider import ProviderInput
 
 from .interfaces import APIInterface, RecipeInterface
@@ -204,8 +205,16 @@ def get_normalised_origin_tuple(
     part, are rejected: browsers and urllib can disagree on which host they point to.
 
     If `convert_idn_host` is set (we do this for the configured origin), a non-ASCII host is
-    converted to its IDNA A-label (punycode) form, which is how browsers send it, and None is
-    returned if that isn't possible. Otherwise URLs with a non-ASCII host are rejected.
+    converted to its punycode (`xn--`) form with Python's `idna` codec, and None is returned if
+    that isn't possible. Otherwise URLs with a non-ASCII host are rejected.
+
+    The `idna` codec implements IDNA 2003, while browsers convert hosts with the UTS #46 (IDNA
+    2008) rules. These convert most hosts the same way, but IDNA 2003 maps `ß` to `ss` and `ς` to
+    `σ` and removes zero width (non-)joiners, which browsers keep: it converts `straße.example` to
+    `strasse.example`, a different host than the `xn--strae-oqa.example` browsers open. So None is
+    also returned if the conversion changes the host instead of only encoding it, that is, if the
+    punycode form doesn't decode back to the host. Such origins have to be configured in their
+    punycode form.
     """
     if has_unsafe_url_characters(url):
         return None
@@ -227,9 +236,20 @@ def get_normalised_origin_tuple(
         if not convert_idn_host:
             return None
         try:
-            hostname = hostname.encode("idna").decode("ascii")
+            converted_hostname = hostname.encode("idna").decode("ascii")
+            is_converted_unchanged = (
+                converted_hostname.encode("ascii").decode("idna") == hostname
+            )
         except UnicodeError:
             return None
+        if not is_converted_unchanged:
+            # E.g. a host with `ß`, `ς` or a zero width (non-)joiner, which IDNA 2003 maps or
+            # removes, but browsers keep
+            log_debug_message(
+                f"get_normalised_origin_tuple: can't compare the host of {url} with redirect targets: browsers may convert it to a different punycode form than {converted_hostname}. Configure it in its punycode (xn--) form instead."
+            )
+            return None
+        hostname = converted_hostname
 
     if parsed.username is not None or parsed.password is not None:
         return None

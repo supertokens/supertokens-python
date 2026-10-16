@@ -328,7 +328,7 @@ class APIImplementation(APIInterface):
             )
             if configured_origin is None:
                 log_debug_message(
-                    f"apple_redirect_handler_post: rejecting redirect because the configured origin ({configured_origin_str}) is not a valid http or https origin. Use is_valid_frontend_redirect_uri to allow redirects in this case."
+                    f"apple_redirect_handler_post: rejecting redirect because the configured origin ({configured_origin_str}) is not a valid http or https origin, or can't be compared with redirect targets. Use is_valid_frontend_redirect_uri to allow redirects in this case."
                 )
                 raise_bad_input_exception(
                     "frontendRedirectURI in state does not match the configured origin"
