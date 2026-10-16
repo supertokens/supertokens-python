@@ -40,6 +40,7 @@ from supertokens_python.recipe.thirdparty.utils import (
     add_query_params,
     get_normalised_origin_tuple,
     is_allowed_custom_redirect_target,
+    is_http_url_with_userinfo,
     normalise_frontend_redirect_uri,
 )
 
@@ -277,6 +278,15 @@ class APIImplementation(APIInterface):
         user_context: Dict[str, Any],
     ):
         redirect_uri = get_frontend_redirect_uri_from_state(form_post_info.get("state"))
+
+        # Rejected by both checks below, but with a message that doesn't name the reason
+        if is_http_url_with_userinfo(redirect_uri):
+            log_debug_message(
+                "apple_redirect_handler_post: rejecting redirect because frontendRedirectURI has a username or password"
+            )
+            raise_bad_input_exception(
+                "frontendRedirectURI in state must not contain a username or password"
+            )
 
         is_valid_frontend_redirect_uri = (
             api_options.config.is_valid_frontend_redirect_uri
