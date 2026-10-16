@@ -65,6 +65,20 @@ async def handle_sign_in_up_api(
             "Please provide one of redirectURIInfo or oAuthTokens in the request body"
         )
 
+    should_try_linking_with_session_user = (
+        get_normalised_should_try_linking_with_session_user_flag(
+            api_options.request, body
+        )
+    )
+
+    session = await load_session_in_auth_api_if_needed(
+        api_options.request, should_try_linking_with_session_user, user_context
+    )
+
+    # We resolve the tenant before anything tenant specific (e.g.: the provider config) is loaded
+    if session is not None:
+        tenant_id = session.get_tenant_id()
+
     provider_response = await api_options.recipe_implementation.get_provider(
         third_party_id=third_party_id,
         client_type=client_type,
@@ -88,19 +102,6 @@ async def handle_sign_in_up_api(
             redirect_uri_query_params=redirect_uri_info.get("redirectURIQueryParams"),
             pkce_code_verifier=redirect_uri_info.get("pkceCodeVerifier"),
         )
-
-    should_try_linking_with_session_user = (
-        get_normalised_should_try_linking_with_session_user_flag(
-            api_options.request, body
-        )
-    )
-
-    session = await load_session_in_auth_api_if_needed(
-        api_options.request, should_try_linking_with_session_user, user_context
-    )
-
-    if session is not None:
-        tenant_id = session.get_tenant_id()
 
     result = await api_implementation.sign_in_up_post(
         provider=provider,

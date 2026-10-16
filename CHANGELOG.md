@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changed
+- auth: when there is a session, the sign in and sign up APIs now use its tenant (which already took precedence) before looking up third party providers and running the email, phone number and form field validators, so these now run with the tenant the user actually signs in to.
+
 ### Security
 - thirdparty: the Apple form_post callback now only redirects to the configured `origin` / `website_domain` and answers invalid callback state with a 400. Apps whose `origin` depends on the request, or that redirect to other targets (e.g. another origin, https universal/app links or custom-scheme mobile deep links such as `myapp://callback`), can allow them with the new `is_valid_frontend_redirect_uri` thirdparty config option. `javascript:`, `data:` and similar schemes are always rejected. An `origin` with an internationalised domain name is converted to its punycode (`xn--`) form for this check, and http(s) redirect targets must use that form too. Python converts some domain names differently from browsers (e.g. ones with `ß` or `ς`), and the callback rejects redirects to such an `origin`, so set it in the punycode form browsers use (e.g. `https://xn--strae-oqa.example` for `https://straße.example`). The callback redirects to the target in a normalised form (e.g. with `.` and `..` path segments resolved) and passes that same form to `is_valid_frontend_redirect_uri`, so parse the URL there to check it instead of comparing strings.
 - session: access token structure validation now requires a string `tId` claim for v4 and later access tokens.
