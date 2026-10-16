@@ -106,6 +106,8 @@ Location header can't carry a non-ASCII host, so these are always rejected witho
 
 - URLs containing a backslash, whitespace or a control character,
 - http(s) URLs with a username or password (e.g. `https://user@app.example.com/`),
+- http(s) URLs with a `%` in the host, which browsers percent-decode (e.g.
+  `https://app%2eexample.com/` opens `https://app.example.com/`),
 - http(s) URLs with a non-ASCII host: use its punycode form instead, as browsers do (e.g.
   `https://xn--bcher-kva.example/` instead of `https://bücher.example/`).
 
@@ -206,8 +208,9 @@ def get_normalised_origin_tuple(
     filling in the default port if it is not explicit. Returns None if the input is not
     such a URL.
 
-    URLs containing a backslash, whitespace or a control character, or with a userinfo
-    part, are rejected: browsers and urllib can disagree on which host they point to.
+    URLs containing a backslash, whitespace or a control character, with a userinfo part or
+    with a `%` in the host are rejected: browsers and urllib can disagree on which host they
+    point to (e.g. browsers percent-decode the host).
 
     If `convert_idn_host` is set (we do this for the configured origin), a non-ASCII host is
     converted to its punycode (`xn--`) form with Python's `idna` codec, and None is returned if
@@ -235,6 +238,10 @@ def get_normalised_origin_tuple(
         return None
 
     hostname = parsed.hostname
+    if "%" in hostname:
+        # Browsers percent-decode the host, so they would open a different host than this one
+        return None
+
     if not hostname.isascii():
         # A Location header can't carry a non-ASCII host, so we don't accept those in redirect
         # targets
