@@ -160,6 +160,11 @@ def validate_and_normalise_user_input(
     if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
         raise ValueError("override must be an instance of InputOverrideConfig or None")
 
+    if is_valid_frontend_redirect_uri is not None and not callable(
+        is_valid_frontend_redirect_uri
+    ):
+        raise ValueError("is_valid_frontend_redirect_uri must be a function or None")
+
     if override is None:
         override = InputOverrideConfig()
 
