@@ -240,6 +240,9 @@ async def test_that_jwks_are_refresh_if_kid_is_unknown(caplog: LogCaptureFixture
     )
     new_token = ".".join([new_header, payload, signature])
 
+    # an unknown kid only triggers a refresh if the keys were not fetched in the last 500ms
+    time.sleep(0.6)
+
     with pytest.raises(Exception) as e:
         await get_session_without_request_response(
             new_token, tokens.get("antiCsrfToken")
