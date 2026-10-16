@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 ### Changed
+- thirdparty: the GitHub provider now validates the access token with GitHub (using `validate_access_token`) on every sign in, which needs the client's `client_secret`. Add it to the GitHub provider config, or set a custom `validate_access_token`.
 - auth: when there is a session, the sign in and sign up APIs now use its tenant (which already took precedence) before looking up third party providers and running the email, phone number and form field validators, so these now run with the tenant the user actually signs in to.
 
 ### Security
