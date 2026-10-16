@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Security
+- thirdparty: the Apple form_post callback now only redirects to the configured `origin` / `website_domain` and answers invalid callback state with a 400. Apps whose `origin` depends on the request, or that redirect to other targets (e.g. another origin, https universal/app links or custom-scheme mobile deep links such as `myapp://callback`), can allow them with the new `is_valid_frontend_redirect_uri` thirdparty config option. `javascript:`, `data:` and similar schemes are always rejected.
+
 ## [0.29.2] - 2025-05-19
 - Fixes cookies being set without expiry in Django
   - Reverts timezone change from 0.28.0 and uses GMT

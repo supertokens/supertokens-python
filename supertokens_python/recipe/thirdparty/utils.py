@@ -13,10 +13,22 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Tuple, Union
-from urllib.parse import urlsplit
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    Union,
+)
+from urllib.parse import quote, unquote_plus, urlencode, urlsplit
 
 from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.framework import BaseRequest
 from supertokens_python.recipe.thirdparty.provider import ProviderInput
 
 from .interfaces import APIInterface, RecipeInterface
@@ -67,19 +79,63 @@ class OverrideConfig:
         self.apis = apis
 
 
+TypeIsValidFrontendRedirectURIFunction = Callable[
+    [str, BaseRequest, Dict[str, Any]], Union[bool, Awaitable[bool]]
+]
+"""
+Decides whether the Apple form_post callback may redirect the user to the frontend redirect URI
+(taken from the `state` sent to Apple). Called with the frontend redirect URI, the request and
+the user context. If set, this replaces the default check, which only allows absolute http(s)
+URLs whose scheme, host and port match the configured `origin` / `website_domain`.
+
+Set this if your `origin` depends on the request (the callback arrives as a POST from Apple, so
+request based origin resolution may not identify your frontend), if one backend serves several
+frontends, or to allow other redirect targets, such as https universal/app links or custom-scheme
+mobile deep links (e.g. `myapp://callback`).
+
+Returning `True` allows the redirect, returning `False` rejects the request with a 400 and no
+redirect. Exceptions raised by this function are propagated and no redirect is done. The function
+may be sync or async.
+
+The function is only called for absolute URLs. http(s) URLs must have a host, and `javascript:`,
+`data:`, `vbscript:`, `file:`, `blob:`, `about:` and `filesystem:` URLs are always rejected
+without calling it.
+
+The frontend redirect URI is passed in the normalised form we redirect to (e.g.:
+`https://app.example.com` becomes `https://app.example.com/`), without the fields Apple posted,
+which are added to its query afterwards. The whole `state` is chosen by whoever starts the sign in,
+so treat the URI as untrusted: compare it against an exact list of allowed URLs, or parse it and
+compare the scheme, host, port and path. Do not use prefix or substring checks: for example,
+`https://app.example.com.evil.test/` and `https://app.example.com@evil.test/` both start with
+`https://app.example.com`, and in `intent://callback#Intent;package=...;end` the receiving app is
+chosen by the fragment.
+
+The redirect carries the authorization code and the `id_token` from Apple. Custom URL schemes are
+not owned by a single app: any app installed on the device can register the same scheme and receive
+them. Prefer verified https universal / app links for mobile redirects where possible.
+"""
+
+
 class ThirdPartyConfig:
     def __init__(
         self,
         sign_in_and_up_feature: SignInAndUpFeature,
         override: OverrideConfig,
+        is_valid_frontend_redirect_uri: Optional[
+            TypeIsValidFrontendRedirectURIFunction
+        ] = None,
     ):
         self.sign_in_and_up_feature = sign_in_and_up_feature
         self.override = override
+        self.is_valid_frontend_redirect_uri = is_valid_frontend_redirect_uri
 
 
 def validate_and_normalise_user_input(
     sign_in_and_up_feature: SignInAndUpFeature,
     override: Union[InputOverrideConfig, None] = None,
+    is_valid_frontend_redirect_uri: Optional[
+        TypeIsValidFrontendRedirectURIFunction
+    ] = None,
 ) -> ThirdPartyConfig:
     if not isinstance(sign_in_and_up_feature, SignInAndUpFeature):  # type: ignore
         raise ValueError(
@@ -95,6 +151,7 @@ def validate_and_normalise_user_input(
     return ThirdPartyConfig(
         sign_in_and_up_feature,
         OverrideConfig(functions=override.functions, apis=override.apis),
+        is_valid_frontend_redirect_uri,
     )
 
 
@@ -132,7 +189,7 @@ def get_normalised_origin_tuple(url: str) -> Optional[Tuple[str, str, int]]:
     URLs containing a backslash, whitespace or a control character, or with a userinfo
     part, are rejected: browsers and urllib can disagree on which host they point to.
     """
-    if any(c == "\\" or c.isspace() or ord(c) < 0x20 or ord(c) == 0x7F for c in url):
+    if has_unsafe_url_characters(url):
         return None
 
     try:
@@ -145,6 +202,10 @@ def get_normalised_origin_tuple(url: str) -> Optional[Tuple[str, str, int]]:
     if scheme not in ("http", "https") or not parsed.hostname:
         return None
 
+    # A Location header can't carry a non-ASCII host, so we don't accept those
+    if not parsed.hostname.isascii():
+        return None
+
     if parsed.username is not None or parsed.password is not None:
         return None
 
@@ -152,3 +213,95 @@ def get_normalised_origin_tuple(url: str) -> Optional[Tuple[str, str, int]]:
         port = 443 if scheme == "https" else 80
 
     return scheme, parsed.hostname.lower(), port
+
+
+# Schemes that are never allowed as a redirect target, even if the app allows the URL
+DISALLOWED_REDIRECT_SCHEMES = {
+    "javascript",
+    "data",
+    "vbscript",
+    "file",
+    "blob",
+    "about",
+    "filesystem",
+}
+
+
+def has_unsafe_url_characters(url: str) -> bool:
+    return any(c == "\\" or c.isspace() or ord(c) < 0x20 or ord(c) == 0x7F for c in url)
+
+
+def is_allowed_custom_redirect_target(url: str) -> bool:
+    """
+    Checks the redirect targets that an app-provided check may allow: absolute URLs whose
+    scheme isn't one of `DISALLOWED_REDIRECT_SCHEMES`. http(s) URLs must also pass
+    `get_normalised_origin_tuple`.
+    """
+    if has_unsafe_url_characters(url):
+        return False
+
+    try:
+        scheme = urlsplit(url).scheme.lower()
+    except ValueError:
+        return False
+
+    if scheme == "":
+        return False
+
+    if scheme in ("http", "https"):
+        return get_normalised_origin_tuple(url) is not None
+
+    return scheme not in DISALLOWED_REDIRECT_SCHEMES
+
+
+def normalise_frontend_redirect_uri(url: str) -> str:
+    """
+    Returns the form of an already validated redirect target that we redirect to: the scheme is
+    lowercased, and for http(s) URLs the host is lowercased, a default port is dropped and an empty
+    path becomes `/`. Other URLs are kept as they are, apart from the scheme. Non-ASCII characters
+    are percent-encoded (as UTF-8) everywhere except the scheme and the host.
+    """
+    parsed = urlsplit(url)
+    scheme = parsed.scheme.lower()
+
+    if scheme not in ("http", "https"):
+        return scheme + percent_encode_non_ascii(url[len(parsed.scheme) :])
+
+    hostname = parsed.hostname or ""
+    if ":" in hostname:
+        hostname = f"[{hostname}]"
+    port = parsed.port
+    netloc = hostname
+    if port is not None and port != (443 if scheme == "https" else 80):
+        netloc += f":{port}"
+
+    result = f"{scheme}://{netloc}{percent_encode_non_ascii(parsed.path or '/')}"
+    if parsed.query:
+        result += f"?{percent_encode_non_ascii(parsed.query)}"
+    if parsed.fragment:
+        result += f"#{percent_encode_non_ascii(parsed.fragment)}"
+    return result
+
+
+def percent_encode_non_ascii(value: str) -> str:
+    """Percent-encodes (as UTF-8) the non-ASCII characters of a URL part, keeping everything else as it is"""
+    return "".join(c if c.isascii() else quote(c, safe="") for c in value)
+
+
+def add_query_params(url: str, params: Dict[str, str]) -> str:
+    """
+    Adds the given params to the query of the URL. The existing query is kept as written, except
+    for params with the same names as the added ones, which are removed. The path and the fragment
+    are kept as they are.
+    """
+    url_without_fragment, hash_sign, fragment = url.partition("#")
+    base, _, query = url_without_fragment.partition("?")
+
+    kept_query_parts = [
+        part
+        for part in query.split("&")
+        if part != "" and unquote_plus(part.partition("=")[0]) not in params
+    ]
+    query_parts = kept_query_parts + ([urlencode(params)] if params else [])
+
+    return f"{base}?{'&'.join(query_parts)}{hash_sign}{fragment}"

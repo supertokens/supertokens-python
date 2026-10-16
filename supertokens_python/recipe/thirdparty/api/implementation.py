@@ -17,8 +17,8 @@ import json
 import re
 from base64 import b64decode
 from binascii import Error as BinasciiError
+from inspect import isawaitable
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
-from urllib.parse import parse_qs, urlencode, urlparse
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.logger import log_debug_message
@@ -36,7 +36,12 @@ from supertokens_python.recipe.thirdparty.interfaces import (
 )
 from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
 from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo, UserInfoEmail
-from supertokens_python.recipe.thirdparty.utils import get_normalised_origin_tuple
+from supertokens_python.recipe.thirdparty.utils import (
+    add_query_params,
+    get_normalised_origin_tuple,
+    is_allowed_custom_redirect_target,
+    normalise_frontend_redirect_uri,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions
@@ -273,37 +278,61 @@ class APIImplementation(APIInterface):
     ):
         redirect_uri = get_frontend_redirect_uri_from_state(form_post_info.get("state"))
 
-        redirect_origin = get_normalised_origin_tuple(redirect_uri)
-        if redirect_origin is None:
-            raise_bad_input_exception(
-                "frontendRedirectURI in state must be an absolute http or https URL"
+        is_valid_frontend_redirect_uri = (
+            api_options.config.is_valid_frontend_redirect_uri
+        )
+        if is_valid_frontend_redirect_uri is not None:
+            if not is_allowed_custom_redirect_target(redirect_uri):
+                log_debug_message(
+                    "apple_redirect_handler_post: rejecting redirect because frontendRedirectURI is not an absolute URL with an allowed scheme"
+                )
+                raise_bad_input_exception(
+                    "frontendRedirectURI in state must be an absolute URL with an allowed scheme"
+                )
+            # We pass the URL in the form we redirect to (before adding the posted fields to the
+            # query), so the app checks the same URL the browser navigates to
+            is_valid = is_valid_frontend_redirect_uri(
+                normalise_frontend_redirect_uri(redirect_uri),
+                api_options.request,
+                user_context,
             )
+            if isawaitable(is_valid):
+                is_valid = await is_valid
+            if is_valid is not True:
+                log_debug_message(
+                    "apple_redirect_handler_post: rejecting redirect because is_valid_frontend_redirect_uri did not return True"
+                )
+                raise_bad_input_exception("frontendRedirectURI in state is not allowed")
+        else:
+            redirect_origin = get_normalised_origin_tuple(redirect_uri)
+            if redirect_origin is None:
+                raise_bad_input_exception(
+                    "frontendRedirectURI in state must be an absolute http or https URL"
+                )
 
-        configured_origin_str = api_options.app_info.get_origin(
-            api_options.request, user_context
-        ).get_as_string_dangerous()
-        configured_origin = get_normalised_origin_tuple(configured_origin_str)
-        if configured_origin is None:
-            log_debug_message(
-                f"apple_redirect_handler_post: rejecting redirect because the configured origin ({configured_origin_str}) is not an http or https URL"
-            )
-            raise_bad_input_exception(
-                "frontendRedirectURI in state does not match the configured origin"
-            )
-        if redirect_origin != configured_origin:
-            log_debug_message(
-                f"apple_redirect_handler_post: rejecting redirect because the origin of frontendRedirectURI ({format_origin_tuple(redirect_origin)}) does not match the configured origin ({format_origin_tuple(configured_origin)}). If the origin depends on the request, check what it resolves to for this request."
-            )
-            raise_bad_input_exception(
-                "frontendRedirectURI in state does not match the configured origin"
-            )
+            configured_origin_str = api_options.app_info.get_origin(
+                api_options.request, user_context
+            ).get_as_string_dangerous()
+            configured_origin = get_normalised_origin_tuple(configured_origin_str)
+            if configured_origin is None:
+                log_debug_message(
+                    f"apple_redirect_handler_post: rejecting redirect because the configured origin ({configured_origin_str}) is not an http or https URL. Use is_valid_frontend_redirect_uri to allow redirects in this case."
+                )
+                raise_bad_input_exception(
+                    "frontendRedirectURI in state does not match the configured origin"
+                )
+            if redirect_origin != configured_origin:
+                log_debug_message(
+                    f"apple_redirect_handler_post: rejecting redirect because the origin of frontendRedirectURI ({format_origin_tuple(redirect_origin)}) does not match the configured origin ({format_origin_tuple(configured_origin)}). If the origin depends on the request, check what it resolves to for this request, or use is_valid_frontend_redirect_uri."
+                )
+                raise_bad_input_exception(
+                    "frontendRedirectURI in state does not match the configured origin"
+                )
 
-        url_obj = urlparse(redirect_uri)
-        qparams = parse_qs(url_obj.query)
-        for k, v in form_post_info.items():
-            qparams[k] = [v]
-
-        redirect_uri = url_obj._replace(query=urlencode(qparams, doseq=True)).geturl()
+        redirect_uri = add_query_params(
+            normalise_frontend_redirect_uri(redirect_uri),
+            {k: str(v) for k, v in form_post_info.items()},
+        )
 
         api_options.response.set_header("Location", redirect_uri)
         api_options.response.set_status_code(303)
