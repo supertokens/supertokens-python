@@ -1,10 +1,11 @@
 import json
+import logging
 from base64 import b64encode
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import parse_qs, urlencode, urlsplit
 
 from fastapi import FastAPI
-from pytest import fixture, mark, raises
+from pytest import LogCaptureFixture, fixture, mark, raises
 from starlette.testclient import TestClient
 from starlette.types import Message
 from supertokens_python import InputAppInfo, SupertokensConfig, init
@@ -695,6 +696,95 @@ async def test_apple_redirect_rejects_targets_off_an_internationalised_origin(
     assert_rejected(res)
 
 
+# Origins whose host Python's idna codec (IDNA 2003) converts to a different punycode form than
+# browsers (UTS #46), with the forms of the host a redirect target could use: the IDNA 2003 form and,
+# where browsers can open the host, the form they use
+origins_with_hosts_converted_differently_by_browsers: List[Tuple[str, List[str]]] = [
+    ("https://straße.example", ["strasse.example", "xn--strae-oqa.example"]),
+    ("https://STRAẞE.example", ["strasse.example", "xn--strae-oqa.example"]),
+    ("https://ὀδός.example", ["xn--pxa4a0a176w.example", "xn--pxa2a3a176w.example"]),
+    ("https://a\u200cb.example", ["ab.example"]),
+    ("https://a\u200db.example", ["ab.example"]),
+    (
+        "https://\u0d15\u0d4d\u200c\u0d37.example",
+        ["xn--bwc2ezc.example", "xn--bwc2ezc097h.example"],
+    ),
+    (
+        "https://\u0d15\u0d4d\u200d.example",
+        ["xn--bwc6i.example", "xn--bwc6iy31d.example"],
+    ),
+]
+
+
+@mark.parametrize(
+    "origin,frontend_redirect_uri",
+    [
+        (origin, f"https://{host}/auth/callback/apple")
+        for origin, hosts in origins_with_hosts_converted_differently_by_browsers
+        for host in hosts + [urlsplit(origin).netloc]
+    ],
+)
+async def test_apple_redirect_rejects_all_targets_if_browsers_may_convert_the_origin_differently(
+    fastapi_client: TestClient, origin: str, frontend_redirect_uri: str
+):
+    init_st(origin=origin)
+
+    state = encode_state({"frontendRedirectURI": frontend_redirect_uri})
+    res = post_callback(fastapi_client, {"state": state, "code": "testcode"})
+
+    assert_rejected(res)
+
+
+@mark.parametrize(
+    "origin,frontend_redirect_uri",
+    [
+        ("https://xn--strae-oqa.example", "https://xn--strae-oqa.example/cb"),
+        ("https://xn--strae-oqa.example", "https://XN--STRAE-OQA.example:443/cb"),
+        ("https://xn--pxa2a3a176w.example", "https://xn--pxa2a3a176w.example/cb"),
+        ("https://xn--bwc6iy31d.example", "https://xn--bwc6iy31d.example/cb"),
+    ],
+)
+async def test_apple_redirect_matches_an_origin_configured_in_the_punycode_form_browsers_use(
+    fastapi_client: TestClient, origin: str, frontend_redirect_uri: str
+):
+    init_st(origin=origin)
+
+    state = encode_state({"frontendRedirectURI": frontend_redirect_uri})
+    res = post_callback(fastapi_client, {"state": state, "code": "testcode"})
+
+    assert res.status_code == 303
+    location = urlsplit(res.headers["location"])
+    assert location.netloc == urlsplit(origin).netloc
+    assert parse_qs(location.query)["code"] == ["testcode"]
+
+
+async def test_apple_redirect_rejects_the_idna_2003_form_of_a_punycode_configured_origin(
+    fastapi_client: TestClient,
+):
+    init_st(origin="https://xn--strae-oqa.example")
+
+    state = encode_state({"frontendRedirectURI": "https://strasse.example/cb"})
+    res = post_callback(fastapi_client, {"state": state, "code": "testcode"})
+
+    assert_rejected(res)
+
+
+def test_get_normalised_origin_tuple_logs_how_to_configure_an_origin_it_cant_compare(
+    caplog: LogCaptureFixture,
+):
+    caplog.set_level(logging.DEBUG, logger="com.supertokens")
+
+    assert (
+        get_normalised_origin_tuple("https://straße.example", convert_idn_host=True)
+        is None
+    )
+
+    assert any(
+        "Configure it in its punycode (xn--) form instead" in record.getMessage()
+        for record in caplog.records
+    )
+
+
 @mark.parametrize(
     "url,convert_idn_host,expected",
     [
@@ -709,6 +799,14 @@ async def test_apple_redirect_rejects_targets_off_an_internationalised_origin(
             ("https", "xn--bcher-kva.example", 443),
         ),
         (f"https://{'ü' * 64}.example", True, None),
+        ("https://straße.example", True, None),
+        ("https://ὀδός.example", True, None),
+        ("https://a\u200db.example", True, None),
+        (
+            "https://xn--strae-oqa.example",
+            True,
+            ("https", "xn--strae-oqa.example", 443),
+        ),
         ("https://user@bücher.example", True, None),
         ("myapp://bücher.example", True, None),
     ],
