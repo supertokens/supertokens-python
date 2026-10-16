@@ -4,12 +4,16 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import parse_qs, urlencode, urlsplit
 
 from fastapi import FastAPI
-from pytest import fixture, mark
+from pytest import fixture, mark, raises
 from starlette.testclient import TestClient
 from starlette.types import Message
 from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.exceptions import BadInputError
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session, thirdparty
+from supertokens_python.recipe.thirdparty.api.implementation import (
+    get_frontend_redirect_uri_from_state,
+)
 from supertokens_python.recipe.thirdparty.utils import (
     get_normalised_origin_tuple,
     normalise_frontend_redirect_uri,
@@ -714,3 +718,54 @@ def test_get_normalised_origin_tuple_converts_idn_hosts_only_if_asked(
     assert (
         get_normalised_origin_tuple(url, convert_idn_host=convert_idn_host) == expected
     )
+
+
+redirect_uris_with_lone_surrogates: List[str] = [
+    "https://app.example.com/cb\ud800",
+    "https://app.example.com/cb?next=\udfff",
+    "https://app.example.com/cb#\ud800",
+    "myapp://callback/\ud800",
+]
+
+
+@mark.parametrize("frontend_redirect_uri", redirect_uris_with_lone_surrogates)
+def test_get_frontend_redirect_uri_from_state_rejects_lone_surrogates(
+    frontend_redirect_uri: str,
+):
+    state = encode_state({"frontendRedirectURI": frontend_redirect_uri})
+
+    with raises(BadInputError):
+        get_frontend_redirect_uri_from_state(state)
+
+
+@mark.parametrize("frontend_redirect_uri", redirect_uris_with_lone_surrogates[:3])
+async def test_apple_redirect_rejects_lone_surrogates(
+    fastapi_client: TestClient, frontend_redirect_uri: str
+):
+    init_st()
+
+    state = encode_state({"frontendRedirectURI": frontend_redirect_uri})
+    res = post_callback(fastapi_client, {"state": state, "code": "testcode"})
+
+    assert_rejected(res)
+
+
+@mark.parametrize("frontend_redirect_uri", redirect_uris_with_lone_surrogates)
+async def test_apple_redirect_custom_check_is_not_called_for_lone_surrogates(
+    fastapi_client: TestClient, frontend_redirect_uri: str
+):
+    calls: List[str] = []
+
+    async def is_valid_frontend_redirect_uri(
+        frontend_redirect_uri: str, request: Any, user_context: Dict[str, Any]
+    ) -> bool:
+        calls.append(frontend_redirect_uri)
+        return True
+
+    init_st(is_valid_frontend_redirect_uri=is_valid_frontend_redirect_uri)
+
+    state = encode_state({"frontendRedirectURI": frontend_redirect_uri})
+    res = post_callback(fastapi_client, {"state": state, "code": "testcode"})
+
+    assert_rejected(res)
+    assert calls == []
