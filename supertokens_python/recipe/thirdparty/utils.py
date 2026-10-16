@@ -13,6 +13,7 @@
 # under the License.
 from __future__ import annotations
 
+import re
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -96,14 +97,18 @@ The function is only called for absolute URLs. http(s) URLs must have a host, an
 `data:`, `vbscript:`, `file:`, `blob:`, `about:` and `filesystem:` URLs are always rejected
 without calling it.
 
-The frontend redirect URI is passed in the normalised form we redirect to (e.g.:
-`https://app.example.com` becomes `https://app.example.com/`), without the fields Apple posted,
-which are added to its query afterwards. The whole `state` is chosen by whoever starts the sign in,
-so treat the URI as untrusted: compare it against an exact list of allowed URLs, or parse it and
-compare the scheme, host, port and path. Do not use prefix or substring checks: for example,
-`https://app.example.com.evil.test/` and `https://app.example.com@evil.test/` both start with
-`https://app.example.com`, and in `intent://callback#Intent;package=...;end` the receiving app is
-chosen by the fragment.
+The frontend redirect URI is passed in the normalised form we redirect to, without the fields
+Apple posted, which are added to its query afterwards: the scheme is lowercased, for http(s) URLs
+the host is lowercased, a default port is dropped and an empty path becomes `/`, dot segments
+(`.` and `..`, also written as `%2e`) are removed from paths that start with `/`, and non-ASCII
+characters are percent-encoded (as UTF-8). For example, `HTTPS://App.Example.com/a/../cb` is passed
+as `https://app.example.com/cb`.
+
+The whole `state` is chosen by whoever starts the sign in, so treat the URI as untrusted: compare
+it against an exact list of allowed URLs, or parse it and compare the scheme, host, port and path.
+Do not use prefix or substring checks: for example, `https://app.example.com.evil.test/` and
+`https://app.example.com@evil.test/` both start with `https://app.example.com`, and in
+`intent://callback#Intent;package=...;end` the receiving app is chosen by the fragment.
 
 The redirect carries the authorization code and the `id_token` from Apple. Custom URL schemes are
 not owned by a single app: any app installed on the device can register the same scheme and receive
@@ -265,33 +270,81 @@ def is_allowed_custom_redirect_target(url: str) -> bool:
     return scheme not in DISALLOWED_REDIRECT_SCHEMES
 
 
+# The part of a URL after `<scheme>:`, split into the authority (with its `//`), the path, the query
+# (with its `?`) and the fragment (with its `#`), as in RFC 3986 appendix B. Every string matches.
+URL_AFTER_SCHEME_REGEX = re.compile(r"(//[^/?#]*)?([^?#]*)(\?[^#]*)?(#.*)?", re.DOTALL)
+
+
 def normalise_frontend_redirect_uri(url: str) -> str:
     """
-    Returns the form of an already validated redirect target that we redirect to: the scheme is
-    lowercased, and for http(s) URLs the host is lowercased, a default port is dropped and an empty
-    path becomes `/`. Other URLs are kept as they are, apart from the scheme. Non-ASCII characters
-    are percent-encoded (as UTF-8) everywhere except the scheme and the host.
+    Returns the form of an already validated redirect target that we redirect to:
+
+    - the scheme is lowercased,
+    - for http(s) URLs, the host is lowercased, a default port is dropped and an empty path
+      becomes `/`,
+    - dot segments (`.` and `..`, also written as `%2e`) are removed from paths that start with
+      `/`, as in RFC 3986 section 5.2.4 (e.g. `https://app.example.com/a/../cb` becomes
+      `https://app.example.com/cb`),
+    - non-ASCII characters are percent-encoded (as UTF-8) everywhere except the scheme and the
+      host of http(s) URLs.
+
+    Everything else is kept as written, including an empty query (`?`) or fragment (`#`).
     """
-    parsed = urlsplit(url)
-    scheme = parsed.scheme.lower()
+    scheme = urlsplit(url).scheme
+    match = URL_AFTER_SCHEME_REGEX.fullmatch(url[len(scheme) + 1 :])
+    assert match is not None
+    authority: str = match.group(1) or ""
+    path: str = match.group(2) or ""
+    query: str = match.group(3) or ""
+    fragment: str = match.group(4) or ""
 
-    if scheme not in ("http", "https"):
-        return scheme + percent_encode_non_ascii(url[len(parsed.scheme) :])
+    scheme = scheme.lower()
+    if scheme in ("http", "https"):
+        parsed = urlsplit(url)
+        hostname = parsed.hostname or ""
+        if ":" in hostname:
+            hostname = f"[{hostname}]"
+        port = parsed.port
+        authority = f"//{hostname}"
+        if port is not None and port != (443 if scheme == "https" else 80):
+            authority += f":{port}"
+        path = path or "/"
+    else:
+        authority = percent_encode_non_ascii(authority)
 
-    hostname = parsed.hostname or ""
-    if ":" in hostname:
-        hostname = f"[{hostname}]"
-    port = parsed.port
-    netloc = hostname
-    if port is not None and port != (443 if scheme == "https" else 80):
-        netloc += f":{port}"
+    if path.startswith("/"):
+        path = remove_dot_segments(path)
+        if authority == "" and path.startswith("//"):
+            # Without an authority, a path starting with `//` would be read as one
+            path = f"/.{path}"
 
-    result = f"{scheme}://{netloc}{percent_encode_non_ascii(parsed.path or '/')}"
-    if parsed.query:
-        result += f"?{percent_encode_non_ascii(parsed.query)}"
-    if parsed.fragment:
-        result += f"#{percent_encode_non_ascii(parsed.fragment)}"
-    return result
+    return f"{scheme}:{authority}{percent_encode_non_ascii(path + query + fragment)}"
+
+
+SINGLE_DOT_SEGMENTS = {".", "%2e"}
+DOUBLE_DOT_SEGMENTS = {"..", ".%2e", "%2e.", "%2e%2e"}
+
+
+def remove_dot_segments(path: str) -> str:
+    """
+    Removes the `.` and `..` segments from a path that starts with `/`, as in RFC 3986 section
+    5.2.4. Like browsers, it treats `%2e` (in any case) as `.`.
+    """
+    output: List[str] = []
+    segments = path[1:].split("/")
+    for i, segment in enumerate(segments):
+        is_last = i == len(segments) - 1
+        if segment.lower() in SINGLE_DOT_SEGMENTS:
+            if is_last:
+                output.append("")
+        elif segment.lower() in DOUBLE_DOT_SEGMENTS:
+            if output:
+                output.pop()
+            if is_last:
+                output.append("")
+        else:
+            output.append(segment)
+    return "/" + "/".join(output)
 
 
 def percent_encode_non_ascii(value: str) -> str:
