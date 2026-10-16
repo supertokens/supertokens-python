@@ -13,7 +13,8 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from urllib.parse import urlsplit
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.thirdparty.provider import ProviderInput
@@ -120,3 +121,34 @@ def verify_id_token_from_jwks_endpoint(
         raise Exception("no required issuer found")
 
     return data
+
+
+def get_normalised_origin_tuple(url: str) -> Optional[Tuple[str, str, int]]:
+    """
+    Returns the (scheme, lowercased hostname, port) tuple of an absolute http(s) URL,
+    filling in the default port if it is not explicit. Returns None if the input is not
+    such a URL.
+
+    URLs containing a backslash, whitespace or a control character, or with a userinfo
+    part, are rejected: browsers and urllib can disagree on which host they point to.
+    """
+    if any(c == "\\" or c.isspace() or ord(c) < 0x20 or ord(c) == 0x7F for c in url):
+        return None
+
+    try:
+        parsed = urlsplit(url)
+        port = parsed.port
+    except ValueError:
+        return None
+
+    scheme = parsed.scheme.lower()
+    if scheme not in ("http", "https") or not parsed.hostname:
+        return None
+
+    if parsed.username is not None or parsed.password is not None:
+        return None
+
+    if port is None:
+        port = 443 if scheme == "https" else 80
+
+    return scheme, parsed.hostname.lower(), port
