@@ -209,3 +209,15 @@ async def test_cached_keys_can_be_read_while_jwks_are_being_fetched(
     finally:
         release_fetch.set()
         fetching_thread.join(timeout=10)
+
+
+def test_session_recipe_reset_clears_the_jwks_cache_and_the_refetch_time():
+    from supertokens_python.recipe.session import jwks
+
+    jwks.cached_keys = jwks.CachedKeys([], 60)
+    jwks.last_fetch_time_ms = get_timestamp_ms()
+
+    SessionRecipe.reset()
+
+    assert jwks.cached_keys is None
+    assert jwks.last_fetch_time_ms is None
