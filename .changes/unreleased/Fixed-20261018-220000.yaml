@@ -1,0 +1,3 @@
+kind: Fixed
+body: Correct passwordless code listing by device, pre-auth session, email and phone number to parse the Core codes array.
+time: 2026-10-18T22:00:00+02:00

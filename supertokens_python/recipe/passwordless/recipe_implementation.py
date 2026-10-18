@@ -265,8 +265,8 @@ class RecipeImplementation(RecipeInterface):
         )
         if "devices" in result and len(result["devices"]) == 1:
             codes: List[DeviceCode] = []
-            if "code" in result["devices"][0]:
-                for code in result["devices"][0]:
+            if "codes" in result["devices"][0]:
+                for code in result["devices"][0]["codes"]:
                     codes.append(
                         DeviceCode(
                             code_id=code["codeId"],
@@ -304,8 +304,8 @@ class RecipeImplementation(RecipeInterface):
         if "devices" in result:
             for device in result["devices"]:
                 codes: List[DeviceCode] = []
-                if "code" in device:
-                    for code in device:
+                if "codes" in device:
+                    for code in device["codes"]:
                         codes.append(
                             DeviceCode(
                                 code_id=code["codeId"],
@@ -345,8 +345,8 @@ class RecipeImplementation(RecipeInterface):
         if "devices" in result:
             for device in result["devices"]:
                 codes: List[DeviceCode] = []
-                if "code" in device:
-                    for code in device:
+                if "codes" in device:
+                    for code in device["codes"]:
                         codes.append(
                             DeviceCode(
                                 code_id=code["codeId"],
@@ -384,8 +384,8 @@ class RecipeImplementation(RecipeInterface):
         )
         if "devices" in result and len(result["devices"]) == 1:
             codes: List[DeviceCode] = []
-            if "code" in result["devices"][0]:
-                for code in result["devices"][0]:
+            if "codes" in result["devices"][0]:
+                for code in result["devices"][0]["codes"]:
                     codes.append(
                         DeviceCode(
                             code_id=code["codeId"],
