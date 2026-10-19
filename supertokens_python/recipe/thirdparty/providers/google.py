@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, Set
 
 from ..provider import (
     Provider,
@@ -23,14 +23,17 @@ from ..provider import (
     UserFields,
     UserInfoMap,
 )
+from .client_access_token_check import (
+    ProviderWithClientAccessTokenCheck,
+    check_google_access_token,
+)
 from .custom import (
-    GenericProvider,
     NewProvider,
 )
 from .utils import normalise_oidc_endpoint_to_include_well_known
 
 
-class GoogleImpl(GenericProvider):
+class GoogleImpl(ProviderWithClientAccessTokenCheck):
     async def get_config_for_client_type(
         self, client_type: Optional[str], user_context: Dict[str, Any]
     ) -> ProviderConfigForClient:
@@ -48,6 +51,11 @@ class GoogleImpl(GenericProvider):
         )
 
         return config
+
+    async def check_client_access_token(
+        self, access_token: str, client_ids: Set[str]
+    ) -> None:
+        await check_google_access_token(access_token, client_ids)
 
 
 def Google(
