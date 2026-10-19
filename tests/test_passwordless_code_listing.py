@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, cast
+from typing import Any, Dict, List, Union, cast
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -17,7 +17,12 @@ SELECTORS = [
 ]
 
 
-def make_device(code_count: int) -> Dict[str, Any]:
+CodeFixture = Dict[str, Union[str, int]]
+DeviceFixture = Dict[str, Union[str, int, List[CodeFixture]]]
+ResponseFixture = Dict[str, List[DeviceFixture]]
+
+
+def make_device(code_count: int) -> DeviceFixture:
     return {
         "preAuthSessionId": "pre-auth-id",
         "failedCodeInputAttemptCount": 2,
@@ -63,7 +68,7 @@ async def test_list_codes_preserves_codes_and_device_metadata(
         (code.code_id, code.time_created, code.code_life_time) for code in actual.codes
     ] == [
         (code["codeId"], code["timeCreated"], code["codeLifetime"])
-        for code in device["codes"]
+        for code in cast(List[CodeFixture], device["codes"])
     ]
     querier.send_get_request.assert_awaited_once()
     args, kwargs = querier.send_get_request.call_args
@@ -101,7 +106,7 @@ async def test_list_codes_without_devices(
     query_key: str,
     value: str,
     returns_list: bool,
-    response: Dict[str, Any],
+    response: ResponseFixture,
 ):
     querier = MagicMock(spec=Querier)
     querier.send_get_request = AsyncMock(return_value=response)
