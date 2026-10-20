@@ -118,14 +118,14 @@ async def _do_access_token_check_request(
         )
     log_debug_message("Received response with status %s", res.status_code)
 
+    # Error responses are parsed too: Facebook's error body tells a token of another app apart from a config problem
     body: Optional[Dict[str, Any]] = None
-    if res.status_code < 400:
-        try:
-            parsed = res.json()
-            if isinstance(parsed, dict):
-                body = parsed  # type: ignore
-        except Exception:
-            body = None
+    try:
+        parsed = res.json()
+        if isinstance(parsed, dict):
+            body = parsed  # type: ignore
+    except Exception:
+        body = None
     return res.status_code, body
 
 
@@ -159,6 +159,22 @@ async def check_google_access_token(access_token: str, client_ids: Set[str]) -> 
         raise ValueError(ACCESS_TOKEN_DOES_NOT_BELONG_TO_APP)
 
 
+def _is_facebook_error_for_token_of_another_app(body: Optional[Dict[str, Any]]) -> bool:
+    """
+    Facebook doesn't debug a token of another app: it answers with error 100, "The App_id in the input_token did
+    not match the Viewing App", instead of returning the token's app_id.
+    """
+    error = body.get("error") if body is not None else None
+    if not isinstance(error, dict):
+        return False
+    message = error.get("message")  # type: ignore
+    return (
+        error.get("code") == 100  # type: ignore
+        and isinstance(message, str)
+        and "did not match the viewing app" in message.lower()
+    )
+
+
 async def check_facebook_access_token(
     access_token: str, client_config: ProviderConfigForClient, client_ids: Set[str]
 ) -> None:
@@ -179,6 +195,8 @@ async def check_facebook_access_token(
     )
     data = body.get("data") if body is not None else None
     if status != 200 or not isinstance(data, dict):
+        if _is_facebook_error_for_token_of_another_app(body):
+            raise ValueError(ACCESS_TOKEN_DOES_NOT_BELONG_TO_APP)
         raise ValueError(
             f"Could not check the access token with Facebook (status {status}). "
             "Please check the client_id and client_secret of the Facebook provider."

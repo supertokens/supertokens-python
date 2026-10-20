@@ -325,6 +325,27 @@ async def test_facebook_rejects_an_invalid_access_token():
             await provider.get_user_info({"access_token": "fb-token"}, {})
 
 
+async def test_facebook_rejects_an_access_token_of_another_app_that_facebook_wont_debug():
+    with respx.mock(assert_all_called=False) as mocker:
+        mock_debug_token(
+            mocker,
+            400,
+            {
+                "error": {
+                    "message": "(#100) The App_id in the input_token did not match the Viewing App",
+                    "type": "OAuthException",
+                    "code": 100,
+                }
+            },
+        )
+        user_info = mock_facebook_user_info(mocker)
+        provider = await get_provider(FACEBOOK_CONFIG)
+
+        with raises(Exception, match="does not belong to your application"):
+            await provider.get_user_info({"access_token": "fb-token"}, {})
+        assert not user_info.called
+
+
 async def test_facebook_reports_a_failed_debug_token_call():
     with respx.mock(assert_all_called=False) as mocker:
         mock_debug_token(
