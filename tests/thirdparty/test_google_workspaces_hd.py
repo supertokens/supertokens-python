@@ -17,6 +17,7 @@ from supertokens_python.recipe import session, thirdparty
 from supertokens_python.recipe.thirdparty.provider import (
     ProviderClientConfig,
     ProviderConfig,
+    ProviderConfigForClient,
     ProviderInput,
 )
 from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
@@ -66,6 +67,12 @@ def idp() -> Iterator[respx.MockRouter]:
         yield mocker
 
 
+async def accept_any_access_token(
+    _access_token: str, _config: ProviderConfigForClient, _user_context: Dict[str, Any]
+) -> None:
+    pass
+
+
 def setup(hd: Optional[str]):
     init(
         **get_st_init_args(
@@ -79,6 +86,8 @@ def setup(hd: Optional[str]):
                                 config=ProviderConfig(
                                     third_party_id="google-workspaces",
                                     oidc_discovery_endpoint=f"{IDP}/.well-known/openid-configuration",
+                                    # These tests are about the hd check on the user info, so they accept any access token
+                                    validate_access_token=accept_any_access_token,
                                     clients=[
                                         ProviderClientConfig(
                                             client_id=CLIENT_ID,
