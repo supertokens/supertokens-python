@@ -68,7 +68,9 @@ def client() -> TestClient:
 
 def _post(client: TestClient, path: str, body: Dict[str, Any]) -> Dict[str, Any]:
     response = client.post(path, json=body)
-    assert response.status_code == 200, f"{path} -> {response.status_code}: {response.text[:400]}"
+    assert response.status_code == 200, (
+        f"{path} -> {response.status_code}: {response.text[:400]}"
+    )
     return response.json()
 
 
@@ -79,7 +81,9 @@ def _register_user(
     returns the webauthn user handle."""
     email = f"{random.random()}@supertokens.com".replace("0.", "")
 
-    register_options = _post(client, "/auth/webauthn/options/register", {"email": email})
+    register_options = _post(
+        client, "/auth/webauthn/options/register", {"email": email}
+    )
     assert register_options["status"] == "OK", register_options
 
     sign_up_response = _post(
@@ -89,7 +93,9 @@ def _register_user(
             "credential": authenticator.create_attestation(
                 register_options, sign_count=sign_count
             ),
-            "webauthnGeneratedOptionsId": register_options["webauthnGeneratedOptionsId"],
+            "webauthnGeneratedOptionsId": register_options[
+                "webauthnGeneratedOptionsId"
+            ],
             "shouldTryLinkingWithSessionUser": False,
         },
     )
