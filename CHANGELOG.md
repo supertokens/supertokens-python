@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.29.3] - 2026-10-21
+
 ### Fixed
 - Explicitly added missing sniffio dependency
 
