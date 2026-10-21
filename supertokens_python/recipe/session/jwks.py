@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import threading
 from os import environ
 from typing import List, Optional
 
@@ -48,14 +49,25 @@ class CachedKeys:
 
 
 cached_keys: Optional[CachedKeys] = None
+# Time of the last JWKS fetch from the core (successful or not)
+last_fetch_time_ms: Optional[int] = None
+# Guards cached_keys and last_fetch_time_ms
 mutex = RWMutex()
+# Makes sure only one thread fetches the JWKS at a time. It is held during the HTTP request, so it is
+# separate from mutex, which would block every reader of the cache.
+fetch_lock = threading.Lock()
+
+# A token with a kid that is not in a fresh cache only triggers a new fetch if the last fetch
+# happened at least this long ago.
+JWKS_REFETCH_COOLDOWN_MS = 500
 
 
 # only for testing purposes
 def reset_jwks_cache():
     with RWLockContext(mutex, read=False):
-        global cached_keys
+        global cached_keys, last_fetch_time_ms
         cached_keys = None
+        last_fetch_time_ms = None
 
 
 def get_cached_keys() -> Optional[List[PyJWK]]:
@@ -88,21 +100,45 @@ def find_matching_keys(
     return None
 
 
+def find_matching_keys_in_cache(kid: Optional[str]) -> Optional[List[PyJWK]]:
+    """Returns the matching keys from the cache, or None if the keys need to be fetched.
+
+    Raises an exception if the cache is fresh but has no key matching the kid and the keys
+    were fetched too recently to fetch them again.
+    """
+    with RWLockContext(mutex, read=True):
+        keys = get_cached_keys()
+        matching_keys = find_matching_keys(keys, kid)
+        if matching_keys is not None:
+            return matching_keys
+
+        if (
+            keys is not None
+            and last_fetch_time_ms is not None
+            and get_timestamp_ms() - last_fetch_time_ms < JWKS_REFETCH_COOLDOWN_MS
+        ):
+            log_debug_message(
+                "Not fetching JWKS for an unknown kid because they were fetched recently"
+            )
+            raise Exception("No matching JWKS found")
+
+    return None
+
+
 def get_latest_keys(
     config: NormalisedSessionConfig, kid: Optional[str] = None
 ) -> List[PyJWK]:
-    global cached_keys
+    global cached_keys, last_fetch_time_ms
 
     if environ.get("SUPERTOKENS_ENV") == "testing":
         log_debug_message("Called find_jwk_client")
 
-    with RWLockContext(mutex, read=True):
-        matching_keys = find_matching_keys(get_cached_keys(), kid)
-        if matching_keys is not None:
-            if environ.get("SUPERTOKENS_ENV") == "testing":
-                log_debug_message("Returning JWKS from cache")
-            return matching_keys
-        # otherwise unknown kid, will continue to reload the keys
+    matching_keys = find_matching_keys_in_cache(kid)
+    if matching_keys is not None:
+        if environ.get("SUPERTOKENS_ENV") == "testing":
+            log_debug_message("Returning JWKS from cache")
+        return matching_keys
+    # otherwise unknown kid, will continue to reload the keys
 
     core_paths = Querier.get_instance().get_all_core_urls_for_path(
         "./.well-known/jwks.json"
@@ -115,35 +151,42 @@ def get_latest_keys(
 
     last_error: Exception = Exception("No valid JWKS found")
 
-    with RWLockContext(mutex, read=False):
+    with fetch_lock:
         # check again if the keys are in cache
         # because another thread might have fetched the keys while this one was waiting for the lock
-        matching_keys = find_matching_keys(get_cached_keys(), kid)
+        matching_keys = find_matching_keys_in_cache(kid)
         if matching_keys is not None:
             return matching_keys
 
-        for path in core_paths:
-            if environ.get("SUPERTOKENS_ENV") == "testing":
-                log_debug_message("Attempting to fetch JWKS from path: %s", path)
+        try:
+            for path in core_paths:
+                if environ.get("SUPERTOKENS_ENV") == "testing":
+                    log_debug_message("Attempting to fetch JWKS from path: %s", path)
 
-            cached_jwks: Optional[List[PyJWK]] = None
-            try:
-                log_debug_message("Fetching jwk set from the configured uri")
-                with requests.get(
-                    path, timeout=JWKSConfig["request_timeout"] / 1000
-                ) as response:  # 5 second timeout
-                    response.raise_for_status()
-                    cached_jwks = PyJWKSet.from_dict(response.json()).keys  # type: ignore
-            except Exception as e:
-                last_error = e
+                cached_jwks: Optional[List[PyJWK]] = None
+                try:
+                    log_debug_message("Fetching jwk set from the configured uri")
+                    with requests.get(
+                        path, timeout=JWKSConfig["request_timeout"] / 1000
+                    ) as response:  # 5 second timeout
+                        response.raise_for_status()
+                        cached_jwks = PyJWKSet.from_dict(response.json()).keys  # type: ignore
+                except Exception as e:
+                    last_error = e
 
-            if cached_jwks is not None:  # we found a valid JWKS
-                cached_keys = CachedKeys(cached_jwks, config.jwks_refresh_interval_sec)
-                log_debug_message("Returning JWKS from fetch")
-                matching_keys = find_matching_keys(get_cached_keys(), kid)
-                if matching_keys is not None:
-                    return matching_keys
+                if cached_jwks is not None:  # we found a valid JWKS
+                    with RWLockContext(mutex, read=False):
+                        cached_keys = CachedKeys(
+                            cached_jwks, config.jwks_refresh_interval_sec
+                        )
+                    log_debug_message("Returning JWKS from fetch")
+                    matching_keys = find_matching_keys(cached_jwks, kid)
+                    if matching_keys is not None:
+                        return matching_keys
 
-                raise Exception("No matching JWKS found")
+                    raise Exception("No matching JWKS found")
+        finally:
+            with RWLockContext(mutex, read=False):
+                last_fetch_time_ms = get_timestamp_ms()
 
     raise last_error

@@ -41,6 +41,7 @@
 # under the License.
 from __future__ import annotations
 
+import hmac
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from typing_extensions import Literal
@@ -157,7 +158,14 @@ def validate_and_normalise_user_input(
         override_config=config.override
     )
 
-    if config.api_key is not None and config.admins is not None:
+    # An empty or whitespace-only api key means no api key, i.e. dashboard sessions are used
+    api_key = (
+        config.api_key
+        if config.api_key is not None and config.api_key.strip() != &#34;&#34;
+        else None
+    )
+
+    if api_key is not None and config.admins is not None:
         log_debug_message(
             &#34;User Dashboard: Providing &#39;admins&#39; has no effect when using an api key.&#34;
         )
@@ -167,10 +175,10 @@ def validate_and_normalise_user_input(
         if config.admins is not None
         else None
     )
-    auth_mode = &#34;api-key&#34; if config.api_key else &#34;email-password&#34;
+    auth_mode = &#34;api-key&#34; if api_key is not None else &#34;email-password&#34;
 
     return NormalisedDashboardConfig(
-        api_key=config.api_key,
+        api_key=api_key,
         admins=admins,
         auth_mode=auth_mode,
         override=override_config,
@@ -315,12 +323,24 @@ async def _get_user_for_recipe_id(
 async def validate_api_key(
     req: BaseRequest, config: NormalisedDashboardConfig, _user_context: Dict[str, Any]
 ) -&gt; bool:
-    api_key_header_value = req.get_header(&#34;authorization&#34;)
-    if not api_key_header_value:
+    if not config.api_key:
         return False
-    # We receieve the api key as `Bearer API_KEY`, this retrieves just the key
-    api_key_header_value = api_key_header_value.split(&#34; &#34;)[1]
-    return api_key_header_value == config.api_key
+
+    api_key_header_value = req.get_header(&#34;authorization&#34;)
+    # We receive the api key as `Bearer API_KEY`, this retrieves just the key
+    bearer_prefix = &#34;Bearer &#34;
+    if api_key_header_value is None or not api_key_header_value.startswith(
+        bearer_prefix
+    ):
+        return False
+
+    api_key_header_value = api_key_header_value[len(bearer_prefix) :]
+    if api_key_header_value == &#34;&#34;:
+        return False
+
+    return hmac.compare_digest(
+        api_key_header_value.encode(&#34;utf-8&#34;), config.api_key.encode(&#34;utf-8&#34;)
+    )
 
 
 def get_api_path_with_dashboard_base(path: str) -&gt; str:
@@ -598,7 +618,7 @@ validated to form a valid model.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></li>
+<li>supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]</li>
 <li><a title="supertokens_python.types.config.BaseNormalisedConfig" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig">BaseNormalisedConfig</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -623,12 +643,12 @@ validated to form a valid model.</p>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></b></code>:
+<li><code><b><a title="supertokens_python.types.config.BaseNormalisedConfig" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig">BaseNormalisedConfig</a></b></code>:
 <ul class="hlist">
-<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
-<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
-<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].override" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig.override">override</a></code></li>
-<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig.override" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig.override">override</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>

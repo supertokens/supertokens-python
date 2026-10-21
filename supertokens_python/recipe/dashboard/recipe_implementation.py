@@ -22,6 +22,7 @@ from supertokens_python.querier import Querier
 from supertokens_python.recipe.dashboard.constants import (
     DASHBOARD_ANALYTICS_API,
     SIGN_OUT_API,
+    UNLINK_USER,
 )
 from supertokens_python.utils import log_debug_message, normalise_http_method
 
@@ -41,7 +42,7 @@ class RecipeImplementation(RecipeInterface):
         user_context: Dict[str, Any],
     ) -> bool:
         # For cases where we're not using the API key, the JWT is being used; we allow their access by default
-        if config.api_key is None:
+        if not config.api_key:
             auth_header_value = request.get_header("authorization")
             if not auth_header_value:
                 return False
@@ -57,15 +58,22 @@ class RecipeImplementation(RecipeInterface):
             if session_verification_response.get("status") != "OK":
                 return False
 
+            # Match on the same normalised path the request is routed by (no query string)
+            request_path = NormalisedURLPath(
+                request.get_path()
+            ).get_as_string_dangerous()
+
             # For all non GET requests we also want to check if the
             # user is allowed to perform this operation
-            if normalise_http_method(request.method()) != "get":
+            # The unlink API is a GET request, but it modifies the user, so we check it as well
+            is_get_request = normalise_http_method(request.method()) == "get"
+            if not is_get_request or request_path.endswith(UNLINK_USER):
                 # We dont want to block the analytics API
-                if request.get_original_url().endswith(DASHBOARD_ANALYTICS_API):
+                if request_path.endswith(DASHBOARD_ANALYTICS_API):
                     return True
 
                 # We do not want to block the sign out request
-                if request.get_original_url().endswith(SIGN_OUT_API):
+                if request_path.endswith(SIGN_OUT_API):
                     return True
 
                 admins = config.admins

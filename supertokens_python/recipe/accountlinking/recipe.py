@@ -830,19 +830,11 @@ class AccountLinkingRecipe(RecipeModule):
                             status="NO_LINK", user=None
                         )
 
-                    account_info_verified_in_prim_user = any(
-                        (
-                            input_user.login_methods[0].email is not None
-                            and lm.has_same_email_as(input_user.login_methods[0].email)
+                    account_info_verified_in_prim_user = (
+                        has_verified_login_method_with_same_account_info(
+                            primary_user_that_can_be_linked_to_the_input_user,
+                            input_user.login_methods[0],
                         )
-                        or (
-                            input_user.login_methods[0].phone_number is not None
-                            and lm.has_same_phone_number_as(
-                                input_user.login_methods[0].phone_number
-                            )
-                            and lm.verified
-                        )
-                        for lm in primary_user_that_can_be_linked_to_the_input_user.login_methods
                     )
                     if should_do_account_linking.should_require_verification and (
                         not input_user.login_methods[0].verified
@@ -955,12 +947,15 @@ class AccountLinkingRecipe(RecipeModule):
                             status="NO_LINK", user=None
                         )
 
-                    if (
-                        should_do_account_linking.should_require_verification
-                        and not input_user.login_methods[0].verified
+                    if should_do_account_linking.should_require_verification and (
+                        not input_user.login_methods[0].verified
+                        or not has_verified_login_method_with_same_account_info(
+                            create_primary_user_result.user,
+                            input_user.login_methods[0],
+                        )
                     ):
                         log_debug_message(
-                            "try_linking_by_account_info_or_create_primary_user: not linking because shouldRequireVerification is true but the login method is not verified"
+                            "try_linking_by_account_info_or_create_primary_user: not linking because shouldRequireVerification is true but the login method is not verified in the new or the primary user"
                         )
                         return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
                             status="NO_LINK", user=None
@@ -1041,3 +1036,23 @@ class AccountLinkingRecipe(RecipeModule):
         raise Exception(
             "This should never happen: ran out of retries for try_linking_by_account_info_or_create_primary_user"
         )
+
+
+def has_verified_login_method_with_same_account_info(
+    user: User, login_method: LoginMethod
+) -> bool:
+    """Checks if the user has a verified login method with the same email or phone number as the given login method"""
+    return any(
+        lm.verified
+        and (
+            (
+                login_method.email is not None
+                and lm.has_same_email_as(login_method.email)
+            )
+            or (
+                login_method.phone_number is not None
+                and lm.has_same_phone_number_as(login_method.phone_number)
+            )
+        )
+        for lm in user.login_methods
+    )

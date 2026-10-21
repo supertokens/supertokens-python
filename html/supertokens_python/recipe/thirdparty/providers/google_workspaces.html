@@ -48,6 +48,7 @@ from ..provider import (
     ProviderConfigForClient,
     ProviderInput,
 )
+from ..types import UserInfo
 from .google import Google, GoogleImpl
 
 
@@ -66,6 +67,29 @@ class GoogleWorkspacesImpl(GoogleImpl):
         }
 
         return config
+
+    async def get_user_info(
+        self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
+    ) -&gt; UserInfo:
+        user_info = await super().get_user_info(oauth_tokens, user_context)
+
+        hd = (self.config.additional_config or {}).get(&#34;hd&#34;)
+        if hd is not None and hd != &#34;*&#34;:
+            # If an id token was verified, validate_id_token_payload has checked its hd claim.
+            # Otherwise we require the user info response to have the right hd value.
+            id_token_was_verified = (
+                oauth_tokens.get(&#34;id_token&#34;) is not None
+                and self.config.jwks_uri is not None
+            )
+            from_user_info_api = (
+                user_info.raw_user_info_from_provider.from_user_info_api or {}
+            )
+            if not id_token_was_verified and from_user_info_api.get(&#34;hd&#34;) != hd:
+                raise Exception(
+                    &#34;the value for hd in the user info response does not match the value provided in the config&#34;
+                )
+
+        return user_info
 
 
 def GoogleWorkspaces(
@@ -117,7 +141,11 @@ def GoogleWorkspaces(
 <span>(</span><span>provider_config: <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfig" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfig">ProviderConfig</a>)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Before the user info is fetched with an access token that the client sent, calls check_client_access_token.</p>
+<p>The check is skipped:
+- if validate_access_token is set in the provider config (get_user_info runs that instead, as before)
+- for the access token the SDK got itself, by exchanging an authorisation code with the provider. This works
+because a new provider instance is created for every request.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -136,11 +164,35 @@ def GoogleWorkspaces(
             **(config.authorization_endpoint_query_params or {}),
         }
 
-        return config</code></pre>
+        return config
+
+    async def get_user_info(
+        self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
+    ) -&gt; UserInfo:
+        user_info = await super().get_user_info(oauth_tokens, user_context)
+
+        hd = (self.config.additional_config or {}).get(&#34;hd&#34;)
+        if hd is not None and hd != &#34;*&#34;:
+            # If an id token was verified, validate_id_token_payload has checked its hd claim.
+            # Otherwise we require the user info response to have the right hd value.
+            id_token_was_verified = (
+                oauth_tokens.get(&#34;id_token&#34;) is not None
+                and self.config.jwks_uri is not None
+            )
+            from_user_info_api = (
+                user_info.raw_user_info_from_provider.from_user_info_api or {}
+            )
+            if not id_token_was_verified and from_user_info_api.get(&#34;hd&#34;) != hd:
+                raise Exception(
+                    &#34;the value for hd in the user info response does not match the value provided in the config&#34;
+                )
+
+        return user_info</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.thirdparty.providers.google.GoogleImpl" href="google.html#supertokens_python.recipe.thirdparty.providers.google.GoogleImpl">GoogleImpl</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.providers.client_access_token_check.ProviderWithClientAccessTokenCheck" href="client_access_token_check.html#supertokens_python.recipe.thirdparty.providers.client_access_token_check.ProviderWithClientAccessTokenCheck">ProviderWithClientAccessTokenCheck</a></li>
 <li><a title="supertokens_python.recipe.thirdparty.providers.custom.GenericProvider" href="custom.html#supertokens_python.recipe.thirdparty.providers.custom.GenericProvider">GenericProvider</a></li>
 <li><a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a></li>
 </ul>
@@ -148,6 +200,12 @@ def GoogleWorkspaces(
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.providers.google_workspaces.GoogleWorkspacesImpl.get_config_for_client_type"><code class="name flex">
 <span>async def <span class="ident">get_config_for_client_type</span></span>(<span>self, client_type: Optional[str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfigForClient">ProviderConfigForClient</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.providers.google_workspaces.GoogleWorkspacesImpl.get_user_info"><code class="name flex">
+<span>async def <span class="ident">get_user_info</span></span>(<span>self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.UserInfo" href="../types.html#supertokens_python.recipe.thirdparty.types.UserInfo">UserInfo</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -179,6 +237,7 @@ def GoogleWorkspaces(
 <h4><code><a title="supertokens_python.recipe.thirdparty.providers.google_workspaces.GoogleWorkspacesImpl" href="#supertokens_python.recipe.thirdparty.providers.google_workspaces.GoogleWorkspacesImpl">GoogleWorkspacesImpl</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.thirdparty.providers.google_workspaces.GoogleWorkspacesImpl.get_config_for_client_type" href="#supertokens_python.recipe.thirdparty.providers.google_workspaces.GoogleWorkspacesImpl.get_config_for_client_type">get_config_for_client_type</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.google_workspaces.GoogleWorkspacesImpl.get_user_info" href="#supertokens_python.recipe.thirdparty.providers.google_workspaces.GoogleWorkspacesImpl.get_user_info">get_user_info</a></code></li>
 </ul>
 </li>
 </ul>

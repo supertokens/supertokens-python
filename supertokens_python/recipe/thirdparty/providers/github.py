@@ -18,7 +18,7 @@ from typing import Any, Dict, List, Optional
 
 from supertokens_python.recipe.thirdparty.providers.utils import (
     do_get_request,
-    do_post_request,
+    do_post_request_with_json_body,
 )
 from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 
@@ -41,8 +41,14 @@ class GithubImpl(GenericProvider):
     async def get_user_info(
         self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
     ) -> UserInfo:
+        access_token: Optional[str] = oauth_tokens.get("access_token")
+        if access_token is not None and self.config.validate_access_token is not None:
+            await self.config.validate_access_token(
+                access_token, self.config, user_context
+            )
+
         headers = {
-            "Authorization": f"Bearer {oauth_tokens.get('access_token')}",
+            "Authorization": f"Bearer {access_token}",
             "Accept": "application/vnd.github.v3+json",
         }
 
@@ -95,18 +101,31 @@ def Github(input: ProviderInput) -> Provider:  # pylint: disable=redefined-built
 async def validate_access_token(
     access_token: str, config: ProviderConfigForClient, _: Dict[str, Any]
 ):
-    client_secret = "" if config.client_secret is None else config.client_secret
+    if config.client_secret is None:
+        raise ValueError(
+            "The GitHub provider needs the client_secret of the client to validate access tokens. "
+            "Please add it to the provider config, or set a custom validate_access_token."
+        )
     basic_auth_token = base64.b64encode(
-        f"{config.client_id}:{client_secret}".encode()
+        f"{config.client_id}:{config.client_secret}".encode()
     ).decode()
 
     url = f"https://api.github.com/applications/{config.client_id}/token"
     headers = {
         "Authorization": f"Basic {basic_auth_token}",
-        "Content-Type": "application/json",
+        "Accept": "application/vnd.github+json",
     }
 
-    status, body = await do_post_request(url, {"access_token": access_token}, headers)
+    # GitHub's token check API only accepts a JSON body, so we can't use do_post_request (which sends form data)
+    status, body = await do_post_request_with_json_body(
+        url, {"access_token": access_token}, headers
+    )
+    if status in (401, 403):
+        raise ValueError(
+            "GitHub rejected the client credentials used to validate the access token. "
+            "Please check the client_id and client_secret of the GitHub provider."
+        )
+
     if status != 200:
         raise ValueError("Invalid access token")
 

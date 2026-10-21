@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.11.0" />
+<title>supertokens_python.recipe.thirdparty.providers.client_access_token_check API documentation</title>
+<meta name="description" content="Checks that access tokens sent by the client to the sign in up API (in `oAuthTokens`) were issued to one of the
+provider&#39;s clients, before the user …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>supertokens_python.recipe.thirdparty.providers.client_access_token_check</code></h1>
+</header>
+<section id="section-intro">
+<p>Checks that access tokens sent by the client to the sign in up API (in <code>oAuthTokens</code>) were issued to one of the
+provider's clients, before the user info is fetched with them.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># Copyright (c) 2026, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# &#34;License&#34;) as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an &#34;AS IS&#34; BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+&#34;&#34;&#34;
+Checks that access tokens sent by the client to the sign in up API (in `oAuthTokens`) were issued to one of the
+provider&#39;s clients, before the user info is fetched with them.
+&#34;&#34;&#34;
+
+from __future__ import annotations
+
+from typing import Any, Dict, Optional, Set, Tuple
+
+from httpx import AsyncClient
+
+from supertokens_python.logger import log_debug_message
+
+from ..provider import ProviderConfigForClient, RedirectUriInfo
+from ..types import UserInfo
+from .custom import GenericProvider
+from .utils import get_actual_client_id_from_development_client_id
+
+ACCESS_TOKEN_DOES_NOT_BELONG_TO_APP = &#34;Access token does not belong to your application&#34;
+
+
+class ProviderWithClientAccessTokenCheck(GenericProvider):
+    &#34;&#34;&#34;
+    Before the user info is fetched with an access token that the client sent, calls check_client_access_token.
+
+    The check is skipped:
+    - if validate_access_token is set in the provider config (get_user_info runs that instead, as before)
+    - for the access token the SDK got itself, by exchanging an authorisation code with the provider. This works
+      because a new provider instance is created for every request.
+    &#34;&#34;&#34;
+
+    _access_token_from_code_exchange: Optional[str] = None
+
+    async def check_client_access_token(
+        self, access_token: str, client_ids: Set[str]
+    ) -&gt; None:
+        raise NotImplementedError()
+
+    async def exchange_auth_code_for_oauth_tokens(
+        self, redirect_uri_info: RedirectUriInfo, user_context: Dict[str, Any]
+    ) -&gt; Dict[str, Any]:
+        oauth_tokens = await super().exchange_auth_code_for_oauth_tokens(
+            redirect_uri_info, user_context
+        )
+        access_token = oauth_tokens.get(&#34;access_token&#34;)
+        if isinstance(access_token, str):
+            self._access_token_from_code_exchange = access_token
+        return oauth_tokens
+
+    async def get_user_info(
+        self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
+    ) -&gt; UserInfo:
+        access_token = oauth_tokens.get(&#34;access_token&#34;)
+        if (
+            self.config.validate_access_token is None
+            and isinstance(access_token, str)
+            and access_token != self._access_token_from_code_exchange
+        ):
+            await self.check_client_access_token(access_token, self._get_client_ids())
+        return await super().get_user_info(oauth_tokens, user_context)
+
+    def _get_client_ids(self) -&gt; Set[str]:
+        &#34;&#34;&#34;The client ids of every client of the provider (for this tenant)&#34;&#34;&#34;
+        client_ids: Set[str] = set()
+        for client in self.input_config.clients or []:
+            if client.client_id:
+                client_ids.add(
+                    get_actual_client_id_from_development_client_id(client.client_id)
+                )
+        if self.config.client_id:
+            client_ids.add(
+                get_actual_client_id_from_development_client_id(self.config.client_id)
+            )
+        return client_ids
+
+
+def _is_one_of(value: Any, client_ids: Set[str]) -&gt; bool:
+    if isinstance(value, bool) or not isinstance(value, (str, int)):
+        return False
+    return str(value) in client_ids
+
+
+async def _do_access_token_check_request(
+    method: str,
+    url: str,
+    query_params: Optional[Dict[str, str]] = None,
+    form_params: Optional[Dict[str, str]] = None,
+    headers: Optional[Dict[str, str]] = None,
+) -&gt; Tuple[int, Optional[Dict[str, Any]]]:
+    &#34;&#34;&#34;
+    We don&#39;t log the query params, the headers or the response body of these requests, since they contain the
+    access token (and for Facebook, the client secret).
+    &#34;&#34;&#34;
+    request_headers = {&#34;accept&#34;: &#34;application/json&#34;, **(headers or {})}
+    log_debug_message(
+        &#34;%s request to %s to check an access token sent by the client&#34;, method, url
+    )
+    async with AsyncClient(timeout=30.0) as client:
+        res = await client.request(  # type: ignore
+            method,
+            url,
+            params=query_params,
+            data=form_params,
+            headers=request_headers,
+        )
+    log_debug_message(&#34;Received response with status %s&#34;, res.status_code)
+
+    # Error responses are parsed too: Facebook&#39;s error body tells a token of another app apart from a config problem
+    body: Optional[Dict[str, Any]] = None
+    try:
+        parsed = res.json()
+        if isinstance(parsed, dict):
+            body = parsed  # type: ignore
+    except Exception:
+        body = None
+    return res.status_code, body
+
+
+def _raise_for_failed_check(
+    provider_name: str, status: int, invalid_token_statuses: Tuple[int, ...]
+) -&gt; None:
+    if status in invalid_token_statuses:
+        raise ValueError(&#34;Invalid access token&#34;)
+    raise ValueError(
+        f&#34;Could not check the access token with {provider_name} (status {status})&#34;
+    )
+
+
+async def check_google_access_token(access_token: str, client_ids: Set[str]) -&gt; None:
+    &#34;&#34;&#34;
+    Google&#39;s token info API returns the client the token is for (aud) and the client that requested it (azp).
+    They can differ, e.g. for tokens requested on Android or iOS for another client of the same Google Cloud
+    project.
+    &#34;&#34;&#34;
+    status, body = await _do_access_token_check_request(
+        &#34;POST&#34;,
+        &#34;https://oauth2.googleapis.com/tokeninfo&#34;,
+        form_params={&#34;access_token&#34;: access_token},
+    )
+    if status != 200 or body is None:
+        _raise_for_failed_check(&#34;Google&#34;, status, (400, 401))
+        return
+    if not _is_one_of(body.get(&#34;aud&#34;), client_ids) and not _is_one_of(
+        body.get(&#34;azp&#34;), client_ids
+    ):
+        raise ValueError(ACCESS_TOKEN_DOES_NOT_BELONG_TO_APP)
+
+
+def _is_facebook_error_for_token_of_another_app(body: Optional[Dict[str, Any]]) -&gt; bool:
+    &#34;&#34;&#34;
+    Facebook doesn&#39;t debug a token of another app: it answers with error 100, &#34;The App_id in the input_token did
+    not match the Viewing App&#34;, instead of returning the token&#39;s app_id.
+    &#34;&#34;&#34;
+    error = body.get(&#34;error&#34;) if body is not None else None
+    if not isinstance(error, dict):
+        return False
+    message = error.get(&#34;message&#34;)  # type: ignore
+    return (
+        error.get(&#34;code&#34;) == 100  # type: ignore
+        and isinstance(message, str)
+        and &#34;did not match the viewing app&#34; in message.lower()
+    )
+
+
+async def check_facebook_access_token(
+    access_token: str, client_config: ProviderConfigForClient, client_ids: Set[str]
+) -&gt; None:
+    &#34;&#34;&#34;Facebook&#39;s debug token API needs an app access token, made from the client id and the client secret.&#34;&#34;&#34;
+    if client_config.client_secret is None:
+        raise ValueError(
+            &#34;The Facebook provider needs the client_secret of the client to check access tokens sent in &#34;
+            &#34;oAuthTokens. Please add it to the provider config, or set a custom validate_access_token.&#34;
+        )
+    client_id = get_actual_client_id_from_development_client_id(client_config.client_id)
+    status, body = await _do_access_token_check_request(
+        &#34;GET&#34;,
+        &#34;https://graph.facebook.com/debug_token&#34;,
+        query_params={
+            &#34;input_token&#34;: access_token,
+            &#34;access_token&#34;: f&#34;{client_id}|{client_config.client_secret}&#34;,
+        },
+    )
+    data = body.get(&#34;data&#34;) if body is not None else None
+    if status != 200 or not isinstance(data, dict):
+        if _is_facebook_error_for_token_of_another_app(body):
+            raise ValueError(ACCESS_TOKEN_DOES_NOT_BELONG_TO_APP)
+        raise ValueError(
+            f&#34;Could not check the access token with Facebook (status {status}). &#34;
+            &#34;Please check the client_id and client_secret of the Facebook provider.&#34;
+        )
+    if data.get(&#34;is_valid&#34;) is not True:  # type: ignore
+        raise ValueError(&#34;Invalid access token&#34;)
+    if not _is_one_of(data.get(&#34;app_id&#34;), client_ids):  # type: ignore
+        raise ValueError(ACCESS_TOKEN_DOES_NOT_BELONG_TO_APP)
+
+
+async def check_gitlab_access_token(
+    access_token: str, client_config: ProviderConfigForClient, client_ids: Set[str]
+) -&gt; None:
+    &#34;&#34;&#34;GitLab&#39;s token info API returns the application (client id) the token was issued to.&#34;&#34;&#34;
+    status, body = await _do_access_token_check_request(
+        &#34;GET&#34;,
+        _get_gitlab_base_url(client_config) + &#34;/oauth/token/info&#34;,
+        headers={&#34;Authorization&#34;: f&#34;Bearer {access_token}&#34;},
+    )
+    if status != 200 or body is None:
+        _raise_for_failed_check(&#34;GitLab&#34;, status, (401,))
+        return
+    application = body.get(&#34;application&#34;)
+    uid = application.get(&#34;uid&#34;) if isinstance(application, dict) else None  # type: ignore
+    if not _is_one_of(uid, client_ids):
+        raise ValueError(ACCESS_TOKEN_DOES_NOT_BELONG_TO_APP)
+
+
+def _get_gitlab_base_url(client_config: ProviderConfigForClient) -&gt; str:
+    well_known_suffix = &#34;/.well-known/openid-configuration&#34;
+    discovery_endpoint = client_config.oidc_discovery_endpoint
+    if discovery_endpoint is not None and discovery_endpoint.endswith(
+        well_known_suffix
+    ):
+        return discovery_endpoint[: -len(well_known_suffix)]
+    return &#34;https://gitlab.com&#34;
+
+
+async def check_discord_access_token(access_token: str, client_ids: Set[str]) -&gt; None:
+    &#34;&#34;&#34;
+    Discord&#39;s current authorization API returns the application the token was issued to. Discord&#39;s client id is
+    the application&#39;s id.
+    &#34;&#34;&#34;
+    status, body = await _do_access_token_check_request(
+        &#34;GET&#34;,
+        &#34;https://discord.com/api/oauth2/@me&#34;,
+        headers={&#34;Authorization&#34;: f&#34;Bearer {access_token}&#34;},
+    )
+    if status != 200 or body is None:
+        _raise_for_failed_check(&#34;Discord&#34;, status, (401,))
+        return
+    application = body.get(&#34;application&#34;)
+    app_id = application.get(&#34;id&#34;) if isinstance(application, dict) else None  # type: ignore
+    if not _is_one_of(app_id, client_ids):
+        raise ValueError(ACCESS_TOKEN_DOES_NOT_BELONG_TO_APP)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.providers.client_access_token_check.check_discord_access_token"><code class="name flex">
+<span>async def <span class="ident">check_discord_access_token</span></span>(<span>access_token: str, client_ids: Set[str]) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Discord's current authorization API returns the application the token was issued to. Discord's client id is
+the application's id.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.providers.client_access_token_check.check_facebook_access_token"><code class="name flex">
+<span>async def <span class="ident">check_facebook_access_token</span></span>(<span>access_token: str, client_config: ProviderConfigForClient, client_ids: Set[str]) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Facebook's debug token API needs an app access token, made from the client id and the client secret.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.providers.client_access_token_check.check_gitlab_access_token"><code class="name flex">
+<span>async def <span class="ident">check_gitlab_access_token</span></span>(<span>access_token: str, client_config: ProviderConfigForClient, client_ids: Set[str]) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>GitLab's token info API returns the application (client id) the token was issued to.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.providers.client_access_token_check.check_google_access_token"><code class="name flex">
+<span>async def <span class="ident">check_google_access_token</span></span>(<span>access_token: str, client_ids: Set[str]) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Google's token info API returns the client the token is for (aud) and the client that requested it (azp).
+They can differ, e.g. for tokens requested on Android or iOS for another client of the same Google Cloud
+project.</p></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.providers.client_access_token_check.ProviderWithClientAccessTokenCheck"><code class="flex name class">
+<span>class <span class="ident">ProviderWithClientAccessTokenCheck</span></span>
+<span>(</span><span>provider_config: <a title="supertokens_python.recipe.thirdparty.provider.ProviderConfig" href="../provider.html#supertokens_python.recipe.thirdparty.provider.ProviderConfig">ProviderConfig</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Before the user info is fetched with an access token that the client sent, calls check_client_access_token.</p>
+<p>The check is skipped:
+- if validate_access_token is set in the provider config (get_user_info runs that instead, as before)
+- for the access token the SDK got itself, by exchanging an authorisation code with the provider. This works
+because a new provider instance is created for every request.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ProviderWithClientAccessTokenCheck(GenericProvider):
+    &#34;&#34;&#34;
+    Before the user info is fetched with an access token that the client sent, calls check_client_access_token.
+
+    The check is skipped:
+    - if validate_access_token is set in the provider config (get_user_info runs that instead, as before)
+    - for the access token the SDK got itself, by exchanging an authorisation code with the provider. This works
+      because a new provider instance is created for every request.
+    &#34;&#34;&#34;
+
+    _access_token_from_code_exchange: Optional[str] = None
+
+    async def check_client_access_token(
+        self, access_token: str, client_ids: Set[str]
+    ) -&gt; None:
+        raise NotImplementedError()
+
+    async def exchange_auth_code_for_oauth_tokens(
+        self, redirect_uri_info: RedirectUriInfo, user_context: Dict[str, Any]
+    ) -&gt; Dict[str, Any]:
+        oauth_tokens = await super().exchange_auth_code_for_oauth_tokens(
+            redirect_uri_info, user_context
+        )
+        access_token = oauth_tokens.get(&#34;access_token&#34;)
+        if isinstance(access_token, str):
+            self._access_token_from_code_exchange = access_token
+        return oauth_tokens
+
+    async def get_user_info(
+        self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
+    ) -&gt; UserInfo:
+        access_token = oauth_tokens.get(&#34;access_token&#34;)
+        if (
+            self.config.validate_access_token is None
+            and isinstance(access_token, str)
+            and access_token != self._access_token_from_code_exchange
+        ):
+            await self.check_client_access_token(access_token, self._get_client_ids())
+        return await super().get_user_info(oauth_tokens, user_context)
+
+    def _get_client_ids(self) -&gt; Set[str]:
+        &#34;&#34;&#34;The client ids of every client of the provider (for this tenant)&#34;&#34;&#34;
+        client_ids: Set[str] = set()
+        for client in self.input_config.clients or []:
+            if client.client_id:
+                client_ids.add(
+                    get_actual_client_id_from_development_client_id(client.client_id)
+                )
+        if self.config.client_id:
+            client_ids.add(
+                get_actual_client_id_from_development_client_id(self.config.client_id)
+            )
+        return client_ids</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.thirdparty.providers.custom.GenericProvider" href="custom.html#supertokens_python.recipe.thirdparty.providers.custom.GenericProvider">GenericProvider</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.thirdparty.providers.discord.DiscordImpl" href="discord.html#supertokens_python.recipe.thirdparty.providers.discord.DiscordImpl">DiscordImpl</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.providers.facebook.FacebookImpl" href="facebook.html#supertokens_python.recipe.thirdparty.providers.facebook.FacebookImpl">FacebookImpl</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.providers.gitlab.GitlabImpl" href="gitlab.html#supertokens_python.recipe.thirdparty.providers.gitlab.GitlabImpl">GitlabImpl</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.providers.google.GoogleImpl" href="google.html#supertokens_python.recipe.thirdparty.providers.google.GoogleImpl">GoogleImpl</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.providers.client_access_token_check.ProviderWithClientAccessTokenCheck.check_client_access_token"><code class="name flex">
+<span>async def <span class="ident">check_client_access_token</span></span>(<span>self, access_token: str, client_ids: Set[str]) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.providers.client_access_token_check.ProviderWithClientAccessTokenCheck.exchange_auth_code_for_oauth_tokens"><code class="name flex">
+<span>async def <span class="ident">exchange_auth_code_for_oauth_tokens</span></span>(<span>self, redirect_uri_info: RedirectUriInfo, user_context: Dict[str, Any]) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.providers.client_access_token_check.ProviderWithClientAccessTokenCheck.get_user_info"><code class="name flex">
+<span>async def <span class="ident">get_user_info</span></span>(<span>self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.UserInfo" href="../types.html#supertokens_python.recipe.thirdparty.types.UserInfo">UserInfo</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h2>Index</h2>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers" href="index.html">supertokens_python.recipe.thirdparty.providers</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.client_access_token_check.check_discord_access_token" href="#supertokens_python.recipe.thirdparty.providers.client_access_token_check.check_discord_access_token">check_discord_access_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.client_access_token_check.check_facebook_access_token" href="#supertokens_python.recipe.thirdparty.providers.client_access_token_check.check_facebook_access_token">check_facebook_access_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.client_access_token_check.check_gitlab_access_token" href="#supertokens_python.recipe.thirdparty.providers.client_access_token_check.check_gitlab_access_token">check_gitlab_access_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.client_access_token_check.check_google_access_token" href="#supertokens_python.recipe.thirdparty.providers.client_access_token_check.check_google_access_token">check_google_access_token</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.providers.client_access_token_check.ProviderWithClientAccessTokenCheck" href="#supertokens_python.recipe.thirdparty.providers.client_access_token_check.ProviderWithClientAccessTokenCheck">ProviderWithClientAccessTokenCheck</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.client_access_token_check.ProviderWithClientAccessTokenCheck.check_client_access_token" href="#supertokens_python.recipe.thirdparty.providers.client_access_token_check.ProviderWithClientAccessTokenCheck.check_client_access_token">check_client_access_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.client_access_token_check.ProviderWithClientAccessTokenCheck.exchange_auth_code_for_oauth_tokens" href="#supertokens_python.recipe.thirdparty.providers.client_access_token_check.ProviderWithClientAccessTokenCheck.exchange_auth_code_for_oauth_tokens">exchange_auth_code_for_oauth_tokens</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.client_access_token_check.ProviderWithClientAccessTokenCheck.get_user_info" href="#supertokens_python.recipe.thirdparty.providers.client_access_token_check.ProviderWithClientAccessTokenCheck.get_user_info">get_user_info</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.0</a>.</p>
+</footer>
+</body>
+</html>

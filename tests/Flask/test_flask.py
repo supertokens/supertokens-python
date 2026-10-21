@@ -435,7 +435,7 @@ def test_thirdparty_parsing_works():
 
     test_client = driver_config_app.test_client()
     state = b64encode(
-        json.dumps({"frontendRedirectURI": "http://localhost:3000/redirect"}).encode()
+        json.dumps({"frontendRedirectURI": "http://supertokens.io/redirect"}).encode()
     ).decode()
     code = "testing"
 
@@ -446,7 +446,7 @@ def test_thirdparty_parsing_works():
     assert res.data == b""
     assert (
         res.headers["location"]
-        == f"http://localhost:3000/redirect?state={state.replace('=', '%3D')}&code={code}"
+        == f"http://supertokens.io/redirect?state={state.replace('=', '%3D')}&code={code}"
     )
 
 

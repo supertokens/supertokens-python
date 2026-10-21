@@ -528,6 +528,26 @@ class RecipeInterface(BaseRecipeInterface):
     ) -&gt; Union[SignInResponse, SignInErrorResponse]: ...
 
     @abstractmethod
+    async def complete_sign_in(
+        self,
+        *,
+        verified_credentials: VerifyCredentialsResponse,
+        session: Optional[SessionContainer] = None,
+        should_try_linking_with_session_user: Optional[bool] = None,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[SignInResponse, LinkingToSessionUserFailedError]:
+        &#34;&#34;&#34;
+        Runs the post-verification part of sign in (email verification propagation and
+        account linking) against an already-verified credential. Called by sign_in_post
+        after its verify_credentials guard so that the assertion is verified against the
+        core exactly once per request — verifying the same assertion twice trips the
+        core&#39;s signature-counter clone detection for counter-incrementing authenticators
+        (https://github.com/supertokens/supertokens-core/issues/1195).
+        &#34;&#34;&#34;
+        ...
+
+    @abstractmethod
     async def verify_credentials(
         self,
         *,
@@ -2157,6 +2177,26 @@ inheritance.</p></div>
     ) -&gt; Union[SignInResponse, SignInErrorResponse]: ...
 
     @abstractmethod
+    async def complete_sign_in(
+        self,
+        *,
+        verified_credentials: VerifyCredentialsResponse,
+        session: Optional[SessionContainer] = None,
+        should_try_linking_with_session_user: Optional[bool] = None,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[SignInResponse, LinkingToSessionUserFailedError]:
+        &#34;&#34;&#34;
+        Runs the post-verification part of sign in (email verification propagation and
+        account linking) against an already-verified credential. Called by sign_in_post
+        after its verify_credentials guard so that the assertion is verified against the
+        core exactly once per request — verifying the same assertion twice trips the
+        core&#39;s signature-counter clone detection for counter-incrementing authenticators
+        (https://github.com/supertokens/supertokens-core/issues/1195).
+        &#34;&#34;&#34;
+        ...
+
+    @abstractmethod
     async def verify_credentials(
         self,
         *,
@@ -2299,6 +2339,17 @@ inheritance.</p></div>
 </ul>
 <h3>Methods</h3>
 <dl>
+<dt id="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.complete_sign_in"><code class="name flex">
+<span>async def <span class="ident">complete_sign_in</span></span>(<span>self, *, verified_credentials: <a title="supertokens_python.recipe.webauthn.interfaces.recipe.VerifyCredentialsResponse" href="#supertokens_python.recipe.webauthn.interfaces.recipe.VerifyCredentialsResponse">VerifyCredentialsResponse</a>, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, should_try_linking_with_session_user: Optional[bool] = None, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.SignInResponse" href="#supertokens_python.recipe.webauthn.interfaces.recipe.SignInResponse">SignInResponse</a>, <a title="supertokens_python.types.auth_utils.LinkingToSessionUserFailedError" href="../../../types/auth_utils.html#supertokens_python.types.auth_utils.LinkingToSessionUserFailedError">LinkingToSessionUserFailedError</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Runs the post-verification part of sign in (email verification propagation and
+account linking) against an already-verified credential. Called by sign_in_post
+after its verify_credentials guard so that the assertion is verified against the
+core exactly once per request — verifying the same assertion twice trips the
+core's signature-counter clone detection for counter-incrementing authenticators
+(<a href="https://github.com/supertokens/supertokens-core/issues/1195">https://github.com/supertokens/supertokens-core/issues/1195</a>).</p></div>
+</dd>
 <dt id="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.consume_recover_account_token"><code class="name flex">
 <span>async def <span class="ident">consume_recover_account_token</span></span>(<span>self, *, token: str, tenant_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.webauthn.interfaces.recipe.ConsumeRecoverAccountTokenResponse" href="#supertokens_python.recipe.webauthn.interfaces.recipe.ConsumeRecoverAccountTokenResponse">ConsumeRecoverAccountTokenResponse</a>, <a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse" href="#supertokens_python.recipe.webauthn.interfaces.recipe.RecoverAccountTokenInvalidErrorResponse">RecoverAccountTokenInvalidErrorResponse</a>]</span>
 </code></dt>
@@ -3407,6 +3458,7 @@ validated to form a valid model.</p>
 <li>
 <h4><code><a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface" href="#supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface">RecipeInterface</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.complete_sign_in" href="#supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.complete_sign_in">complete_sign_in</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.consume_recover_account_token" href="#supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.consume_recover_account_token">consume_recover_account_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.create_new_recipe_user" href="#supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.create_new_recipe_user">create_new_recipe_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.generate_recover_account_token" href="#supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.generate_recover_account_token">generate_recover_account_token</a></code></li>

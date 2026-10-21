@@ -312,6 +312,11 @@ class SessionRecipe(RecipeModule):
         ):
             raise_general_exception("calling testing function in non testing env")
         SessionRecipe.__instance = None
+        # The JWKS cache and its refetch cooldown are module level, so a test (or a test server
+        # init) that switches to a new core app must not inherit the previous app's keys
+        from .jwks import reset_jwks_cache
+
+        reset_jwks_cache()
 
     def add_claim_from_other_recipe(self, claim: SessionClaim[Any]):
         # We are throwing here (and not in addClaimValidatorFromOtherRecipe) because if multiple

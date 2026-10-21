@@ -43,4 +43,5 @@ protected_props = [
     "antiCsrfToken",
     "rsub",
     "tId",
+    "stt",
 ]

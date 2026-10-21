@@ -40,6 +40,7 @@ from supertokens_python.recipe.multifactorauth.multi_factor_auth_claim import (
 from supertokens_python.recipe.multifactorauth.recipe import MultiFactorAuthRecipe
 from supertokens_python.recipe.multifactorauth.types import FactorIds
 from supertokens_python.recipe.session.interfaces import SessionContainer
+from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe.webauthn.constants import (
     DEFAULT_REGISTER_OPTIONS_ATTESTATION,
     DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY,
@@ -381,6 +382,12 @@ class APIImplementation(APIInterface):
         )
 
         if verify_result_response.status != "OK":
+            reason = getattr(verify_result_response, "reason", None)
+            log_debug_message(
+                "sign_in_post: returning INVALID_CREDENTIALS_ERROR because "
+                f"verify_credentials returned {verify_result_response.status}"
+                + (f" (reason: {reason})" if reason is not None else "")
+            )
             return InvalidCredentialsErrorResponse()
 
         generated_options_response = (
@@ -392,6 +399,10 @@ class APIImplementation(APIInterface):
         )
 
         if generated_options_response.status != "OK":
+            log_debug_message(
+                "sign_in_post: returning INVALID_CREDENTIALS_ERROR because "
+                f"get_generated_options returned {generated_options_response.status}"
+            )
             return InvalidCredentialsErrorResponse()
 
         async def check_credentials_on_tenant(tenant_id: str):
@@ -470,29 +481,18 @@ class APIImplementation(APIInterface):
             # Fake emails cannot be used as a first factor
             return InvalidCredentialsErrorResponse()
 
-        sign_in_response = await options.recipe_implementation.sign_in(
-            webauthn_generated_options_id=webauthn_generated_options_id,
-            credential=credential,
+        # The credential was already verified against the core by the verify_credentials
+        # call above, so we only run the post-verification steps here. Calling sign_in
+        # (which verifies again) would present the same assertion to the core twice and
+        # trip its signature-counter clone detection for counter-incrementing
+        # authenticators (https://github.com/supertokens/supertokens-core/issues/1195).
+        sign_in_response = await options.recipe_implementation.complete_sign_in(
+            verified_credentials=verify_result_response,
             session=session,
             should_try_linking_with_session_user=should_try_linking_with_session_user,
             tenant_id=tenant_id,
             user_context=user_context,
         )
-
-        if isinstance(sign_in_response, InvalidCredentialsErrorResponse):
-            return sign_in_response
-
-        if isinstance(
-            sign_in_response,
-            (
-                InvalidOptionsErrorResponse,
-                InvalidAuthenticatorErrorResponse,
-                CredentialNotFoundErrorResponse,
-                UnknownUserIdErrorResponse,
-                OptionsNotFoundErrorResponse,
-            ),
-        ):
-            return InvalidCredentialsErrorResponse()
 
         if sign_in_response.status != "OK":
             return SignInNotAllowedErrorResponse(
@@ -707,6 +707,27 @@ class APIImplementation(APIInterface):
                 )
                 return OkResponseBaseModel()
 
+            # Registration options generated from a recover account token use the email of the primary user's root
+            # login method (the one whose recipe user id is the primary user id), because the token's email can't be
+            # looked up without consuming the token. So recovery through another email of the user can't succeed,
+            # and we don't send a token for it.
+            root_login_method = next(
+                (
+                    lm
+                    for lm in primary_user_associated_with_email.login_methods
+                    if lm.recipe_user_id.get_as_string()
+                    == primary_user_associated_with_email.id
+                ),
+                None,
+            )
+            if root_login_method is None or not root_login_method.has_same_email_as(
+                email
+            ):
+                log_debug_message(
+                    f"Recover account email not sent, since {email} is not the email of the primary user's root login method"
+                )
+                return OkResponseBaseModel()
+
             is_sign_up_allowed = await AccountLinkingRecipe.get_instance().is_sign_up_allowed(
                 new_user=AccountInfoWithRecipeId(
                     recipe_id="webauthn",
@@ -851,6 +872,44 @@ class APIImplementation(APIInterface):
             InvalidAuthenticatorErrorResponse,
             GeneralErrorResponse,
         ]:
+            # If the email of this recipe user was not verified before this recovery, its existing credentials
+            # and sessions were not created by someone proven to own the email. We revoke the sessions before
+            # registering the new credential (the credential APIs check the session in the database, so they can't
+            # add credentials after this), and remove every other credential once the new one is registered.
+            user_before_recovery = await get_user(
+                user_id=recipe_user_id.get_as_string(),
+                user_context=user_context,
+            )
+            login_method_before_recovery = (
+                next(
+                    (
+                        lm
+                        for lm in user_before_recovery.login_methods
+                        if lm.recipe_user_id.get_as_string()
+                        == recipe_user_id.get_as_string()
+                    ),
+                    None,
+                )
+                if user_before_recovery is not None
+                else None
+            )
+            was_email_verified_before_recovery = (
+                login_method_before_recovery is not None
+                and login_method_before_recovery.verified
+                and login_method_before_recovery.has_same_email_as(
+                    email_for_whom_token_was_generated
+                )
+            )
+
+            if not was_email_verified_before_recovery:
+                await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(
+                    user_id=recipe_user_id.get_as_string(),
+                    revoke_sessions_for_linked_accounts=False,
+                    tenant_id=tenant_id,
+                    revoke_across_all_tenants=True,
+                    user_context=user_context,
+                )
+
             update_response = await options.recipe_implementation.register_credential(
                 webauthn_generated_options_id=webauthn_generated_options_id,
                 credential=credential,
@@ -882,6 +941,21 @@ class APIImplementation(APIInterface):
             # 3. User A: recovers the account, but somehow this fails
             # If we verified (and linked) the existing user with the original credential, User M would get access to the
             # current user and any linked users.
+            if not was_email_verified_before_recovery:
+                credentials_after_registration = (
+                    await options.recipe_implementation.list_credentials(
+                        recipe_user_id=recipe_user_id.get_as_string(),
+                        user_context=user_context,
+                    )
+                )
+                for existing_credential in credentials_after_registration.credentials:
+                    if existing_credential.webauthn_credential_id == credential.id:
+                        continue
+                    await options.recipe_implementation.remove_credential(
+                        webauthn_credential_id=existing_credential.webauthn_credential_id,
+                        recipe_user_id=recipe_user_id.get_as_string(),
+                        user_context=user_context,
+                    )
 
             await mark_email_as_verified(
                 recipe_user_id=recipe_user_id, email=email_for_whom_token_was_generated
@@ -926,6 +1000,16 @@ class APIImplementation(APIInterface):
                 user=user_after_we_tried_linking,
             )
 
+        # We load the generated options before consuming the token, since this doesn't consume anything
+        generated_options = await options.recipe_implementation.get_generated_options(
+            webauthn_generated_options_id=webauthn_generated_options_id,
+            tenant_id=tenant_id,
+            user_context=user_context,
+        )
+
+        if isinstance(generated_options, OptionsNotFoundErrorResponse):
+            return generated_options
+
         token_consumption_response = (
             await options.recipe_implementation.consume_recover_account_token(
                 token=token,
@@ -941,6 +1025,18 @@ class APIImplementation(APIInterface):
 
         user_id_for_whom_token_was_generated = token_consumption_response.user_id
         email_for_whom_token_was_generated = token_consumption_response.email
+
+        # The credential must be registered using options generated for the email the token was sent to.
+        # This uses the same normalisation as LoginMethod.has_same_email_as
+        if (
+            generated_options.email is None
+            or generated_options.email.lower().strip()
+            != email_for_whom_token_was_generated.lower().strip()
+        ):
+            log_debug_message(
+                "recover_account_post: returning INVALID_OPTIONS_ERROR because the options were generated for a different email than the token"
+            )
+            return InvalidOptionsErrorResponse()
 
         existing_user = await get_user(
             user_id=token_consumption_response.user_id,
@@ -1001,6 +1097,24 @@ class APIImplementation(APIInterface):
         # when it comes here, only a new recipe user id will be created and not linked
         # cause createPrimaryUserIdOrLinkAccounts will disallow linking. This doesn't
         # really cause any security issue.
+
+        is_sign_up_allowed = await AccountLinkingRecipe.get_instance().is_sign_up_allowed(
+            new_user=AccountInfoWithRecipeId(
+                recipe_id="webauthn",
+                email=email_for_whom_token_was_generated,
+            ),
+            is_verified=True,  # Because we mark the email as verified after creating the user
+            session=None,
+            tenant_id=tenant_id,
+            user_context=user_context,
+        )
+
+        if not is_sign_up_allowed:
+            log_debug_message(
+                "recover_account_post: returning RECOVER_ACCOUNT_TOKEN_INVALID_ERROR because is_sign_up_allowed returned false"
+            )
+            return RecoverAccountTokenInvalidErrorResponse()
+
         create_user_response = (
             await options.recipe_implementation.create_new_recipe_user(
                 tenant_id=tenant_id,

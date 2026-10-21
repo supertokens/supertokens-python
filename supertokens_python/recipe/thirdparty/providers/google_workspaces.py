@@ -20,6 +20,7 @@ from ..provider import (
     ProviderConfigForClient,
     ProviderInput,
 )
+from ..types import UserInfo
 from .google import Google, GoogleImpl
 
 
@@ -38,6 +39,29 @@ class GoogleWorkspacesImpl(GoogleImpl):
         }
 
         return config
+
+    async def get_user_info(
+        self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
+    ) -> UserInfo:
+        user_info = await super().get_user_info(oauth_tokens, user_context)
+
+        hd = (self.config.additional_config or {}).get("hd")
+        if hd is not None and hd != "*":
+            # If an id token was verified, validate_id_token_payload has checked its hd claim.
+            # Otherwise we require the user info response to have the right hd value.
+            id_token_was_verified = (
+                oauth_tokens.get("id_token") is not None
+                and self.config.jwks_uri is not None
+            )
+            from_user_info_api = (
+                user_info.raw_user_info_from_provider.from_user_info_api or {}
+            )
+            if not id_token_was_verified and from_user_info_api.get("hd") != hd:
+                raise Exception(
+                    "the value for hd in the user info response does not match the value provided in the config"
+                )
+
+        return user_info
 
 
 def GoogleWorkspaces(

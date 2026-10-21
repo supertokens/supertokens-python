@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Set
 
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -24,11 +24,20 @@ from supertokens_python.recipe.thirdparty.provider import (
 )
 
 from ..provider import ProviderInput
-from .custom import GenericProvider, NewProvider
+from .client_access_token_check import (
+    ProviderWithClientAccessTokenCheck,
+    check_gitlab_access_token,
+)
+from .custom import NewProvider
 from .utils import normalise_oidc_endpoint_to_include_well_known
 
 
-class GitlabImpl(GenericProvider):
+class GitlabImpl(ProviderWithClientAccessTokenCheck):
+    async def check_client_access_token(
+        self, access_token: str, client_ids: Set[str]
+    ) -> None:
+        await check_gitlab_access_token(access_token, self.config, client_ids)
+
     async def get_config_for_client_type(
         self, client_type: Optional[str], user_context: Dict[str, Any]
     ) -> ProviderConfigForClient:

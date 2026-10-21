@@ -615,7 +615,18 @@ class APIImplementation(APIInterface):
             reason = reason_dict[pre_auth_checks_result.reason]
             return SignInPostNotAllowedResponse(reason=reason)
 
-        if is_fake_email(email) and pre_auth_checks_result.is_first_factor:
+        # We check the stored email of the matched login method as well, not just the one in the request
+        authenticating_email = (
+            authenticating_user.login_method.email
+            if authenticating_user.login_method is not None
+            else None
+        )
+        if (
+            is_fake_email(email)
+            or (
+                authenticating_email is not None and is_fake_email(authenticating_email)
+            )
+        ) and pre_auth_checks_result.is_first_factor:
             return WrongCredentialsError()
 
         sign_in_response = await api_options.recipe_implementation.sign_in(
