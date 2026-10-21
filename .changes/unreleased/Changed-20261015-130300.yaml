@@ -1,3 +1,0 @@
-kind: Changed
-body: 'dashboard: an empty or whitespace-only `api_key` is now treated as not set, so the dashboard uses its own sign in. In API key mode, the `Authorization` header must now be exactly `Bearer <api_key>`.'
-time: 2026-10-15T13:03:00.000000+00:00

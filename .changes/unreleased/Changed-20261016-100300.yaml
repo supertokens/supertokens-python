@@ -1,3 +1,0 @@
-kind: Changed
-body: 'totp: removing a device without completing multi-factor auth is now only allowed when the only device with that name is unverified and no verified device has the same name (compared case-insensitively).'
-time: 2026-10-16T10:03:00.000000+00:00

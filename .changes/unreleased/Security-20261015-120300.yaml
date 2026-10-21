@@ -1,3 +1,0 @@
-kind: Security
-body: 'accountlinking: when `should_require_verification` is `True`, automatic account linking now also requires the matching email to be verified in the primary user (as it already did for phone numbers). Apps using `should_require_verification=True` now get no link in this case, which was always the documented intent.'
-time: 2026-10-15T12:03:00.000000+00:00

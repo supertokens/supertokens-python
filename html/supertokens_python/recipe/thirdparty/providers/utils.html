@@ -98,6 +98,27 @@ async def do_post_request(
             return res.status_code, {&#34;message&#34;: res.text}
 
 
+async def do_post_request_with_json_body(
+    url: str,
+    body_params: Dict[str, Any],
+    headers: Optional[Dict[str, str]] = None,
+) -&gt; Tuple[int, Dict[str, Any]]:
+    &#34;&#34;&#34;Sends body_params as a JSON body, for APIs that don&#39;t accept form data&#34;&#34;&#34;
+    request_headers = {&#34;accept&#34;: &#34;application/json&#34;}
+    for key, value in (headers or {}).items():
+        request_headers[key.lower()] = value
+    request_headers[&#34;content-type&#34;] = &#34;application/json&#34;
+
+    async with AsyncClient(timeout=30.0) as client:
+        res = await client.post(url, json=body_params, headers=request_headers)  # type:ignore
+        # The body isn&#39;t logged, since it can contain the token that was sent
+        log_debug_message(&#34;Received response with status %s&#34;, res.status_code)
+        try:
+            return res.status_code, res.json()
+        except Exception:
+            return res.status_code, {&#34;message&#34;: res.text}
+
+
 def normalise_oidc_endpoint_to_include_well_known(url: str) -&gt; str:
     # We call this only for built-in providers that use OIDC.
     # We no longer generically add well-known in the custom provider
@@ -139,6 +160,12 @@ def normalise_oidc_endpoint_to_include_well_known(url: str) -&gt; str:
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="supertokens_python.recipe.thirdparty.providers.utils.do_post_request_with_json_body"><code class="name flex">
+<span>async def <span class="ident">do_post_request_with_json_body</span></span>(<span>url: str, body_params: Dict[str, Any], headers: Optional[Dict[str, str]] = None) ‑> Tuple[int, Dict[str, Any]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Sends body_params as a JSON body, for APIs that don't accept form data</p></div>
+</dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.utils.get_actual_client_id_from_development_client_id"><code class="name flex">
 <span>def <span class="ident">get_actual_client_id_from_development_client_id</span></span>(<span>client_id: str) ‑> str</span>
 </code></dt>
@@ -177,6 +204,7 @@ def normalise_oidc_endpoint_to_include_well_known(url: str) -&gt; str:
 <ul class="">
 <li><code><a title="supertokens_python.recipe.thirdparty.providers.utils.do_get_request" href="#supertokens_python.recipe.thirdparty.providers.utils.do_get_request">do_get_request</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.providers.utils.do_post_request" href="#supertokens_python.recipe.thirdparty.providers.utils.do_post_request">do_post_request</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.utils.do_post_request_with_json_body" href="#supertokens_python.recipe.thirdparty.providers.utils.do_post_request_with_json_body">do_post_request_with_json_body</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.providers.utils.get_actual_client_id_from_development_client_id" href="#supertokens_python.recipe.thirdparty.providers.utils.get_actual_client_id_from_development_client_id">get_actual_client_id_from_development_client_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.providers.utils.is_using_oauth_development_client_id" href="#supertokens_python.recipe.thirdparty.providers.utils.is_using_oauth_development_client_id">is_using_oauth_development_client_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.providers.utils.normalise_oidc_endpoint_to_include_well_known" href="#supertokens_python.recipe.thirdparty.providers.utils.normalise_oidc_endpoint_to_include_well_known">normalise_oidc_endpoint_to_include_well_known</a></code></li>

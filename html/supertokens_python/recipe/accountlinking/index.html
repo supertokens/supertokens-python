@@ -972,19 +972,11 @@ inheritance.</p></div>
                             status=&#34;NO_LINK&#34;, user=None
                         )
 
-                    account_info_verified_in_prim_user = any(
-                        (
-                            input_user.login_methods[0].email is not None
-                            and lm.has_same_email_as(input_user.login_methods[0].email)
+                    account_info_verified_in_prim_user = (
+                        has_verified_login_method_with_same_account_info(
+                            primary_user_that_can_be_linked_to_the_input_user,
+                            input_user.login_methods[0],
                         )
-                        or (
-                            input_user.login_methods[0].phone_number is not None
-                            and lm.has_same_phone_number_as(
-                                input_user.login_methods[0].phone_number
-                            )
-                            and lm.verified
-                        )
-                        for lm in primary_user_that_can_be_linked_to_the_input_user.login_methods
                     )
                     if should_do_account_linking.should_require_verification and (
                         not input_user.login_methods[0].verified
@@ -1097,12 +1089,15 @@ inheritance.</p></div>
                             status=&#34;NO_LINK&#34;, user=None
                         )
 
-                    if (
-                        should_do_account_linking.should_require_verification
-                        and not input_user.login_methods[0].verified
+                    if should_do_account_linking.should_require_verification and (
+                        not input_user.login_methods[0].verified
+                        or not has_verified_login_method_with_same_account_info(
+                            create_primary_user_result.user,
+                            input_user.login_methods[0],
+                        )
                     ):
                         log_debug_message(
-                            &#34;try_linking_by_account_info_or_create_primary_user: not linking because shouldRequireVerification is true but the login method is not verified&#34;
+                            &#34;try_linking_by_account_info_or_create_primary_user: not linking because shouldRequireVerification is true but the login method is not verified in the new or the primary user&#34;
                         )
                         return TryLinkingByAccountInfoOrCreatePrimaryUserResult(
                             status=&#34;NO_LINK&#34;, user=None

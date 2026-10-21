@@ -46,7 +46,12 @@ from typing import TYPE_CHECKING, Optional, Union
 
 from .provider import ProviderClientConfig, ProviderConfig, ProviderInput
 from .recipe import ThirdPartyRecipe
-from .utils import InputOverrideConfig, SignInAndUpFeature, ThirdPartyOverrideConfig
+from .utils import (
+    InputOverrideConfig,
+    SignInAndUpFeature,
+    ThirdPartyOverrideConfig,
+    TypeIsValidFrontendRedirectURIFunction,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import RecipeInit
@@ -55,10 +60,20 @@ if TYPE_CHECKING:
 def init(
     sign_in_and_up_feature: Optional[SignInAndUpFeature] = None,
     override: Union[ThirdPartyOverrideConfig, None] = None,
+    is_valid_frontend_redirect_uri: Optional[
+        TypeIsValidFrontendRedirectURIFunction
+    ] = None,
 ) -&gt; RecipeInit:
+    &#34;&#34;&#34;
+    `is_valid_frontend_redirect_uri` decides whether the Apple form_post callback may redirect
+    to the frontend redirect URI from the `state` sent to Apple. See
+    `TypeIsValidFrontendRedirectURIFunction` for details.
+    &#34;&#34;&#34;
     if sign_in_and_up_feature is None:
         sign_in_and_up_feature = SignInAndUpFeature()
-    return ThirdPartyRecipe.init(sign_in_and_up_feature, override)
+    return ThirdPartyRecipe.init(
+        sign_in_and_up_feature, override, is_valid_frontend_redirect_uri
+    )
 
 
 __all__ = [
@@ -69,6 +84,7 @@ __all__ = [
     &#34;SignInAndUpFeature&#34;,
     &#34;ThirdPartyOverrideConfig&#34;,
     &#34;ThirdPartyRecipe&#34;,
+    &#34;TypeIsValidFrontendRedirectURIFunction&#34;,
     &#34;init&#34;,
 ]</code></pre>
 </details>
@@ -132,10 +148,12 @@ __all__ = [
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>sign_in_and_up_feature: Optional[<a title="supertokens_python.recipe.thirdparty.SignInAndUpFeature" href="#supertokens_python.recipe.thirdparty.SignInAndUpFeature">SignInAndUpFeature</a>] = None, override: Union[<a title="supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a>, None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>sign_in_and_up_feature: Optional[<a title="supertokens_python.recipe.thirdparty.SignInAndUpFeature" href="#supertokens_python.recipe.thirdparty.SignInAndUpFeature">SignInAndUpFeature</a>] = None, override: Union[<a title="supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a>, None] = None, is_valid_frontend_redirect_uri: Optional[TypeIsValidFrontendRedirectURIFunction] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p><code>is_valid_frontend_redirect_uri</code> decides whether the Apple form_post callback may redirect
+to the frontend redirect URI from the <code>state</code> sent to Apple. See
+<code>TypeIsValidFrontendRedirectURIFunction</code> for details.</p></div>
 </dd>
 </dl>
 </section>
@@ -577,11 +595,15 @@ inheritance.</p></div>
     def init(
         sign_in_and_up_feature: SignInAndUpFeature,
         override: Union[ThirdPartyOverrideConfig, None] = None,
+        is_valid_frontend_redirect_uri: Optional[
+            TypeIsValidFrontendRedirectURIFunction
+        ] = None,
     ):
         from supertokens_python.plugins import OverrideMap, apply_plugins
 
         config = ThirdPartyConfig(
             sign_in_and_up_feature=sign_in_and_up_feature,
+            is_valid_frontend_redirect_uri=is_valid_frontend_redirect_uri,
             override=override,
         )
 
@@ -644,7 +666,7 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.ThirdPartyRecipe.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>sign_in_and_up_feature: <a title="supertokens_python.recipe.thirdparty.SignInAndUpFeature" href="#supertokens_python.recipe.thirdparty.SignInAndUpFeature">SignInAndUpFeature</a>, override: Union[<a title="supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a>, None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>sign_in_and_up_feature: <a title="supertokens_python.recipe.thirdparty.SignInAndUpFeature" href="#supertokens_python.recipe.thirdparty.SignInAndUpFeature">SignInAndUpFeature</a>, override: Union[<a title="supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]" href="#supertokens_python.recipe.thirdparty.BaseOverrideConfig[RecipeInterface, APIInterface]">BaseOverrideConfig[RecipeInterface, APIInterface]</a>, None] = None, is_valid_frontend_redirect_uri: Optional[TypeIsValidFrontendRedirectURIFunction] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

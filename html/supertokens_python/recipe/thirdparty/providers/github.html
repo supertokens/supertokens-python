@@ -46,7 +46,7 @@ from typing import Any, Dict, List, Optional
 
 from supertokens_python.recipe.thirdparty.providers.utils import (
     do_get_request,
-    do_post_request,
+    do_post_request_with_json_body,
 )
 from supertokens_python.recipe.thirdparty.types import UserInfo, UserInfoEmail
 
@@ -69,8 +69,14 @@ class GithubImpl(GenericProvider):
     async def get_user_info(
         self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
     ) -&gt; UserInfo:
+        access_token: Optional[str] = oauth_tokens.get(&#34;access_token&#34;)
+        if access_token is not None and self.config.validate_access_token is not None:
+            await self.config.validate_access_token(
+                access_token, self.config, user_context
+            )
+
         headers = {
-            &#34;Authorization&#34;: f&#34;Bearer {oauth_tokens.get(&#39;access_token&#39;)}&#34;,
+            &#34;Authorization&#34;: f&#34;Bearer {access_token}&#34;,
             &#34;Accept&#34;: &#34;application/vnd.github.v3+json&#34;,
         }
 
@@ -123,18 +129,31 @@ def Github(input: ProviderInput) -&gt; Provider:  # pylint: disable=redefined-bu
 async def validate_access_token(
     access_token: str, config: ProviderConfigForClient, _: Dict[str, Any]
 ):
-    client_secret = &#34;&#34; if config.client_secret is None else config.client_secret
+    if config.client_secret is None:
+        raise ValueError(
+            &#34;The GitHub provider needs the client_secret of the client to validate access tokens. &#34;
+            &#34;Please add it to the provider config, or set a custom validate_access_token.&#34;
+        )
     basic_auth_token = base64.b64encode(
-        f&#34;{config.client_id}:{client_secret}&#34;.encode()
+        f&#34;{config.client_id}:{config.client_secret}&#34;.encode()
     ).decode()
 
     url = f&#34;https://api.github.com/applications/{config.client_id}/token&#34;
     headers = {
         &#34;Authorization&#34;: f&#34;Basic {basic_auth_token}&#34;,
-        &#34;Content-Type&#34;: &#34;application/json&#34;,
+        &#34;Accept&#34;: &#34;application/vnd.github+json&#34;,
     }
 
-    status, body = await do_post_request(url, {&#34;access_token&#34;: access_token}, headers)
+    # GitHub&#39;s token check API only accepts a JSON body, so we can&#39;t use do_post_request (which sends form data)
+    status, body = await do_post_request_with_json_body(
+        url, {&#34;access_token&#34;: access_token}, headers
+    )
+    if status in (401, 403):
+        raise ValueError(
+            &#34;GitHub rejected the client credentials used to validate the access token. &#34;
+            &#34;Please check the client_id and client_secret of the GitHub provider.&#34;
+        )
+
     if status != 200:
         raise ValueError(&#34;Invalid access token&#34;)
 
@@ -190,8 +209,14 @@ async def validate_access_token(
     async def get_user_info(
         self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
     ) -&gt; UserInfo:
+        access_token: Optional[str] = oauth_tokens.get(&#34;access_token&#34;)
+        if access_token is not None and self.config.validate_access_token is not None:
+            await self.config.validate_access_token(
+                access_token, self.config, user_context
+            )
+
         headers = {
-            &#34;Authorization&#34;: f&#34;Bearer {oauth_tokens.get(&#39;access_token&#39;)}&#34;,
+            &#34;Authorization&#34;: f&#34;Bearer {access_token}&#34;,
             &#34;Accept&#34;: &#34;application/vnd.github.v3+json&#34;,
         }
 

@@ -449,7 +449,7 @@ class RecipeImplementation(RecipeInterface):
         if email is not None:
             data = {**data, &#34;email&#34;: email}
         if phone_number is not None:
-            data = {**data, &#34;email&#34;: phone_number}
+            data = {**data, &#34;phoneNumber&#34;: phone_number}
         await self.querier.send_post_request(
             NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes/remove&#34;),
             data,
@@ -972,7 +972,7 @@ inheritance.</p></div>
         if email is not None:
             data = {**data, &#34;email&#34;: email}
         if phone_number is not None:
-            data = {**data, &#34;email&#34;: phone_number}
+            data = {**data, &#34;phoneNumber&#34;: phone_number}
         await self.querier.send_post_request(
             NormalisedURLPath(f&#34;{tenant_id}/recipe/signinup/codes/remove&#34;),
             data,
