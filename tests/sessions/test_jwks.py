@@ -238,6 +238,9 @@ async def test_that_jwks_are_refresh_if_kid_is_unknown(caplog: LogCaptureFixture
     )
     new_token = ".".join([new_header, payload, signature])
 
+    # an unknown kid only triggers a refresh if the keys were not fetched in the last 500ms
+    time.sleep(0.6)
+
     with pytest.raises(Exception) as e:
         await get_session_without_request_response(
             new_token, tokens.get("antiCsrfToken")
@@ -709,8 +712,9 @@ def client():
 async def test_session_verification_of_jwt_with_dynamic_signing_key_mode_works_as_expected(
     client: TestClient,
 ):
+    core_url = get_new_core_app_url()
     args = get_st_init_args(
-        url=get_new_core_app_url(),
+        url=core_url,
         recipe_list=[session.init(use_dynamic_access_token_signing_key=False)],
     )
     init(**args)
@@ -729,9 +733,10 @@ async def test_session_verification_of_jwt_with_dynamic_signing_key_mode_works_a
 
     reset()
 
-    # initalize again with use_dynamic_access_token_signing_key=True
+    # initalize again with use_dynamic_access_token_signing_key=True, on the same core app: only the
+    # setting changes, so the token's key must still be found (reset() also clears the JWKS cache)
     args = get_st_init_args(
-        url=get_new_core_app_url(),
+        url=core_url,
         recipe_list=[session.init(use_dynamic_access_token_signing_key=True)],
     )
     init(**args)

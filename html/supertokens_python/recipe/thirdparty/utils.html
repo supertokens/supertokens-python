@@ -41,11 +41,26 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set
+import re
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    Union,
+)
+from urllib.parse import quote, unquote_plus, urlencode, urlsplit
 
 from jwt import PyJWKClient, decode  # type: ignore
 
 from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.framework import BaseRequest
+from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.thirdparty.provider import ProviderInput
 from supertokens_python.types.config import (
     BaseConfig,
@@ -89,10 +104,63 @@ InputOverrideConfig = ThirdPartyOverrideConfig
 &#34;&#34;&#34;Deprecated: Use `ThirdPartyOverrideConfig` instead.&#34;&#34;&#34;
 
 
+TypeIsValidFrontendRedirectURIFunction = Callable[
+    [str, BaseRequest, Dict[str, Any]], Union[bool, Awaitable[bool]]
+]
+&#34;&#34;&#34;
+Decides whether the Apple form_post callback may redirect the user to the frontend redirect URI
+(taken from the `state` sent to Apple). Called with the frontend redirect URI, the request and
+the user context. If set, this replaces the default check, which only allows absolute http(s)
+URLs whose scheme, host and port match the configured `origin` / `website_domain`.
+
+Set this if your `origin` depends on the request (the callback arrives as a POST from Apple, so
+request based origin resolution may not identify your frontend), if one backend serves several
+frontends, or to allow other redirect targets, such as https universal/app links or custom-scheme
+mobile deep links (e.g. `myapp://callback`).
+
+Returning `True` allows the redirect, returning `False` rejects the request with a 400 and no
+redirect. Exceptions raised by this function are propagated and no redirect is done. The function
+may be sync or async.
+
+The function is only called for absolute URLs. http(s) URLs must have a host, and `javascript:`,
+`data:`, `vbscript:`, `file:`, `blob:`, `about:` and `filesystem:` URLs are always rejected
+without calling it. Browsers and Python&#39;s URL parsing can disagree on where some URLs point, and a
+Location header can&#39;t carry a non-ASCII host, so these are always rejected without calling it too:
+
+- URLs containing a backslash, whitespace, a C0 control character or DEL,
+- http(s) URLs with a username or password (e.g. `https://user@app.example.com/`),
+- http(s) URLs with a `%` in the host, which browsers percent-decode (e.g.
+  `https://app%2eexample.com/` opens `https://app.example.com/`),
+- http(s) URLs with a non-ASCII host: use its punycode form instead, as browsers do (e.g.
+  `https://xn--bcher-kva.example/` instead of `https://bücher.example/`).
+
+The frontend redirect URI is passed in the normalised form we redirect to, without the fields
+Apple posted, which are added to its query afterwards: the scheme is lowercased, for http(s) URLs
+the host is lowercased, a default port is dropped and an empty path becomes `/`, dot segments
+(`.` and `..`, also written as `%2e`) are removed from paths that start with `/`, and non-ASCII
+characters are percent-encoded (as UTF-8). For example, `HTTPS://App.Example.com/a/../cb` is passed
+as `https://app.example.com/cb`.
+
+The whole `state` is chosen by whoever starts the sign in, so treat the URI as untrusted. Parse it
+(e.g. with `urllib.parse.urlsplit`) and compare its parts, such as the scheme, host, port and path,
+with the values you allow, instead of comparing it as a string. In particular, don&#39;t use prefix or
+substring checks: for example, `https://app.example.com.evil.test/` starts with
+`https://app.example.com`, and in `intent://callback#Intent;package=...;end` the receiving app is
+chosen by the fragment.
+
+The redirect carries the authorization code and the `id_token` from Apple. Custom URL schemes are
+not owned by a single app: any app installed on the device can register the same scheme and receive
+them. Prefer verified https universal / app links for mobile redirects where possible.
+&#34;&#34;&#34;
+
+
 class ThirdPartyOverrideableConfig(BaseOverrideableConfig):
     &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
 
     sign_in_and_up_feature: SignInAndUpFeature
+    is_valid_frontend_redirect_uri: Optional[TypeIsValidFrontendRedirectURIFunction] = (
+        None
+    )
 
 
 class ThirdPartyConfig(
@@ -119,6 +187,7 @@ class ThirdPartyConfig(
 
 class NormalisedThirdPartyConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
     sign_in_and_up_feature: SignInAndUpFeature
+    is_valid_frontend_redirect_uri: Optional[TypeIsValidFrontendRedirectURIFunction]
 
 
 def validate_and_normalise_user_input(
@@ -135,6 +204,7 @@ def validate_and_normalise_user_input(
 
     return NormalisedThirdPartyConfig(
         sign_in_and_up_feature=config.sign_in_and_up_feature,
+        is_valid_frontend_redirect_uri=config.is_valid_frontend_redirect_uri,
         override=override_config,
     )
 
@@ -161,16 +231,380 @@ def verify_id_token_from_jwks_endpoint(
     if not issuer_found:
         raise Exception(&#34;no required issuer found&#34;)
 
-    return data</code></pre>
+    return data
+
+
+def get_normalised_origin_tuple(
+    url: str, convert_idn_host: bool = False
+) -&gt; Optional[Tuple[str, str, int]]:
+    &#34;&#34;&#34;
+    Returns the (scheme, lowercased hostname, port) tuple of an absolute http(s) URL,
+    filling in the default port if it is not explicit. Returns None if the input is not
+    such a URL.
+
+    URLs containing a backslash, whitespace, a C0 control character or DEL, with a userinfo
+    part or with a `%` in the host are rejected: browsers and urllib can disagree on which host
+    they point to (e.g. browsers percent-decode the host).
+
+    If `convert_idn_host` is set (we do this for the configured origin), a non-ASCII host is
+    converted to its punycode (`xn--`) form with Python&#39;s `idna` codec, and None is returned if
+    that isn&#39;t possible. Otherwise URLs with a non-ASCII host are rejected.
+
+    The `idna` codec implements IDNA 2003, while browsers convert hosts with the UTS #46 (IDNA
+    2008) rules. These convert most hosts the same way, but IDNA 2003 maps `ß` to `ss` and `ς` to
+    `σ` and removes zero width (non-)joiners, which browsers keep: it converts `straße.example` to
+    `strasse.example`, a different host than the `xn--strae-oqa.example` browsers open. So None is
+    also returned if the conversion changes the host instead of only encoding it, that is, if the
+    punycode form doesn&#39;t decode back to the host. Such origins have to be configured in their
+    punycode form.
+    &#34;&#34;&#34;
+    if has_unsafe_url_characters(url):
+        return None
+
+    try:
+        parsed = urlsplit(url)
+        port = parsed.port
+    except ValueError:
+        return None
+
+    scheme = parsed.scheme.lower()
+    if scheme not in (&#34;http&#34;, &#34;https&#34;) or not parsed.hostname:
+        return None
+
+    hostname = parsed.hostname
+    if &#34;%&#34; in hostname:
+        # Browsers percent-decode the host, so they would open a different host than this one
+        return None
+
+    if not hostname.isascii():
+        # A Location header can&#39;t carry a non-ASCII host, so we don&#39;t accept those in redirect
+        # targets
+        if not convert_idn_host:
+            return None
+        try:
+            converted_hostname = hostname.encode(&#34;idna&#34;).decode(&#34;ascii&#34;)
+            is_converted_unchanged = (
+                converted_hostname.encode(&#34;ascii&#34;).decode(&#34;idna&#34;) == hostname
+            )
+        except UnicodeError:
+            return None
+        if not is_converted_unchanged:
+            # E.g. a host with `ß`, `ς` or a zero width (non-)joiner, which IDNA 2003 maps or
+            # removes, but browsers keep
+            log_debug_message(
+                f&#34;get_normalised_origin_tuple: can&#39;t compare the host of {url} with redirect targets: browsers may convert it to a different punycode form than {converted_hostname}. Configure it in its punycode (xn--) form instead.&#34;
+            )
+            return None
+        hostname = converted_hostname
+
+    if parsed.username is not None or parsed.password is not None:
+        return None
+
+    if port is None:
+        port = 443 if scheme == &#34;https&#34; else 80
+
+    return scheme, hostname.lower(), port
+
+
+def is_http_url_with_userinfo(url: str) -&gt; bool:
+    &#34;&#34;&#34;
+    Returns whether the URL is an http(s) URL with a userinfo part (a username or password),
+    which `get_normalised_origin_tuple` rejects. URLs containing a backslash, whitespace, a C0
+    control character or DEL are rejected for those characters instead, so this returns False
+    for them.
+    &#34;&#34;&#34;
+    if has_unsafe_url_characters(url):
+        return False
+
+    try:
+        parsed = urlsplit(url)
+    except ValueError:
+        return False
+
+    return parsed.scheme.lower() in (&#34;http&#34;, &#34;https&#34;) and (
+        parsed.username is not None or parsed.password is not None
+    )
+
+
+# Schemes that are never allowed as a redirect target, even if the app allows the URL
+DISALLOWED_REDIRECT_SCHEMES = {
+    &#34;javascript&#34;,
+    &#34;data&#34;,
+    &#34;vbscript&#34;,
+    &#34;file&#34;,
+    &#34;blob&#34;,
+    &#34;about&#34;,
+    &#34;filesystem&#34;,
+}
+
+
+def has_unsafe_url_characters(url: str) -&gt; bool:
+    return any(c == &#34;\\&#34; or c.isspace() or ord(c) &lt; 0x20 or ord(c) == 0x7F for c in url)
+
+
+def is_allowed_custom_redirect_target(url: str) -&gt; bool:
+    &#34;&#34;&#34;
+    Checks the redirect targets that an app-provided check may allow: absolute URLs whose
+    scheme isn&#39;t one of `DISALLOWED_REDIRECT_SCHEMES`. http(s) URLs must also pass
+    `get_normalised_origin_tuple`.
+    &#34;&#34;&#34;
+    if has_unsafe_url_characters(url):
+        return False
+
+    try:
+        scheme = urlsplit(url).scheme.lower()
+    except ValueError:
+        return False
+
+    if scheme == &#34;&#34;:
+        return False
+
+    if scheme in (&#34;http&#34;, &#34;https&#34;):
+        return get_normalised_origin_tuple(url) is not None
+
+    return scheme not in DISALLOWED_REDIRECT_SCHEMES
+
+
+# The part of a URL after `&lt;scheme&gt;:`, split into the authority (with its `//`), the path, the query
+# (with its `?`) and the fragment (with its `#`), as in RFC 3986 appendix B. Every string matches.
+URL_AFTER_SCHEME_REGEX = re.compile(r&#34;(//[^/?#]*)?([^?#]*)(\?[^#]*)?(#.*)?&#34;, re.DOTALL)
+
+
+def normalise_frontend_redirect_uri(url: str) -&gt; str:
+    &#34;&#34;&#34;
+    Returns the form of an already validated redirect target that we redirect to:
+
+    - the scheme is lowercased,
+    - for http(s) URLs, the host is lowercased, a default port is dropped and an empty path
+      becomes `/`,
+    - dot segments (`.` and `..`, also written as `%2e`) are removed from paths that start with
+      `/`, as in RFC 3986 section 5.2.4 (e.g. `https://app.example.com/a/../cb` becomes
+      `https://app.example.com/cb`),
+    - if the URL has no authority (no `//` after the scheme) and its path would then start with
+      `//`, `/.` is added in front of the path, so the path isn&#39;t read as an authority (e.g.
+      `com.example.app:/a/..//evil/x` becomes `com.example.app:/.//evil/x`),
+    - non-ASCII characters are percent-encoded (as UTF-8) everywhere except the scheme and the
+      host of http(s) URLs.
+
+    Everything else is kept as written, including an empty query (`?`) or fragment (`#`).
+    &#34;&#34;&#34;
+    scheme = urlsplit(url).scheme
+    match = URL_AFTER_SCHEME_REGEX.fullmatch(url[len(scheme) + 1 :])
+    assert match is not None
+    authority: str = match.group(1) or &#34;&#34;
+    path: str = match.group(2) or &#34;&#34;
+    query: str = match.group(3) or &#34;&#34;
+    fragment: str = match.group(4) or &#34;&#34;
+
+    scheme = scheme.lower()
+    if scheme in (&#34;http&#34;, &#34;https&#34;):
+        parsed = urlsplit(url)
+        hostname = parsed.hostname or &#34;&#34;
+        if &#34;:&#34; in hostname:
+            hostname = f&#34;[{hostname}]&#34;
+        port = parsed.port
+        authority = f&#34;//{hostname}&#34;
+        if port is not None and port != (443 if scheme == &#34;https&#34; else 80):
+            authority += f&#34;:{port}&#34;
+        path = path or &#34;/&#34;
+    else:
+        authority = percent_encode_non_ascii(authority)
+
+    if path.startswith(&#34;/&#34;):
+        path = remove_dot_segments(path)
+        if authority == &#34;&#34; and path.startswith(&#34;//&#34;):
+            # Without an authority, a path starting with `//` would be read as one
+            path = f&#34;/.{path}&#34;
+
+    return f&#34;{scheme}:{authority}{percent_encode_non_ascii(path + query + fragment)}&#34;
+
+
+SINGLE_DOT_SEGMENTS = {&#34;.&#34;, &#34;%2e&#34;}
+DOUBLE_DOT_SEGMENTS = {&#34;..&#34;, &#34;.%2e&#34;, &#34;%2e.&#34;, &#34;%2e%2e&#34;}
+
+
+def remove_dot_segments(path: str) -&gt; str:
+    &#34;&#34;&#34;
+    Removes the `.` and `..` segments from a path that starts with `/`, as in RFC 3986 section
+    5.2.4. Like browsers, it treats `%2e` (in any case) as `.`.
+    &#34;&#34;&#34;
+    output: List[str] = []
+    segments = path[1:].split(&#34;/&#34;)
+    for i, segment in enumerate(segments):
+        is_last = i == len(segments) - 1
+        if segment.lower() in SINGLE_DOT_SEGMENTS:
+            if is_last:
+                output.append(&#34;&#34;)
+        elif segment.lower() in DOUBLE_DOT_SEGMENTS:
+            if output:
+                output.pop()
+            if is_last:
+                output.append(&#34;&#34;)
+        else:
+            output.append(segment)
+    return &#34;/&#34; + &#34;/&#34;.join(output)
+
+
+def percent_encode_non_ascii(value: str) -&gt; str:
+    &#34;&#34;&#34;Percent-encodes (as UTF-8) the non-ASCII characters of a URL part, keeping everything else as it is&#34;&#34;&#34;
+    return &#34;&#34;.join(c if c.isascii() else quote(c, safe=&#34;&#34;) for c in value)
+
+
+def add_query_params(url: str, params: Dict[str, str]) -&gt; str:
+    &#34;&#34;&#34;
+    Adds the given params to the query of the URL. The existing query is kept as written, except
+    for params with the same names as the added ones, which are removed. The path and the fragment
+    are kept as they are.
+    &#34;&#34;&#34;
+    url_without_fragment, hash_sign, fragment = url.partition(&#34;#&#34;)
+    base, _, query = url_without_fragment.partition(&#34;?&#34;)
+
+    kept_query_parts = [
+        part
+        for part in query.split(&#34;&amp;&#34;)
+        if part != &#34;&#34; and unquote_plus(part.partition(&#34;=&#34;)[0]) not in params
+    ]
+    query_parts = kept_query_parts + ([urlencode(params)] if params else [])
+
+    return f&#34;{base}?{&#39;&amp;&#39;.join(query_parts)}{hash_sign}{fragment}&#34;</code></pre>
 </details>
 </section>
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-variables">Global variables</h2>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.utils.TypeIsValidFrontendRedirectURIFunction"><code class="name">var <span class="ident">TypeIsValidFrontendRedirectURIFunction</span></code></dt>
+<dd>
+<div class="desc"><p>Decides whether the Apple form_post callback may redirect the user to the frontend redirect URI
+(taken from the <code>state</code> sent to Apple). Called with the frontend redirect URI, the request and
+the user context. If set, this replaces the default check, which only allows absolute http(s)
+URLs whose scheme, host and port match the configured <code>origin</code> / <code>website_domain</code>.</p>
+<p>Set this if your <code>origin</code> depends on the request (the callback arrives as a POST from Apple, so
+request based origin resolution may not identify your frontend), if one backend serves several
+frontends, or to allow other redirect targets, such as https universal/app links or custom-scheme
+mobile deep links (e.g. <code>myapp://callback</code>).</p>
+<p>Returning <code>True</code> allows the redirect, returning <code>False</code> rejects the request with a 400 and no
+redirect. Exceptions raised by this function are propagated and no redirect is done. The function
+may be sync or async.</p>
+<p>The function is only called for absolute URLs. http(s) URLs must have a host, and <code>javascript:</code>,
+<code>data:</code>, <code>vbscript:</code>, <code>file:</code>, <code>blob:</code>, <code>about:</code> and <code>filesystem:</code> URLs are always rejected
+without calling it. Browsers and Python's URL parsing can disagree on where some URLs point, and a
+Location header can't carry a non-ASCII host, so these are always rejected without calling it too:</p>
+<ul>
+<li>URLs containing a backslash, whitespace, a C0 control character or DEL,</li>
+<li>http(s) URLs with a username or password (e.g. <code>https://user@app.example.com/</code>),</li>
+<li>http(s) URLs with a <code>%</code> in the host, which browsers percent-decode (e.g.
+<code>https://app%2eexample.com/</code> opens <code>https://app.example.com/</code>),</li>
+<li>http(s) URLs with a non-ASCII host: use its punycode form instead, as browsers do (e.g.
+<code>https://xn--bcher-kva.example/</code> instead of <code>https://bücher.example/</code>).</li>
+</ul>
+<p>The frontend redirect URI is passed in the normalised form we redirect to, without the fields
+Apple posted, which are added to its query afterwards: the scheme is lowercased, for http(s) URLs
+the host is lowercased, a default port is dropped and an empty path becomes <code>/</code>, dot segments
+(<code>.</code> and <code>..</code>, also written as <code>%2e</code>) are removed from paths that start with <code>/</code>, and non-ASCII
+characters are percent-encoded (as UTF-8). For example, <code>HTTPS://App.Example.com/a/../cb</code> is passed
+as <code>https://app.example.com/cb</code>.</p>
+<p>The whole <code>state</code> is chosen by whoever starts the sign in, so treat the URI as untrusted. Parse it
+(e.g. with <code>urllib.parse.urlsplit</code>) and compare its parts, such as the scheme, host, port and path,
+with the values you allow, instead of comparing it as a string. In particular, don't use prefix or
+substring checks: for example, <code>https://app.example.com.evil.test/</code> starts with
+<code>https://app.example.com</code>, and in <code>intent://callback#Intent;package=...;end</code> the receiving app is
+chosen by the fragment.</p>
+<p>The redirect carries the authorization code and the <code>id_token</code> from Apple. Custom URL schemes are
+not owned by a single app: any app installed on the device can register the same scheme and receive
+them. Prefer verified https universal / app links for mobile redirects where possible.</p></div>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="supertokens_python.recipe.thirdparty.utils.add_query_params"><code class="name flex">
+<span>def <span class="ident">add_query_params</span></span>(<span>url: str, params: Dict[str, str]) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Adds the given params to the query of the URL. The existing query is kept as written, except
+for params with the same names as the added ones, which are removed. The path and the fragment
+are kept as they are.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.utils.get_normalised_origin_tuple"><code class="name flex">
+<span>def <span class="ident">get_normalised_origin_tuple</span></span>(<span>url: str, convert_idn_host: bool = False) ‑> Optional[Tuple[str, str, int]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns the (scheme, lowercased hostname, port) tuple of an absolute http(s) URL,
+filling in the default port if it is not explicit. Returns None if the input is not
+such a URL.</p>
+<p>URLs containing a backslash, whitespace, a C0 control character or DEL, with a userinfo
+part or with a <code>%</code> in the host are rejected: browsers and urllib can disagree on which host
+they point to (e.g. browsers percent-decode the host).</p>
+<p>If <code>convert_idn_host</code> is set (we do this for the configured origin), a non-ASCII host is
+converted to its punycode (<code>xn--</code>) form with Python's <code>idna</code> codec, and None is returned if
+that isn't possible. Otherwise URLs with a non-ASCII host are rejected.</p>
+<p>The <code>idna</code> codec implements IDNA 2003, while browsers convert hosts with the UTS #46 (IDNA
+2008) rules. These convert most hosts the same way, but IDNA 2003 maps <code>ß</code> to <code>ss</code> and <code>ς</code> to
+<code>σ</code> and removes zero width (non-)joiners, which browsers keep: it converts <code>straße.example</code> to
+<code>strasse.example</code>, a different host than the <code>xn--strae-oqa.example</code> browsers open. So None is
+also returned if the conversion changes the host instead of only encoding it, that is, if the
+punycode form doesn't decode back to the host. Such origins have to be configured in their
+punycode form.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.utils.has_unsafe_url_characters"><code class="name flex">
+<span>def <span class="ident">has_unsafe_url_characters</span></span>(<span>url: str) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.utils.is_allowed_custom_redirect_target"><code class="name flex">
+<span>def <span class="ident">is_allowed_custom_redirect_target</span></span>(<span>url: str) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Checks the redirect targets that an app-provided check may allow: absolute URLs whose
+scheme isn't one of <code>DISALLOWED_REDIRECT_SCHEMES</code>. http(s) URLs must also pass
+<code><a title="supertokens_python.recipe.thirdparty.utils.get_normalised_origin_tuple" href="#supertokens_python.recipe.thirdparty.utils.get_normalised_origin_tuple">get_normalised_origin_tuple()</a></code>.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.utils.is_http_url_with_userinfo"><code class="name flex">
+<span>def <span class="ident">is_http_url_with_userinfo</span></span>(<span>url: str) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns whether the URL is an http(s) URL with a userinfo part (a username or password),
+which <code><a title="supertokens_python.recipe.thirdparty.utils.get_normalised_origin_tuple" href="#supertokens_python.recipe.thirdparty.utils.get_normalised_origin_tuple">get_normalised_origin_tuple()</a></code> rejects. URLs containing a backslash, whitespace, a C0
+control character or DEL are rejected for those characters instead, so this returns False
+for them.</p></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.utils.normalise_frontend_redirect_uri"><code class="name flex">
+<span>def <span class="ident">normalise_frontend_redirect_uri</span></span>(<span>url: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns the form of an already validated redirect target that we redirect to:</p>
+<ul>
+<li>the scheme is lowercased,</li>
+<li>for http(s) URLs, the host is lowercased, a default port is dropped and an empty path
+becomes <code>/</code>,</li>
+<li>dot segments (<code>.</code> and <code>..</code>, also written as <code>%2e</code>) are removed from paths that start with
+<code>/</code>, as in RFC 3986 section 5.2.4 (e.g. <code>https://app.example.com/a/../cb</code> becomes
+<code>https://app.example.com/cb</code>),</li>
+<li>if the URL has no authority (no <code>//</code> after the scheme) and its path would then start with
+<code>//</code>, <code>/.</code> is added in front of the path, so the path isn't read as an authority (e.g.
+<code>com.example.app:/a/..//evil/x</code> becomes <code>com.example.app:/.//evil/x</code>),</li>
+<li>non-ASCII characters are percent-encoded (as UTF-8) everywhere except the scheme and the
+host of http(s) URLs.</li>
+</ul>
+<p>Everything else is kept as written, including an empty query (<code>?</code>) or fragment (<code>#</code>).</p></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.utils.percent_encode_non_ascii"><code class="name flex">
+<span>def <span class="ident">percent_encode_non_ascii</span></span>(<span>value: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Percent-encodes (as UTF-8) the non-ASCII characters of a URL part, keeping everything else as it is</p></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.utils.remove_dot_segments"><code class="name flex">
+<span>def <span class="ident">remove_dot_segments</span></span>(<span>path: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Removes the <code>.</code> and <code>..</code> segments from a path that starts with <code>/</code>, as in RFC 3986 section
+5.2.4. Like browsers, it treats <code>%2e</code> (in any case) as <code>.</code>.</p></div>
+</dd>
 <dt id="supertokens_python.recipe.thirdparty.utils.validate_and_normalise_user_input"><code class="name flex">
 <span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>config: <a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyConfig">ThirdPartyConfig</a>) ‑> <a title="supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig" href="#supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig">NormalisedThirdPartyConfig</a></span>
 </code></dt>
@@ -236,11 +670,12 @@ validated to form a valid model.</p>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class NormalisedThirdPartyConfig(BaseNormalisedConfig[RecipeInterface, APIInterface]):
-    sign_in_and_up_feature: SignInAndUpFeature</code></pre>
+    sign_in_and_up_feature: SignInAndUpFeature
+    is_valid_frontend_redirect_uri: Optional[TypeIsValidFrontendRedirectURIFunction]</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></li>
+<li>supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]</li>
 <li><a title="supertokens_python.types.config.BaseNormalisedConfig" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig">BaseNormalisedConfig</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -250,6 +685,10 @@ validated to form a valid model.</p>
 </ul>
 <h3>Class variables</h3>
 <dl>
+<dt id="supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig.is_valid_frontend_redirect_uri"><code class="name">var <span class="ident">is_valid_frontend_redirect_uri</span> : Optional[Callable[[str, <a title="supertokens_python.framework.request.BaseRequest" href="../../framework/request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>, Dict[str, Any]], Union[bool, Awaitable[bool]]]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
 <dt id="supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig.sign_in_and_up_feature"><code class="name">var <span class="ident">sign_in_and_up_feature</span> : <a title="supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature" href="#supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature">SignInAndUpFeature</a></code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
@@ -257,12 +696,12 @@ validated to form a valid model.</p>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface]">BaseNormalisedConfig[RecipeInterface, APIInterface]</a></b></code>:
+<li><code><b><a title="supertokens_python.types.config.BaseNormalisedConfig" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig">BaseNormalisedConfig</a></b></code>:
 <ul class="hlist">
-<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
-<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
-<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].override" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig.override">override</a></code></li>
-<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig[RecipeInterface, APIInterface].to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig.override" href="../../types/config.html#supertokens_python.types.config.BaseNormalisedConfig.override">override</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseNormalisedConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>
@@ -336,7 +775,7 @@ validated to form a valid model.</p>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig">ThirdPartyOverrideableConfig</a></li>
 <li><a title="supertokens_python.types.config.BaseOverrideableConfig" href="../../types/config.html#supertokens_python.types.config.BaseOverrideableConfig">BaseOverrideableConfig</a></li>
-<li><a title="supertokens_python.types.config.BaseConfig[RecipeInterface, APIInterface, ThirdPartyOverrideableConfig]" href="../../types/config.html#supertokens_python.types.config.BaseConfig[RecipeInterface, APIInterface, ThirdPartyOverrideableConfig]">BaseConfig[RecipeInterface, APIInterface, ThirdPartyOverrideableConfig]</a></li>
+<li>supertokens_python.types.config.BaseConfig[RecipeInterface, APIInterface, ThirdPartyOverrideableConfig]</li>
 <li><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></li>
 <li><a title="supertokens_python.types.response.CamelCaseBaseModel" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel">CamelCaseBaseModel</a></li>
 <li><a title="supertokens_python.types.response.APIResponse" href="../../types/response.html#supertokens_python.types.response.APIResponse">APIResponse</a></li>
@@ -365,14 +804,15 @@ Not a classmethod since it needs to be used in a dynamic context within plugins.
 <li><code><b><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig">ThirdPartyOverrideableConfig</a></b></code>:
 <ul class="hlist">
 <li><code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.from_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.from_json">from_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.is_valid_frontend_redirect_uri" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.is_valid_frontend_redirect_uri">is_valid_frontend_redirect_uri</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.model_config" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.model_config">model_config</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.sign_in_and_up_feature" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.sign_in_and_up_feature">sign_in_and_up_feature</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.to_json" href="../../types/response.html#supertokens_python.types.response.CamelCaseBaseModel.to_json">to_json</a></code></li>
 </ul>
 </li>
-<li><code><b><a title="supertokens_python.types.config.BaseConfig[RecipeInterface, APIInterface, ThirdPartyOverrideableConfig]" href="../../types/config.html#supertokens_python.types.config.BaseConfig[RecipeInterface, APIInterface, ThirdPartyOverrideableConfig]">BaseConfig[RecipeInterface, APIInterface, ThirdPartyOverrideableConfig]</a></b></code>:
+<li><code><b><a title="supertokens_python.types.config.BaseConfig" href="../../types/config.html#supertokens_python.types.config.BaseConfig">BaseConfig</a></b></code>:
 <ul class="hlist">
-<li><code><a title="supertokens_python.types.config.BaseConfig[RecipeInterface, APIInterface, ThirdPartyOverrideableConfig].override" href="../../types/config.html#supertokens_python.types.config.BaseConfig.override">override</a></code></li>
+<li><code><a title="supertokens_python.types.config.BaseConfig.override" href="../../types/config.html#supertokens_python.types.config.BaseConfig.override">override</a></code></li>
 </ul>
 </li>
 </ul>
@@ -394,7 +834,10 @@ validated to form a valid model.</p>
 <pre><code class="python">class ThirdPartyOverrideableConfig(BaseOverrideableConfig):
     &#34;&#34;&#34;Input config properties overrideable using the plugin config overrides&#34;&#34;&#34;
 
-    sign_in_and_up_feature: SignInAndUpFeature</code></pre>
+    sign_in_and_up_feature: SignInAndUpFeature
+    is_valid_frontend_redirect_uri: Optional[TypeIsValidFrontendRedirectURIFunction] = (
+        None
+    )</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -410,6 +853,10 @@ validated to form a valid model.</p>
 </ul>
 <h3>Class variables</h3>
 <dl>
+<dt id="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.is_valid_frontend_redirect_uri"><code class="name">var <span class="ident">is_valid_frontend_redirect_uri</span> : Optional[Callable[[str, <a title="supertokens_python.framework.request.BaseRequest" href="../../framework/request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>, Dict[str, Any]], Union[bool, Awaitable[bool]]]]</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
 <dt id="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.sign_in_and_up_feature"><code class="name">var <span class="ident">sign_in_and_up_feature</span> : <a title="supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature" href="#supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature">SignInAndUpFeature</a></code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
@@ -440,8 +887,21 @@ validated to form a valid model.</p>
 <li><code><a title="supertokens_python.recipe.thirdparty" href="index.html">supertokens_python.recipe.thirdparty</a></code></li>
 </ul>
 </li>
+<li><h3><a href="#header-variables">Global variables</a></h3>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.TypeIsValidFrontendRedirectURIFunction" href="#supertokens_python.recipe.thirdparty.utils.TypeIsValidFrontendRedirectURIFunction">TypeIsValidFrontendRedirectURIFunction</a></code></li>
+</ul>
+</li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.add_query_params" href="#supertokens_python.recipe.thirdparty.utils.add_query_params">add_query_params</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.get_normalised_origin_tuple" href="#supertokens_python.recipe.thirdparty.utils.get_normalised_origin_tuple">get_normalised_origin_tuple</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.has_unsafe_url_characters" href="#supertokens_python.recipe.thirdparty.utils.has_unsafe_url_characters">has_unsafe_url_characters</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.is_allowed_custom_redirect_target" href="#supertokens_python.recipe.thirdparty.utils.is_allowed_custom_redirect_target">is_allowed_custom_redirect_target</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.is_http_url_with_userinfo" href="#supertokens_python.recipe.thirdparty.utils.is_http_url_with_userinfo">is_http_url_with_userinfo</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.normalise_frontend_redirect_uri" href="#supertokens_python.recipe.thirdparty.utils.normalise_frontend_redirect_uri">normalise_frontend_redirect_uri</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.percent_encode_non_ascii" href="#supertokens_python.recipe.thirdparty.utils.percent_encode_non_ascii">percent_encode_non_ascii</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.remove_dot_segments" href="#supertokens_python.recipe.thirdparty.utils.remove_dot_segments">remove_dot_segments</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.utils.validate_and_normalise_user_input" href="#supertokens_python.recipe.thirdparty.utils.validate_and_normalise_user_input">validate_and_normalise_user_input</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.utils.verify_id_token_from_jwks_endpoint" href="#supertokens_python.recipe.thirdparty.utils.verify_id_token_from_jwks_endpoint">verify_id_token_from_jwks_endpoint</a></code></li>
 </ul>
@@ -454,6 +914,7 @@ validated to form a valid model.</p>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig" href="#supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig">NormalisedThirdPartyConfig</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig.is_valid_frontend_redirect_uri" href="#supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig.is_valid_frontend_redirect_uri">is_valid_frontend_redirect_uri</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig.sign_in_and_up_feature" href="#supertokens_python.recipe.thirdparty.utils.NormalisedThirdPartyConfig.sign_in_and_up_feature">sign_in_and_up_feature</a></code></li>
 </ul>
 </li>
@@ -470,6 +931,7 @@ validated to form a valid model.</p>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig">ThirdPartyOverrideableConfig</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.is_valid_frontend_redirect_uri" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.is_valid_frontend_redirect_uri">is_valid_frontend_redirect_uri</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.sign_in_and_up_feature" href="#supertokens_python.recipe.thirdparty.utils.ThirdPartyOverrideableConfig.sign_in_and_up_feature">sign_in_and_up_feature</a></code></li>
 </ul>
 </li>

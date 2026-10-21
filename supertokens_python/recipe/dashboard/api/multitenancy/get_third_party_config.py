@@ -28,6 +28,7 @@ from supertokens_python.recipe.thirdparty import (
 )
 from supertokens_python.recipe.thirdparty.provider import CommonProviderConfig, Provider
 from supertokens_python.recipe.thirdparty.providers.config_utils import (
+    clone_provider_input,
     find_and_create_provider_instance,
     merge_providers_from_core_and_static,
 )
@@ -75,6 +76,22 @@ class GetThirdPartyConfigUnknownTenantError(APIResponse):
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status}
+
+
+def _with_additional_config(
+    client: ProviderClientConfig, additional_config: Dict[str, Any]
+) -> ProviderClientConfig:
+    return ProviderClientConfig(
+        client_id=client.client_id,
+        client_secret=client.client_secret,
+        client_type=client.client_type,
+        scope=client.scope,
+        force_pkce=client.force_pkce,
+        additional_config={
+            **(client.additional_config or {}),
+            **additional_config,
+        },
+    )
 
 
 async def get_third_party_config(
@@ -147,15 +164,15 @@ async def get_third_party_config(
             providers_from_core[0].user_info_endpoint = None
 
             if providers_from_core[0].clients is not None:
-                for existing_client in providers_from_core[0].clients:
-                    existing_client.additional_config = {
-                        **(existing_client.additional_config or {}),
-                        **additional_config,
-                    }
+                providers_from_core[0].clients = [
+                    _with_additional_config(existing_client, additional_config)
+                    for existing_client in providers_from_core[0].clients
+                ]
 
-    # filter out other providers from static
+    # filter out other providers from static, and copy the remaining ones, so that
+    # the changes below do not change the static providers of the thirdparty recipe
     static_providers = [
-        provider
+        clone_provider_input(provider)
         for provider in static_providers
         if provider.config.third_party_id == third_party_id
     ]
@@ -189,11 +206,10 @@ async def get_third_party_config(
             static_providers[0].config.token_endpoint = None
             static_providers[0].config.user_info_endpoint = None
             if static_providers[0].config.clients is not None:
-                for existing_client in static_providers[0].config.clients:
-                    existing_client.additional_config = {
-                        **(existing_client.additional_config or {}),
-                        **additional_config,
-                    }
+                static_providers[0].config.clients = [
+                    _with_additional_config(existing_client, additional_config)
+                    for existing_client in static_providers[0].config.clients
+                ]
 
     merged_providers_from_core_and_static = merge_providers_from_core_and_static(
         providers_from_core, static_providers, True
@@ -344,13 +360,12 @@ async def get_third_party_config(
             )
 
             json_response = resp
-            final_clients[0].additional_config.update(
-                {
-                    "redirectURLs": json_response["redirectUrl"],
-                    "boxyTenant": json_response["tenant"],
-                    "boxyProduct": json_response["product"],
-                }
-            )
+            final_clients[0].additional_config = {
+                **final_clients[0].additional_config,
+                "redirectURLs": json_response["redirectUrl"],
+                "boxyTenant": json_response["tenant"],
+                "boxyProduct": json_response["product"],
+            }
 
     provider_config = ProviderConfig(
         third_party_id=third_party_id,

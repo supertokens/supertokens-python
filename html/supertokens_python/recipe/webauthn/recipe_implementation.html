@@ -100,6 +100,7 @@ from supertokens_python.recipe.webauthn.interfaces.recipe import (
     VerifyCredentialsResponse,
 )
 from supertokens_python.recipe.webauthn.types.config import NormalisedWebauthnConfig
+from supertokens_python.types.auth_utils import LinkingToSessionUserFailedError
 from supertokens_python.types.base import RecipeUserId, User, UserContext
 from supertokens_python.types.response import OkResponseBaseModel
 
@@ -340,29 +341,46 @@ class RecipeImplementation(RecipeInterface):
         if verify_creds_response.status != &#34;OK&#34;:
             return verify_creds_response
 
-        signed_in_user = verify_creds_response.user
+        return await self.complete_sign_in(
+            verified_credentials=verify_creds_response,
+            session=session,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
+            tenant_id=tenant_id,
+            user_context=user_context,
+        )
+
+    async def complete_sign_in(
+        self,
+        *,
+        verified_credentials: VerifyCredentialsResponse,
+        session: Optional[SessionContainer] = None,
+        should_try_linking_with_session_user: Optional[bool] = None,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[SignInResponse, LinkingToSessionUserFailedError]:
+        signed_in_user = verified_credentials.user
 
         login_method = next(
             filter(
                 lambda lm: (
                     lm.recipe_user_id.get_as_string()
-                    == verify_creds_response.recipe_user_id.get_as_string()
+                    == verified_credentials.recipe_user_id.get_as_string()
                 ),
-                verify_creds_response.user.login_methods,
+                verified_credentials.user.login_methods,
             )
         )
 
         if not login_method.verified:
             await AccountLinkingRecipe.get_instance().verify_email_for_recipe_user_if_linked_accounts_are_verified(
-                user=verify_creds_response.user,
-                recipe_user_id=verify_creds_response.recipe_user_id,
+                user=verified_credentials.user,
+                recipe_user_id=verified_credentials.recipe_user_id,
                 user_context=user_context,
             )
 
             # We do this so that we get the updated user (in case the above
             # function updated the verification status) and can return that
             updated_user = await get_user(
-                verify_creds_response.recipe_user_id.get_as_string(), user_context
+                verified_credentials.recipe_user_id.get_as_string(), user_context
             )
 
             if updated_user is not None:
@@ -370,8 +388,8 @@ class RecipeImplementation(RecipeInterface):
 
         link_result = await link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info(
             tenant_id=tenant_id,
-            input_user=verify_creds_response.user,
-            recipe_user_id=verify_creds_response.recipe_user_id,
+            input_user=verified_credentials.user,
+            recipe_user_id=verified_credentials.recipe_user_id,
             session=session,
             should_try_linking_with_session_user=should_try_linking_with_session_user,
             user_context=user_context,
@@ -385,7 +403,7 @@ class RecipeImplementation(RecipeInterface):
         return SignInResponse(
             status=&#34;OK&#34;,
             user=signed_in_user,
-            recipe_user_id=verify_creds_response.recipe_user_id,
+            recipe_user_id=verified_credentials.recipe_user_id,
         )
 
     async def verify_credentials(
@@ -968,29 +986,46 @@ inheritance.</p></div>
         if verify_creds_response.status != &#34;OK&#34;:
             return verify_creds_response
 
-        signed_in_user = verify_creds_response.user
+        return await self.complete_sign_in(
+            verified_credentials=verify_creds_response,
+            session=session,
+            should_try_linking_with_session_user=should_try_linking_with_session_user,
+            tenant_id=tenant_id,
+            user_context=user_context,
+        )
+
+    async def complete_sign_in(
+        self,
+        *,
+        verified_credentials: VerifyCredentialsResponse,
+        session: Optional[SessionContainer] = None,
+        should_try_linking_with_session_user: Optional[bool] = None,
+        tenant_id: str,
+        user_context: UserContext,
+    ) -&gt; Union[SignInResponse, LinkingToSessionUserFailedError]:
+        signed_in_user = verified_credentials.user
 
         login_method = next(
             filter(
                 lambda lm: (
                     lm.recipe_user_id.get_as_string()
-                    == verify_creds_response.recipe_user_id.get_as_string()
+                    == verified_credentials.recipe_user_id.get_as_string()
                 ),
-                verify_creds_response.user.login_methods,
+                verified_credentials.user.login_methods,
             )
         )
 
         if not login_method.verified:
             await AccountLinkingRecipe.get_instance().verify_email_for_recipe_user_if_linked_accounts_are_verified(
-                user=verify_creds_response.user,
-                recipe_user_id=verify_creds_response.recipe_user_id,
+                user=verified_credentials.user,
+                recipe_user_id=verified_credentials.recipe_user_id,
                 user_context=user_context,
             )
 
             # We do this so that we get the updated user (in case the above
             # function updated the verification status) and can return that
             updated_user = await get_user(
-                verify_creds_response.recipe_user_id.get_as_string(), user_context
+                verified_credentials.recipe_user_id.get_as_string(), user_context
             )
 
             if updated_user is not None:
@@ -998,8 +1033,8 @@ inheritance.</p></div>
 
         link_result = await link_to_session_if_provided_else_create_primary_user_id_or_link_by_account_info(
             tenant_id=tenant_id,
-            input_user=verify_creds_response.user,
-            recipe_user_id=verify_creds_response.recipe_user_id,
+            input_user=verified_credentials.user,
+            recipe_user_id=verified_credentials.recipe_user_id,
             session=session,
             should_try_linking_with_session_user=should_try_linking_with_session_user,
             user_context=user_context,
@@ -1013,7 +1048,7 @@ inheritance.</p></div>
         return SignInResponse(
             status=&#34;OK&#34;,
             user=signed_in_user,
-            recipe_user_id=verify_creds_response.recipe_user_id,
+            recipe_user_id=verified_credentials.recipe_user_id,
         )
 
     async def verify_credentials(
@@ -1436,6 +1471,7 @@ inheritance.</p></div>
 <ul class="hlist">
 <li><code><b><a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface">RecipeInterface</a></b></code>:
 <ul class="hlist">
+<li><code><a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.complete_sign_in" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.complete_sign_in">complete_sign_in</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.create_new_recipe_user" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.create_new_recipe_user">create_new_recipe_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.generate_recover_account_token" href="interfaces/recipe.html#supertokens_python.recipe.webauthn.interfaces.recipe.RecipeInterface.generate_recover_account_token">generate_recover_account_token</a></code></li>
 </ul>

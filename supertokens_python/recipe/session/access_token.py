@@ -138,40 +138,11 @@ def get_info_from_access_token(
 
 
 def validate_access_token_structure(payload: Dict[str, Any], version: int) -> None:
-    if version >= 5:
-        if (
-            not isinstance(payload.get("sub"), str)
-            or not isinstance(payload.get("exp"), (int, float))
-            or not isinstance(payload.get("iat"), (int, float))
-            or not isinstance(payload.get("sessionHandle"), str)
-            or not isinstance(payload.get("refreshTokenHash1"), str)
-            or not isinstance(payload.get("rsub"), str)
-        ):
-            log_debug_message(
-                "validateAccessTokenStructure: Access token is using version >= 5"
-            )
-            # The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
-            # it would come here if we change the structure of the JWT.
-            raise Exception(
-                "Access token does not contain all the information. Maybe the structure has changed?"
-            )
-    elif version >= 4:
-        if (
-            not isinstance(payload.get("sub"), str)
-            or not isinstance(payload.get("exp"), (int, float))
-            or not isinstance(payload.get("iat"), (int, float))
-            or not isinstance(payload.get("sessionHandle"), str)
-            or not isinstance(payload.get("refreshTokenHash1"), str)
-        ):
-            log_debug_message(
-                "validateAccessTokenStructure: Access token is using version >= 4"
-            )
-            # The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
-            # it would come here if we change the structure of the JWT.
-            raise Exception(
-                "Access token does not contain all the information. Maybe the structure has changed?"
-            )
-    elif version >= 3:
+    # Session access tokens have stt set to 0 or not set at all
+    if "stt" in payload and (isinstance(payload["stt"], bool) or payload["stt"] != 0):
+        raise Exception("Wrong token type")
+
+    if version >= 3:
         if (
             not isinstance(payload.get("sub"), str)
             or not isinstance(payload.get("exp"), (int, float))
@@ -188,11 +159,21 @@ def validate_access_token_structure(payload: Dict[str, Any], version: int) -> No
                 "Access token does not contain all the information. Maybe the structure has changed?"
             )
 
-        if version >= 4:
-            if not isinstance(payload.get("tId"), str):
-                raise Exception(
-                    "Access token does not contain all the information. Maybe the structure has changed?"
-                )
+        if version >= 4 and not isinstance(payload.get("tId"), str):
+            log_debug_message(
+                "validateAccessTokenStructure: Access token is using version >= 4"
+            )
+            raise Exception(
+                "Access token does not contain all the information. Maybe the structure has changed?"
+            )
+
+        if version >= 5 and not isinstance(payload.get("rsub"), str):
+            log_debug_message(
+                "validateAccessTokenStructure: Access token is using version >= 5"
+            )
+            raise Exception(
+                "Access token does not contain all the information. Maybe the structure has changed?"
+            )
     elif (
         not isinstance(payload.get("sessionHandle"), str)
         or not isinstance(payload.get("userId"), str)

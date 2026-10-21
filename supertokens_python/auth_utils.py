@@ -969,9 +969,14 @@ async def filter_out_invalid_second_factors_or_throw_if_all_are_invalid(
 
 
 def is_fake_email(email: str) -> bool:
-    return email.endswith("@stfakeemail.supertokens.com") or email.endswith(
-        ".fakeemail.com"
-    )  # .fakeemail.com for older users
+    # emails are matched case-insensitively (after trimming), so we normalise the same way here
+    normalised_email = email.strip().lower()
+    return normalised_email.endswith(
+        (
+            "@stfakeemail.supertokens.com",
+            ".fakeemail.com",  # .fakeemail.com for older users
+        )
+    )
 
 
 async def load_session_in_auth_api_if_needed(
@@ -984,6 +989,9 @@ async def load_session_in_auth_api_if_needed(
             request,
             session_required=should_try_linking_with_session_user is True,
             override_global_claim_validators=lambda _, __, ___: [],
+            # The session can be used to link a new login method to the session user, so we make sure it
+            # hasn't been revoked (e.g.: during account recovery)
+            check_database=True,
             user_context=user_context,
         )
     return None

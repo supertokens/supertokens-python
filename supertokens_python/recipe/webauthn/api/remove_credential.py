@@ -45,6 +45,8 @@ async def remove_credential_api(
         request=options.req,
         session_required=True,
         override_global_claim_validators=lambda _, __, ___: [],
+        # We check the session in the database, so that revoked sessions (e.g.: after account recovery) can't change the credentials
+        check_database=True,
         user_context=user_context,
     )
 
