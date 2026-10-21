@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.29.3] - 2026-10-21
+
+### Fixed
+- Explicitly added missing sniffio dependency
+
+### Security
+- thirdparty: the Apple form_post callback now only redirects to the configured `origin` / `website_domain` and answers invalid callback state with a 400. Apps whose `origin` depends on the request, or that redirect to other targets (e.g. another origin, https universal/app links or custom-scheme mobile deep links such as `myapp://callback`), can allow them with the new `is_valid_frontend_redirect_uri` thirdparty config option. `javascript:`, `data:` and similar schemes are always rejected. An `origin` with an internationalised domain name is converted to its punycode (`xn--`) form for this check, and http(s) redirect targets must use that form too. Python converts some domain names differently from browsers (e.g. ones with `ß` or `ς`), and the callback rejects redirects to such an `origin`, so set it in the punycode form browsers use (e.g. `https://xn--strae-oqa.example` for `https://straße.example`). The callback redirects to the target in a normalised form (e.g. with `.` and `..` path segments resolved) and passes that same form to `is_valid_frontend_redirect_uri`, so parse the URL there to check it instead of comparing strings.
+- dashboard: the sign-out and analytics exemptions from the `admins` write restriction now match on the request path only, ignoring the query string.
+- accountlinking: when `should_require_verification` is `True`, automatic account linking now also requires the matching email to be verified in the primary user (as it already did for phone numbers). Apps using `should_require_verification=True` now get no link in this case, which was always the documented intent.
+
 ## [0.29.2] - 2025-05-19
 - Fixes cookies being set without expiry in Django
   - Reverts timezone change from 0.28.0 and uses GMT

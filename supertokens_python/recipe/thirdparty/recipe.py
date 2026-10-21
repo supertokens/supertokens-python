@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
@@ -43,7 +43,10 @@ from .api import (
 from .constants import APPLE_REDIRECT_HANDLER, AUTHORISATIONURL, SIGNINUP
 from .exceptions import SuperTokensThirdPartyError
 from .types import ThirdPartyIngredients
-from .utils import validate_and_normalise_user_input
+from .utils import (
+    TypeIsValidFrontendRedirectURIFunction,
+    validate_and_normalise_user_input,
+)
 
 
 class ThirdPartyRecipe(RecipeModule):
@@ -57,11 +60,15 @@ class ThirdPartyRecipe(RecipeModule):
         sign_in_and_up_feature: SignInAndUpFeature,
         _ingredients: ThirdPartyIngredients,
         override: Union[InputOverrideConfig, None] = None,
+        is_valid_frontend_redirect_uri: Optional[
+            TypeIsValidFrontendRedirectURIFunction
+        ] = None,
     ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
             sign_in_and_up_feature,
             override,
+            is_valid_frontend_redirect_uri,
         )
         self.providers = self.config.sign_in_and_up_feature.providers
         recipe_implementation = RecipeImplementation(
@@ -166,6 +173,9 @@ class ThirdPartyRecipe(RecipeModule):
     def init(
         sign_in_and_up_feature: SignInAndUpFeature,
         override: Union[InputOverrideConfig, None] = None,
+        is_valid_frontend_redirect_uri: Optional[
+            TypeIsValidFrontendRedirectURIFunction
+        ] = None,
     ):
         def func(app_info: AppInfo):
             if ThirdPartyRecipe.__instance is None:
@@ -176,6 +186,7 @@ class ThirdPartyRecipe(RecipeModule):
                     sign_in_and_up_feature,
                     ingredients,
                     override,
+                    is_valid_frontend_redirect_uri,
                 )
                 return ThirdPartyRecipe.__instance
             raise_general_exception(
