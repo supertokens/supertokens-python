@@ -54,6 +54,7 @@ from supertokens_python.recipe.totp.recipe import TOTPRecipe
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.userroles import UserRolesRecipe
 from supertokens_python.recipe.webauthn.recipe import WebauthnRecipe
+from supertokens_python.ssl_utils import reset_ssl_context
 from supertokens_python.utils import is_version_gte
 
 API_VERSION_TEST_NON_SUPPORTED_SV = ["0.0", "1.0", "1.1", "2.1"]
@@ -121,6 +122,7 @@ def get_new_core_app_url(
 
 
 def reset():
+    reset_ssl_context()
     ProcessState.get_instance().reset()
     Supertokens.reset()
     SessionRecipe.reset()

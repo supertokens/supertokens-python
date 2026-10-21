@@ -5,6 +5,7 @@ from httpx import AsyncClient
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.ssl_utils import get_ssl_context
 
 DEV_OAUTH_CLIENT_IDS = [
     "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
@@ -36,7 +37,7 @@ async def do_get_request(
     if headers is None:
         headers = {}
 
-    async with AsyncClient(timeout=30.0) as client:
+    async with AsyncClient(timeout=30.0, verify=get_ssl_context()) as client:
         res = await client.get(url, params=query_params, headers=headers)  # type:ignore
 
         log_debug_message(
@@ -59,7 +60,7 @@ async def do_post_request(
     headers["content-type"] = "application/x-www-form-urlencoded"
     headers["accept"] = "application/json"
 
-    async with AsyncClient(timeout=30.0) as client:
+    async with AsyncClient(timeout=30.0, verify=get_ssl_context()) as client:
         res = await client.post(url, data=body_params, headers=headers)  # type:ignore
         log_debug_message(
             "Received response with status %s and body %s", res.status_code, res.text
