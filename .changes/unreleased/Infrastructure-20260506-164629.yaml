@@ -1,0 +1,3 @@
+kind: Infrastructure
+body: 'tests: add opt-in timing middleware for test servers (LOG_TEST_TIMINGS=1). When enabled, monkey-patches the SuperTokens Querier to log per-call timing on outbound core requests ([QUERIER] METHOD path Xms) and adds a framework-specific HTTP middleware (FastAPI/Flask/Django) that logs timing on inbound test-server requests ([REQUEST] METHOD path STATUS Xms). Stdout is already captured to AUTH_REACT__LOG_DIR/<framework>.log in CI, so artifacts contain the data. Off by default; flip on by setting the env var on the workflow''s server-startup step.'
+time: 2026-05-06T16:46:29.214214+02:00

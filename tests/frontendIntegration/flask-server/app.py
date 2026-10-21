@@ -80,7 +80,19 @@ index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
 index_file.close()
 
+# Optional timing instrumentation, gated by LOG_TEST_TIMINGS=1.
+_repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
+from tests._test_timing import (  # noqa: E402
+    install_flask_request_timing,
+    install_querier_timing,
+)
+
+install_querier_timing()
+
 app = Flask(__name__, template_folder="templates")
+install_flask_request_timing(app)
 Middleware(app)
 CORS(app, supports_credentials=True)
 os.environ.setdefault("SUPERTOKENS_ENV", "testing")

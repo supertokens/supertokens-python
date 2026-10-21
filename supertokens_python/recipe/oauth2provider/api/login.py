@@ -17,13 +17,11 @@ from __future__ import annotations
 from http.cookies import SimpleCookie
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from dateutil import parser
-
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.framework import BaseResponse
 from supertokens_python.utils import send_200_response, send_non_200_response
 
-from .utils import get_session
+from .utils import get_session, parse_expires_ms_or_default
 
 if TYPE_CHECKING:
     from ..interfaces import (
@@ -89,8 +87,9 @@ async def login(
                         domain=morsel.get("domain"),
                         secure=morsel.get("secure", True),
                         httponly=morsel.get("httponly", True),
-                        expires=parser.parse(morsel.get("expires", "")).timestamp()
-                        * 1000,  # type: ignore
+                        expires=parse_expires_ms_or_default(
+                            str(morsel.get("expires", ""))
+                        ),
                         path=morsel.get("path", "/"),
                         samesite=morsel.get("samesite", "lax").lower(),
                     )

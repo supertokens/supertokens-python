@@ -1057,13 +1057,13 @@ class RecipeInterface(BaseRecipeInterface):
         initial_access_token_payload: Optional[Dict[str, Any]],
         initial_id_token_payload: Optional[Dict[str, Any]],
         user_context: Dict[str, Any],
-    ) -> RedirectResponse:
+    ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
     async def reject_consent_request(
         self, challenge: str, error: ErrorOAuth2Response, user_context: Dict[str, Any]
-    ) -> RedirectResponse:
+    ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
@@ -1083,7 +1083,7 @@ class RecipeInterface(BaseRecipeInterface):
         identity_provider_session_id: Optional[str],
         subject: str,
         user_context: Dict[str, Any],
-    ) -> RedirectResponse:
+    ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
@@ -1092,7 +1092,7 @@ class RecipeInterface(BaseRecipeInterface):
         challenge: str,
         error: ErrorOAuth2Response,
         user_context: Dict[str, Any],
-    ) -> RedirectResponse:
+    ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
@@ -1237,7 +1237,7 @@ class RecipeInterface(BaseRecipeInterface):
         token: str,
         scopes: Optional[List[str]],
         user_context: Dict[str, Any],
-    ) -> Union[ActiveTokenResponse, InactiveTokenResponse]:
+    ) -> Union[ActiveTokenResponse, InactiveTokenResponse, ErrorOAuth2Response]:
         pass
 
     @abstractmethod
@@ -1375,7 +1375,12 @@ class APIInterface(BaseAPIInterface):
         scopes: Optional[List[str]],
         options: APIOptions,
         user_context: Dict[str, Any],
-    ) -> Union[ActiveTokenResponse, InactiveTokenResponse, GeneralErrorResponse]:
+    ) -> Union[
+        ActiveTokenResponse,
+        InactiveTokenResponse,
+        ErrorOAuth2Response,
+        GeneralErrorResponse,
+    ]:
         pass
 
     @abstractmethod

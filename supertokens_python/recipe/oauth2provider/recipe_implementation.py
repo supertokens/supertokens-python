@@ -117,7 +117,7 @@ class RecipeImplementation(RecipeInterface):
         identity_provider_session_id: Optional[str],
         subject: str,
         user_context: Dict[str, Any],
-    ) -> RedirectResponse:
+    ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/login/accept"),
             {
@@ -134,6 +134,13 @@ class RecipeImplementation(RecipeInterface):
             user_context=user_context,
         )
 
+        if response.get("status") == "OAUTH_ERROR":
+            return ErrorOAuth2Response(
+                error=str(response.get("error")),
+                error_description=str(response.get("errorDescription")),
+                status_code=response.get("statusCode"),
+            )
+
         return RedirectResponse(
             redirect_to=get_updated_redirect_to(self.app_info, response["redirectTo"])
         )
@@ -143,7 +150,7 @@ class RecipeImplementation(RecipeInterface):
         challenge: str,
         error: ErrorOAuth2Response,
         user_context: Dict[str, Any],
-    ) -> RedirectResponse:
+    ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/login/reject"),
             {
@@ -156,6 +163,14 @@ class RecipeImplementation(RecipeInterface):
             },
             user_context=user_context,
         )
+
+        if response.get("status") == "OAUTH_ERROR":
+            return ErrorOAuth2Response(
+                error=str(response.get("error")),
+                error_description=str(response.get("errorDescription")),
+                status_code=response.get("statusCode"),
+            )
+
         return RedirectResponse(
             redirect_to=get_updated_redirect_to(self.app_info, response["redirectTo"])
         )
@@ -184,7 +199,7 @@ class RecipeImplementation(RecipeInterface):
         initial_access_token_payload: Optional[Dict[str, Any]],
         initial_id_token_payload: Optional[Dict[str, Any]],
         user_context: Dict[str, Any],
-    ) -> RedirectResponse:
+    ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/consent/accept"),
             {
@@ -205,13 +220,20 @@ class RecipeImplementation(RecipeInterface):
             user_context=user_context,
         )
 
+        if response.get("status") == "OAUTH_ERROR":
+            return ErrorOAuth2Response(
+                error=str(response.get("error")),
+                error_description=str(response.get("errorDescription")),
+                status_code=response.get("statusCode"),
+            )
+
         return RedirectResponse(
             redirect_to=get_updated_redirect_to(self.app_info, response["redirectTo"])
         )
 
     async def reject_consent_request(
         self, challenge: str, error: ErrorOAuth2Response, user_context: Dict[str, Any]
-    ) -> RedirectResponse:
+    ) -> Union[RedirectResponse, ErrorOAuth2Response]:
         response = await self.querier.send_put_request(
             NormalisedURLPath("/recipe/oauth/auth/requests/consent/reject"),
             {
@@ -224,6 +246,13 @@ class RecipeImplementation(RecipeInterface):
             },
             user_context=user_context,
         )
+
+        if response.get("status") == "OAUTH_ERROR":
+            return ErrorOAuth2Response(
+                error=str(response.get("error")),
+                error_description=str(response.get("errorDescription")),
+                status_code=response.get("statusCode"),
+            )
 
         return RedirectResponse(
             redirect_to=get_updated_redirect_to(self.app_info, response["redirectTo"])
@@ -380,6 +409,9 @@ class RecipeImplementation(RecipeInterface):
                 user_context=user_context,
             )
 
+            if isinstance(consent_res, ErrorOAuth2Response):
+                return consent_res
+
             return RedirectResponse(
                 redirect_to=consent_res.redirect_to, cookies=resp["cookies"]
             )
@@ -458,6 +490,8 @@ class RecipeImplementation(RecipeInterface):
                 scopes=scopes,
                 user_context=user_context,
             )
+            if isinstance(token_info, ErrorOAuth2Response):
+                return token_info
             if isinstance(token_info, InactiveTokenResponse):
                 return ErrorOAuth2Response(
                     status_code=400,
@@ -650,8 +684,16 @@ class RecipeImplementation(RecipeInterface):
         # Verify token signature using session recipe's JWKS
         session_recipe = SessionRecipe.get_instance()
         matching_keys = get_latest_keys(session_recipe.config, access_token_obj.kid)
-        err: Optional[Exception] = None
 
+        if not matching_keys:
+            # The JWS header advertised a kid that none of the JWKs we know
+            # about match. Surface this as a signature/key error rather than
+            # falling through to a misleading "Wrong token type".
+            raise Exception(
+                f"No JWKS key matching kid={access_token_obj.kid!r}; cannot verify access-token signature"
+            )
+
+        err: Optional[Exception] = None
         payload: Dict[str, Any] = {}
 
         for matching_key in matching_keys:
@@ -660,7 +702,7 @@ class RecipeImplementation(RecipeInterface):
                 payload = jwt.decode(
                     token,
                     matching_key.key,
-                    algorithms=["RS256"],
+                    algorithms=[matching_key.algorithm_name or "RS256"],
                     options={
                         "verify_signature": True,
                         "verify_exp": True,
@@ -872,7 +914,7 @@ class RecipeImplementation(RecipeInterface):
         token: str,
         scopes: Optional[List[str]],
         user_context: Dict[str, Any],
-    ) -> Union[ActiveTokenResponse, InactiveTokenResponse]:
+    ) -> Union[ActiveTokenResponse, InactiveTokenResponse, ErrorOAuth2Response]:
         # Determine if the token is an access token by checking if it doesn't start with "st_rt"
         is_access_token = not token.startswith("st_rt")
 
@@ -905,6 +947,13 @@ class RecipeImplementation(RecipeInterface):
             request_body,
             user_context=user_context,
         )
+
+        if res.get("status") == "OAUTH_ERROR":
+            return ErrorOAuth2Response(
+                error=str(res.get("error")),
+                error_description=str(res.get("errorDescription")),
+                status_code=res.get("statusCode"),
+            )
 
         if res.get("active"):
             return ActiveTokenResponse(payload=res)

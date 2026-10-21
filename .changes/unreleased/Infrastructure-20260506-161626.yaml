@@ -1,0 +1,3 @@
+kind: Infrastructure
+body: 'compose: add weak Argon2 password-hashing config to the local core for tests. Default bcrypt is ~250ms/hash; the test surface (emailpassword, passwordless across unit, e2e auth-react and website matrices) does hundreds of sign-up/sign-in cycles. Argon2 with iterations=1, memory=8KB cuts each hash to ~1ms, projecting roughly 10 wall-clock minutes off the auth-react matrix. NOT for production.'
+time: 2026-05-06T16:16:26.287341+02:00

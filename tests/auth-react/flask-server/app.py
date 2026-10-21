@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
+import sys
 import time
 import traceback
 from typing import Any, Awaitable, Callable, Dict, List, Optional, TypedDict, Union
@@ -1206,7 +1207,19 @@ def make_default_options_response():
     return _response
 
 
+# Optional timing instrumentation, gated by LOG_TEST_TIMINGS=1.
+_repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
+from tests._test_timing import (  # noqa: E402
+    install_flask_request_timing,
+    install_querier_timing,
+)
+
+install_querier_timing()
+
 app = Flask(__name__, template_folder="templates")
+install_flask_request_timing(app)
 app.make_default_options_response = make_default_options_response
 Middleware(app)
 CORS(
