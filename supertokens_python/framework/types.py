@@ -18,13 +18,14 @@ from typing import Any, Union
 
 from supertokens_python.framework.request import BaseRequest
 
-frameworks = ["fastapi", "flask", "django"]
+frameworks = ["fastapi", "flask", "django", "litestar"]
 
 
 class FrameworkEnum(Enum):
     FASTAPI = 1
     FLASK = 2
     DJANGO = 3
+    LITESTAR = 4
 
 
 class Framework(ABC):

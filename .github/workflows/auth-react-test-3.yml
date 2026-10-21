@@ -144,6 +144,17 @@ jobs:
           mkdir -p $AUTH_REACT__LOG_DIR
           python3 app.py --port 8083 &> $AUTH_REACT__LOG_DIR/flask.log &
 
+      - name: Start Server (litestar)
+        if: matrix.framework == 'litestar'
+        working-directory: supertokens-python
+        run: |
+          source venv/bin/activate
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+          cd tests/auth-react/litestar-server
+
+          mkdir -p $AUTH_REACT__LOG_DIR
+          litestar run --host 0.0.0.0 --port 8083 &> $AUTH_REACT__LOG_DIR/litestar.log &
+
       - uses: supertokens/auth-react-testing-action@main
         with:
           fdi-version: ${{ inputs.fdi-version }}

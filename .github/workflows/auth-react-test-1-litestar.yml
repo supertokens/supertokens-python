@@ -1,0 +1,113 @@
+name: Auth-React Tests - L1 - Litestar
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  push:
+    tags:
+      - dev-v[0-9]+.[0-9]+.[0-9]+
+
+# Only one instance of this workflow will run on the same ref (PR/Branch/Tag)
+# Previous runs will be cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  define-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
+      cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
+      pyVersions: '["3.8", "3.13"]'
+      nodeFdiVersionMap: ${{ steps.node-versions.outputs.fdiVersions }}
+      authReactFdiVersionMap: ${{ steps.auth-react-versions.outputs.fdiVersions }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supertokens/get-supported-versions-action@main
+        id: versions
+        with:
+          has-fdi: true
+          has-cdi: true
+
+      - uses: supertokens/actions/get-versions-from-repo@main
+        id: auth-react-versions
+        with:
+          repo: supertokens-auth-react
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          fdi-versions: ${{ steps.versions.outputs.fdiVersions }}
+
+      - uses: supertokens/actions/get-versions-from-repo@main
+        id: node-versions
+        with:
+          repo: supertokens-node
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          fdi-versions: ${{ steps.versions.outputs.fdiVersions }}
+
+  setup-auth-react:
+    runs-on: ubuntu-latest
+    needs: define-versions
+    strategy:
+      fail-fast: false
+      matrix:
+        fdi-version: ${{ fromJSON(needs.define-versions.outputs.fdiVersions) }}
+
+    outputs:
+      AUTH_REACT__LOG_DIR: ${{ steps.envs.outputs.AUTH_REACT__LOG_DIR }}
+      AUTH_REACT__SCREENSHOT_DIR: ${{ steps.envs.outputs.AUTH_REACT__SCREENSHOT_DIR }}
+      AUTH_REACT__APP_SERVER: ${{ steps.envs.outputs.AUTH_REACT__APP_SERVER }}
+      AUTH_REACT__NODE_PORT: ${{ steps.envs.outputs.AUTH_REACT__NODE_PORT }}
+      AUTH_REACT__TEST_MODE: ${{ steps.envs.outputs.AUTH_REACT__TEST_MODE }}
+      AUTH_REACT__PORT: ${{ steps.envs.outputs.AUTH_REACT__PORT }}
+      specs: ${{ steps.envs.outputs.specs }}
+      matrix: ${{ steps.setup-matrix.outputs.matrix }}
+
+    steps:
+      - name: Get node and auth-react versions for FDI
+        id: versions
+        run: |
+          nodeVersion=$( echo '${{ needs.define-versions.outputs.nodeFdiVersionMap }}' | jq -r '.["${{ matrix.fdi-version }}"]' )
+          authReactVersion=$( echo '${{ needs.define-versions.outputs.authReactFdiVersionMap }}' | jq -r '.["${{ matrix.fdi-version }}"]' )
+
+          echo "nodeVersion=${nodeVersion}" >> $GITHUB_OUTPUT
+          echo "authReactVersion=${authReactVersion}" >> $GITHUB_OUTPUT
+
+      - uses: supertokens/auth-react-testing-action/setup@main
+        id: envs
+        with:
+          auth-react-version: ${{ steps.versions.outputs.authReactVersion }}
+          node-sdk-version: ${{ steps.versions.outputs.nodeVersion }}
+          fdi-version: ${{ matrix.fdi-version }}
+
+      - id: setup-matrix
+        uses: supertokens/extended-matrix-action@main
+        with:
+          artifact-id: ${{ matrix.fdi-version }}
+          matrix: |
+            py-version: ${{ needs.define-versions.outputs.pyVersions }}
+            framework: ["litestar"]
+            spec: ${{ steps.envs.outputs.specs }}
+
+  launch-fdi-workflows:
+    uses: ./.github/workflows/auth-react-test-2.yml
+    needs:
+      - define-versions
+      - setup-auth-react
+    strategy:
+      max-parallel: 1 # This is important to avoid ddos GHA API
+      fail-fast: false # Don't fail fast to avoid locking TF State
+      matrix:
+        fdi-version: ${{ fromJSON(needs.define-versions.outputs.fdiVersions) }}
+    name: FDI ${{ matrix.fdi-version }}
+    with:
+      artifact-id: ${{ matrix.fdi-version }}
+      AUTH_REACT__LOG_DIR: ${{ needs.setup-auth-react.outputs.AUTH_REACT__LOG_DIR }}
+      AUTH_REACT__SCREENSHOT_DIR: ${{ needs.setup-auth-react.outputs.AUTH_REACT__SCREENSHOT_DIR }}
+      AUTH_REACT__APP_SERVER: ${{ needs.setup-auth-react.outputs.AUTH_REACT__APP_SERVER }}
+      AUTH_REACT__NODE_PORT: ${{ needs.setup-auth-react.outputs.AUTH_REACT__NODE_PORT }}
+      AUTH_REACT__TEST_MODE: ${{ needs.setup-auth-react.outputs.AUTH_REACT__TEST_MODE }}
+      AUTH_REACT__PORT: ${{ needs.setup-auth-react.outputs.AUTH_REACT__PORT }}

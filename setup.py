@@ -27,6 +27,13 @@ extras_require = {
             "python-dotenv==1.0.1",
         ]
     ),
+    "litestar": (
+        [
+            "litestar[all]",
+            "uvicorn",
+            "python-dotenv==1.0.1",
+        ]
+    ),
     "django": (
         [
             "django-cors-headers",
