@@ -190,15 +190,24 @@ async def validate_claims_for_session_handle(
     claim_validation_res = await recipe_impl.validate_claims(
         session_info.user_id,
         session_info.recipe_user_id,
-        session_info.custom_claims_in_access_token_payload,
+        # We add the tenant of the session, so that claim values are fetched for the right tenant
+        {
+            **session_info.custom_claims_in_access_token_payload,
+            "tId": session_info.tenant_id,
+        },
         claim_validators,
         user_context,
     )
 
     if claim_validation_res.access_token_payload_update is not None:
+        access_token_payload_update = {
+            k: v
+            for k, v in claim_validation_res.access_token_payload_update.items()
+            if k not in protected_props
+        }
         updated = await recipe_impl.merge_into_access_token_payload(
             session_handle,
-            claim_validation_res.access_token_payload_update,
+            access_token_payload_update,
             user_context,
         )
         if not updated:

@@ -421,7 +421,7 @@ class RecipeImplementation(RecipeInterface):
         if email is not None:
             data = {**data, "email": email}
         if phone_number is not None:
-            data = {**data, "email": phone_number}
+            data = {**data, "phoneNumber": phone_number}
         await self.querier.send_post_request(
             NormalisedURLPath(f"{tenant_id}/recipe/signinup/codes/remove"),
             data,

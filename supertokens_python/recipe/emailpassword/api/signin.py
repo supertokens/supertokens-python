@@ -46,9 +46,6 @@ async def handle_sign_in_api(
     if body is None:
         raise_bad_input_exception("Please provide a JSON body")
     form_fields_raw: Any = body["formFields"] if "formFields" in body else []
-    form_fields = await validate_form_fields_or_throw_error(
-        api_options.config.sign_in_feature.form_fields, form_fields_raw, tenant_id
-    )
 
     should_try_linking_with_session_user = (
         get_normalised_should_try_linking_with_session_user_flag(
@@ -59,8 +56,13 @@ async def handle_sign_in_api(
     session = await load_session_in_auth_api_if_needed(
         api_options.request, should_try_linking_with_session_user, user_context
     )
+    # We resolve the tenant before running the (tenant specific) form field validators
     if session is not None:
         tenant_id = session.get_tenant_id()
+
+    form_fields = await validate_form_fields_or_throw_error(
+        api_options.config.sign_in_feature.form_fields, form_fields_raw, tenant_id
+    )
 
     response = await api_implementation.sign_in_post(
         form_fields,

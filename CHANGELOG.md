@@ -8,9 +8,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [0.30.3] - 2025-08-28
+## [0.30.4] - 2026-10-21
+
+### Changed
+- multifactorauth: a tenant whose `first_factors` is an empty list now allows no first factors, matching the documented meaning and the other SDKs. Sign in and sign up are rejected for such tenants, and with multi-factor auth enabled, their existing sessions that have no MFA claim yet are signed out. Current cores store tenants created through the API without `first_factors` with an empty list, so set `first_factors` explicitly (or to `None`) for those tenants, e.g. with `create_or_update_tenant` or the dashboard.
+- thirdparty: the GitHub provider now validates the access token with GitHub (using `validate_access_token`) on every sign in, which needs the client's `client_secret`. Add it to the GitHub provider config, or set a custom `validate_access_token`.
+- webauthn: account recovery now replaces the account's existing passkeys with the newly registered one and signs out its existing sessions if the account's email was not verified before the recovery. Accounts with a verified email keep their passkeys and sessions. Apps that don't use the EmailVerification recipe never have verified emails, so for them every account recovery resets the account's passkeys and sessions.
+- dashboard: an empty or whitespace-only `api_key` is now treated as not set, so the dashboard uses its own sign in. In API key mode, the `Authorization` header must now be exactly `Bearer <api_key>`.
+- auth: when there is a session, the sign in and sign up APIs now use its tenant (which already took precedence) before looking up third party providers and running the email, phone number and form field validators, so these now run with the tenant the user actually signs in to.
+- auth: the sign in and sign up APIs (when they use an existing session to link a new login method) and the webauthn register credential API now check the session with the core, so revoked sessions are rejected. This adds one core call to those requests.
+- totp: removing a device without completing multi-factor auth is now only allowed when the only device with that name is unverified and no verified device has the same name (compared case-insensitively).
+- passwordless: `revoke_all_codes` with `phone_number` now revokes the codes of that phone number. Passing both `email` and `phone_number` now raises an error.
+- dashboard: when `admins` is set, unlinking accounts through the dashboard now requires an admin, like the other dashboard APIs that change data.
+- session: access tokens whose payload has an `stt` claim other than `0` are now rejected, and `stt` is now a protected access token payload claim: `create_new_session` drops an `stt` key from the payload you pass, claim validation drops it from its payload updates, and `merge_into_access_token_payload` removes an existing `stt` claim (it still stores an `stt` key in the update you pass to it, so don't pass one). If your code sets a custom access token claim named `stt`, rename it before upgrading. Existing sessions that carry such a claim are rejected with a 401 and can't be refreshed or signed out until they are repaired: repair them with `merge_into_access_token_payload(session_handle, {})`, which removes the now-protected claim, or revoke them.
+- thirdparty: when the Google Workspaces provider is configured with a specific `hd` (anything other than `"*"`), a sign in without an id token (for example, when only an access token is sent to the sign in API) is now only accepted if Google's user info response has the same `hd`. Sign ins with an id token are checked against its `hd` claim, as before. If your app sends only an access token, you can send the id token as well to have that checked instead.
+- session: when `validate_claims_for_session_handle` refetches claim values, it now fetches them for the session's own tenant, and it drops protected access token payload claims (such as `sub` or `tId`) from the resulting payload update before merging it into the session.
+
+### Security
+- thirdparty: the Apple form_post callback now only redirects to the configured `origin` / `website_domain` and answers invalid callback state with a 400. Apps whose `origin` depends on the request, or that redirect to other targets (e.g. another origin, https universal/app links or custom-scheme mobile deep links such as `myapp://callback`), can allow them with the new `is_valid_frontend_redirect_uri` thirdparty config option. `javascript:`, `data:` and similar schemes are always rejected. An `origin` with an internationalised domain name is converted to its punycode (`xn--`) form for this check, and http(s) redirect targets must use that form too. Python converts some domain names differently from browsers (e.g. ones with `ß` or `ς`), and the callback rejects redirects to such an `origin`, so set it in the punycode form browsers use (e.g. `https://xn--strae-oqa.example` for `https://straße.example`). The callback redirects to the target in a normalised form (e.g. with `.` and `..` path segments resolved) and passes that same form to `is_valid_frontend_redirect_uri`, so parse the URL there to check it instead of comparing strings.
+- session: access token structure validation now requires a string `tId` claim for v4 and later access tokens.
+- dashboard: the sign-out and analytics exemptions from the `admins` write restriction now match on the request path only, ignoring the query string.
+- accountlinking: when `should_require_verification` is `True`, automatic account linking now also requires the matching email to be verified in the primary user (as it already did for phone numbers). Apps using `should_require_verification=True` now get no link in this case, which was always the documented intent.
+
+## [0.30.3] - 2026-01-30
 - Fixes webauthn MFA integration
 - Adds missing `rp_id` field to Webauthn's `SignInOptionResponse`
+- Updated phonenumbers dependency
+- Explicitly added missing sniffio dependency
+- Fix the OAuth2Provider `tokenExchange` error message when the refresh token is expired
 
 ## [0.30.2] - 2025-08-14
 - Adds Webauthn user editing support to the Dashboard

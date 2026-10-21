@@ -458,8 +458,13 @@ class RecipeImplementation(RecipeInterface):
                 scopes=scopes,
                 user_context=user_context,
             )
-
-            if isinstance(token_info, ActiveTokenResponse):
+            if isinstance(token_info, InactiveTokenResponse):
+                return ErrorOAuth2Response(
+                    status_code=400,
+                    error="invalid_grant",
+                    error_description="The provided refresh token is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.",
+                )
+            else:
                 session_handle = token_info.payload["sessionHandle"]
 
                 client_info = await self.get_oauth2_client(

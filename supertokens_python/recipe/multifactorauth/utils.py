@@ -282,12 +282,14 @@ async def is_valid_first_factor(
     first_factors_from_mfa = mt_recipe.static_first_factors
 
     log_debug_message(
-        f"is_valid_first_factor got {', '.join(tenant_config.first_factors) if tenant_config.first_factors else None} from tenant config"
+        f"is_valid_first_factor got {', '.join(tenant_config.first_factors) if tenant_config.first_factors is not None else None} from tenant config"
     )
     log_debug_message(f"is_valid_first_factor got {first_factors_from_mfa} from MFA")
 
     configured_first_factors: Union[List[str], None] = (
-        tenant_config.first_factors or first_factors_from_mfa
+        tenant_config.first_factors
+        if tenant_config.first_factors is not None
+        else first_factors_from_mfa
     )
 
     if configured_first_factors is None:

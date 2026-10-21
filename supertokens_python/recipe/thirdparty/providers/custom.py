@@ -1,3 +1,4 @@
+import copy
 from typing import Any, Callable, Dict, List, Optional, Union
 from urllib.parse import parse_qs, urlencode, urlparse
 
@@ -191,6 +192,26 @@ def is_using_development_client_id(client_id: str) -> bool:
     return client_id.startswith(DEV_KEY_IDENTIFIER) or client_id in DEV_OAUTH_CLIENT_IDS
 
 
+def clone_provider_config(config: ProviderConfig) -> ProviderConfig:
+    """
+    Returns a copy of the provider config that can be changed without changing the
+    original (e.g. the static config passed to the thirdparty recipe on init).
+    The callbacks are shared between the original and the copy.
+    """
+    result = copy.copy(config)
+    result.authorization_endpoint_query_params = copy.deepcopy(
+        config.authorization_endpoint_query_params
+    )
+    result.token_endpoint_body_params = copy.deepcopy(config.token_endpoint_body_params)
+    result.user_info_endpoint_query_params = copy.deepcopy(
+        config.user_info_endpoint_query_params
+    )
+    result.user_info_endpoint_headers = copy.deepcopy(config.user_info_endpoint_headers)
+    result.user_info_map = copy.deepcopy(config.user_info_map)
+    result.clients = copy.deepcopy(config.clients)
+    return result
+
+
 class GenericProvider(Provider):
     def __init__(self, provider_config: ProviderConfig):
         self.input_config = input_config = self._normalize_input(provider_config)
@@ -223,6 +244,9 @@ class GenericProvider(Provider):
         super().__init__(input_config.third_party_id, provider_config_for_client)
 
     def _normalize_input(self, input_config: ProviderConfig) -> ProviderConfig:
+        # Work on a copy so that the config passed in is never changed
+        input_config = clone_provider_config(input_config)
+
         if input_config.user_info_map is None:
             input_config.user_info_map = UserInfoMap(
                 from_id_token_payload=UserFields(),

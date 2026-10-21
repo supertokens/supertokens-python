@@ -255,7 +255,7 @@ class RecipeImplementation(RecipeInterface):
 
             raise Exception(f"Unknown Error: {response}")
 
-        return SignInOptionsResponse.from_json(response)
+        return SignInOptionsResponse.from_json({**response, "rpId": relying_party_id})
 
     async def sign_up(
         self,
