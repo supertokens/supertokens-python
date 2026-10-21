@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.30.4] - 2026-10-21
+
 ### Changed
 - multifactorauth: a tenant whose `first_factors` is an empty list now allows no first factors, matching the documented meaning and the other SDKs. Sign in and sign up are rejected for such tenants, and with multi-factor auth enabled, their existing sessions that have no MFA claim yet are signed out. Current cores store tenants created through the API without `first_factors` with an empty list, so set `first_factors` explicitly (or to `None`) for those tenants, e.g. with `create_or_update_tenant` or the dashboard.
 - thirdparty: the GitHub provider now validates the access token with GitHub (using `validate_access_token`) on every sign in, which needs the client's `client_secret`. Add it to the GitHub provider config, or set a custom `validate_access_token`.
