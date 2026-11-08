@@ -24,7 +24,7 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.accountlinking.recipe import AccountLinkingRecipe
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session.interfaces import SessionContainer
-from supertokens_python.recipe.session.jwks import get_latest_keys
+from supertokens_python.recipe.session.jwks import get_latest_keys_async
 from supertokens_python.recipe.session.jwt import (
     parse_jwt_without_signature_verification,
 )
@@ -649,7 +649,9 @@ class RecipeImplementation(RecipeInterface):
 
         # Verify token signature using session recipe's JWKS
         session_recipe = SessionRecipe.get_instance()
-        matching_keys = get_latest_keys(session_recipe.config, access_token_obj.kid)
+        matching_keys = await get_latest_keys_async(
+            session_recipe.config, access_token_obj.kid
+        )
         err: Optional[Exception] = None
 
         payload: Dict[str, Any] = {}

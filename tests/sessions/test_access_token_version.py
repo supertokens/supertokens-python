@@ -43,7 +43,7 @@ async def test_access_token_v4():
 
     parsed_info = parse_jwt_without_signature_verification(access_token)
 
-    res = get_info_from_access_token(
+    res = await get_info_from_access_token(
         SessionRecipe.get_instance().config,
         parsed_info,
         False,

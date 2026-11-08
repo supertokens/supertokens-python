@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import asyncio
 import threading
 from os import environ
 from typing import List, Optional
@@ -190,3 +191,19 @@ def get_latest_keys(
                 last_fetch_time_ms = get_timestamp_ms()
 
     raise last_error
+
+
+async def get_latest_keys_async(
+    config: NormalisedSessionConfig, kid: Optional[str] = None
+) -> List[PyJWK]:
+    """Same as get_latest_keys, but a fetch from the core runs in a worker thread, so the
+    calling event loop is not blocked while the core responds."""
+    matching_keys = find_matching_keys_in_cache(kid)
+    if matching_keys is not None:
+        if environ.get("SUPERTOKENS_ENV") == "testing":
+            log_debug_message("Returning JWKS from cache")
+        return matching_keys
+
+    return await asyncio.get_running_loop().run_in_executor(
+        None, get_latest_keys, config, kid
+    )

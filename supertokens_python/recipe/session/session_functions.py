@@ -168,7 +168,7 @@ async def get_session(
     access_token_info: Optional[Dict[str, Any]] = None
 
     try:
-        access_token_info = get_info_from_access_token(
+        access_token_info = await get_info_from_access_token(
             config,
             parsed_access_token,
             config.anti_csrf_function_or_string == "VIA_TOKEN" and do_anti_csrf_check,
