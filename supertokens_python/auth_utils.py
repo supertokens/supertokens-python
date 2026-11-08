@@ -305,6 +305,7 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
                         lm
                         for lm in user.login_methods
                         if lm.recipe_id == recipe_id
+                        and tenant_id in lm.tenant_ids
                         and (
                             (email is not None and lm.has_same_email_as(email))
                             or lm.has_same_phone_number_as(phone_number)
