@@ -387,6 +387,13 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
 
             go_to_retry = False
             for lm in matching_login_methods_from_session_user:
+                if len(lm.tenant_ids) == 0:
+                    # A login method that is on no tenant (e.g. it was removed from all of them) has no
+                    # tenant to check its credentials on, so it cannot be added to the current one
+                    log_debug_message(
+                        "getAuthenticatingUserAndAddToCurrentTenantIfRequired session skipping a login method that is on no tenant"
+                    )
+                    continue
                 log_debug_message(
                     f"getAuthenticatingUserAndAddToCurrentTenantIfRequired session checking credentials on {lm.tenant_ids[0]}"
                 )
