@@ -15,7 +15,7 @@
 import asyncio
 import threading
 from os import environ
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import requests
 from jwt import PyJWK, PyJWKSet
@@ -61,6 +61,10 @@ fetch_lock = threading.Lock()
 # A token with a kid that is not in a fresh cache only triggers a new fetch if the last fetch
 # happened at least this long ago.
 JWKS_REFETCH_COOLDOWN_MS = 500
+
+# The JWKS fetch currently running in a worker thread for each event loop. Async callers that miss the
+# cache while a fetch is running wait for it instead of each taking a worker thread to wait for fetch_lock.
+pending_fetches: Dict[asyncio.AbstractEventLoop, "asyncio.Future[List[PyJWK]]"] = {}
 
 
 # only for testing purposes
@@ -197,13 +201,39 @@ async def get_latest_keys_async(
     config: NormalisedSessionConfig, kid: Optional[str] = None
 ) -> List[PyJWK]:
     """Same as get_latest_keys, but a fetch from the core runs in a worker thread, so the
-    calling event loop is not blocked while the core responds."""
+    calling event loop is not blocked while the core responds. Concurrent callers on the same
+    event loop share one fetch."""
     matching_keys = find_matching_keys_in_cache(kid)
     if matching_keys is not None:
         if environ.get("SUPERTOKENS_ENV") == "testing":
             log_debug_message("Returning JWKS from cache")
         return matching_keys
 
-    return await asyncio.get_running_loop().run_in_executor(
-        None, get_latest_keys, config, kid
-    )
+    loop = asyncio.get_running_loop()
+    pending = pending_fetches.get(loop)
+    if pending is None:
+        fetch = loop.run_in_executor(None, get_latest_keys, config, kid)
+        pending_fetches[loop] = fetch
+
+        def forget_fetch(_: "asyncio.Future[List[PyJWK]]") -> None:
+            if pending_fetches.get(loop) is fetch:
+                del pending_fetches[loop]
+
+        fetch.add_done_callback(forget_fetch)
+        # shield, so that a cancelled caller does not cancel the fetch other callers wait for
+        return await asyncio.shield(fetch)
+
+    # Another caller is fetching. It may have asked for a different kid, so we look for our kid in
+    # the cache it filled, and only raise its error if the cache has nothing for us.
+    fetch_error: Optional[BaseException] = None
+    try:
+        await asyncio.shield(pending)
+    except Exception as e:
+        fetch_error = e
+
+    matching_keys = find_matching_keys_in_cache(kid)
+    if matching_keys is not None:
+        return matching_keys
+    if fetch_error is not None:
+        raise fetch_error
+    raise Exception("No matching JWKS found")

@@ -1,3 +1,3 @@
 kind: Fixed
-body: 'session: fetching JWKS from the core during async session verification no longer blocks the event loop; the fetch now runs in a worker thread'
+body: 'session: fetching JWKS from the core during async session verification no longer blocks the event loop; the fetch now runs in a worker thread, and concurrent requests on the same event loop share one fetch'
 time: 2026-11-08T13:00:00.000000+05:30
