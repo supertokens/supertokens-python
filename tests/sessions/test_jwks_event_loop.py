@@ -1,6 +1,7 @@
 import asyncio
+import gc
 import time
-from typing import Any, List
+from typing import Any, List, Optional
 
 import pytest
 import requests
@@ -21,8 +22,15 @@ from tests.utils import get_new_core_app_url, get_st_init_args
 JWKS_FETCH_DELAY_SEC = 0.5
 
 
-async def create_access_token() -> str:
-    init(**get_st_init_args(url=get_new_core_app_url(), recipe_list=[session.init()]))  # type: ignore
+async def create_access_token(jwks_refresh_interval_sec: Optional[int] = None) -> str:
+    init(
+        **get_st_init_args(  # type: ignore
+            url=get_new_core_app_url(),
+            recipe_list=[
+                session.init(jwks_refresh_interval_sec=jwks_refresh_interval_sec)
+            ],
+        )
+    )
     s = await create_new_session_without_request_response(
         "public", RecipeUserId("user-id"), {}, {}, True
     )
@@ -135,3 +143,56 @@ async def test_concurrent_jwks_cache_misses_share_a_failing_fetch(
     assert blocking_fetch.call_count == 1
     # one fetch per configured core url, not one per caller
     assert len(jwks_fetches) == len(set(jwks_fetches))
+
+
+async def test_concurrent_callers_share_keys_the_cache_does_not_keep(
+    mocker: MockerFixture,
+):
+    # With a refresh interval of 0 the cache is stale as soon as it is written, so callers that
+    # joined the fetch must use the keys it returned instead of reading the cache.
+    access_token = await create_access_token(jwks_refresh_interval_sec=0)
+    reset_jwks_cache()
+    delay_jwks_fetch(mocker)
+    blocking_fetch = mocker.spy(jwks, "get_latest_keys")
+
+    sessions = await asyncio.gather(
+        *[
+            get_session_without_request_response(access_token, check_database=False)
+            for _ in range(20)
+        ]
+    )
+
+    assert all(s is not None for s in sessions)
+    assert blocking_fetch.call_count == 1
+
+
+async def test_cancelled_callers_do_not_leave_an_unretrieved_fetch_error(
+    mocker: MockerFixture,
+):
+    access_token = await create_access_token()
+    reset_jwks_cache()
+    delay_jwks_fetch(mocker, fail=True)
+    loop = asyncio.get_running_loop()
+    unhandled: List[Any] = []
+    loop.set_exception_handler(lambda _, context: unhandled.append(context))
+
+    callers = [
+        asyncio.ensure_future(
+            get_session_without_request_response(access_token, check_database=False)
+        )
+        for _ in range(5)
+    ]
+    await asyncio.sleep(JWKS_FETCH_DELAY_SEC / 5)
+    for caller in callers:
+        caller.cancel()
+    await asyncio.gather(*callers, return_exceptions=True)
+
+    fetch = jwks.pending_fetch
+    assert fetch is not None
+    await asyncio.wait([fetch])
+    del fetch
+    gc.collect()
+    loop.set_exception_handler(None)
+
+    assert unhandled == []
+    assert jwks.pending_fetch is None
