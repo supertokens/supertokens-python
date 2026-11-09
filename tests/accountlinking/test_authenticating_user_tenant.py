@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from fastapi import FastAPI
@@ -10,6 +10,7 @@ from supertokens_python.recipe import (
     accountlinking,
     emailpassword,
     multitenancy,
+    passwordless,
     session,
     thirdparty,
 )
@@ -37,6 +38,7 @@ from supertokens_python.recipe.multitenancy.interfaces import (
 from supertokens_python.recipe.passwordless.api import (
     implementation as passwordless_api,
 )
+from supertokens_python.recipe.passwordless.asyncio import signinup
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
     create_new_session_without_request_response,
@@ -46,7 +48,7 @@ from supertokens_python.recipe.thirdparty.interfaces import (
     ManuallyCreateOrUpdateUserOkResult,
 )
 from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
-from supertokens_python.types import LoginMethod, User
+from supertokens_python.types import LoginMethod, RecipeUserId, User
 from supertokens_python.types.base import AccountInfoInput
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
@@ -63,6 +65,17 @@ def app():
     app.add_middleware(get_middleware())
 
     return TestClient(app)
+
+
+class NoopPasswordlessEmailService(
+    passwordless.EmailDeliveryInterface[passwordless.EmailTemplateVars]
+):
+    async def send_email(
+        self,
+        template_vars: passwordless.EmailTemplateVars,
+        user_context: Dict[str, Any],
+    ) -> None:
+        pass
 
 
 async def init_st():
@@ -83,6 +96,13 @@ async def init_st():
                     should_do_automatic_account_linking=should_do_automatic_account_linking
                 ),
                 emailpassword.init(),
+                passwordless.init(
+                    flow_type="USER_INPUT_CODE",
+                    contact_config=passwordless.ContactEmailOnlyConfig(),
+                    email_delivery=passwordless.EmailDeliveryConfig(
+                        NoopPasswordlessEmailService()
+                    ),
+                ),
                 thirdparty.init(),
                 multitenancy.init(),
                 session.init(),
@@ -93,17 +113,32 @@ async def init_st():
     for tenant_id in ["t1", "t2"]:
         await create_or_update_tenant(
             tenant_id,
-            TenantConfigCreateOrUpdate(first_factors=["emailpassword", "thirdparty"]),
+            TenantConfigCreateOrUpdate(
+                first_factors=["emailpassword", "thirdparty", "otp-email"]
+            ),
         )
 
 
-async def create_primary_user_on_t1_shared_with_t2() -> User:
-    """A primary user whose emailpassword login method only exists on t1, linked to a
-    third party login method that is shared with t2, so the core lists the primary user
-    for t2 as well."""
+async def create_emailpassword_login_method_on_t1() -> RecipeUserId:
     ep_resp = await sign_up("t1", EMAIL, "password1")
     assert isinstance(ep_resp, SignUpOkResult)
-    primary_resp = await create_primary_user(ep_resp.recipe_user_id)
+    return ep_resp.recipe_user_id
+
+
+async def create_passwordless_login_method_on_t1() -> RecipeUserId:
+    pl_resp = await signinup("t1", EMAIL, None)
+    return pl_resp.recipe_user_id
+
+
+async def create_primary_user_on_t1_shared_with_t2(
+    create_login_method_on_t1: Callable[
+        [], Awaitable[RecipeUserId]
+    ] = create_emailpassword_login_method_on_t1,
+) -> User:
+    """A primary user whose emailpassword (or passwordless) login method only exists on t1,
+    linked to a third party login method that is shared with t2, so the core lists the
+    primary user for t2 as well."""
+    primary_resp = await create_primary_user(await create_login_method_on_t1())
     assert primary_resp.status == "OK"
 
     tp_resp = await manually_create_or_update_user(
@@ -346,3 +381,25 @@ async def test_passwordless_create_code_finds_the_user_of_the_current_tenant():
     assert create_code_user.user.id == "pl-2"
     assert consume_code_user is not None
     assert consume_code_user.user.id == "pl-2"
+
+
+async def test_passwordless_create_code_with_a_session_recognises_the_session_users_login_method(
+    app: TestClient,
+):
+    # The session user's passwordless login method is only on t1. createCode on t2 must still
+    # treat it as the session user's own login method, as consumeCode does, instead of trying
+    # to link a new user (which fails, because automatic account linking is off).
+    await init_st()
+    primary_user = await create_primary_user_on_t1_shared_with_t2(
+        create_passwordless_login_method_on_t1
+    )
+    access_token = await session_for_primary_user_on_t2(primary_user)
+
+    res = app.post(
+        url="/auth/t2/signinup/code",
+        json={"email": EMAIL, "shouldTryLinkingWithSessionUser": True},
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+
+    assert res.status_code == 200
+    assert res.json()["status"] == "OK"

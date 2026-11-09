@@ -91,6 +91,7 @@ async def get_passwordless_user_by_account_info(
     tenant_id: str,
     user_context: Dict[str, Any],
     account_info: AccountInfoInput,
+    session: Optional[SessionContainer] = None,
 ) -> Optional[PasswordlessUserResult]:
     existing_users = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
         tenant_id=tenant_id,
@@ -137,9 +138,48 @@ async def get_passwordless_user_by_account_info(
         )
 
     if len(users_with_matching_login_methods) == 0:
+        if session is not None:
+            # consume_code falls back to a matching login method of the session user on another
+            # tenant (and adds it to this tenant), so create_code has to recognise it as well
+            return await get_passwordless_login_method_of_session_user(
+                session, user_context, account_info
+            )
         return None
 
     return users_with_matching_login_methods[0]
+
+
+async def get_passwordless_login_method_of_session_user(
+    session: SessionContainer,
+    user_context: Dict[str, Any],
+    account_info: AccountInfoInput,
+) -> Optional[PasswordlessUserResult]:
+    session_user = await get_user(session.get_user_id(user_context), user_context)
+    if session_user is None:
+        raise UnauthorisedError("Session user not found")
+    if not session_user.is_primary_user:
+        return None
+
+    login_method = next(
+        (
+            lm
+            for lm in session_user.login_methods
+            if lm.recipe_id == "passwordless"
+            # a login method on no tenant cannot be added to this one
+            and len(lm.tenant_ids) > 0
+            and (
+                lm.has_same_email_as(account_info.email)
+                or lm.has_same_phone_number_as(account_info.phone_number)
+            )
+        ),
+        None,
+    )
+    if login_method is None:
+        return None
+    log_debug_message(
+        "get_passwordless_user_by_account_info using a matching login method of the session user from another tenant"
+    )
+    return PasswordlessUserResult(user=session_user, login_method=login_method)
 
 
 class APIImplementation(APIInterface):
@@ -168,7 +208,7 @@ class APIImplementation(APIInterface):
         )
 
         user_with_matching_login_method = await get_passwordless_user_by_account_info(
-            tenant_id, user_context, account_info
+            tenant_id, user_context, account_info, session
         )
 
         factor_ids = []
@@ -363,6 +403,7 @@ class APIImplementation(APIInterface):
                 email=device_info.email,
                 phone_number=device_info.phone_number,
             ),
+            session=session,
         )
 
         auth_type_info = await check_auth_type_and_linking_status(
