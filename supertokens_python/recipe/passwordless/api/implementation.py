@@ -110,6 +110,7 @@ async def get_passwordless_user_by_account_info(
                     lm
                     for lm in user.login_methods
                     if lm.recipe_id == "passwordless"
+                    and tenant_id in lm.tenant_ids
                     and (
                         lm.has_same_email_as(account_info.email)
                         or lm.has_same_phone_number_as(account_info.phone_number)

@@ -34,6 +34,9 @@ from supertokens_python.recipe.multitenancy.interfaces import (
     AssociateUserToTenantOkResult,
     TenantConfigCreateOrUpdate,
 )
+from supertokens_python.recipe.passwordless.api import (
+    implementation as passwordless_api,
+)
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
     create_new_session_without_request_response,
@@ -44,6 +47,7 @@ from supertokens_python.recipe.thirdparty.interfaces import (
 )
 from supertokens_python.recipe.thirdparty.types import ThirdPartyInfo
 from supertokens_python.types import LoginMethod, User
+from supertokens_python.types.base import AccountInfoInput
 
 from tests.testclient import TestClientWithNoCookieJar as TestClient
 from tests.utils import get_new_core_app_url, get_st_init_args
@@ -261,3 +265,84 @@ async def test_session_fallback_skips_a_login_method_that_is_on_no_tenant():
 
     assert result is None
     check_credentials_on_tenant.assert_not_called()
+
+
+def passwordless_primary_user_on_t1_shared_with_t2() -> User:
+    # The passwordless login method is only on t1, but the linked third party login method with
+    # the same email is also on t2, so the core lists the primary user for t2.
+    pl = LoginMethod("passwordless", "pl-1", ["t1"], EMAIL, None, None, None, 0, True)
+    tp = LoginMethod(
+        "thirdparty",
+        "tp-1",
+        ["t1", "t2"],
+        EMAIL,
+        None,
+        ThirdPartyInfo("tp-user", "google"),
+        None,
+        0,
+        True,
+    )
+    return User("pl-1", True, ["t1", "t2"], [EMAIL], [], [], MagicMock(), [pl, tp], 0)
+
+
+def core_listing(users: List[User]) -> MagicMock:
+    account_linking = MagicMock()
+    account_linking.get_instance.return_value.recipe_implementation.list_users_by_account_info = AsyncMock(
+        return_value=users
+    )
+    return account_linking
+
+
+async def passwordless_lookups_on_t2(users: List[User]):
+    account_linking = core_listing(users)
+    with patch.object(auth_utils, "AccountLinkingRecipe", account_linking):
+        with patch.object(passwordless_api, "AccountLinkingRecipe", account_linking):
+            create_code_user = (
+                await passwordless_api.get_passwordless_user_by_account_info(
+                    "t2", {}, AccountInfoInput(email=EMAIL)
+                )
+            )
+            consume_code_user = await auth_utils.get_authenticating_user_and_add_to_current_tenant_if_required(
+                recipe_id="passwordless",
+                email=EMAIL,
+                phone_number=None,
+                third_party=None,
+                tenant_id="t2",
+                session=None,
+                check_credentials_on_tenant=AsyncMock(return_value=True),
+                user_context={},
+            )
+    return create_code_user, consume_code_user
+
+
+async def test_passwordless_create_code_ignores_a_login_method_from_another_tenant():
+    create_code_user, consume_code_user = await passwordless_lookups_on_t2(
+        [passwordless_primary_user_on_t1_shared_with_t2()]
+    )
+
+    # create_code and consume_code must agree that this is a sign up on t2
+    assert create_code_user is None
+    assert consume_code_user is None
+
+
+async def test_passwordless_create_code_finds_the_user_of_the_current_tenant():
+    t2_user = User(
+        "pl-2",
+        False,
+        ["t2"],
+        [EMAIL],
+        [],
+        [],
+        MagicMock(),
+        [LoginMethod("passwordless", "pl-2", ["t2"], EMAIL, None, None, None, 0, True)],
+        0,
+    )
+
+    create_code_user, consume_code_user = await passwordless_lookups_on_t2(
+        [passwordless_primary_user_on_t1_shared_with_t2(), t2_user]
+    )
+
+    assert create_code_user is not None
+    assert create_code_user.user.id == "pl-2"
+    assert consume_code_user is not None
+    assert consume_code_user.user.id == "pl-2"
