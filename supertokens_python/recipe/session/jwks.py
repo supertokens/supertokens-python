@@ -242,7 +242,13 @@ async def get_latest_keys_async(
             log_debug_message("Returning JWKS from cache")
         return matching_keys
 
-    loop = asyncio.get_running_loop()
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        # No asyncio loop is running (for example under trio), so we cannot hand the fetch to a
+        # worker thread here. Fetch synchronously, as before async callers had their own path.
+        return get_latest_keys(config, kid)
+
     fetch = pending_fetch
     if fetch is None or fetch.get_loop() is not loop:
         new_fetch = loop.run_in_executor(

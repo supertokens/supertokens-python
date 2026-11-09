@@ -251,3 +251,24 @@ async def test_caller_joining_a_failed_fetch_uses_its_key_from_the_cache(
 
     assert isinstance(result_a, Exception)
     assert result_b == [known_key]
+
+
+def test_cache_miss_without_an_asyncio_loop_fetches_synchronously(
+    mocker: MockerFixture,
+):
+    # Under a non-asyncio backend (for example trio) there is no running asyncio loop, so the
+    # fetch cannot go to a worker thread. It must fall back to the sync fetch instead of failing.
+    reset_jwks_cache()
+    config = SimpleNamespace(jwks_refresh_interval_sec=60)
+    known_key = make_jwk("known-kid")
+    blocking_fetch = mocker.patch.object(
+        jwks, "get_latest_keys", return_value=[known_key]
+    )
+
+    # Drive the coroutine by hand, the way a non-asyncio event loop would
+    coro = jwks.get_latest_keys_async(config, "known-kid")  # type: ignore
+    with pytest.raises(StopIteration) as finished:
+        coro.send(None)
+
+    assert finished.value.value == [known_key]
+    blocking_fetch.assert_called_once_with(config, "known-kid")
