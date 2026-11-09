@@ -45,7 +45,7 @@ async def test_core_signed_token_with_a_non_session_token_type_is_rejected():
     assert parsed_info.payload["stt"] == 1
 
     with pytest.raises(TryRefreshTokenError):
-        get_info_from_access_token(
+        await get_info_from_access_token(
             SessionRecipe.get_instance().config, parsed_info, False
         )
 

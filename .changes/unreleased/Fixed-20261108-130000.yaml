@@ -1,0 +1,3 @@
+kind: Fixed
+body: 'session: fetching JWKS from the core during async session verification (get_session / verify_session in ASGI apps) no longer blocks the event loop, and concurrent requests share one fetch'
+time: 2026-11-08T13:00:00.000000+05:30
