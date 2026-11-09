@@ -246,20 +246,18 @@ async def test_session_fallback_skips_a_login_method_that_is_on_no_tenant():
     session.get_user_id.return_value = primary.id
     check_credentials_on_tenant = AsyncMock(return_value=True)
 
-    with (
-        patch.object(auth_utils, "AccountLinkingRecipe", account_linking),
-        patch.object(auth_utils, "get_user", AsyncMock(return_value=primary)),
-    ):
-        result = await auth_utils.get_authenticating_user_and_add_to_current_tenant_if_required(
-            recipe_id="emailpassword",
-            email=EMAIL,
-            phone_number=None,
-            third_party=None,
-            tenant_id="t2",
-            session=session,
-            check_credentials_on_tenant=check_credentials_on_tenant,
-            user_context={},
-        )
+    with patch.object(auth_utils, "AccountLinkingRecipe", account_linking):
+        with patch.object(auth_utils, "get_user", AsyncMock(return_value=primary)):
+            result = await auth_utils.get_authenticating_user_and_add_to_current_tenant_if_required(
+                recipe_id="emailpassword",
+                email=EMAIL,
+                phone_number=None,
+                third_party=None,
+                tenant_id="t2",
+                session=session,
+                check_credentials_on_tenant=check_credentials_on_tenant,
+                user_context={},
+            )
 
     assert result is None
     check_credentials_on_tenant.assert_not_called()
