@@ -1,10 +1,16 @@
 import asyncio
 import gc
+import json
+import threading
 import time
+from types import SimpleNamespace
 from typing import Any, List, Optional
 
 import pytest
 import requests
+from cryptography.hazmat.primitives.asymmetric import rsa
+from jwt import PyJWK
+from jwt.algorithms import RSAAlgorithm
 from pytest_mock import MockerFixture
 from supertokens_python import init
 from supertokens_python.recipe import session
@@ -196,3 +202,52 @@ async def test_cancelled_callers_do_not_leave_an_unretrieved_fetch_error(
 
     assert unhandled == []
     assert jwks.pending_fetch is None
+
+
+def make_jwk(kid: str) -> PyJWK:
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    jwk = json.loads(RSAAlgorithm.to_jwk(private_key.public_key()))
+    jwk.update({"kid": kid, "alg": "RS256"})
+    return PyJWK.from_dict(jwk)
+
+
+async def test_caller_joining_a_failed_fetch_uses_its_key_from_the_cache(
+    mocker: MockerFixture,
+):
+    # Caller A (unknown kid) starts the fetch and caller B (known kid) joins it. Before the
+    # fetch runs, another thread refreshes the cache with B's key, so A's fetch fails on the
+    # refetch cooldown. B must still get its key from the cache, as the sync API would.
+    config = SimpleNamespace(jwks_refresh_interval_sec=60)
+    known_key = make_jwk("known-kid")
+    both_callers_waiting = threading.Event()
+
+    def fetch_after_another_thread_refreshed_the_cache(*_: Any) -> List[PyJWK]:
+        both_callers_waiting.wait(5)
+        with jwks.RWLockContext(jwks.mutex, read=False):
+            jwks.cached_keys = jwks.CachedKeys([known_key], 60)
+            # refreshed just before this fetch started, so it is not shared as the fetch result
+            jwks.cached_keys.last_refresh_time -= 1000
+            jwks.last_fetch_time_ms = jwks.cached_keys.last_refresh_time
+        raise Exception("No matching JWKS found")
+
+    mocker.patch.object(
+        jwks,
+        "get_latest_keys",
+        side_effect=fetch_after_another_thread_refreshed_the_cache,
+    )
+
+    caller_a = asyncio.ensure_future(
+        jwks.get_latest_keys_async(config, "unknown-kid")  # type: ignore
+    )
+    await asyncio.sleep(0)
+    caller_b = asyncio.ensure_future(
+        jwks.get_latest_keys_async(config, "known-kid")  # type: ignore
+    )
+    await asyncio.sleep(0)
+    both_callers_waiting.set()
+    result_a, result_b = await asyncio.gather(
+        caller_a, caller_b, return_exceptions=True
+    )
+
+    assert isinstance(result_a, Exception)
+    assert result_b == [known_key]

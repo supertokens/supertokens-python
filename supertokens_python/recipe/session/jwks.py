@@ -269,5 +269,13 @@ async def get_latest_keys_async(
     if matching_keys is not None:
         return matching_keys
     if result.error is not None:
+        # The fetch failed for its own kid, but the cache may still have ours, for example if
+        # another thread or event loop refreshed it meanwhile. The sync API would use it too.
+        try:
+            matching_keys = find_matching_keys_in_cache(kid)
+        except Exception:
+            matching_keys = None
+        if matching_keys is not None:
+            return matching_keys
         raise result.error
     raise Exception("No matching JWKS found")
