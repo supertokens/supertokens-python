@@ -403,3 +403,126 @@ async def test_passwordless_create_code_with_a_session_recognises_the_session_us
 
     assert res.status_code == 200
     assert res.json()["status"] == "OK"
+
+
+PHONE = "+14155552671"
+
+
+def primary_user_with_passwordless_email_and_phone_on_t1() -> User:
+    # The passwordless login method (email and phone) is only on t1, and the linked third party
+    # login method with the same email is also on t2, so the core lists the primary user for t2.
+    pl = LoginMethod("passwordless", "pl-1", ["t1"], EMAIL, PHONE, None, None, 0, True)
+    tp = LoginMethod(
+        "thirdparty",
+        "tp-1",
+        ["t1", "t2"],
+        EMAIL,
+        None,
+        ThirdPartyInfo("tp-user", "google"),
+        None,
+        0,
+        True,
+    )
+    return User(
+        "pl-1", True, ["t1", "t2"], [EMAIL], [PHONE], [], MagicMock(), [pl, tp], 0
+    )
+
+
+async def consume_code_on_t2_with_association_conflict(status_error: Any):
+    primary = primary_user_with_passwordless_email_and_phone_on_t1()
+    account_linking = core_listing([primary])
+    list_users = account_linking.get_instance.return_value.recipe_implementation.list_users_by_account_info
+    session = MagicMock()
+    session.get_user_id.return_value = primary.id
+    associate = AsyncMock(return_value=status_error)
+
+    with patch.object(auth_utils, "AccountLinkingRecipe", account_linking):
+        with patch.object(auth_utils, "get_user", AsyncMock(return_value=primary)):
+            with patch.object(auth_utils, "associate_user_to_tenant", associate):
+                result = await auth_utils.get_authenticating_user_and_add_to_current_tenant_if_required(
+                    recipe_id="passwordless",
+                    email=EMAIL,
+                    phone_number=None,
+                    third_party=None,
+                    tenant_id="t2",
+                    session=session,
+                    check_credentials_on_tenant=AsyncMock(return_value=True),
+                    user_context={},
+                )
+    return result, list_users.await_count, associate.await_count
+
+
+async def test_session_fallback_skips_a_login_method_whose_phone_number_is_taken_on_the_tenant():
+    from supertokens_python.recipe.multitenancy.interfaces import (
+        AssociateUserToTenantPhoneNumberAlreadyExistsError,
+    )
+
+    (
+        result,
+        list_calls,
+        associate_calls,
+    ) = await consume_code_on_t2_with_association_conflict(
+        AssociateUserToTenantPhoneNumberAlreadyExistsError()
+    )
+
+    # The users are listed by email, so listing again cannot find the user holding the phone
+    # number. The attempt is handled as a sign up instead of retrying until it fails.
+    assert result is None
+    assert list_calls == 1
+    assert associate_calls == 1
+
+
+async def test_session_fallback_retries_an_email_conflict_only_once():
+    from supertokens_python.recipe.multitenancy.interfaces import (
+        AssociateUserToTenantEmailAlreadyExistsError,
+    )
+
+    (
+        result,
+        list_calls,
+        associate_calls,
+    ) = await consume_code_on_t2_with_association_conflict(
+        AssociateUserToTenantEmailAlreadyExistsError()
+    )
+
+    assert result is None
+    assert list_calls == 2
+    assert associate_calls == 2
+
+
+async def test_passwordless_create_code_with_a_session_ignores_a_login_method_whose_phone_number_is_taken_on_the_tenant():
+    primary = primary_user_with_passwordless_email_and_phone_on_t1()
+    t2_user = User(
+        "pl-2",
+        False,
+        ["t2"],
+        [],
+        [PHONE],
+        [],
+        MagicMock(),
+        [LoginMethod("passwordless", "pl-2", ["t2"], None, PHONE, None, None, 0, True)],
+        0,
+    )
+    account_linking = MagicMock()
+
+    async def list_users_by_account_info(**kwargs: Any) -> List[User]:
+        if kwargs["account_info"].phone_number == PHONE:
+            return [t2_user]
+        return [primary]
+
+    account_linking.get_instance.return_value.recipe_implementation.list_users_by_account_info = list_users_by_account_info
+    session = MagicMock()
+    session.get_user_id.return_value = primary.id
+
+    with patch.object(passwordless_api, "AccountLinkingRecipe", account_linking):
+        with patch.object(
+            passwordless_api, "get_user", AsyncMock(return_value=primary)
+        ):
+            create_code_user = (
+                await passwordless_api.get_passwordless_user_by_account_info(
+                    "t2", {}, AccountInfoInput(email=EMAIL), session
+                )
+            )
+
+    # consume_code cannot add the login method to t2, so create_code must not treat it as a sign in
+    assert create_code_user is None
