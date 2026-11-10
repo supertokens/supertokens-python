@@ -161,58 +161,68 @@ async def get_passwordless_login_method_of_session_user(
     if not session_user.is_primary_user:
         return None
 
-    login_method = next(
-        (
-            lm
-            for lm in session_user.login_methods
-            if lm.recipe_id == "passwordless"
-            # a login method on no tenant cannot be added to this one
-            and len(lm.tenant_ids) > 0
-            and (
-                lm.has_same_email_as(account_info.email)
-                or lm.has_same_phone_number_as(account_info.phone_number)
+    matching_login_methods = [
+        lm
+        for lm in session_user.login_methods
+        if lm.recipe_id == "passwordless"
+        # a login method on no tenant cannot be added to this one
+        and len(lm.tenant_ids) > 0
+        and (
+            lm.has_same_email_as(account_info.email)
+            or lm.has_same_phone_number_as(account_info.phone_number)
+        )
+    ]
+    # consume_code skips a login method it cannot add to this tenant (because another passwordless
+    # user of the tenant already has its other contact info) and tries the next one. If none of them
+    # can be added, it handles the attempt as a sign up, so create_code has to do the same.
+    for login_method in matching_login_methods:
+        if await other_account_info_is_taken_on_tenant(
+            tenant_id, login_method, account_info, user_context
+        ):
+            log_debug_message(
+                "get_passwordless_user_by_account_info skipping a login method of the session user, its account info is taken on the current tenant"
             )
-        ),
-        None,
-    )
-    if login_method is None:
-        return None
-    # consume_code cannot add the login method to this tenant if another passwordless user of the tenant
-    # already has its other contact info (e.g.: the phone number when signing in with the email).
-    # It then handles the attempt as a sign up, so create_code has to do the same.
+            continue
+        log_debug_message(
+            "get_passwordless_user_by_account_info using a matching login method of the session user from another tenant"
+        )
+        return PasswordlessUserResult(user=session_user, login_method=login_method)
+    return None
+
+
+async def other_account_info_is_taken_on_tenant(
+    tenant_id: str,
+    login_method: LoginMethod,
+    account_info: AccountInfoInput,
+    user_context: Dict[str, Any],
+) -> bool:
+    # The contact info of the login method that is not part of account_info
+    # (e.g.: the phone number when signing in with the email)
     other_account_info: Optional[AccountInfoInput] = None
     if account_info.email is None and login_method.email is not None:
         other_account_info = AccountInfoInput(email=login_method.email)
     elif account_info.phone_number is None and login_method.phone_number is not None:
         other_account_info = AccountInfoInput(phone_number=login_method.phone_number)
-    if other_account_info is not None:
-        users_with_other_account_info = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
-            tenant_id=tenant_id,
-            account_info=other_account_info,
-            do_union_of_account_info=False,
-            user_context=user_context,
-        )
-        other_account_info_is_taken = any(
-            lm.recipe_id == "passwordless"
-            and tenant_id in lm.tenant_ids
-            and lm.recipe_user_id.get_as_string()
-            != login_method.recipe_user_id.get_as_string()
-            and (
-                lm.has_same_email_as(other_account_info.email)
-                or lm.has_same_phone_number_as(other_account_info.phone_number)
-            )
-            for user in users_with_other_account_info
-            for lm in user.login_methods
-        )
-        if other_account_info_is_taken:
-            log_debug_message(
-                "get_passwordless_user_by_account_info not using the login method of the session user, its account info is taken on the current tenant"
-            )
-            return None
-    log_debug_message(
-        "get_passwordless_user_by_account_info using a matching login method of the session user from another tenant"
+    if other_account_info is None:
+        return False
+    users_with_other_account_info = await AccountLinkingRecipe.get_instance().recipe_implementation.list_users_by_account_info(
+        tenant_id=tenant_id,
+        account_info=other_account_info,
+        do_union_of_account_info=False,
+        user_context=user_context,
     )
-    return PasswordlessUserResult(user=session_user, login_method=login_method)
+    return any(
+        lm.recipe_id == "passwordless"
+        and tenant_id in lm.tenant_ids
+        and lm.recipe_user_id.get_as_string()
+        != login_method.recipe_user_id.get_as_string()
+        and (
+            lm.has_same_email_as(other_account_info.email)
+            or lm.has_same_phone_number_as(other_account_info.phone_number)
+        )
+        for user in users_with_other_account_info
+        for lm in user.login_methods
+    )
 
 
 class APIImplementation(APIInterface):

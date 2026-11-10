@@ -526,3 +526,59 @@ async def test_passwordless_create_code_with_a_session_ignores_a_login_method_wh
 
     # consume_code cannot add the login method to t2, so create_code must not treat it as a sign in
     assert create_code_user is None
+
+
+async def test_passwordless_create_code_with_a_session_uses_the_next_login_method_if_the_first_ones_phone_number_is_taken():
+    # The session user has a second passwordless login method with the same email on t3. consume_code
+    # skips the first one (its phone number is taken on t2) and adds the second one to t2, so
+    # create_code has to treat the attempt as a sign in as well.
+    first = primary_user_with_passwordless_email_and_phone_on_t1()
+    second_lm = LoginMethod(
+        "passwordless", "pl-3", ["t3"], EMAIL, None, None, None, 0, True
+    )
+    primary = User(
+        first.id,
+        True,
+        ["t1", "t2", "t3"],
+        [EMAIL],
+        [PHONE],
+        [],
+        MagicMock(),
+        [*first.login_methods, second_lm],
+        0,
+    )
+    t2_user = User(
+        "pl-2",
+        False,
+        ["t2"],
+        [],
+        [PHONE],
+        [],
+        MagicMock(),
+        [LoginMethod("passwordless", "pl-2", ["t2"], None, PHONE, None, None, 0, True)],
+        0,
+    )
+    account_linking = MagicMock()
+
+    async def list_users_by_account_info(**kwargs: Any) -> List[User]:
+        if kwargs["account_info"].phone_number == PHONE:
+            return [t2_user]
+        return [primary]
+
+    account_linking.get_instance.return_value.recipe_implementation.list_users_by_account_info = list_users_by_account_info
+    session = MagicMock()
+    session.get_user_id.return_value = primary.id
+
+    with patch.object(passwordless_api, "AccountLinkingRecipe", account_linking):
+        with patch.object(
+            passwordless_api, "get_user", AsyncMock(return_value=primary)
+        ):
+            create_code_user = (
+                await passwordless_api.get_passwordless_user_by_account_info(
+                    "t2", {}, AccountInfoInput(email=EMAIL), session
+                )
+            )
+
+    assert create_code_user is not None
+    assert create_code_user.login_method is not None
+    assert create_code_user.login_method.recipe_user_id.get_as_string() == "pl-3"
