@@ -1,0 +1,3 @@
+kind: Changed
+body: 'accountlinking: a sign in whose matching login method of that recipe exists only on another tenant is now a sign up for passwordless consume_code_post and third party sign_in_up_post, so sign up checks (for example is_sign_up_allowed) apply. For emailpassword and webauthn sign_in_post, it now returns WRONG_CREDENTIALS_ERROR and INVALID_CREDENTIALS_ERROR. With a session from that primary user, the login method''s recipe user is instead associated with the current tenant when its credentials are valid on its own tenant. Passwordless create_code_post and resend_code_post use the same checks, so they agree with consume_code_post on sign in versus sign up.'
+time: 2026-11-08T15:01:00.000000+05:30
