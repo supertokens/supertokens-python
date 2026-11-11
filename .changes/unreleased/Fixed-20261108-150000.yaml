@@ -1,0 +1,3 @@
+kind: Fixed
+body: 'accountlinking: sign in on a tenant no longer fails with "You have found a bug" when a primary user shared with that tenant has a matching login method of the same recipe only on another tenant. Login methods outside the current tenant are no longer treated as the authenticating login method. In the session user fallback, a login method whose account info is already held by another user of the current tenant is now skipped, instead of retrying until the request fails.'
+time: 2026-11-08T15:00:00.000000+05:30

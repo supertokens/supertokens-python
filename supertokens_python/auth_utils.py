@@ -1,4 +1,14 @@
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Union,
+)
 
 from typing_extensions import Literal
 
@@ -256,6 +266,19 @@ async def post_auth_checks(
     )
 
 
+def _is_conflict_on_queried_account_info(
+    status: str,
+    email: Optional[str],
+    phone_number: Optional[str],
+    third_party: Optional[ThirdPartyInfo],
+) -> bool:
+    if status == "EMAIL_ALREADY_EXISTS_ERROR":
+        return email is not None
+    if status == "PHONE_NUMBER_ALREADY_EXISTS_ERROR":
+        return phone_number is not None
+    return third_party is not None
+
+
 class AuthenticatingUserInfo:
     def __init__(self, user: User, login_method: Union[LoginMethod, None]):
         self.user = user
@@ -273,6 +296,11 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
     user_context: Dict[str, Any],
     webauthn: Optional["WebauthnInfoInput"] = None,
 ) -> Optional[AuthenticatingUserInfo]:
+    # Login methods of the session user that cannot be associated with the current tenant,
+    # because another user of the tenant already holds some of their account info
+    unshareable_recipe_user_ids: Set[str] = set()
+    # Association conflicts that already caused a retry
+    retried_conflicts: Set[str] = set()
     i = 0
     while i < 300:
         account_info = {
@@ -305,6 +333,7 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
                         lm
                         for lm in user.login_methods
                         if lm.recipe_id == recipe_id
+                        and tenant_id in lm.tenant_ids
                         and (
                             (email is not None and lm.has_same_email_as(email))
                             or lm.has_same_phone_number_as(phone_number)
@@ -386,6 +415,15 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
 
             go_to_retry = False
             for lm in matching_login_methods_from_session_user:
+                if lm.recipe_user_id.get_as_string() in unshareable_recipe_user_ids:
+                    continue
+                if len(lm.tenant_ids) == 0:
+                    # A login method that is on no tenant (e.g. it was removed from all of them) has no
+                    # tenant to check its credentials on, so it cannot be added to the current one
+                    log_debug_message(
+                        "getAuthenticatingUserAndAddToCurrentTenantIfRequired session skipping a login method that is on no tenant"
+                    )
+                    continue
                 log_debug_message(
                     f"getAuthenticatingUserAndAddToCurrentTenantIfRequired session checking credentials on {lm.tenant_ids[0]}"
                 )
@@ -404,14 +442,38 @@ async def get_authenticating_user_and_add_to_current_tenant_if_required(
                         return AuthenticatingUserInfo(
                             user=session_user, login_method=lm
                         )
+                    if associate_res.status == "UNKNOWN_USER_ID_ERROR":
+                        # The recipe user was deleted, so the session user we loaded is outdated
+                        go_to_retry = True
+                        break
                     if associate_res.status in [
-                        "UNKNOWN_USER_ID_ERROR",
                         "EMAIL_ALREADY_EXISTS_ERROR",
                         "PHONE_NUMBER_ALREADY_EXISTS_ERROR",
                         "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR",
                     ]:
-                        go_to_retry = True
-                        break
+                        conflict_key = f"{lm.recipe_user_id.get_as_string()}:{associate_res.status}"
+                        if (
+                            _is_conflict_on_queried_account_info(
+                                associate_res.status, email, phone_number, third_party
+                            )
+                            and conflict_key not in retried_conflicts
+                        ):
+                            # Another user of the tenant holds the account info we listed users by,
+                            # so the account list is outdated. Listing again will find that user.
+                            retried_conflicts.add(conflict_key)
+                            go_to_retry = True
+                            break
+                        # The conflicting user holds account info we did not list users by (e.g.: the
+                        # phone number of a passwordless login method found by email), or listing again
+                        # did not find it. Retrying would hit the same conflict, so this login method
+                        # cannot be shared with the tenant and we check the next one instead.
+                        log_debug_message(
+                            "getAuthenticatingUserAndAddToCurrentTenantIfRequired skipping login method that cannot be associated with the current tenant"
+                        )
+                        unshareable_recipe_user_ids.add(
+                            lm.recipe_user_id.get_as_string()
+                        )
+                        continue
                     if associate_res.status == "ASSOCIATION_NOT_ALLOWED_ERROR":
                         raise UnauthorisedError(
                             "Session user not associated with the session tenant"
