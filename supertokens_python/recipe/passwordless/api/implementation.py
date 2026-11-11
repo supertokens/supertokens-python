@@ -141,7 +141,7 @@ async def get_passwordless_user_by_account_info(
         if session is not None:
             # consume_code falls back to a matching login method of the session user on another
             # tenant (and adds it to this tenant), so create_code has to recognise it as well
-            return await get_passwordless_login_method_of_session_user(
+            return await _get_passwordless_login_method_of_session_user(
                 tenant_id, session, user_context, account_info
             )
         return None
@@ -149,7 +149,7 @@ async def get_passwordless_user_by_account_info(
     return users_with_matching_login_methods[0]
 
 
-async def get_passwordless_login_method_of_session_user(
+async def _get_passwordless_login_method_of_session_user(
     tenant_id: str,
     session: SessionContainer,
     user_context: Dict[str, Any],
@@ -176,21 +176,21 @@ async def get_passwordless_login_method_of_session_user(
     # user of the tenant already has its other contact info) and tries the next one. If none of them
     # can be added, it handles the attempt as a sign up, so create_code has to do the same.
     for login_method in matching_login_methods:
-        if await other_account_info_is_taken_on_tenant(
+        if await _other_account_info_is_taken_on_tenant(
             tenant_id, login_method, account_info, user_context
         ):
             log_debug_message(
-                "get_passwordless_user_by_account_info skipping a login method of the session user, its account info is taken on the current tenant"
+                "_get_passwordless_login_method_of_session_user skipping a login method of the session user, its account info is taken on the current tenant"
             )
             continue
         log_debug_message(
-            "get_passwordless_user_by_account_info using a matching login method of the session user from another tenant"
+            "_get_passwordless_login_method_of_session_user using a matching login method of the session user from another tenant"
         )
         return PasswordlessUserResult(user=session_user, login_method=login_method)
     return None
 
 
-async def other_account_info_is_taken_on_tenant(
+async def _other_account_info_is_taken_on_tenant(
     tenant_id: str,
     login_method: LoginMethod,
     account_info: AccountInfoInput,
